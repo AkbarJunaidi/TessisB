@@ -2,14 +2,15 @@
 
 namespace App\Http\Requests\ActivityLog;
 
+use App\Services\ActivityLog\ActivityLogService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class ActivityLogFilterRequest extends FormRequest
 {
     /**
-     * Menentukan paksaan hak akses pengguna terhadap filter ini.
-     * Berdasarkan permission, Super Admin dan Admin diizinkan (Employee ditolak nanti di level middleware/policy).
+     * Menentukan apakah user diizinkan mengakses filter Activity Log.
      */
     public function authorize(): bool
     {
@@ -17,43 +18,158 @@ class ActivityLogFilterRequest extends FormRequest
     }
 
     /**
-     * Aturan validasi ketat untuk parameter pencarian halaman Activity Logs.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * Mengubah nilai kosong menjadi null
+     * sebelum proses validasi.
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+
+            'module' => $this->filled('module')
+                ? $this->module
+                : null,
+
+            'user_id' => $this->filled('user_id')
+                ? $this->user_id
+                : null,
+
+            'action' => $this->filled('action')
+                ? $this->action
+                : null,
+
+            'search' => $this->filled('search')
+                ? trim($this->search)
+                : null,
+
+            'date_from' => $this->filled('date_from')
+                ? $this->date_from
+                : null,
+
+            'date_to' => $this->filled('date_to')
+                ? $this->date_to
+                : null,
+
+            'per_page' => $this->filled('per_page')
+                ? $this->per_page
+                : 10,
+
+        ]);
+    }
+
+    /**
+     * Aturan validasi filter Activity Log.
      */
     public function rules(): array
     {
+        $activityLogService = app(ActivityLogService::class);
+
+        $modules = $activityLogService->getModules();
+
+        $actions = collect(
+            $activityLogService->getActions()
+        )
+            ->flatten()
+            ->values()
+            ->all();
+           
+
         return [
-            'module' => ['nullable', 'string', 'in:All,Authentication,Inventory,Tracking Progress,Integrasi Data,User Management'],
-            'user_id' => ['nullable', 'integer', 'exists:users,id'],
-            'action' => ['nullable', 'string', 'in:All,Create,Update,Delete,Move,Upload,Change Status,Login,Logout,Create User,Update User,Change Password,Change Role,Delete User'],
-            'date_from' => ['nullable', 'date', 'date_format:Y-m-d'],
-            'date_to' => ['nullable', 'date', 'date_format:Y-m-d', 'after_or_equal:date_from'],
+
+            'module' => [
+                'nullable',
+                Rule::in($modules),
+            ],
+
+            'user_id' => [
+                'nullable',
+                'integer',
+                'exists:users,id',
+            ],
+
+            'action' => [
+                'nullable',
+                Rule::in($actions),
+            ],
+
+            'search' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+
+            'date_from' => [
+                'nullable',
+                'date',
+                'date_format:Y-m-d',
+            ],
+
+            'date_to' => [
+                'nullable',
+                'date',
+                'date_format:Y-m-d',
+                'after_or_equal:date_from',
+            ],
+
+            'per_page' => [
+                'nullable',
+                Rule::in([
+                    10,
+                    25,
+                    50,
+                    100,
+                ]),
+            ],
+
         ];
     }
 
     /**
-     * Kustomisasi pesan kesalahan jika validasi input range tanggal atau tipe data salah.
+     * Pesan validasi.
      */
     public function messages(): array
     {
         return [
-            'module.in' => 'Kluster modul yang dipilih tidak terdaftar di dalam sistem.',
-            'action.in' => 'Jenis tindakan yang dipilih tidak dikenali oleh sistem audit.',
-            'user_id.exists' => 'Data user pemicu yang dipilih tidak ditemukan.',
-            'date_from.date_format' => 'Format tanggal awal pencarian harus berupa YYYY-MM-DD.',
-            'date_to.date_format' => 'Format tanggal akhir pencarian harus berupa YYYY-MM-DD.',
-            'date_to.after_or_equal' => 'Tanggal akhir pencarian tidak boleh mendahului tanggal awal.',
+
+            'module.in' => 'Modul yang dipilih tidak valid.',
+
+            'action.in' => 'Jenis aktivitas tidak valid.',
+
+            'user_id.exists' => 'User tidak ditemukan.',
+
+            'search.max' => 'Kata kunci pencarian maksimal 100 karakter.',
+
+            'date_from.date_format' => 'Format tanggal awal harus YYYY-MM-DD.',
+
+            'date_to.date_format' => 'Format tanggal akhir harus YYYY-MM-DD.',
+
+            'date_to.after_or_equal' => 'Tanggal akhir tidak boleh lebih kecil dari tanggal awal.',
+
+            'per_page.in' => 'Jumlah data per halaman tidak valid.',
+
         ];
     }
 
     /**
-     * Otomatis membersihkan input kosong (nullify) sebelum masuk ke pemrosesan query.
+     * Nama atribut agar lebih mudah dibaca.
      */
-    protected function passedValidation(): void
+    public function attributes(): array
     {
-        $this->merge(array_filter($this->validated(), function ($value) {
-            return $value !== null && $value !== '';
-        }));
+        return [
+
+            'module' => 'Modul',
+
+            'user_id' => 'User',
+
+            'action' => 'Aktivitas',
+
+            'search' => 'Pencarian',
+
+            'date_from' => 'Tanggal Awal',
+
+            'date_to' => 'Tanggal Akhir',
+
+            'per_page' => 'Jumlah Data',
+
+        ];
     }
 }

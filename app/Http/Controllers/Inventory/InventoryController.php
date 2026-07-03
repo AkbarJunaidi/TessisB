@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Inventory;
 
 use App\Http\Controllers\Controller;
-use App\Models\Inventory;
 use App\Http\Requests\Inventory\InventoryRequest;
+use App\Models\Inventory;
 use App\Services\InventoryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -12,23 +12,24 @@ use Illuminate\View\View;
 class InventoryController extends Controller
 {
     /**
-     * Menyuntikkan InventoryService melalui Constructor Injection.
+     * Service Inventory.
      */
     public function __construct(
         protected InventoryService $inventoryService
     ) {}
 
     /**
-     * Menampilkan daftar semua barang inventory.
+     * Menampilkan daftar inventory.
      */
     public function index(): View
     {
         $inventories = $this->inventoryService->getAllPaginated(10);
+
         return view('inventory.index', compact('inventories'));
     }
 
     /**
-     * Menampilkan formulir tambah barang baru.
+     * Menampilkan halaman tambah inventory.
      */
     public function create(): View
     {
@@ -36,7 +37,7 @@ class InventoryController extends Controller
     }
 
     /**
-     * Menyimpan data barang baru ke sistem.
+     * Menyimpan inventory baru.
      */
     public function store(InventoryRequest $request): RedirectResponse
     {
@@ -45,12 +46,13 @@ class InventoryController extends Controller
             $request->file('image')
         );
 
-        return redirect()->route('inventory.index')
+        return redirect()
+            ->route('inventory.index')
             ->with('success', 'Data inventory baru berhasil ditambahkan.');
     }
 
     /**
-     * Menampilkan informasi detail spesifik suatu barang.
+     * Menampilkan detail inventory.
      */
     public function show(Inventory $inventory): View
     {
@@ -58,7 +60,7 @@ class InventoryController extends Controller
     }
 
     /**
-     * Menampilkan formulir edit/pembaruan data barang.
+     * Menampilkan halaman edit inventory.
      */
     public function edit(Inventory $inventory): View
     {
@@ -66,28 +68,33 @@ class InventoryController extends Controller
     }
 
     /**
-     * Memproses pembaruan data barang di database.
+     * Memperbarui data inventory.
      */
-    public function update(InventoryRequest $request, Inventory $inventory): RedirectResponse
-    {
+    public function update(
+        InventoryRequest $request,
+        Inventory $inventory
+    ): RedirectResponse {
+
         $this->inventoryService->updateInventory(
             $inventory,
             $request->validated(),
             $request->file('image')
         );
 
-        return redirect()->route('inventory.index')
+        return redirect()
+            ->route('inventory.index')
             ->with('success', 'Data inventory berhasil diperbarui.');
     }
 
     /**
-     * Menghapus barang dari daftar utama menggunakan metode Soft Delete.
+     * Menghapus inventory.
      */
     public function destroy(Inventory $inventory): RedirectResponse
     {
         $this->inventoryService->deleteInventory($inventory);
 
-        return redirect()->route('inventory.index')
+        return redirect()
+            ->route('inventory.index')
             ->with('success', 'Data inventory berhasil dihapus.');
     }
 }

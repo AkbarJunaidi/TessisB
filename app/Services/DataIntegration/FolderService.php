@@ -3,19 +3,19 @@
 namespace App\Services\DataIntegration;
 
 use App\Models\Folder;
-use Illuminate\Support\Facades\Auth;
 use App\Services\ActivityLog\ActivityLogService;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 
 class FolderService
 {
     /**
-     * @var ActivityLogService
+     * Service Activity Log.
      */
-    protected $activityLogService;
+    protected ActivityLogService $activityLogService;
 
     /**
-     * Mendaftarkan ActivityLogService ke dalam Constructor melalui Dependency Injection.
+     * Constructor.
      */
     public function __construct(ActivityLogService $activityLogService)
     {
@@ -23,109 +23,80 @@ class FolderService
     }
 
     /**
-     * Menyimpan folder baru ke dalam database.
-     *
-     * @param array $data
-     * @return Folder
-     * @throws Exception
+     * Membuat folder baru.
      */
     public function createFolder(array $data): Folder
     {
         try {
+
             $folder = Folder::create([
-                'name' => $data['name'],
-                'parent_id' => $data['parent_id'] ?? null,
+                'name'       => $data['name'],
+                'parent_id'  => $data['parent_id'] ?? null,
                 'created_by' => Auth::id(),
             ]);
 
-            // Pemicu Log Audit Trail untuk aksi Create Folder
-            $context = $folder->parent_id ? 'di dalam Sub-Folder ID #' . $folder->parent_id : 'di Root Directory';
             $this->activityLogService->log(
                 Auth::id(),
                 'Integrasi Data',
-                'Membuat folder baru dengan nama "' . $folder->name . '" ' . $context
+                'Create Folder'
             );
 
             return $folder;
+
         } catch (Exception $e) {
-            throw new Exception('Gagal membuat folder: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Mengubah nama folder.
-     *
-     * @param Folder $folder
-     * @param string $newName
-     * @return bool
-     */
-    public function renameFolder(Folder $folder, string $newName): bool
-    {
-        $oldName = $folder->name;
-        $updated = $folder->update(['name' => $newName]);
-
-        if ($updated) {
-            // Pemicu Log Audit Trail untuk aksi Rename Folder
-            $this->activityLogService->log(
-                Auth::id(),
-                'Integrasi Data',
-                'Mengubah nama folder dari "' . $oldName . '" menjadi "' . $newName . '"'
+            throw new Exception(
+                'Gagal membuat folder: ' . $e->getMessage()
             );
         }
-
-        return $updated;
     }
 
     /**
-     * Memindahkan lokasi folder.
-     *
-     * @param Folder $folder
-     * @param int|null $targetFolderId
-     * @return bool
-     * @throws Exception
+     * Rename folder.
      */
-    public function moveFolder(Folder $folder, ?int $targetFolderId): bool
-    {
-        // Validasi Defensif: Mencegah folder masuk ke dirinya sendiri
+    public function renameFolder(
+        Folder $folder,
+        string $newName
+    ): bool {
+
+        return $folder->update([
+            'name' => $newName
+        ]);
+    }
+
+    /**
+     * Memindahkan folder.
+     */
+    public function moveFolder(
+        Folder $folder,
+        ?int $targetFolderId
+    ): bool {
+
         if ($targetFolderId === $folder->id) {
-            throw new Exception('Folder tidak dapat dipindahkan ke dalam dirinya sendiri.');
-        }
-
-        $oldParentId = $folder->parent_id;
-        $updated = $folder->update(['parent_id' => $targetFolderId]);
-
-        if ($updated) {
-            $fromContext = $oldParentId ? 'Folder ID #' . $oldParentId : 'Root';
-            $toContext = $targetFolderId ? 'Folder ID #' . $targetFolderId : 'Root';
-
-            // Pemicu Log Audit Trail untuk aksi Move Folder
-            $this->activityLogService->log(
-                Auth::id(),
-                'Integrasi Data',
-                'Memindahkan folder "' . $folder->name . '" dari ' . $fromContext . ' ke ' . $toContext
+            throw new Exception(
+                'Folder tidak dapat dipindahkan ke dalam dirinya sendiri.'
             );
         }
 
-        return $updated;
+        return $folder->update([
+            'parent_id' => $targetFolderId
+        ]);
     }
 
     /**
-     * Menghapus folder menggunakan Soft Delete.
-     *
-     * @param Folder $folder
-     * @return bool|null
+     * Menghapus folder (Soft Delete).
      */
-    public function deleteFolder(Folder $folder): ?bool
-    {
-        $folderName = $folder->name;
+    public function deleteFolder(
+        Folder $folder
+    ): ?bool {
+
         $deleted = $folder->delete();
 
         if ($deleted) {
-            // Pemicu Log Audit Trail untuk aksi Delete Folder
+
             $this->activityLogService->log(
                 Auth::id(),
                 'Integrasi Data',
-                'Melakukan soft delete pada folder "' . $folderName . '"'
+                'Delete Folder'
             );
         }
 

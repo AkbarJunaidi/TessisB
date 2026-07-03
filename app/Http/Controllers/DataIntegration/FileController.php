@@ -4,21 +4,22 @@ namespace App\Http\Controllers\DataIntegration;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DataIntegration\FileRequest;
-use App\Services\DataIntegration\FileService;
 use App\Models\File;
+use App\Services\DataIntegration\FileService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Exception;
 
 class FileController extends Controller
 {
+    /**
+     * Service File.
+     */
     protected FileService $fileService;
 
     /**
-     * Dependency Injection melalui Constructor
+     * Constructor.
      */
     public function __construct(FileService $fileService)
     {
@@ -26,98 +27,146 @@ class FileController extends Controller
     }
 
     /**
-     * Menampilkan halaman My Files (Ruang penyimpanan pribadi user aktif).
+     * Menampilkan halaman My Files.
      */
     public function myFiles(): View
     {
-        // Hanya mengambil file milik user login (Isolasi data privasi)
-        $files = File::where('user_id', Auth::id())->get();
+        $files = $this->fileService->getMyFiles();
 
-        return view('data-integration.my-files', compact('files'));
+        return view(
+            'data-integration.my-files',
+            compact('files')
+        );
     }
 
     /**
-     * Memproses unggah file dari Folder Management ataupun My Files.
+     * Upload file.
      */
-    public function store(FileRequest $request): RedirectResponse
-    {
+    public function store(
+        FileRequest $request
+    ): RedirectResponse {
+
         try {
-            if (!$request->hasFile('file')) {
-                return redirect()->back()->with('error', 'Berkas unggahan tidak ditemukan.');
-            }
 
-            // folder_id akan bernilai null jika diunggah langsung dari menu My Files
-            $folderId = $request->input('folder_id') ?: null;
+            $this->fileService->uploadFile(
+                $request->file('file'),
+                $request->folder_id
+            );
 
-            $this->fileService->uploadFile($request->file('file'), $folderId);
+            return back()->with(
+                'success',
+                'Berkas berhasil diunggah.'
+            );
 
-            return redirect()->back()->with('success', 'Berkas berhasil diunggah dan diverifikasi.');
         } catch (Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+
+            return back()->with(
+                'error',
+                $e->getMessage()
+            );
         }
     }
 
     /**
-     * Menangani pengunduhan berkas menggunakan BinaryFileResponse (Symfony).
+     * Download file.
      */
-    public function download(File $file): BinaryFileResponse|RedirectResponse
-    {
+    public function download(
+        File $file
+    ): BinaryFileResponse|RedirectResponse {
+
         try {
+
             return $this->fileService->downloadFile($file);
+
         } catch (Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+
+            return back()->with(
+                'error',
+                $e->getMessage()
+            );
         }
     }
 
     /**
-     * Mengubah nama berkas dokumen (Rename File).
+     * Rename file.
      */
-    public function rename(File $file, Request $request): RedirectResponse
-    {
+    public function rename(
+        FileRequest $request,
+        File $file
+    ): RedirectResponse {
+
         try {
-            $request->validate([
-                'file_name' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z0-9_\-\s\.]+$/']
-            ], [
-                'file_name.required' => 'Nama file baru wajib diisi.',
-                'file_name.regex' => 'Nama file tidak boleh mengandung karakter khusus ilegal.'
-            ]);
 
-            $this->fileService->renameFile($file, $request->input('file_name'));
+            $this->fileService->renameFile(
+                $file,
+                $request->file_name
+            );
 
-            return redirect()->back()->with('success', 'Nama berkas berhasil diperbarui.');
+            return back()->with(
+                'success',
+                'Nama file berhasil diperbarui.'
+            );
+
         } catch (Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+
+            return back()->with(
+                'error',
+                $e->getMessage()
+            );
         }
     }
 
     /**
-     * Memindahkan posisi berkas (Move File).
+     * Move file.
      */
-    public function move(File $file, Request $request): RedirectResponse
-    {
+    public function move(
+        FileRequest $request,
+        File $file
+    ): RedirectResponse {
+
         try {
-            // target_folder_id bernilai null berarti dipindahkan ke root/My Files
-            $targetFolderId = $request->input('target_folder_id') ?: null;
 
-            $this->fileService->moveFile($file, $targetFolderId);
+            $this->fileService->moveFile(
+                $file,
+                $request->target_folder_id
+            );
 
-            return redirect()->back()->with('success', 'Berkas berhasil dipindahkan tempat.');
+            return back()->with(
+                'success',
+                'File berhasil dipindahkan.'
+            );
+
         } catch (Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+
+            return back()->with(
+                'error',
+                $e->getMessage()
+            );
         }
     }
 
     /**
-     * Menghapus berkas dari sistem (Soft Delete).
+     * Delete file.
      */
-    public function destroy(File $file): RedirectResponse
-    {
+    public function destroy(
+        File $file
+    ): RedirectResponse {
+
         try {
+
             $this->fileService->deleteFile($file);
 
-            return redirect()->back()->with('success', 'Berkas berhasil dihapus dari penyimpanan.');
+            return back()->with(
+                'success',
+                'File berhasil dihapus.'
+            );
+
         } catch (Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+
+            return back()->with(
+                'error',
+                $e->getMessage()
+            );
         }
     }
 }

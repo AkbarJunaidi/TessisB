@@ -2,40 +2,36 @@
 
 namespace App\Services;
 
-use App\Models\Task;
 use App\Models\Project;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Task;
 use App\Services\ActivityLog\ActivityLogService;
+use Illuminate\Support\Facades\Auth;
 
 class TaskService
 {
-    /**
-     * @var ActivityLogService
-     */
-    protected $activityLogService;
 
-    /**
-     * Mendaftarkan ActivityLogService ke dalam Constructor melalui Dependency Injection.
-     */
+    protected ActivityLogService $activityLogService;
+
     public function __construct(ActivityLogService $activityLogService)
     {
         $this->activityLogService = $activityLogService;
     }
 
-    /**
-     * Mengambil semua task yang terikat pada sebuah project berdasarkan status.
-     */
+
+    //  * Mengambil seluruh task berdasarkan project.
     public function getTasksByProject(Project $project)
     {
-        return Task::with('assignee', 'comments.user')
-            ->where('project_id', $project->id)
-            ->get()
-            ->groupBy('status');
+        return Task::with([
+            'assignee',
+            'comments.user'
+        ])
+        ->where('project_id', $project->id)
+        ->get()
+        ->groupBy('status');
     }
 
-    /**
-     * Menyimpan kartu task baru ke dalam database.
-     */
+
+    //  * Menambahkan task baru.
     public function createTask(array $data): Task
     {
         $task = Task::create([
@@ -48,63 +44,77 @@ class TaskService
             'assigned_to' => $data['assigned_to'] ?? null,
         ]);
 
-        // Ambil nama project untuk detail deskripsi log
-        $projectName = $task->project ? $task->project->name : 'ID #' . $task->project_id;
-
-        // Pemicu Log Audit Trail untuk aksi Create Task
         $this->activityLogService->log(
             Auth::id(),
             'Tracking Progress',
-            'Menambahkan task baru "' . $task->title . '" pada project "' . $projectName . '"'
+            'Create Task'
         );
 
         return $task;
     }
 
-    /**
-     * Mencari detail spesifik satu task berdasarkan ID beserta relasinya.
-     */
+    //  * Mengambil detail task berdasarkan ID.
     public function findTaskById(int $id): Task
     {
-        return Task::with(['project', 'assignee', 'comments.user'])->findOrFail($id);
+        return Task::with([
+            'project',
+            'assignee',
+            'comments.user'
+        ])->findOrFail($id);
     }
 
-    /**
-     * Mengubah status pengerjaan task menggunakan tombol/dropdown.
-     */
+    //  * Memperbarui data task.
+    public function updateTask(Task $task, array $data): Task
+    {
+        $task->update([
+            'title'       => $data['title'],
+            'description' => $data['description'] ?? null,
+            'priority'    => $data['priority'] ?? 'Medium',
+            'deadline'    => $data['deadline'],
+            'assigned_to' => $data['assigned_to'] ?? null,
+        ]);
+
+        $this->activityLogService->log(
+            Auth::id(),
+            'Tracking Progress',
+            'Update Task'
+        );
+
+        return $task->fresh([
+            'project',
+            'assignee',
+            'comments.user'
+        ]);
+    }
+
+    //  * Mengubah status task.
     public function updateTaskStatus(Task $task, string $newStatus): bool
     {
-        $oldStatus = $task->status;
         $updated = $task->update([
-            'status' => $newStatus
+            'status' => $newStatus,
         ]);
 
         if ($updated) {
-            // Pemicu Log Audit Trail untuk aksi Perubahan Status Task
             $this->activityLogService->log(
                 Auth::id(),
                 'Tracking Progress',
-                'Mengubah status task "' . $task->title . '" dari ' . $oldStatus . ' menjadi ' . $newStatus
+                'Update Task Status'
             );
         }
 
         return $updated;
     }
 
-    /**
-     * Menghapus kartu tugas secara aman (Soft Delete).
-     */
+    //  * Menghapus task (Soft Delete).
     public function deleteTask(Task $task): bool
     {
-        $taskTitle = $task->title;
         $deleted = $task->delete();
 
         if ($deleted) {
-            // Pemicu Log Audit Trail untuk aksi Delete Task
             $this->activityLogService->log(
                 Auth::id(),
                 'Tracking Progress',
-                'Melakukan soft delete pada task: "' . $taskTitle . '"'
+                'Delete Task'
             );
         }
 

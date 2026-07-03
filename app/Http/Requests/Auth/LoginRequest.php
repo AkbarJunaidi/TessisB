@@ -7,39 +7,66 @@ use Illuminate\Foundation\Http\FormRequest;
 class LoginRequest extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Menentukan apakah user diizinkan mengirim request login.
      */
     public function authorize(): bool
     {
-        // Berikan izin akses untuk seluruh pengguna karena halaman login bersifat publik
         return true;
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * Aturan validasi form login.
      */
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string'],
-            'remember' => ['nullable', 'boolean'],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+            ],
+
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+            ],
+
+            'remember' => [
+                'nullable',
+                'boolean',
+            ],
         ];
     }
 
     /**
-     * Get custom messages for validator errors.
-     *
-     * @return array<string, string>
+     * Pesan validasi.
      */
     public function messages(): array
     {
         return [
-            'email.required' => 'Kolom alamat email wajib diisi.',
-            'email.email' => 'Format alamat email tidak valid.',
-            'password.required' => 'Kolom kata sandi wajib diisi.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.max' => 'Email maksimal 255 karakter.',
+
+            'password.required' => 'Password wajib diisi.',
+            'password.string' => 'Password tidak valid.',
+            'password.min' => 'Password minimal 8 karakter.',
+
+            'remember.boolean' => 'Remember Me tidak valid.',
+        ];
+    }
+
+    /**
+     * Nama atribut.
+     */
+    public function attributes(): array
+    {
+        return [
+            'email' => 'Email',
+            'password' => 'Password',
+            'remember' => 'Remember Me',
         ];
     }
 }
+

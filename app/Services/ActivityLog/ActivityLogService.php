@@ -4,72 +4,196 @@ namespace App\Services\ActivityLog;
 
 use App\Models\ActivityLog;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Database\Eloquent\Collection;
 
 class ActivityLogService
 {
     /**
-     * Menyimpan log aktivitas baru ke dalam database secara aman.
-     * Menggunakan try-catch pasif agar proses bisnis utama tidak crash jika log gagal tertulis.
+     * Menyimpan Activity Log.
+     *
+     * Parameter:
+     * - userId : ID user yang melakukan aksi
+     * - module : Nama modul
+     * - action : Nama aktivitas
      */
-    public function log(?int $userId, string $module, string $action): void
-    {
+    public function log(
+        ?int $userId,
+        string $module,
+        string $action
+    ): void {
         try {
+
             ActivityLog::create([
                 'user_id' => $userId,
-                'module' => $module,
-                'action' => $action,
+                'module'  => $module,
+                'action'  => $action,
             ]);
-        } catch (\Exception $e) {
-            // Mencatat error ke log internal file Laravel (storage/logs/laravel.log) untuk debugging teknis
-            Log::error('Gagal mencatat Audit Trail Activity Log: ' . $e->getMessage());
+
+        } catch (\Throwable $e) {
+
+            // Jangan menghentikan proses utama apabila Activity Log gagal disimpan
+            Log::error('Activity Log Error : ' . $e->getMessage());
+
         }
     }
 
     /**
-     * Mengambil daftar log yang telah disaring berdasarkan kriteria pencarian form request.
-     * Menggunakan Eager Loading 'user' untuk mencegah masalah performa N+1 Query.
+     * Mengambil daftar Activity Log berdasarkan filter.
      */
     public function getFilteredLogs(array $filters): LengthAwarePaginator
     {
-        $query = ActivityLog::with('user')->latest();
+        $query = ActivityLog::query()
+            ->with('user');
 
-        // Filter berdasarkan Modul (Abaikan jika bernilai 'All' atau kosong)
-        if (!empty($filters['module']) && $filters['module'] !== 'All') {
-            $query->where('module', $filters['module']);
-        }
+        // Filter Module
+        $query->when(
+            $filters['module'] ?? null,
+            fn ($query, $module) => $query->where('module', $module)
+        );
 
-        // Filter berdasarkan Aktor User
-        if (!empty($filters['user_id'])) {
-            $query->where('user_id', $filters['user_id']);
-        }
+        // Filter User
+        $query->when(
+            $filters['user_id'] ?? null,
+            fn ($query, $userId) => $query->where('user_id', $userId)
+        );
 
-        // Filter berdasarkan Jenis Tindakan (Abaikan jika bernilai 'All' atau kosong)
-        if (!empty($filters['action']) && $filters['action'] !== 'All') {
-            $query->where('action', $filters['action']);
-        }
+        // Filter Action
+        $query->when(
+            $filters['action'] ?? null,
+            fn ($query, $action) => $query->where('action', $action)
+        );
 
-        // Filter berdasarkan Batas Awal Tanggal (Format: YYYY-MM-DD 00:00:00)
-        if (!empty($filters['date_from'])) {
-            $query->whereDate('created_at', '>=', $filters['date_from']);
-        }
+        // Filter Search
+        $query->when(
+            $filters['search'] ?? null,
+            function ($query, $keyword) {
 
-        // Filter berdasarkan Batas Akhir Tanggal (Format: YYYY-MM-DD 23:59:59)
-        if (!empty($filters['date_to'])) {
-            $query->whereDate('created_at', '<=', $filters['date_to']);
-        }
+                $query->where(function ($query) use ($keyword) {
 
-        // Mengembalikan pagination data sebanyak 15 baris per halaman
-        return $query->paginate(15);
+                    $query->where('module', 'like', "%{$keyword}%")
+                        ->orWhere('action', 'like', "%{$keyword}%")
+                        ->orWhereHas('user', function ($query) use ($keyword) {
+
+                            $query->where('name', 'like', "%{$keyword}%");
+
+                        });
+
+                });
+
+            }
+        );
+
+        // Filter Tanggal Awal
+        $query->when(
+            $filters['date_from'] ?? null,
+            fn ($query, $date) => $query->whereDate('created_at', '>=', $date)
+        );
+
+        // Filter Tanggal Akhir
+        $query->when(
+            $filters['date_to'] ?? null,
+            fn ($query, $date) => $query->whereDate('created_at', '<=', $date)
+        );
+
+        return $query
+            ->latest()
+            ->paginate(
+                $filters['per_page'] ?? 10
+            )
+            ->withQueryString();
     }
 
     /**
-     * Mengambil daftar seluruh user untuk menyuplai opsi selectbox dropdown pada card filter halaman log.
+     * Mengambil Activity Log terbaru
+     * untuk Dashboard.
+     */
+    public function getLatestActivities(int $limit = 4): Collection
+    {
+        return ActivityLog::with('user')
+            ->latest()
+            ->take($limit)
+            ->get();
+    }
+
+    /**
+     * Mengambil seluruh user
+     * untuk dropdown filter.
      */
     public function getAllUsersForFilter(): Collection
     {
-        return User::orderBy('name', 'asc')->get(['id', 'name']);
+        return User::orderBy('name')
+            ->get([
+                'id',
+                'name',
+            ]);
+    }
+
+    /**
+     * Mengambil daftar modul Activity Log.
+     */
+    public function getModules(): array
+    {
+        return [
+            'Authentication',
+            'Inventory',
+            'Tracking Progress',
+            'Integrasi Data',
+            'User Management',
+        ];
+    }
+
+    /**
+     * Mengambil daftar aktivitas berdasarkan modul.
+     */
+    public function getActions(): array
+    {
+        return [
+
+            'Authentication' => [
+                'Login',
+                'Logout',
+            ],
+
+            'Inventory' => [
+                'Create Inventory',
+                'Update Inventory',
+                'Delete Inventory',
+            ],
+
+            'Tracking Progress' => [
+                'Create Project',
+                'Update Project',
+                'Delete Project',
+
+                'Create Task',
+                'Update Task',
+                'Update Task Status',
+                'Delete Task',
+            ],
+
+            'Integrasi Data' => [
+                'Upload File',
+                'Download File',
+                'Rename File',
+                'Move File',
+                'Delete File',
+
+                'Create Folder',
+                'Rename Folder',
+                'Move Folder',
+                'Delete Folder',
+            ],
+
+            'User Management' => [
+                'Create User',
+                'Update User',
+                'Change Password',
+                'Change Role',
+                'Delete User',
+            ],
+
+        ];
     }
 }

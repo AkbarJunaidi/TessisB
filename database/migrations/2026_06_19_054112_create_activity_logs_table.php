@@ -7,36 +7,33 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Jalankan migration.
      */
     public function up(): void
     {
-        Schema::create('activity_logs', function (Blueprint $class) {
-            $class->id();
+        Schema::create('activity_logs', function (Blueprint $table) {
 
-            // Foreign key relasi ke tabel users dengan penanganan jika user dihapus
-            $class->foreignId('user_id')
+            $table->id();
+
+            $table->foreignId('user_id')
                 ->nullable()
                 ->constrained('users')
-                ->onDelete('set null');
+                ->nullOnDelete();
 
-            // Menyimpan nama kluster modul utama sistem
-            $class->string('module');
+            $table->string('module', 100);
 
-            // Menyimpan jenis tindakan spesifik yang dilakukan user
-            $class->string('action');
+            $table->string('action', 100);
 
-            // Timestamps otomatis (created_at berfungsi sebagai kolom Date Time)
-            $class->timestamps();
+            $table->timestamps();
 
-            // Indexing dasar untuk optimasi performa filtering dan pencarian data
-            $class->index(['module', 'action']);
-            $class->index('created_at');
+            // Index untuk mempercepat filtering
+            $table->index(['module', 'action']);
+            $table->index('created_at');
         });
     }
 
     /**
-     * Reverse the migrations.
+     * Rollback migration.
      */
     public function down(): void
     {

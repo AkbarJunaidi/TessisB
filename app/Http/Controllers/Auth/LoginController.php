@@ -9,7 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth; // Wajib di-import untuk membaca method check()
 use Illuminate\View\View;
 
-class LoginController extends Controller
+class LoginController extends Controller  
 {
     /**
      * Menyuntikkan AuthService ke dalam Controller via Constructor Injection.

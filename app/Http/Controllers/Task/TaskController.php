@@ -3,75 +3,132 @@
 namespace App\Http\Controllers\Task;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Task\TaskRequest;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
-use App\Http\Requests\Task\TaskRequest;
 use App\Services\TaskService;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class TaskController extends Controller
 {
-    public function __construct(
-        protected TaskService $taskService
-    ) {}
+    /**
+     * Service Task.
+     */
+    protected TaskService $taskService;
 
     /**
-     * Menampilkan form tambah task baru terikat dengan Project ID.
+     * Constructor.
+     */
+    public function __construct(TaskService $taskService)
+    {
+        $this->taskService = $taskService;
+    }
+
+    /**
+     * Menampilkan form tambah task baru.
      */
     public function create(Request $request): View
     {
         $project = Project::findOrFail($request->get('project_id'));
-        $users = User::where('status', 'Active')->get(); // Mengambil daftar user aktif untuk delegasi tugas
+
+        $users = User::where('status', 'active')
+            ->orderBy('name')
+            ->get();
 
         return view('task.create', compact('project', 'users'));
     }
 
     /**
-     * Menyimpan data task baru.
+     * Menyimpan task baru.
      */
     public function store(TaskRequest $request): RedirectResponse
     {
-        $task = $this->taskService->createTask($request->validated());
+        $task = $this->taskService->createTask(
+            $request->validated()
+        );
 
-        return redirect()->route('projects.show', $task->project_id)
-            ->with('success', 'Task baru sukses disuntikkan ke papan kerja.');
+        return redirect()
+            ->route('projects.show', $task->project_id)
+            ->with('success', 'Task berhasil ditambahkan.');
     }
 
     /**
-     * Menampilkan detail informasi lengkap satu task (Task Detail).
+     * Menampilkan detail task.
      */
     public function show(int $id): View
     {
         $task = $this->taskService->findTaskById($id);
+
         return view('task.show', compact('task'));
     }
 
     /**
-     * Memperbarui status task secara instan lewat tombol aksi dropdown.
+     * Menampilkan form edit task.
      */
-    public function updateStatus(Request $request, Task $task): RedirectResponse
+    public function edit(Task $task): View
     {
-        $request->validate([
-            'status' => 'required|in:Todo,In Progress,Review,Done'
-        ]);
+        $users = User::where('status', 'active')
+            ->orderBy('name')
+            ->get();
 
-        $this->taskService->updateTaskStatus($task, $request->status);
-
-        return redirect()->back()->with('success', 'Status progres tugas berhasil diperbarui.');
+        return view('task.edit', compact('task', 'users'));
     }
 
     /**
-     * Menghapus task kartu dari papan proyek.
+     * Memperbarui data task.
+     */
+    public function update(
+        TaskRequest $request,
+        Task $task
+    ): RedirectResponse {
+
+        $this->taskService->updateTask(
+            $task,
+            $request->validated()
+        );
+
+        return redirect()
+            ->route('projects.show', $task->project_id)
+            ->with('success', 'Task berhasil diperbarui.');
+    }
+
+    /**
+     * Memperbarui status task.
+     */
+    public function updateStatus(
+        Request $request,
+        Task $task
+    ): RedirectResponse {
+
+        $request->validate([
+            'status' => 'required|in:Todo,In Progress,Review,Done',
+        ]);
+
+        $this->taskService->updateTaskStatus(
+            $task,
+            $request->status
+        );
+
+        return redirect()
+            ->back()
+            ->with('success', 'Status task berhasil diperbarui.');
+    }
+
+    /**
+     * Menghapus task.
      */
     public function destroy(Task $task): RedirectResponse
     {
         $projectId = $task->project_id;
+
         $this->taskService->deleteTask($task);
 
-        return redirect()->route('projects.show', $projectId)
-            ->with('success', 'Task berhasil dielementasi dari papan board.');
+        return redirect()
+            ->route('projects.show', $projectId)
+            ->with('success', 'Task berhasil dihapus.');
     }
 }
+

@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -7,28 +8,53 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Menjalankan proses pembuatan tabel users.
      */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
+
             $table->id();
+
+            // Informasi dasar pengguna
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
-            $table->string('role'); // super_admin, admin, employee
-            $table->string('status')->default('active'); // active, inactive
+
+            // Hak akses pengguna
+            $table->enum('role', [
+                'super_admin',
+                'admin',
+                'employee',
+            ]);
+
+            // Status akun
+            $table->enum('status', [
+                'active',
+                'inactive',
+            ])->default('active');
+
+            // Waktu login terakhir
             $table->timestamp('last_login_at')->nullable();
+
+            // Token Remember Me bawaan Laravel
+            $table->rememberToken();
+
             $table->timestamps();
-            $table->softDeletes(); // Menambahkan deleted_at untuk Soft Delete
+            $table->softDeletes();
+
+            // Index untuk optimasi pencarian
+            $table->index('role');
+            $table->index('status');
         });
     }
 
     /**
-     * Reverse the migrations.
+     * Menghapus tabel users.
      */
     public function down(): void
     {
         Schema::dropIfExists('users');
     }
 };
+

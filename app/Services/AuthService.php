@@ -2,72 +2,105 @@
 
 namespace App\Services;
 
-use App\Models\User;
+use App\Services\ActivityLog\ActivityLogService;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
-use Carbon\Carbon;
 
 class AuthService
 {
+    /**
+     * Service Activity Log.
+     */
+    protected ActivityLogService $activityLogService;
+
+    /**
+     * Constructor.
+     */
+    public function __construct(ActivityLogService $activityLogService)
+    {
+        $this->activityLogService = $activityLogService;
+    }
+
     /**
      * Melakukan proses autentikasi login pengguna.
      *
      * @param array $credentials
      * @param bool $remember
      * @return bool
+     *
      * @throws ValidationException
      */
     public function login(array $credentials, bool $remember = false): bool
     {
-        // 1. Lakukan verifikasi email & password via Auth Guard bawaan Laravel
+        // Verifikasi email dan password
         if (!Auth::attempt($credentials, $remember)) {
             throw ValidationException::withMessages([
-                'email' => ['Kredensial yang Anda masukkan tidak cocok dengan data kami.'],
+                'email' => [
+                    'Email atau password yang Anda masukkan salah.',
+                ],
             ]);
         }
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // 2. Cek apakah status user aktif atau dinonaktifkan
+        // Pastikan akun masih aktif
         if ($user->status !== 'active') {
+
             Auth::logout();
+
             request()->session()->invalidate();
             request()->session()->regenerateToken();
 
             throw ValidationException::withMessages([
-                'email' => ['Akun Anda telah dinonaktifkan. Silakan hubungi Super Admin.'],
+                'email' => [
+                    'Akun Anda telah dinonaktifkan. Silakan hubungi Super Admin.',
+                ],
             ]);
         }
 
-        // 3. Catat waktu login terakhir ke database
+        // Perbarui waktu login terakhir
         $user->update([
             'last_login_at' => Carbon::now(),
         ]);
 
-        // 4. Amankan session dengan regenerasi ID baru
+        // Regenerasi Session
         request()->session()->regenerate();
+
+        // Catat Activity Log
+        $this->activityLogService->log(
+            $user->id,
+            'Authentication',
+            'Login'
+        );
 
         return true;
     }
 
     /**
      * Mengeluarkan pengguna dari sistem (Logout).
-     *
-     * @return void
-     */
-    /**
-     * Mengeluarkan pengguna dari sistem (Logout).
      */
     public function logout(): void
     {
-        // Mengeluarkan user dari guard autentikasi
-        \Illuminate\Support\Facades\Auth::logout();
+        // Simpan ID user sebelum logout
+        $userId = Auth::id();
 
-        // Menghancurkan session terdaftar saat ini
+        // Catat Activity Log
+        $this->activityLogService->log(
+            $userId,
+            'Authentication',
+            'Logout'
+        );
+
+        // Logout
+        Auth::logout();
+
+        // Menghancurkan session
         request()->session()->invalidate();
 
-        // Mengacak kembali token CSRF demi keamanan request berikutnya
+        // Regenerasi CSRF Token
         request()->session()->regenerateToken();
     }
 }
+
