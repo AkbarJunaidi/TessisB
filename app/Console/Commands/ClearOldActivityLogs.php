@@ -24,5 +24,5 @@ class ClearOldActivityLogs extends Command
             ->delete();
 
         $this->info("Pembersihan sukses! Total {$deletedRows} data log usang berhasil dihapus.");
-    }
+    }//e
 }
