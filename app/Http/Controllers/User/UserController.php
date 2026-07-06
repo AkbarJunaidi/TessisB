@@ -14,17 +14,13 @@ class UserController extends Controller
 {
     protected UserService $userService;
 
-    /**
-     * Dependency Injection.
-     */
+// Dependency Injection.
     public function __construct(UserService $userService)
     {
         $this->userService = $userService;
     }
 
-    /**
-     * Menampilkan daftar user.
-     */
+// Menampilkan daftar user.
     public function index(): View
     {
         $users = $this->userService->getAllPaginated(10);
@@ -32,17 +28,13 @@ class UserController extends Controller
         return view('user.index', compact('users'));
     }
 
-    /**
-     * Menampilkan form tambah user.
-     */
+//  Menampilkan form tambah user.
     public function create(): View
     {
         return view('user.create');
     }
 
-    /**
-     * Menyimpan user baru.
-     */
+// Menyimpan user baru.
     public function store(UserRequest $request): RedirectResponse
     {
         try {
@@ -64,25 +56,19 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Menampilkan detail user.
-     */
+// Menampilkan detail user.
     public function show(User $user): View
     {
         return view('user.show', compact('user'));
     }
 
-    /**
-     * Menampilkan form edit user.
-     */
+// Menampilkan form edit user.
     public function edit(User $user): View
     {
         return view('user.edit', compact('user'));
     }
 
-    /**
-     * Memperbarui data user.
-     */
+// Memperbarui data user.
     public function update(
         UserRequest $request,
         User $user
@@ -108,9 +94,7 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Reset password user.
-     */
+// Reset password user.
     public function resetPassword(User $user): RedirectResponse
     {
         try {
@@ -132,9 +116,7 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Mengubah status user.
-     */
+// Mengubah status user.
     public function changeStatus(
         User $user
     ): RedirectResponse {
@@ -165,9 +147,7 @@ class UserController extends Controller
         }
     }
 
-    /**
-     * Mengubah role user.
-     */
+//  Mengubah role user
     public function changeRole(
         User $user
     ): RedirectResponse {

@@ -1,4 +1,3 @@
-```blade
 <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark h-100">
     <a href="{{ route('dashboard') }}" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
         <i class="bi bi-grid-1x2-fill me-2 fs-4 text-primary"></i>
@@ -92,7 +91,7 @@
         </li>
 
 
-        @if(auth()->user()->isSuperAdmin())
+            @if(auth()->user()->isSuperAdmin())
 
             <li class="mt-3 mb-1 px-3 text-uppercase text-secondary fw-bold fs-7"
                 style="font-size: 0.75rem; letter-spacing: 1px;">
@@ -100,22 +99,20 @@
             </li>
 
             <li class="nav-item mb-1">
-                <a href="#"
-                    class="nav-link text-white opacity-75 cursor-not-allowed"
-                    onclick="event.preventDefault(); alert('Modul User Management belum diimplementasikan.');">
+                <a href="{{ route('users.index') }}"
+                    class="nav-link text-white {{ request()->routeIs('users.index') || request()->routeIs('users.edit') ? 'active fw-semibold' : 'opacity-75' }}">
                     <i class="bi bi-people me-2"></i> Data User
                 </a>
             </li>
 
             <li class="nav-item mb-1">
-                <a href="#"
-                    class="nav-link text-white opacity-75 cursor-not-allowed"
-                    onclick="event.preventDefault(); alert('Modul User Management belum diimplementasikan.');">
+                <a href="{{ route('users.create') }}"
+                    class="nav-link text-white {{ request()->routeIs('users.create') ? 'active fw-semibold' : 'opacity-75' }}">
                     <i class="bi bi-person-plus me-2"></i> Add User
                 </a>
             </li>
 
-        @endif
+            @endif
 
     </ul>
 
@@ -134,4 +131,4 @@
 
     </form>
 </div>
-```
+
