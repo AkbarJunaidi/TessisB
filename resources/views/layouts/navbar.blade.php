@@ -9,48 +9,36 @@
         </span>
 
         <div class="ms-auto d-flex align-items-center">
-            @auth
-                <div class="dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 text-dark"
-                       href="#"
-                       role="button"
-                       id="userProfileDropdown"
-                       data-bs-toggle="dropdown"
-                       aria-expanded="false">
-                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm"
-                             style="width: 32px; height: 32px; font-size: 0.85rem;">
-                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                        </div>
-                        <div class="text-start d-none d-sm-inline">
-                            <div class="fw-semibold lh-1" style="font-size: 0.9rem;">{{ Auth::user()->name }}</div>
-                            <small class="text-muted text-uppercase" style="font-size: 0.7rem;">{{ str_replace('_', ' ', Auth::user()->role) }}</small>
-                        </div>
-                    </a>
-
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" aria-labelledby="userProfileDropdown">
-                        <li>
-                            <div class="px-3 py-2 border-bottom">
-                                <p class="text-sm text-dark mb-0 fw-medium">{{ Auth::user()->email }}</p>
-                                <span class="badge bg-light text-dark text-xs border mt-1">Status: {{ Auth::user()->status }}</span>
-                            </div>
-                        </li>
-                        <li>
-                            <a class="dropdown-menu-item dropdown-item d-flex align-items-center gap-2 py-2 text-secondary" href="#" onclick="event.preventDefault(); alert('Fitur Profil Pengguna segera hadir.');">
-                                <i class="bi bi-person-bounding-box text-primary"></i> Detail Profile
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider my-1"></li>
-                        <li>
-                            <form action="{{ route('logout') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin keluar?');">
-                                @csrf
-                                <button type="submit" class="dropdown-item d-flex align-items-center gap-2 py-2 text-danger">
-                                    <i class="bi bi-box-arrow-right"></i> Sign Out / Keluar
-                                </button>
-                            </form>
-                        </li>
-                    </ul>
+            <!--komponen waktu-->
+            <div class="d-flex align-items-center bg-light border rounded-pill px-3 py-1 shadow-sm gap-2">
+                <!--tanggal dan waktu-->
+                <div class="d-flex flex-column text-end" style="line-height: 1.1;">
+                        <span class="fw-semibold text-dark" style="font-size: 0.85rem;" id="realtime-date">
+                            Memuat tanggal...
+                        </span>
+                    <span class="text-muted fw-bold" style="font-size: 0.75rem;" id="realtime-clock">
+                        --:--:--
+                    </span>
                 </div>
-            @endauth
+            </div>
         </div>
     </div>
 </nav>
+
+<!--waktu nyata-->
+<script>
+    function updateDateTime() 
+    {
+        const now = new Date();
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const formattedDate = now.toLocaleDateString('id-ID', dateOptions);
+        const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: false };
+        const formattedTime = now.toLocaleTimeString('id-ID', timeOptions);
+        
+        document.getElementById('realtime-date').textContent = formattedDate;
+        document.getElementById('realtime-clock').textContent = formattedTime + ' WIB';
+    }
+
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+</script>

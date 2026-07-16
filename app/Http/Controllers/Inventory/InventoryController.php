@@ -97,4 +97,49 @@ class InventoryController extends Controller
             ->route('inventory.index')
             ->with('success', 'Data inventory berhasil dihapus.');
     }
+
+    /**
+     * Menampilkan pratinjau QR Code Label bawaan.
+     */
+    public function previewQr(Inventory $inventory)
+    {
+        // Langsung arahkan ke logic renderer PDF dengan mode stream inline
+        return $this->inventoryService->generateLabelPdf($inventory, $stream = true);
+    }
+
+    /**
+     * Menampilkan pratinjau (inline stream) dokumen Laporan Inventaris A4
+     * untuk 1 barang di browser tanpa mengunduhnya langsung.
+     */
+    public function previewPdf(Inventory $inventory)
+    {
+        return $this->inventoryService->generateSingleReport($inventory, $stream = true);
+    }
+
+    /**
+     * Memicu proses unduhan langsung (forced attachment download)
+     * file PDF Laporan Inventaris A4 untuk 1 barang spesifik.
+     */
+    public function downloadPdf(Inventory $inventory)
+    {
+        return $this->inventoryService->generateSingleReport($inventory, $stream = false);
+    }
+
+    /**
+     * Menampilkan pratinjau (inline stream) dokumen gabungan Laporan Seluruh Inventaris
+     * dalam format A4 Portrait (1 barang per halaman) di browser.
+     */
+    public function previewAllPdf()
+    {
+        return $this->inventoryService->generateAllReport($stream = true);
+    }
+
+    /**
+     * Memicu proses unduhan langsung file PDF Laporan Massal Seluruh Inventaris
+     * menjadi satu file utuh dengan pembatas halaman (page-break).
+     */
+    public function downloadAllPdf()
+    {
+        return $this->inventoryService->generateAllReport($stream = false);
+    }
 }

@@ -70,31 +70,55 @@
                 <div class="card-header bg-white border-bottom py-3">
                     <h5 class="card-title fw-bold text-dark m-0">Label Kode QR Otorisasi</h5>
                 </div>
-                <div class="card-body p-4 text-center d-flex flex-column justify-content-center align-items-center flex-grow-1">
 
-                    <div class="bg-white p-4 rounded-3 shadow-sm border mb-4 text-center position-relative" style="width: 220px; height: 220px;">
-                        <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-muted border border-dashed rounded">
-                            <i class="bi bi-qr-code opacity-25 mb-2" style="font-size: 4rem;"></i>
-                            <span class="fw-semibold text-secondary" style="font-size: 0.8rem;">SN-READY</span>
-                            <small class="text-muted" style="font-size: 0.65rem;">Sistem Siap Generate</small>
-                        </div>
+                <div class="card-body p-4 text-center d-flex flex-column justify-content-center align-items-center flex-grow-1">
+                    <div class="bg-white p-3 rounded-3 shadow-sm border mb-4 text-center d-flex align-items-center justify-content-center" style="width: 220px; height: 220px;">
+                        @if($inventory->qr_code && file_exists(public_path('storage/' . $inventory->qr_code)))
+                            <img src="{{ asset('storage/' . $inventory->qr_code) }}"
+                                 alt="QR Code {{ $inventory->serial_number }}"
+                                 class="img-fluid"
+                                 style="max-width: 100%; height: auto; object-fit: contain;">
+                        @else
+                            <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-muted border border-dashed rounded p-2">
+                                <i class="bi bi-exclamation-triangle-fill text-warning mb-2" style="font-size: 2.5rem;"></i>
+                                <span class="fw-semibold text-secondary" style="font-size: 0.75rem;">QR NOT FOUND</span>
+                                <small class="text-muted text-center" style="font-size: 0.65rem;">Berkas QR code fisik belum tersedia.</small>
+                            </div>
+                        @endif
                     </div>
 
                     <div class="w-100 px-3">
-                        <span class="badge bg-light text-dark border font-monospace fs-6 px-3 py-2 w-100 rounded-3 mb-4">
-                            ID: {{ $inventory->serial_number }}
+                        <span class="badge bg-light text-dark border font-monospace fs-6 px-3 py-2 w-100 rounded-3 mb-2">
+                            SN: {{ $inventory->serial_number }}
                         </span>
                     </div>
+                </div>
 
+                <div class="card-footer bg-light border-top p-3">
+                    <div class="d-flex gap-2 mb-2">
+                        <!-- Tombol Edit Aset Bawaan -->
+                        <a href="{{ route('inventory.edit', $inventory->id) }}" class="btn btn-sm btn-outline-secondary w-50 fw-medium py-2">
+                            <i class="bi bi-pencil-square me-1"></i> Edit Aset
+                        </a>
+                        <!-- Tombol Preview QR Label (Stiker Kecil) Bawaan -->
+                        <a href="{{ route('inventory.preview-qr', $inventory->id) }}" target="_blank" class="btn btn-sm btn-outline-primary w-50 fw-medium py-2 d-flex align-items-center justify-content-center gap-1">
+                            <i class="bi bi-qr-code"></i> Preview QR Label
+                        </a>
+                    </div>
+
+                    <div class="d-flex gap-2 w-100">
+                        <!-- FITUR BARU: Preview Report PDF A4 (Inline Stream) -->
+                        <a href="{{ route('inventory.preview', $inventory->id) }}" target="_blank" class="btn btn-sm btn-primary w-50 fw-medium py-2 d-flex align-items-center justify-content-center gap-1">
+                            <i class="bi bi-file-earmark-pdf"></i> Preview Report
+                        </a>
+
+                        <!-- FITUR BARU: Download Report PDF A4 (Forced Download) -->
+                        <a href="{{ route('inventory.download', $inventory->id) }}" class="btn btn-sm btn-dark w-50 fw-medium py-2 d-flex align-items-center justify-content-center gap-1">
+                            <i class="bi bi-download text-success"></i> Download Report
+                        </a>
+                    </div>
                 </div>
-                <div class="card-footer bg-light border-top p-3 d-flex gap-2">
-                    <a href="{{ route('inventory.edit', $inventory->id) }}" class="btn btn-outline-secondary w-50 fw-medium">
-                        <i class="bi bi-pencil-square me-1"></i> Edit Aset
-                    </a>
-                    <button type="button" class="btn btn-dark w-50 fw-medium d-flex align-items-center justify-content-center gap-1" onclick="alert('Pustaka DomPDF akan dipasang utuh untuk mencetak label ini di Tahap 15.');">
-                        <i class="bi bi-file-earmark-pdf-fill text-danger"></i> Export PDF
-                    </button>
-                </div>
+
             </div>
         </div>
     </div>
