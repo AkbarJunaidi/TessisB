@@ -6,10 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Services\AuthService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth; // Wajib di-import untuk membaca method check()
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
-class LoginController extends Controller  
+class LoginController extends Controller
 {
     /**
      * Menyuntikkan AuthService ke dalam Controller via Constructor Injection.

@@ -5,7 +5,7 @@
         </button>
 
         <span class="navbar-text fw-medium text-secondary d-none d-md-inline">
-            Sistem Informasi Manajemen Berbasis Komponen Modular
+            Tesis
         </span>
 
         <div class="ms-auto d-flex align-items-center">
@@ -27,14 +27,14 @@
 
 <!--waktu nyata-->
 <script>
-    function updateDateTime() 
+    function updateDateTime()
     {
         const now = new Date();
         const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         const formattedDate = now.toLocaleDateString('id-ID', dateOptions);
         const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: false };
         const formattedTime = now.toLocaleTimeString('id-ID', timeOptions);
-        
+
         document.getElementById('realtime-date').textContent = formattedDate;
         document.getElementById('realtime-clock').textContent = formattedTime + ' WIB';
     }

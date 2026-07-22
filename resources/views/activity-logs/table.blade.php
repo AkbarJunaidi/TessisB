@@ -34,16 +34,26 @@
                             </td>
                             <td>
                                 <span class="badge bg-info-soft text-info rounded-pill px-3 py-1.5 border border-info-subtle" style="background-color: #e0f7fa; font-size: 12px;">
-                                    {{ $log->module }}
+                                    {{-- DIPERBAIKI: Memotong FQDN App\Models\Inventory menjadi Inventory --}}
+                                    {{ class_basename($log->module) }}
                                 </span>
                             </td>
                             <td class="pe-4">
-                                @if(in_array($log->action, ['Delete', 'Logout']))
-                                    <span class="text-danger fw-medium"><i class="fas fa-circle text-danger me-1" style="font-size: 7px;"></i>{{ $log->action }}</span>
-                                @elseif(in_array($log->action, ['Create', 'Login', 'Upload']))
-                                    <span class="text-success fw-medium"><i class="fas fa-circle text-success me-1" style="font-size: 7px;"></i>{{ $log->action }}</span>
+                                {{-- DIPERBAIKI: Pengecekan Case-Insensitive untuk Warna Action --}}
+                                @php $lowerAction = strtolower($log->action); @endphp
+
+                                @if(str_contains($lowerAction, 'delete') || str_contains($lowerAction, 'logout'))
+                                    <span class="text-danger fw-medium">
+                                        <i class="fas fa-circle text-danger me-1" style="font-size: 7px;"></i>{{ ucfirst($log->action) }}
+                                    </span>
+                                @elseif(str_contains($lowerAction, 'create') || str_contains($lowerAction, 'login') || str_contains($lowerAction, 'upload'))
+                                    <span class="text-success fw-medium">
+                                        <i class="fas fa-circle text-success me-1" style="font-size: 7px;"></i>{{ ucfirst($log->action) }}
+                                    </span>
                                 @else
-                                    <span class="text-warning fw-medium"><i class="fas fa-circle text-warning me-1" style="font-size: 7px;"></i>{{ $log->action }}</span>
+                                    <span class="text-warning fw-medium">
+                                        <i class="fas fa-circle text-warning me-1" style="font-size: 7px;"></i>{{ ucfirst($log->action) }}
+                                    </span>
                                 @endif
                             </td>
                         </tr>

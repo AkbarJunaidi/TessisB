@@ -18,24 +18,31 @@ class ActivityLogFilterRequest extends FormRequest
     }
 
     /**
-     * Mengubah nilai kosong menjadi null
+     * Mengubah nilai kosong atau opsi 'all' menjadi null
      * sebelum proses validasi.
      */
     protected function prepareForValidation(): void
     {
-        $this->merge([
+        // 1. Normalisasi Input Module
+        $module = $this->filled('module') ? trim($this->module) : null;
+        if ($module !== null && in_array(strtolower($module), ['all', 'all_module', 'all modules', 'semua', 'semua modul'])) {
+            $module = null;
+        }
 
-            'module' => $this->filled('module')
-                ? $this->module
-                : null,
+        // 2. Normalisasi Input Action
+        $action = $this->filled('action') ? trim($this->action) : null;
+        if ($action !== null && in_array(strtolower($action), ['all', 'all_action', 'all actions', 'semua', 'semua aktivitas'])) {
+            $action = null;
+        }
+
+        $this->merge([
+            'module' => $module,
 
             'user_id' => $this->filled('user_id')
                 ? $this->user_id
                 : null,
 
-            'action' => $this->filled('action')
-                ? $this->action
-                : null,
+            'action' => $action,
 
             'search' => $this->filled('search')
                 ? trim($this->search)
@@ -50,9 +57,8 @@ class ActivityLogFilterRequest extends FormRequest
                 : null,
 
             'per_page' => $this->filled('per_page')
-                ? $this->per_page
+                ? (int) $this->per_page
                 : 10,
-
         ]);
     }
 
@@ -63,21 +69,47 @@ class ActivityLogFilterRequest extends FormRequest
     {
         $activityLogService = app(ActivityLogService::class);
 
-        $modules = $activityLogService->getModules();
+        // 1. Ambil & susun daftar modul yang diizinkan
+        $modulesDict = $activityLogService->getModules();
+        $allowedModules = array_unique(array_merge(
+            array_keys($modulesDict),
+            array_values($modulesDict),
+            [
+                'Inventory',
+                'Authentication',
+                'Tracking Progress',
+                'Integrasi Data',
+                'User Management',
+                'User',
+                'all',
+                'all_module',
+                'all modules',
+                'semua'
+            ]
+        ));
 
-        $actions = collect(
-            $activityLogService->getActions()
-        )
+        // 2. Ambil daftar action, ratakan (flatten), dan tambahkan kata kunci aksi umum
+        $actionsFromService = collect($activityLogService->getActions())
             ->flatten()
-            ->values()
-            ->all();
-           
+            ->filter()
+            ->toArray();
+
+        $allowedActions = array_unique(array_merge(
+            $actionsFromService,
+            [
+                'created', 'updated', 'deleted', 'login', 'logout',
+                'Created', 'Updated', 'Deleted', 'Login', 'Logout',
+                'Create', 'Update', 'Delete',
+                'all', 'all_action', 'all actions', 'semua'
+            ]
+        ));
 
         return [
 
             'module' => [
                 'nullable',
-                Rule::in($modules),
+                'string',
+                Rule::in($allowedModules),
             ],
 
             'user_id' => [
@@ -88,7 +120,8 @@ class ActivityLogFilterRequest extends FormRequest
 
             'action' => [
                 'nullable',
-                Rule::in($actions),
+                'string',
+                Rule::in($allowedActions),
             ],
 
             'search' => [
@@ -112,40 +145,27 @@ class ActivityLogFilterRequest extends FormRequest
 
             'per_page' => [
                 'nullable',
-                Rule::in([
-                    10,
-                    25,
-                    50,
-                    100,
-                ]),
+                'integer',
+                Rule::in([10, 25, 50, 100]),
             ],
 
         ];
     }
 
     /**
-     * Pesan validasi.
+     * Pesan validasi kustom.
      */
     public function messages(): array
     {
         return [
-
             'module.in' => 'Modul yang dipilih tidak valid.',
-
             'action.in' => 'Jenis aktivitas tidak valid.',
-
             'user_id.exists' => 'User tidak ditemukan.',
-
             'search.max' => 'Kata kunci pencarian maksimal 100 karakter.',
-
             'date_from.date_format' => 'Format tanggal awal harus YYYY-MM-DD.',
-
             'date_to.date_format' => 'Format tanggal akhir harus YYYY-MM-DD.',
-
             'date_to.after_or_equal' => 'Tanggal akhir tidak boleh lebih kecil dari tanggal awal.',
-
             'per_page.in' => 'Jumlah data per halaman tidak valid.',
-
         ];
     }
 
@@ -155,21 +175,13 @@ class ActivityLogFilterRequest extends FormRequest
     public function attributes(): array
     {
         return [
-
             'module' => 'Modul',
-
             'user_id' => 'User',
-
             'action' => 'Aktivitas',
-
             'search' => 'Pencarian',
-
             'date_from' => 'Tanggal Awal',
-
             'date_to' => 'Tanggal Akhir',
-
             'per_page' => 'Jumlah Data',
-
         ];
     }
 }

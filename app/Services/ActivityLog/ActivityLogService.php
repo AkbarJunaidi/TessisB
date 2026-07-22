@@ -11,12 +11,7 @@ use Illuminate\Support\Facades\Log;
 class ActivityLogService
 {
     /**
-     * Menyimpan Activity Log.
-     *
-     * Parameter:
-     * - userId : ID user yang melakukan aksi
-     * - module : Nama modul
-     * - action : Nama aktivitas
+     * Menyimpan log aktivitas baru.
      */
     public function log(
         ?int $userId,
@@ -24,18 +19,14 @@ class ActivityLogService
         string $action
     ): void {
         try {
-
             ActivityLog::create([
                 'user_id' => $userId,
                 'module'  => $module,
                 'action'  => $action,
             ]);
-
         } catch (\Throwable $e) {
-
             // Jangan menghentikan proses utama apabila Activity Log gagal disimpan
             Log::error('Activity Log Error : ' . $e->getMessage());
-
         }
     }
 
@@ -44,70 +35,72 @@ class ActivityLogService
      */
     public function getFilteredLogs(array $filters): LengthAwarePaginator
     {
-        $query = ActivityLog::query()
-            ->with('user');
+        $query = ActivityLog::query()->with('user');
 
-        // Filter Module
-        $query->when(
-            $filters['module'] ?? null,
-            fn ($query, $module) => $query->where('module', $module)
-        );
+        // 1. Filter Module (Abaikan jika bernilai 'all' atau kosong)
+        if (!empty($filters['module'])) {
+            $moduleSearch = trim($filters['module']);
+            $lowerModule = strtolower($moduleSearch);
 
-        // Filter User
-        $query->when(
-            $filters['user_id'] ?? null,
-            fn ($query, $userId) => $query->where('user_id', $userId)
-        );
-
-        // Filter Action
-        $query->when(
-            $filters['action'] ?? null,
-            fn ($query, $action) => $query->where('action', $action)
-        );
-
-        // Filter Search
-        $query->when(
-            $filters['search'] ?? null,
-            function ($query, $keyword) {
-
-                $query->where(function ($query) use ($keyword) {
-
-                    $query->where('module', 'like', "%{$keyword}%")
-                        ->orWhere('action', 'like', "%{$keyword}%")
-                        ->orWhereHas('user', function ($query) use ($keyword) {
-
-                            $query->where('name', 'like', "%{$keyword}%");
-
-                        });
-
+            if (!in_array($lowerModule, ['all', 'all_module', 'all modules', 'semua'])) {
+                $query->where(function ($q) use ($moduleSearch, $lowerModule) {
+                    $q->where('module', 'LIKE', '%' . $moduleSearch . '%')
+                      ->orWhereRaw('LOWER(module) = ?', [$lowerModule]);
                 });
-
             }
-        );
+        }
 
-        // Filter Tanggal Awal
-        $query->when(
-            $filters['date_from'] ?? null,
-            fn ($query, $date) => $query->whereDate('created_at', '>=', $date)
-        );
+        // 2. Filter User
+        if (!empty($filters['user_id'])) {
+            $query->where('user_id', $filters['user_id']);
+        }
 
-        // Filter Tanggal Akhir
-        $query->when(
-            $filters['date_to'] ?? null,
-            fn ($query, $date) => $query->whereDate('created_at', '<=', $date)
-        );
+        // 3. Filter Action (Abaikan jika bernilai 'all' atau kosong)
+        if (!empty($filters['action'])) {
+            $actionSearch = trim($filters['action']);
+            $lowerAction = strtolower($actionSearch);
+
+            if (!in_array($lowerAction, ['all', 'all_action', 'all actions', 'semua'])) {
+                $query->where(function ($q) use ($actionSearch, $lowerAction) {
+                    $q->where('action', 'LIKE', '%' . $actionSearch . '%')
+                      ->orWhereRaw('LOWER(action) = ?', [$lowerAction]);
+                });
+            }
+        }
+
+        // 4. Filter Global Search Keyword
+        if (!empty($filters['search'])) {
+            $keyword = trim($filters['search']);
+
+            $query->where(function ($q) use ($keyword) {
+                $q->where('module', 'like', "%{$keyword}%")
+                  ->orWhere('action', 'like', "%{$keyword}%")
+                  ->orWhere('description', 'like', "%{$keyword}%")
+                  ->orWhereHas('user', function ($userQuery) use ($keyword) {
+                      $userQuery->where('name', 'like', "%{$keyword}%")
+                                ->orWhere('email', 'like', "%{$keyword}%");
+                  });
+            });
+        }
+
+        // 5. Filter Tanggal Awal
+        if (!empty($filters['date_from'])) {
+            $query->whereDate('created_at', '>=', $filters['date_from']);
+        }
+
+        // 6. Filter Tanggal Akhir
+        if (!empty($filters['date_to'])) {
+            $query->whereDate('created_at', '<=', $filters['date_to']);
+        }
 
         return $query
             ->latest()
-            ->paginate(
-                $filters['per_page'] ?? 10
-            )
+            ->paginate((int) ($filters['per_page'] ?? 10))
             ->withQueryString();
     }
 
     /**
-     * Mengambil Activity Log terbaru
-     * untuk Dashboard.
+     * Mengambil Activity Log terbaru untuk Dashboard.
      */
     public function getLatestActivities(int $limit = 4): Collection
     {
@@ -118,8 +111,7 @@ class ActivityLogService
     }
 
     /**
-     * Mengambil seluruh user
-     * untuk dropdown filter.
+     * Mengambil seluruh user untuk dropdown filter.
      */
     public function getAllUsersForFilter(): Collection
     {
@@ -131,17 +123,39 @@ class ActivityLogService
     }
 
     /**
-     * Mengambil daftar modul Activity Log.
+     * Mengambil daftar modul Activity Log (Gabungan DB Unik & Default).
      */
     public function getModules(): array
     {
-        return [
-            'Authentication',
-            'Inventory',
-            'Tracking Progress',
-            'Integrasi Data',
-            'User Management',
+        // Mengambil daftar unik dari DB (misal: 'App\Models\Inventory')
+        $rawModules = ActivityLog::query()
+            ->whereNotNull('module')
+            ->distinct()
+            ->pluck('module')
+            ->toArray();
+
+        $modules = [];
+
+        // Masukkan daftar default modul
+        $defaultModules = [
+            'Authentication'    => 'Authentication',
+            'Inventory'         => 'Inventory',
+            'Tracking Progress' => 'Tracking Progress',
+            'Integrasi Data'    => 'Integrasi Data',
+            'User Management'   => 'User Management',
         ];
+
+        foreach ($defaultModules as $key => $val) {
+            $modules[$key] = $val;
+        }
+
+        // Gabungkan dengan modul unik yang ada di DB
+        foreach ($rawModules as $module) {
+            $shortName = class_basename($module);
+            $modules[$module] = $shortName;
+        }
+
+        return $modules;
     }
 
     /**
@@ -150,7 +164,6 @@ class ActivityLogService
     public function getActions(): array
     {
         return [
-
             'Authentication' => [
                 'Login',
                 'Logout',
@@ -160,13 +173,18 @@ class ActivityLogService
                 'Create Inventory',
                 'Update Inventory',
                 'Delete Inventory',
+                'Created',
+                'Updated',
+                'Deleted',
+                'created',
+                'updated',
+                'deleted',
             ],
 
             'Tracking Progress' => [
                 'Create Project',
                 'Update Project',
                 'Delete Project',
-
                 'Create Task',
                 'Update Task',
                 'Update Task Status',
@@ -179,7 +197,6 @@ class ActivityLogService
                 'Rename File',
                 'Move File',
                 'Delete File',
-
                 'Create Folder',
                 'Rename Folder',
                 'Move Folder',
@@ -193,7 +210,6 @@ class ActivityLogService
                 'Change Role',
                 'Delete User',
             ],
-
         ];
     }
 }

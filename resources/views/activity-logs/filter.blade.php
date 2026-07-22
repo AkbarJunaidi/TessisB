@@ -25,7 +25,7 @@
                     <input
                         type="text"
                         name="search"
-                        class="form-control"
+                        class="form-control @error('search') is-invalid @enderror"
                         placeholder="Search user, module, action..."
                         value="{{ request('search') }}">
 
@@ -40,7 +40,7 @@
 
                     <select
                         name="per_page"
-                        class="form-select">
+                        class="form-select @error('per_page') is-invalid @enderror">
 
                         <option value="10" @selected(request('per_page', 10) == 10)>10</option>
                         <option value="25" @selected(request('per_page') == 25)>25</option>
@@ -51,7 +51,7 @@
 
                 </div>
 
-                {{-- Module --}}
+                {{-- Module (DIPERBAIKI) --}}
                 <div class="col-md-4">
 
                     <label class="form-label small fw-semibold text-muted">
@@ -59,20 +59,21 @@
                     </label>
 
                     <select
-                        class="form-select"
+                        class="form-select @error('module') is-invalid @enderror"
                         name="module">
 
                         <option value="">
                             All Modules
                         </option>
 
-                        @foreach($modules as $module)
+                        {{-- Menggunakan $value => $label untuk mendukung associative array --}}
+                        @foreach($modules as $value => $label)
 
                             <option
-                                value="{{ $module }}"
-                                @selected(request('module') == $module)>
+                                value="{{ $value }}"
+                                @selected(request('module') == $value)>
 
-                                {{ $module }}
+                                {{ $label }}
                             </option>
                         @endforeach
                     </select>
@@ -86,7 +87,7 @@
                     </label>
 
                     <select
-                        class="form-select"
+                        class="form-select @error('user_id') is-invalid @enderror"
                         name="user_id">
 
                         <option value="">
@@ -111,7 +112,7 @@
                     </label>
 
                     <select
-                        class="form-select"
+                        class="form-select @error('action') is-invalid @enderror"
                         name="action">
 
                         <option value="">
@@ -143,7 +144,7 @@
 
                     <input
                         type="date"
-                        class="form-control"
+                        class="form-control @error('date_from') is-invalid @enderror"
                         name="date_from"
                         value="{{ request('date_from') }}">
                 </div>
@@ -157,19 +158,21 @@
 
                     <input
                         type="date"
-                        class="form-control"
+                        class="form-control @error('date_to') is-invalid @enderror"
                         name="date_to"
                         value="{{ request('date_to') }}">
 
                 </div>
             </div>
+
+            {{-- Action Buttons --}}
             <div class="d-flex justify-content-end gap-2 mt-4">
 
                 <a
                     href="{{ route('activity-logs.index') }}"
                     class="btn btn-outline-secondary px-4">
                     Reset
-                </a>all
+                </a>
 
                 <button
                     type="submit"

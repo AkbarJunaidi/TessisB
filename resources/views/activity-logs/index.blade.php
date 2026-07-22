@@ -36,18 +36,20 @@
             <form action="{{ route('activity-logs.index') }}" method="GET">
                 <div class="row g-3">
 
+                    {{-- Module --}}
                     <div class="col-md-4">
                         <label for="module" class="form-label small fw-semibold text-muted">Module</label>
                         <select class="form-select select-sm text-dark small" id="module" name="module">
-                            <option value="All" {{ request('module') == 'All' ? 'selected' : '' }}>All Modules</option>
-                            <option value="Authentication" {{ request('module') == 'Authentication' ? 'selected' : '' }}>Authentication</option>
-                            <option value="Inventory" {{ request('module') == 'Inventory' ? 'selected' : '' }}>Inventory</option>
-                            <option value="Tracking Progress" {{ request('module') == 'Tracking Progress' ? 'selected' : '' }}>Tracking Progress</option>
-                            <option value="Integrasi Data" {{ request('module') == 'Integrasi Data' ? 'selected' : '' }}>Integrasi Data</option>
-                            <option value="User Management" {{ request('module') == 'User Management' ? 'selected' : '' }}>User Management</option>
+                            <option value="">All Modules</option>
+                            @foreach($modules as $value => $label)
+                                <option value="{{ $value }}" {{ request('module') == $value ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
 
+                    {{-- User --}}
                     <div class="col-md-4">
                         <label for="user_id" class="form-label small fw-semibold text-muted">User</label>
                         <select class="form-select select-sm text-dark small" id="user_id" name="user_id">
@@ -60,26 +62,30 @@
                         </select>
                     </div>
 
+                    {{-- Action --}}
                     <div class="col-md-4">
                         <label for="action" class="form-label small fw-semibold text-muted">Action</label>
                         <select class="form-select select-sm text-dark small" id="action" name="action">
-                            <option value="All" {{ request('action') == 'All' ? 'selected' : '' }}>All Actions</option>
-                            <option value="Create" {{ request('action') == 'Create' ? 'selected' : '' }}>Create</option>
-                            <option value="Update" {{ request('action') == 'Update' ? 'selected' : '' }}>Update</option>
-                            <option value="Delete" {{ request('action') == 'Delete' ? 'selected' : '' }}>Delete</option>
-                            <option value="Move" {{ request('action') == 'Move' ? 'selected' : '' }}>Move</option>
-                            <option value="Upload" {{ request('action') == 'Upload' ? 'selected' : '' }}>Upload</option>
-                            <option value="Change Status" {{ request('action') == 'Change Status' ? 'selected' : '' }}>Change Status</option>
-                            <option value="Login" {{ request('action') == 'Login' ? 'selected' : '' }}>Login</option>
-                            <option value="Logout" {{ request('action') == 'Logout' ? 'selected' : '' }}>Logout</option>
+                            <option value="">All Actions</option>
+                            @foreach($actions as $group => $items)
+                                <optgroup label="{{ $group }}">
+                                    @foreach($items as $act)
+                                        <option value="{{ $act }}" {{ request('action') == $act ? 'selected' : '' }}>
+                                            {{ $act }}
+                                        </option>
+                                    @endforeach
+                                </optgroup>
+                            @endforeach
                         </select>
                     </div>
 
+                    {{-- Date From --}}
                     <div class="col-md-6">
                         <label for="date_from" class="form-label small fw-semibold text-muted">Date From</label>
                         <input type="date" class="form-control small" id="date_from" name="date_from" value="{{ request('date_from') }}">
                     </div>
 
+                    {{-- Date To --}}
                     <div class="col-md-6">
                         <label for="date_to" class="form-label small fw-semibold text-muted">Date To</label>
                         <input type="date" class="form-control small" id="date_to" name="date_to" value="{{ request('date_to') }}">
@@ -131,16 +137,17 @@
                                 </td>
                                 <td>
                                     <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle px-2 py-1.5 fw-medium" style="font-size: 0.8rem;">
-                                        {{ $log->module }}
+                                        {{ class_basename($log->module) }}
                                     </span>
                                 </td>
                                 <td>
-                                    @if(in_array($log->action, ['Delete', 'Logout']))
-                                        <span class="text-danger fw-semibold"><i class="bi bi-circle-fill me-1 small" style="font-size: 0.5rem;"></i>{{ $log->action }}</span>
-                                    @elseif(in_array($log->action, ['Create', 'Login', 'Upload']))
-                                        <span class="text-success fw-semibold"><i class="bi bi-circle-fill me-1 small" style="font-size: 0.5rem;"></i>{{ $log->action }}</span>
+                                    @php $lowerAction = strtolower($log->action); @endphp
+                                    @if(in_array($lowerAction, ['delete', 'deleted', 'logout']))
+                                        <span class="text-danger fw-semibold"><i class="bi bi-circle-fill me-1 small" style="font-size: 0.5rem;"></i>{{ ucfirst($log->action) }}</span>
+                                    @elseif(in_array($lowerAction, ['create', 'created', 'login', 'upload']))
+                                        <span class="text-success fw-semibold"><i class="bi bi-circle-fill me-1 small" style="font-size: 0.5rem;"></i>{{ ucfirst($log->action) }}</span>
                                     @else
-                                        <span class="text-warning fw-semibold"><i class="bi bi-circle-fill me-1 small" style="font-size: 0.5rem;"></i>{{ $log->action }}</span>
+                                        <span class="text-warning fw-semibold"><i class="bi bi-circle-fill me-1 small" style="font-size: 0.5rem;"></i>{{ ucfirst($log->action) }}</span>
                                     @endif
                                 </td>
                             </tr>
@@ -151,7 +158,7 @@
                                     Tidak ditemukan catatan jejak log aktivitas yang cocok dengan kriteria filter Anda.
                                 </td>
                             </tr>
-                        @endforelse
+                        @endforelse {{-- DIPERBAIKI: Mengubah @forelse menjadi @endforelse --}}
                     </tbody>
                 </table>
             </div>
