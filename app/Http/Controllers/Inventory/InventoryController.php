@@ -7,6 +7,7 @@ use App\Http\Requests\Inventory\InventoryRequest;
 use App\Models\Inventory;
 use App\Services\InventoryService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class InventoryController extends Controller
@@ -19,11 +20,12 @@ class InventoryController extends Controller
     ) {}
 
     /**
-     * Menampilkan daftar inventory.
+     * Menampilkan daftar inventory dengan pencarian nama barang & filter status dropdown.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $inventories = $this->inventoryService->getAllPaginated(10);
+        $filters = $request->only(['search', 'status']);
+        $inventories = $this->inventoryService->getAllPaginated($filters, 10);
 
         return view('inventory.index', compact('inventories'));
     }
@@ -52,10 +54,12 @@ class InventoryController extends Controller
     }
 
     /**
-     * Menampilkan detail inventory.
+     * Menampilkan detail inventory beserta informasi tambahan (dynamic attributes).
      */
     public function show(Inventory $inventory): View
     {
+        $inventory->load('attributes');
+
         return view('inventory.show', compact('inventory'));
     }
 
@@ -64,6 +68,8 @@ class InventoryController extends Controller
      */
     public function edit(Inventory $inventory): View
     {
+        $inventory->load('attributes');
+
         return view('inventory.edit', compact('inventory'));
     }
 
@@ -82,7 +88,7 @@ class InventoryController extends Controller
         );
 
         return redirect()
-            ->route('inventory.index')
+            ->route('inventory.show', $inventory)
             ->with('success', 'Data inventory berhasil diperbarui.');
     }
 

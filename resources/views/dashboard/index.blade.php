@@ -117,7 +117,7 @@
                             <div class="bg-primary bg-opacity-10 text-primary rounded p-2 d-flex align-items-center justify-content-center">
                                 <i class="bi bi-clock-history fs-5"></i>
                             </div>
-                            <h5 class="card-title fw-bold text-dark m-0">Recent Activity Log (Top 5 Latest)</h5>
+                            <h5 class="card-title fw-bold text-dark m-0">Recent Activity Log</h5>
                         </div>
                         @if(in_array(auth()->user()->role, ['Super Admin', 'Admin']))
                             <a href="{{ route('activity-logs.index') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 small fw-medium">

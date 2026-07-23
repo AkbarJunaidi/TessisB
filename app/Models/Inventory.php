@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Facades\Storage;
@@ -12,32 +13,24 @@ class Inventory extends Model
 {
     use HasFactory, SoftDeletes;
 
-    /**
-     * Nama tabel yang terkait dengan model.
-     *
-     * @var string
-     */
     protected $table = 'inventories';
 
-    /**
-     * Properti kolom yang diizinkan untuk diisi secara massal (Mass Assignment).
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'serial_number',
+        'description',
+        'status',
         'image',
         'qr_code', // Kolom bawaan tetap dipertahankan untuk menyimpan path berkas gambar QR
     ];
 
-    /**
-     * TAHAP 4 IMPLEMENTASI: Eloquent Accessor untuk URL Publik QR Code.
-     * * Method ini secara dinamis menghasilkan properti virtual '$inventory->qr_code_url'.
-     * Digunakan oleh Blade View untuk merender tag <img> tanpa hardcoding direktori.
-     *
-     * @return \Illuminate\Database\Eloquent\Casts\Attribute
-     */
+// Relasi ke Model InventoryAttribute (Has Many)
+    public function attributes(): HasMany
+    {
+        return $this->hasMany(InventoryAttribute::class);
+    }
+
+// Akses ke URL QR Code yang dapat diakses publik.
     protected function qrCodeUrl(): Attribute
     {
         return Attribute::get(function () {

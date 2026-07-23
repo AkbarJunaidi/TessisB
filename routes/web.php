@@ -40,27 +40,32 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('inventory', InventoryController::class);
 
-// Route Preview QR Label
+        // Route Preview & Export QR Label
         Route::get('inventory/{inventory}/preview-qr', [InventoryController::class, 'previewQr'])
             ->name('inventory.preview-qr');
 
-// label qr pdf
-        Route::get('inventory/{inventory}/export-pdf', [InventoryController::class, 'exportPdf'])
+        Route::get('inventory/{inventory}/export-pdf', [InventoryController::class, 'previewQr'])
             ->name('inventory.export-pdf');
 
-
-        // FITUR INVENTORY REPORT PDF
+        // FITUR INVENTORY REPORT PDF (Single Report)
         Route::get('inventory/{inventory}/report/preview', [InventoryController::class, 'previewPdf'])
             ->name('inventory.preview');
+        Route::get('inventory/{inventory}/report/preview-pdf', [InventoryController::class, 'previewPdf'])
+            ->name('inventory.preview-pdf');
 
         Route::get('inventory/{inventory}/report/download', [InventoryController::class, 'downloadPdf'])
             ->name('inventory.download');
+        Route::get('inventory/{inventory}/report/download-pdf', [InventoryController::class, 'downloadPdf'])
+            ->name('inventory.download-pdf');
 
+        // FITUR INVENTORY REPORT PDF (Massal / All Report)
         Route::get('inventory/report/preview-all', [InventoryController::class, 'previewAllPdf'])
             ->name('inventory.preview-all');
 
         Route::get('inventory/report/download-all', [InventoryController::class, 'downloadAllPdf'])
             ->name('inventory.download-all');
+        Route::get('inventory/report/download-all-pdf', [InventoryController::class, 'downloadAllPdf'])
+            ->name('inventory.download-all-pdf');
 
     });
 

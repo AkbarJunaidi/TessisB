@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Inventory;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class InventoryRequest extends FormRequest
 {
@@ -15,15 +16,11 @@ class InventoryRequest extends FormRequest
         return true;
     }
 
-    /**
-     * Aturan validasi yang diterapkan pada input form inventory.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
+//  Aturan validasi yang diterapkan pada input form inventory.
     public function rules(): array
     {
         // Kondisi untuk membedakan validasi antara Create (POST) dan Update (PUT/PATCH)
-        $inventoryId = $this->route('inventory') ? $this->route('inventory')->id : null;
+        $inventoryId = $this->route('inventory') ? ($this->route('inventory')->id ?? $this->route('inventory')) : null;
 
         return [
             'name' => ['required', 'string', 'max:255'],
@@ -34,13 +31,25 @@ class InventoryRequest extends FormRequest
                 // Mengizinkan nomor seri yang sama diabaikan jika sedang melakukan proses edit data sendiri
                 'unique:inventories,serial_number,' . $inventoryId
             ],
+            'description' => ['nullable', 'string'],
+            'status' => [
+                'required',
+                'string',
+                // Membatasi status hanya pada pilihan yang telah ditentukan
+                Rule::in(['Tersedia', 'Dipinjam', 'Perbaikan', 'Rusak', 'Hilang'])
+            ],
             'image' => [
-                // $this->isMethod('POST') ? 'required' : 'nullable',
                 'nullable',
                 'image',
                 'mimes:jpeg,png,jpg,webp',
                 'max:5148' // Maksimal ukuran gambar 5MB
             ],
+
+            // Validasi Atribut Dinamis (Informasi Tambahan)
+            'use_attributes' => ['nullable', 'in:1,0,true,false'],
+            'attributes' => ['nullable', 'array'],
+            'attributes.*.name' => ['nullable', 'string', 'max:255'],
+            'attributes.*.value' => ['nullable', 'string'],
         ];
     }
 
@@ -54,10 +63,12 @@ class InventoryRequest extends FormRequest
             'name.max' => 'Nama barang maksimal 255 karakter.',
             'serial_number.required' => 'Serial number wajib diisi.',
             'serial_number.unique' => 'Serial number ini sudah terdaftar di sistem.',
-            'image.required' => 'Gambar barang wajib diunggah.',
+            'status.required' => 'Status barang wajib dipilih.',
+            'status.in' => 'Status barang tidak valid.',
             'image.image' => 'Berkas harus berupa gambar.',
-            'image.mimes' => 'Format gambar harus jpeg, png, atau jpg.',
-            'image.max' => 'Ukuran gambar tidak boleh melebihi 2MB.',
+            'image.mimes' => 'Format gambar harus jpeg, png, jpg, atau webp.',
+            'image.max' => 'Ukuran gambar tidak boleh melebihi 5MB.',
+            'attributes.*.name.max' => 'Nama informasi tambahan maksimal 255 karakter.',
         ];
     }
 }
