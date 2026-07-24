@@ -25,6 +25,28 @@ class Inventory extends Model
         'qr_code', // Kolom bawaan tetap dipertahankan untuk menyimpan path berkas gambar QR
     ];
 
+    /**
+     * Peta status barang ke warna Bootstrap.
+     * Sumber tunggal warna badge status supaya konsisten
+     * di semua halaman (List, Detail, PDF).
+     */
+    public const STATUS_COLORS = [
+        'Tersedia'  => 'success',
+        'Dipinjam'  => 'primary',
+        'Perbaikan' => 'warning',
+        'Rusak'     => 'danger',
+        'Hilang'    => 'dark',
+    ];
+
+    /**
+     * Warna Bootstrap untuk status barang ini
+     * (dipakai untuk class bg-*, text-*, border-*).
+     */
+    public function statusColor(): string
+    {
+        return self::STATUS_COLORS[$this->status] ?? 'success';
+    }
+
 // Relasi ke Model InventoryAttribute (Has Many)
     public function attributes(): HasMany
     {

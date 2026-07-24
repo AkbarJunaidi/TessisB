@@ -8,6 +8,7 @@ use App\Models\Project;
 use App\Services\ProjectService;
 use App\Services\TaskService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ProjectController extends Controller
@@ -67,6 +68,37 @@ class ProjectController extends Controller
                 'groupedTasks'
             )
         );
+    }
+
+    /**
+     * Menambahkan list/kolom board baru pada project.
+     */
+    public function storeList(
+        Request $request,
+        Project $project
+    ): RedirectResponse {
+
+        $request->validate([
+            'label' => ['required', 'string', 'max:50'],
+        ], [
+            'label.required' => 'Nama list wajib diisi.',
+            'label.max'      => 'Nama list maksimal 50 karakter.',
+        ]);
+
+        try {
+
+            $this->projectService->addBoardList(
+                $project,
+                $request->label
+            );
+
+            return back()->with('success', 'List baru berhasil ditambahkan.');
+
+        } catch (\InvalidArgumentException $e) {
+
+            return back()->with('error', $e->getMessage());
+
+        }
     }
 
     /**

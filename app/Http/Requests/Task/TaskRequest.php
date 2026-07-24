@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Task;
 
+use App\Models\Project;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,13 +21,17 @@ class TaskRequest extends FormRequest
      */
     public function rules(): array
     {
+        $allowedStatuses = Project::find($this->input('project_id'))
+            ?->getBoardLists()
+            ?? Project::DEFAULT_BOARD_LISTS;
+
         return [
             'project_id'  => ['required', 'exists:projects,id'],
             'title'       => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'status'      => [
                 'required',
-                Rule::in(['Todo', 'In Progress', 'Review', 'Done']),
+                Rule::in(array_column($allowedStatuses, 'label')),
             ],
             'priority'    => [
                 'required',
@@ -52,7 +57,7 @@ class TaskRequest extends FormRequest
             'description.string'    => 'Deskripsi task harus berupa teks.',
 
             'status.required'       => 'Status task wajib dipilih.',
-            'status.in'             => 'Status harus berupa Todo, In Progress, Review, atau Done.',
+            'status.in'             => 'Status yang dipilih tidak ditemukan pada board project ini.',
 
             'priority.required'     => 'Prioritas task wajib dipilih.',
             'priority.in'           => 'Prioritas harus berupa Low, Medium, atau High.',

@@ -58,4 +58,40 @@ class ProjectService
 
         return $deleted;
     }
+
+//  Menambahkan list/kolom board baru pada project.
+    public function addBoardList(Project $project, string $label): array
+    {
+        $label = trim($label);
+        $lists = $project->getBoardLists();
+
+        $alreadyExists = collect($lists)->contains(
+            fn ($list) => strcasecmp($list['label'], $label) === 0
+        );
+
+        if ($alreadyExists) {
+            throw new \InvalidArgumentException(
+                "List \"{$label}\" sudah ada di board ini."
+            );
+        }
+
+        $nextColor = Project::LIST_COLOR_PALETTE[
+            count($lists) % count(Project::LIST_COLOR_PALETTE)
+        ];
+
+        $lists[] = [
+            'label' => $label,
+            'color' => $nextColor,
+        ];
+
+        $project->update(['board_lists' => $lists]);
+
+        $this->activityLogService->log(
+            Auth::id(),
+            'Tracking Progress',
+            "Add List: {$label}"
+        );
+
+        return $lists;
+    }
 }

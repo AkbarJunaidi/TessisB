@@ -31,7 +31,7 @@ class InventoryRequest extends FormRequest
                 // Mengizinkan nomor seri yang sama diabaikan jika sedang melakukan proses edit data sendiri
                 'unique:inventories,serial_number,' . $inventoryId
             ],
-            'description' => ['nullable', 'string', 'max:500'],
+            'description' => ['nullable', 'string', 'max:628'],
             'status' => [
                 'required',
                 'string',
@@ -70,7 +70,7 @@ class InventoryRequest extends FormRequest
             'image.image' => 'Berkas harus berupa gambar.',
             'image.mimes' => 'Format gambar harus jpeg, png, jpg, atau webp.',
             'image.max' => 'Ukuran gambar tidak boleh melebihi 5MB.',
-            'description.max' => 'Deskripsi barang maksimal 500 karakter.',
+            'description.max' => 'Deskripsi barang maksimal 628 karakter.',
             'brand.max' => 'Brand maksimal 100 karakter.',
             'attributes.max' => 'Informasi tambahan maksimal 8 baris agar laporan PDF tetap muat 1 halaman.',
             'attributes.*.name.max' => 'Nama informasi tambahan maksimal 40 karakter.',

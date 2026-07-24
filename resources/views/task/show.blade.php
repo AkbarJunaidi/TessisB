@@ -107,10 +107,9 @@
                         <label for="status" class="form-label fw-semibold small text-secondary">Update Progress Status</label>
                         <div class="d-flex gap-2">
                             <select name="status" id="status" class="form-select fw-bold text-dark">
-                                <option value="Todo" {{ $task->status === 'Todo' ? 'selected' : '' }}>Todo</option>
-                                <option value="In Progress" {{ $task->status === 'In Progress' ? 'selected' : '' }}>In Progress</option>
-                                <option value="Review" {{ $task->status === 'Review' ? 'selected' : '' }}>Review</option>
-                                <option value="Done" {{ $task->status === 'Done' ? 'selected' : '' }}>Done</option>
+                                @foreach($task->project->getBoardLists() as $list)
+                                    <option value="{{ $list['label'] }}" {{ $task->status === $list['label'] ? 'selected' : '' }}>{{ $list['label'] }}</option>
+                                @endforeach
                             </select>
                             <button type="submit" class="btn btn-dark fw-medium px-3">Update</button>
                         </div>

@@ -49,10 +49,9 @@
                     <div class="col-md-4 mb-3">
                         <label for="status" class="form-label fw-semibold small text-secondary">Initial Status (Status Awal) <span class="text-danger">*</span></label>
                         <select name="status" id="status" class="form-select" required>
-                            <option value="Todo" {{ old('status') == 'Todo' ? 'selected' : '' }}>Todo</option>
-                            <option value="In Progress" {{ old('status') == 'In Progress' ? 'selected' : '' }}>In Progress</option>
-                            <option value="Review" {{ old('status') == 'Review' ? 'selected' : '' }}>Review</option>
-                            <option value="Done" {{ old('status') == 'Done' ? 'selected' : '' }}>Done</option>
+                            @foreach($project->getBoardLists() as $list)
+                                <option value="{{ $list['label'] }}" {{ old('status') == $list['label'] ? 'selected' : '' }}>{{ $list['label'] }}</option>
+                            @endforeach
                         </select>
                     </div>
 

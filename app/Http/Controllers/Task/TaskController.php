@@ -8,8 +8,10 @@ use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use App\Services\TaskService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class TaskController extends Controller
@@ -97,20 +99,38 @@ class TaskController extends Controller
 
     /**
      * Memperbarui status task.
+     *
+     * Dipakai oleh dua tempat dengan endpoint yang sama:
+     * - Dropdown status di halaman detail task (redirect biasa)
+     * - Drag & drop kartu task di Board (request AJAX, balas JSON)
      */
     public function updateStatus(
         Request $request,
         Task $task
-    ): RedirectResponse {
+    ): RedirectResponse|JsonResponse {
+
+        $allowedStatuses = array_column(
+            $task->project->getBoardLists(),
+            'label'
+        );
 
         $request->validate([
-            'status' => 'required|in:Todo,In Progress,Review,Done',
+            'status' => ['required', 'string', Rule::in($allowedStatuses)],
+        ], [
+            'status.in' => 'List tujuan tidak ditemukan pada board ini.',
         ]);
 
         $this->taskService->updateTaskStatus(
             $task,
             $request->status
         );
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'status'  => $task->status,
+            ]);
+        }
 
         return redirect()
             ->back()

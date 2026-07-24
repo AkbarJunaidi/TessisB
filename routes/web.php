@@ -74,6 +74,11 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('projects', ProjectController::class);
 
+        Route::post(
+            'projects/{project}/lists',
+            [ProjectController::class, 'storeList']
+        )->name('projects.lists.store');
+
         Route::resource('tasks', TaskController::class)
             ->only([
                 'create',

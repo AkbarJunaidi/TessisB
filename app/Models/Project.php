@@ -19,7 +19,39 @@ class Project extends Model
         'description',
         'deadline',
         'created_by',
+        'board_lists',
     ];
+
+    protected $casts = [
+        'board_lists' => 'array',
+    ];
+
+    /**
+     * List/kolom board default, dipakai selama project belum
+     * punya board_lists sendiri (kompatibel dengan data lama).
+     */
+    public const DEFAULT_BOARD_LISTS = [
+        ['label' => 'Todo',        'color' => 'secondary'],
+        ['label' => 'In Progress', 'color' => 'primary'],
+        ['label' => 'Review',      'color' => 'warning'],
+        ['label' => 'Done',        'color' => 'success'],
+    ];
+
+    /**
+     * Palet warna yang dipakai berurutan untuk list baru yang ditambahkan user.
+     */
+    public const LIST_COLOR_PALETTE = [
+        'secondary', 'primary', 'warning', 'success', 'info', 'danger', 'dark',
+    ];
+
+    /**
+     * Daftar list/kolom board project ini.
+     * Jika project belum punya board_lists sendiri, pakai default.
+     */
+    public function getBoardLists(): array
+    {
+        return $this->board_lists ?: self::DEFAULT_BOARD_LISTS;
+    }
 
     /**
      * Relasi One-to-Many: Sebuah Project memiliki banyak Tasks.

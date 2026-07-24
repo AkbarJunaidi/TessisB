@@ -114,14 +114,17 @@
         }
         .status-badge {
             display: inline-block;
-            background-color: #e8f7ee;
-            color: #1e7e34;
-            border: 1px solid #b7e4c7;
             padding: 2px 10px;
             border-radius: 10px;
             font-size: 9pt;
             font-weight: bold;
+            border: 1px solid;
         }
+        .status-tersedia  { background-color: #e8f7ee; color: #1e7e34; border-color: #b7e4c7; }
+        .status-dipinjam  { background-color: #e7f0fe; color: #0854a0; border-color: #b6d4fe; }
+        .status-perbaikan { background-color: #fff6e0; color: #a66a00; border-color: #ffe08a; }
+        .status-rusak     { background-color: #fdeceb; color: #c0392b; border-color: #f3b8b3; }
+        .status-hilang    { background-color: #ececed; color: #343a40; border-color: #c8cacc; }
 
         /* BAGIAN 2: DESKRIPSI */
         .box-section {
@@ -268,7 +271,18 @@
                     </tr>
                     <tr>
                         <td class="identity-label">Status</td>
-                        <td><span class="status-badge">{{ $inventory->status ?? 'Tersedia' }}</span></td>
+                        <td>
+                            @php
+                                $statusSlug = match($inventory->status) {
+                                    'Dipinjam'  => 'dipinjam',
+                                    'Perbaikan' => 'perbaikan',
+                                    'Rusak'     => 'rusak',
+                                    'Hilang'    => 'hilang',
+                                    default     => 'tersedia',
+                                };
+                            @endphp
+                            <span class="status-badge status-{{ $statusSlug }}">{{ $inventory->status ?? 'Tersedia' }}</span>
+                        </td>
                     </tr>
                     <tr>
                         <td class="identity-label">Brand</td>
