@@ -116,16 +116,16 @@
                     <div class="col-12">
                         <label for="description" class="form-label fw-semibold small text-secondary d-flex justify-content-between">
                             <span>Deskripsi Barang</span>
-                            <span class="text-muted fw-normal" id="descriptionCounter">0/628</span>
+                            <span class="text-muted fw-normal" id="descriptionCounter">0/610</span>
                         </label>
                         <textarea class="form-control @error('description') is-invalid @enderror"
                                   id="description"
                                   name="description"
                                   rows="3"
-                                  maxlength="628"
-                                  placeholder="Tambahkan deskripsi atau catatan kondisi fisik barang... (maksimal 628 karakter)">{{ old('description') }}</textarea>
+                                  maxlength="610"
+                                  placeholder="Tambahkan deskripsi atau catatan kondisi fisik barang... (maksimal 610 karakter)">{{ old('description') }}</textarea>
                         <div class="form-text text-muted small mt-1">
-                            <i class="bi bi-info-circle me-1"></i> Maksimal 628 karakter.
+                            <i class="bi bi-info-circle me-1"></i> Maksimal 610 karakter.
                         </div>
                         @error('description')
                             <div class="invalid-feedback">
@@ -356,7 +356,7 @@
         const descriptionCounter = document.getElementById('descriptionCounter');
         if (descriptionField && descriptionCounter) {
             function updateDescriptionCounter() {
-                descriptionCounter.textContent = descriptionField.value.length + '/628';
+                descriptionCounter.textContent = descriptionField.value.length + '/610';
             }
             descriptionField.addEventListener('input', updateDescriptionCounter);
             updateDescriptionCounter();
