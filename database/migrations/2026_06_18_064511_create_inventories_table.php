@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('serial_number')->unique(); // Menjamin tidak ada SN kembar
             $table->text('description')->nullable();
             $table->string('status')->default('Tersedia');
+            $table->string('brand')->nullable(); // Menyimpan nama brand/merek barang
             $table->string('image')->nullable(); // Menyimpan path foto barang
             $table->string('qr_code')->nullable(); // Menyimpan path foto QR Code
             $table->timestamps();   // Membuat created_at & updated_at

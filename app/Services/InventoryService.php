@@ -66,6 +66,7 @@ class InventoryService
                 'serial_number' => $data['serial_number'],
                 'description'   => $data['description'] ?? null,
                 'status'        => $data['status'] ?? 'Tersedia',
+                'brand'         => $data['brand'] ?? null,
                 'image'         => $imagePath,
                 'qr_code'       => null,
             ]);
@@ -130,6 +131,7 @@ class InventoryService
                 'serial_number' => $data['serial_number'],
                 'description'   => $data['description'] ?? null,
                 'status'        => $data['status'] ?? $inventory->status,
+                'brand'         => $data['brand'] ?? null,
                 'image'         => $inventory->image,
             ]);
 
@@ -222,6 +224,9 @@ class InventoryService
 
     public function generateSingleReport(Inventory $inventory, bool $stream = true)
     {
+        // Pastikan relasi attributes sudah dimuat (loadMissing menghindari query ulang jika sudah ter-load sebelumnya)
+        $inventory->loadMissing('attributes');
+
         // Menyusun tanggal pembuatan laporan formal sesuai standarisasi sistem informasi
         $exportDate = now()->translatedFormat('d F Y H:i');
         // Memuat template layout profesional terisolasi
@@ -237,7 +242,8 @@ class InventoryService
 
     public function generateAllReport(bool $stream = true)
     {
-        $inventories = Inventory::latest()->get();
+        // Eager load attributes agar tidak terjadi N+1 saat Blade mengakses $inventory->attributes per item
+        $inventories = Inventory::with('attributes')->latest()->get();
         $exportDate = now()->translatedFormat('d F Y H:i');
         // Memuat view bundle massal
         $pdf = Pdf::loadView('inventory.pdf.all', compact('inventories', 'exportDate'));

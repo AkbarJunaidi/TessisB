@@ -170,6 +170,12 @@
 
 </div>
 
+<div class="card border-0 shadow-sm mt-3 mb-3">
+    <div class="card-body">
+        @include('user.partials.permission-card')
+    </div>
+</div>
+
 <div class="d-flex justify-content-end gap-2 mt-4">
 
     <a

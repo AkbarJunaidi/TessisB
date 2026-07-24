@@ -166,7 +166,7 @@
                                         <a href="{{ route('inventory.download-pdf', $item->id) }}"
                                            class="btn btn-sm btn-outline-danger px-2 fw-medium rounded-2 d-flex align-items-center gap-1"
                                            title="Download Report PDF">
-                                            <i class="bi bi-file-earmark-pdf"></i> Download Report
+                                            <i class="bi bi-file-earmark-pdf"></i>
                                         </a>
 
                                         <!-- Delete Item -->

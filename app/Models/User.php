@@ -24,6 +24,7 @@ class User extends Authenticatable
         'role',
         'status',
         'last_login_at',
+        'permission_overrides',
     ];
 
     /**
@@ -42,9 +43,10 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
-            'last_login_at'     => 'datetime',
+            'email_verified_at'     => 'datetime',
+            'password'              => 'hashed',
+            'last_login_at'         => 'datetime',
+            'permission_overrides'  => 'array',
         ];
     }
 
@@ -134,6 +136,37 @@ class User extends Authenticatable
     public function isInactive(): bool
     {
         return $this->status === 'inactive';
+    }
+
+    /**
+     * Memeriksa apakah user memiliki custom permission (override role).
+     */
+    public function hasCustomPermission(): bool
+    {
+        return !is_null($this->permission_overrides);
+    }
+
+    /**
+     * Permission efektif user: pakai override jika ada,
+     * jika tidak pakai default Role dari config/permissions.php.
+     */
+    public function getEffectivePermissions(): array
+    {
+        return $this->permission_overrides
+            ?? config("permissions.role_defaults.{$this->role}", []);
+    }
+
+    /**
+     * Memeriksa apakah user memiliki permission tertentu
+     * (module.action), berdasarkan permission efektifnya.
+     */
+    public function hasPermission(string $module, string $action): bool
+    {
+        return (bool) data_get(
+            $this->getEffectivePermissions(),
+            "{$module}.{$action}",
+            false
+        );
     }
 }
 

@@ -36,6 +36,10 @@ class UserService
             'password' => $data['password'],
             'role'     => $data['role'],
             'status'   => $data['status'],
+            'permission_overrides' => $this->resolvePermissionOverrides(
+                $data['role'],
+                $data['permissions'] ?? []
+            ),
         ]);
 
         $this->activityLogService->log(
@@ -75,6 +79,10 @@ class UserService
             'email'  => $data['email'],
             'role'   => $data['role'],
             'status' => $data['status'],
+            'permission_overrides' => $this->resolvePermissionOverrides(
+                $data['role'],
+                $data['permissions'] ?? []
+            ),
         ]);
 
         if (!empty($data['password'])) {
@@ -154,6 +162,9 @@ class UserService
 
         $updated = $user->update([
             'role' => $role,
+            // Role berubah -> permission override lama sudah tidak relevan,
+            // kembalikan mengikuti default Role yang baru.
+            'permission_overrides' => null,
         ]);
 
         if ($updated) {
@@ -165,6 +176,73 @@ class UserService
         }
 
         return $updated;
+    }
+
+    /**
+     * Mengambil default permission untuk sebuah Role
+     * dari config/permissions.php.
+     */
+    public function getDefaultPermissions(string $role): array
+    {
+        return config("permissions.role_defaults.{$role}", []);
+    }
+
+    /**
+     * Membandingkan permission yang disubmit dengan default Role.
+     * Jika identik -> simpan null (user mengikuti default Role).
+     * Jika berbeda -> simpan sebagai override (custom aktif).
+     *
+     * $submitted diharapkan berbentuk:
+     * ['inventory' => ['view' => true, 'create' => false, ...], ...]
+     */
+    public function resolvePermissionOverrides(string $role, array $submitted): ?array
+    {
+        $catalog = config('permissions.modules', []);
+        $default = $this->getDefaultPermissions($role);
+        $normalized = [];
+
+        foreach ($catalog as $module => $config) {
+            foreach (array_keys($config['actions']) as $action) {
+                $normalized[$module][$action] = (bool) data_get(
+                    $submitted,
+                    "{$module}.{$action}",
+                    false
+                );
+            }
+        }
+
+        return $normalized === $default ? null : $normalized;
+    }
+
+    /**
+     * Ringkasan status permission per modul, dipakai pada Card
+     * "Ringkasan Hak Akses" di halaman Edit/Create User.
+     *
+     * Status per modul:
+     * - "Tidak Diakses" -> tidak ada aksi yang aktif
+     * - "Read Only"      -> hanya aksi 'view'/'view_user' yang aktif
+     * - "Diberikan"      -> ada aksi lain (bukan hanya view) yang aktif
+     */
+    public function buildPermissionSummary(array $permissions): array
+    {
+        $summary = ['granted' => 0, 'read_only' => 0, 'no_access' => 0];
+
+        foreach (config('permissions.modules', []) as $module => $config) {
+            $moduleActions = $permissions[$module] ?? [];
+            $activeActions = array_keys(array_filter($moduleActions));
+
+            if (empty($activeActions)) {
+                $summary['no_access']++;
+                continue;
+            }
+
+            $viewOnly = count($activeActions) === 1 &&
+                in_array($activeActions[0], ['view', 'view_user'], true);
+
+            $viewOnly ? $summary['read_only']++ : $summary['granted']++;
+        }
+
+        return $summary;
     }
 
     /**

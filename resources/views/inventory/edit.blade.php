@@ -76,8 +76,8 @@
                         @enderror
                     </div>
 
-                    <!-- Status Barang (Dropdown) -->
-                    <div class="col-12">
+                    <!-- Status Barang (Dropdown) & Brand -->
+                    <div class="col-12 col-md-6">
                         <label for="status" class="form-label fw-semibold small text-secondary">Status Barang <span class="text-danger">*</span></label>
                         <select class="form-select @error('status') is-invalid @enderror" id="status" name="status" required>
                             @php $currentStatus = old('status', $inventory->status ?? 'Tersedia'); @endphp
@@ -94,14 +94,37 @@
                         @enderror
                     </div>
 
+                    <div class="col-12 col-md-6">
+                        <label for="brand" class="form-label fw-semibold small text-secondary">Brand</label>
+                        <input type="text"
+                               name="brand"
+                               id="brand"
+                               class="form-control @error('brand') is-invalid @enderror"
+                               placeholder="Contoh: ASUS / Logitech / Generic"
+                               maxlength="100"
+                               value="{{ old('brand', $inventory->brand) }}">
+                        @error('brand')
+                            <div class="invalid-feedback">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ $message }}
+                            </div>
+                        @enderror
+                    </div>
+
                     <!-- Deskripsi Barang -->
                     <div class="col-12">
-                        <label for="description" class="form-label fw-semibold small text-secondary">Deskripsi Barang</label>
+                        <label for="description" class="form-label fw-semibold small text-secondary d-flex justify-content-between">
+                            <span>Deskripsi Barang</span>
+                            <span class="text-muted fw-normal" id="descriptionCounter">0/500</span>
+                        </label>
                         <textarea class="form-control @error('description') is-invalid @enderror"
                                   id="description"
                                   name="description"
                                   rows="3"
-                                  placeholder="Tambahkan deskripsi atau catatan kondisi fisik barang...">{{ old('description', $inventory->description) }}</textarea>
+                                  maxlength="500"
+                                  placeholder="Tambahkan deskripsi atau catatan kondisi fisik barang... (maksimal 500 karakter)">{{ old('description', $inventory->description) }}</textarea>
+                        <div class="form-text text-muted small mt-1">
+                            <i class="bi bi-info-circle me-1"></i> Maksimal 500 karakter agar tetap rapi saat dicetak ke laporan PDF.
+                        </div>
                         @error('description')
                             <div class="invalid-feedback">
                                 <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ $message }}
@@ -177,34 +200,25 @@
                 <h5 class="card-title fw-bold text-dark m-0 d-flex align-items-center gap-2">
                     <i class="bi bi-sliders text-primary"></i> Informasi Tambahan
                 </h5>
+                <p class="text-muted small mb-0 mt-1">Maksimal 7 baris informasi.</p>
             </div>
             <div class="card-body p-4">
-                <!-- Radio Toggle Gunakan Informasi Tambahan -->
+                <!-- Toggle Gunakan Informasi Tambahan -->
                 <div class="mb-4">
                     <label class="form-label fw-semibold small text-secondary d-block mb-2">Gunakan Informasi Tambahan?</label>
-                    <div class="d-flex gap-4">
-                        <div class="form-check">
-                            <input class="form-check-input"
-                                   type="radio"
-                                   name="use_attributes"
-                                   id="use_attr_yes"
-                                   value="1"
-                                   {{ $useAttributesDefault == '1' ? 'checked' : '' }}>
-                            <label class="form-check-label fw-medium text-dark" for="use_attr_yes">
-                                Ya
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input"
-                                   type="radio"
-                                   name="use_attributes"
-                                   id="use_attr_no"
-                                   value="0"
-                                   {{ $useAttributesDefault == '0' ? 'checked' : '' }}>
-                            <label class="form-check-label fw-medium text-dark" for="use_attr_no">
-                                Tidak
-                            </label>
-                        </div>
+
+                    <input type="hidden" name="use_attributes" id="use_attributes_hidden" value="{{ $useAttributesDefault }}">
+
+                    <div class="form-check form-switch">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               role="switch"
+                               id="use_attr_toggle"
+                               style="width: 2.75em; height: 1.5em;"
+                               {{ $useAttributesDefault == '1' ? 'checked' : '' }}>
+                        <label class="form-check-label fw-medium text-dark ms-2" for="use_attr_toggle">
+                            <span id="use_attr_label">{{ $useAttributesDefault == '1' ? 'Ya' : 'Tidak' }}</span>
+                        </label>
                     </div>
                 </div>
 
@@ -227,6 +241,7 @@
                                                 <input type="text"
                                                        name="attributes[{{ $index }}][name]"
                                                        class="form-control form-control-sm"
+                                                       maxlength="40"
                                                        value="{{ old("attributes.{$index}.name", $attr->attribute_name) }}"
                                                        placeholder="Contoh: Processor / RAM / Panjang">
                                             </td>
@@ -234,6 +249,7 @@
                                                 <input type="text"
                                                        name="attributes[{{ $index }}][value]"
                                                        class="form-control form-control-sm"
+                                                       maxlength="100"
                                                        value="{{ old("attributes.{$index}.value", $attr->attribute_value) }}"
                                                        placeholder="Contoh: Ryzen 7 / 16 GB / 5 Meter">
                                             </td>
@@ -248,10 +264,10 @@
                                     <!-- Default 1 Baris Kosong jika memilih Ya -->
                                     <tr>
                                         <td>
-                                            <input type="text" name="attributes[0][name]" class="form-control form-control-sm" placeholder="Contoh: Processor / RAM / Panjang">
+                                            <input type="text" name="attributes[0][name]" class="form-control form-control-sm" maxlength="40" placeholder="Contoh: Processor / RAM / Panjang">
                                         </td>
                                         <td>
-                                            <input type="text" name="attributes[0][value]" class="form-control form-control-sm" placeholder="Contoh: Ryzen 7 / 16 GB / 5 Meter">
+                                            <input type="text" name="attributes[0][value]" class="form-control form-control-sm" maxlength="100" placeholder="Contoh: Ryzen 7 / 16 GB / 5 Meter">
                                         </td>
                                         <td class="text-center">
                                             <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row" title="Hapus Baris">
@@ -265,9 +281,10 @@
                     </div>
 
                     <!-- Tombol Tambah Informasi -->
-                    <button type="button" class="btn btn-sm btn-outline-primary fw-medium" id="btnAddAttribute">
-                        <i class="bi bi-plus-circle me-1"></i> + Tambah Informasi
+                    <button type="button" class="btn btn-primary w-100 fw-medium py-2" id="btnAddAttribute">
+                        <i class="bi bi-plus-circle me-1"></i> Tambah Informasi
                     </button>
+                    <small class="text-danger d-none ms-2" id="attrLimitWarning">Maksimal 7 baris informasi tambahan.</small>
                 </div>
             </div>
         </div>
@@ -287,35 +304,54 @@
 <!-- JavaScript Vanilla Dynamic Attribute Key-Value Builder -->
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const useYes = document.getElementById('use_attr_yes');
-        const useNo = document.getElementById('use_attr_no');
+        const useToggle = document.getElementById('use_attr_toggle');
+        const useHidden = document.getElementById('use_attributes_hidden');
+        const useLabel = document.getElementById('use_attr_label');
         const container = document.getElementById('attributesContainer');
         const attributesBody = document.getElementById('attributesBody');
         const btnAdd = document.getElementById('btnAddAttribute');
+        const limitWarning = document.getElementById('attrLimitWarning');
+        const MAX_ATTR_ROWS = 7;
 
-        // Toggle visibility container berdasarkan pilihan Ya/Tidak
+        // Toggle visibility container + sinkronkan hidden input & label berdasarkan switch
         function toggleContainer() {
-            if (useYes.checked) {
+            const isOn = useToggle.checked;
+            useHidden.value = isOn ? '1' : '0';
+            useLabel.textContent = isOn ? 'Ya' : 'Tidak';
+
+            if (isOn) {
                 container.classList.remove('d-none');
             } else {
                 container.classList.add('d-none');
             }
         }
 
-        useYes.addEventListener('change', toggleContainer);
-        useNo.addEventListener('change', toggleContainer);
+        useToggle.addEventListener('change', toggleContainer);
 
         // Menambah Baris Atribut Baru
         let rowIndex = attributesBody.querySelectorAll('tr').length;
 
+        // Batasi jumlah baris agar tabel Informasi Tambahan tetap muat 1 halaman saat dicetak ke PDF
+        function updateAddButtonState() {
+            const currentRows = attributesBody.querySelectorAll('tr').length;
+            const limitReached = currentRows >= MAX_ATTR_ROWS;
+            btnAdd.disabled = limitReached;
+            limitWarning.classList.toggle('d-none', !limitReached);
+        }
+
         btnAdd.addEventListener('click', function() {
+            if (attributesBody.querySelectorAll('tr').length >= MAX_ATTR_ROWS) {
+                updateAddButtonState();
+                return;
+            }
+
             const newRow = document.createElement('tr');
             newRow.innerHTML = `
                 <td>
-                    <input type="text" name="attributes[${rowIndex}][name]" class="form-control form-control-sm" placeholder="Contoh: Processor / RAM / Panjang">
+                    <input type="text" name="attributes[${rowIndex}][name]" class="form-control form-control-sm" maxlength="40" placeholder="Contoh: Processor / RAM / Panjang">
                 </td>
                 <td>
-                    <input type="text" name="attributes[${rowIndex}][value]" class="form-control form-control-sm" placeholder="Contoh: Ryzen 7 / 16 GB / 5 Meter">
+                    <input type="text" name="attributes[${rowIndex}][value]" class="form-control form-control-sm" maxlength="100" placeholder="Contoh: Ryzen 7 / 16 GB / 5 Meter">
                 </td>
                 <td class="text-center">
                     <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row" title="Hapus Baris">
@@ -325,6 +361,7 @@
             `;
             attributesBody.appendChild(newRow);
             rowIndex++;
+            updateAddButtonState();
         });
 
         // Hapus Baris Atribut (Event Delegation)
@@ -335,8 +372,22 @@
                 if (tr) {
                     tr.remove();
                 }
+                updateAddButtonState();
             }
         });
+
+        updateAddButtonState();
+
+        // Counter karakter Deskripsi Barang
+        const descriptionField = document.getElementById('description');
+        const descriptionCounter = document.getElementById('descriptionCounter');
+        if (descriptionField && descriptionCounter) {
+            function updateDescriptionCounter() {
+                descriptionCounter.textContent = descriptionField.value.length + '/500';
+            }
+            descriptionField.addEventListener('input', updateDescriptionCounter);
+            updateDescriptionCounter();
+        }
     });
 </script>
 @endsection

@@ -22,7 +22,7 @@ class UserRequest extends FormRequest
     {
         $user = $this->route('user');
 
-        return [
+        $rules = [
 
             'name' => [
                 'required',
@@ -60,7 +60,25 @@ class UserRequest extends FormRequest
                     'inactive',
                 ]),
             ],
+
+            'permissions' => [
+                'nullable',
+                'array',
+            ],
         ];
+
+        // Whitelist key module & aksi sesuai katalog config/permissions.php,
+        // supaya tidak ada key permission yang tidak dikenal ikut tersimpan.
+        foreach (config('permissions.modules', []) as $module => $config) {
+
+            $rules["permissions.{$module}"] = ['nullable', 'array'];
+
+            foreach (array_keys($config['actions']) as $action) {
+                $rules["permissions.{$module}.{$action}"] = ['nullable', 'boolean'];
+            }
+        }
+
+        return $rules;
     }
 
     /**

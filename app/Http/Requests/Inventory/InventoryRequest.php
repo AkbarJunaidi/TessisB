@@ -31,13 +31,14 @@ class InventoryRequest extends FormRequest
                 // Mengizinkan nomor seri yang sama diabaikan jika sedang melakukan proses edit data sendiri
                 'unique:inventories,serial_number,' . $inventoryId
             ],
-            'description' => ['nullable', 'string'],
+            'description' => ['nullable', 'string', 'max:500'],
             'status' => [
                 'required',
                 'string',
                 // Membatasi status hanya pada pilihan yang telah ditentukan
                 Rule::in(['Tersedia', 'Dipinjam', 'Perbaikan', 'Rusak', 'Hilang'])
             ],
+            'brand' => ['nullable', 'string', 'max:100'],
             'image' => [
                 'nullable',
                 'image',
@@ -46,10 +47,11 @@ class InventoryRequest extends FormRequest
             ],
 
             // Validasi Atribut Dinamis (Informasi Tambahan)
+            // Dibatasi maksimal 8 baris agar tabel tetap muat 1 halaman saat dicetak ke laporan PDF
             'use_attributes' => ['nullable', 'in:1,0,true,false'],
-            'attributes' => ['nullable', 'array'],
-            'attributes.*.name' => ['nullable', 'string', 'max:255'],
-            'attributes.*.value' => ['nullable', 'string'],
+            'attributes' => ['nullable', 'array', 'max:8'],
+            'attributes.*.name' => ['nullable', 'string', 'max:40'],
+            'attributes.*.value' => ['nullable', 'string', 'max:100'],
         ];
     }
 
@@ -68,7 +70,11 @@ class InventoryRequest extends FormRequest
             'image.image' => 'Berkas harus berupa gambar.',
             'image.mimes' => 'Format gambar harus jpeg, png, jpg, atau webp.',
             'image.max' => 'Ukuran gambar tidak boleh melebihi 5MB.',
-            'attributes.*.name.max' => 'Nama informasi tambahan maksimal 255 karakter.',
+            'description.max' => 'Deskripsi barang maksimal 500 karakter.',
+            'brand.max' => 'Brand maksimal 100 karakter.',
+            'attributes.max' => 'Informasi tambahan maksimal 8 baris agar laporan PDF tetap muat 1 halaman.',
+            'attributes.*.name.max' => 'Nama informasi tambahan maksimal 40 karakter.',
+            'attributes.*.value.max' => 'Nilai informasi tambahan maksimal 100 karakter.',
         ];
     }
 }

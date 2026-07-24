@@ -31,7 +31,7 @@ class UserController extends Controller
 //  Menampilkan form tambah user.
     public function create(): View
     {
-        return view('user.create');
+        return view('user.create', $this->buildPermissionViewData());
     }
 
 // Menyimpan user baru.
@@ -65,7 +65,10 @@ class UserController extends Controller
 // Menampilkan form edit user.
     public function edit(User $user): View
     {
-        return view('user.edit', compact('user'));
+        return view('user.edit', array_merge(
+            compact('user'),
+            $this->buildPermissionViewData($user)
+        ));
     }
 
 // Memperbarui data user.
@@ -174,6 +177,28 @@ class UserController extends Controller
             );
 
         }
+    }
+
+    /**
+     * Menyiapkan data katalog permission, default per Role,
+     * permission efektif, dan ringkasan untuk Card "Hak Akses Pengguna".
+     */
+    private function buildPermissionViewData(?User $user = null): array
+    {
+        $catalog = config('permissions.modules', []);
+        $roleDefaults = config('permissions.role_defaults', []);
+
+        $effectivePermissions = $user
+            ? $user->getEffectivePermissions()
+            : ($roleDefaults['employee'] ?? []);
+
+        return [
+            'permissionCatalog'    => $catalog,
+            'roleDefaults'         => $roleDefaults,
+            'effectivePermissions' => $effectivePermissions,
+            'permissionSummary'    => $this->userService->buildPermissionSummary($effectivePermissions),
+            'hasCustomPermission'  => $user?->hasCustomPermission() ?? false,
+        ];
     }
 
     /**

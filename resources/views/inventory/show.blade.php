@@ -99,6 +99,10 @@
                     <table class="table table-borderless table-sm small align-middle mb-0">
                         <tbody>
                             <tr>
+                                <td class="text-muted py-2 ps-0" style="width: 40%;"><i class="bi bi-tag text-secondary me-2"></i>Brand</td>
+                                <td class="fw-bold text-dark py-2 text-end">{{ $inventory->brand ?: '-' }}</td>
+                            </tr>
+                            <tr>
                                 <td class="text-muted py-2 ps-0" style="width: 40%;"><i class="bi bi-hash text-secondary me-2"></i>Serial Number</td>
                                 <td class="fw-bold text-dark py-2 text-end font-monospace">{{ $inventory->serial_number }}</td>
                             </tr>
@@ -202,9 +206,13 @@
                     </div>
                 </div>
 
-                <!-- BARIS 2: Informasi Identitas Aset & Informasi Tambahan -->
+                @php
+                    $hasAttributes = $inventory->attributes && $inventory->attributes->count() > 0;
+                @endphp
+
+                <!-- BARIS 2: Informasi Identitas Aset & Informasi Tambahan (kolom melebar penuh jika tidak ada Informasi Tambahan) -->
                 <div class="row g-4 mb-4">
-                    <div class="col-6">
+                    <div class="{{ $hasAttributes ? 'col-6' : 'col-12' }}">
                         <div class="card shadow-sm border-0 rounded-3 bg-white h-100">
                             <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
                                 <h6 class="fw-bold text-dark m-0">Informasi Identitas Aset</h6>
@@ -225,6 +233,10 @@
                                             <td class="py-2">: <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">{{ strtoupper($inventory->status ?? 'TERSEDIA') }}</span></td>
                                         </tr>
                                         <tr>
+                                            <td class="text-muted py-2">Brand</td>
+                                            <td class="fw-bold text-dark py-2">: {{ $inventory->brand ?: '-' }}</td>
+                                        </tr>
+                                        <tr>
                                             <td class="text-muted py-2">Tanggal Input</td>
                                             <td class="text-dark py-2">: {{ $inventory->created_at ? $inventory->created_at->format('d F Y H:i') . ' WIB' : '-' }}</td>
                                         </tr>
@@ -238,13 +250,13 @@
                         </div>
                     </div>
 
-                    <div class="col-6">
-                        <div class="card shadow-sm border-0 rounded-3 bg-white h-100">
-                            <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
-                                <h6 class="fw-bold text-dark m-0">Informasi Tambahan</h6>
-                            </div>
-                            <div class="card-body p-4">
-                                @if($inventory->attributes && $inventory->attributes->count() > 0)
+                    @if($hasAttributes)
+                        <div class="col-6">
+                            <div class="card shadow-sm border-0 rounded-3 bg-white h-100">
+                                <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
+                                    <h6 class="fw-bold text-dark m-0">Informasi Tambahan</h6>
+                                </div>
+                                <div class="card-body p-4">
                                     <table class="table table-borderless table-sm align-middle small mb-0">
                                         <tbody>
                                             @foreach($inventory->attributes as $attr)
@@ -255,33 +267,10 @@
                                             @endforeach
                                         </tbody>
                                     </table>
-                                @else
-                                    <div class="text-center py-4 text-muted">
-                                        <span class="small fst-italic">Tidak ada informasi tambahan.</span>
-                                    </div>
-                                @endif
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- BARIS 3: Banner Status -->
-                <div class="card border-0 shadow-sm rounded-3 bg-white border-start border-4 border-success p-3">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="rounded-circle bg-success-subtle p-2 text-success d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
-                                <i class="bi bi-check-circle fs-5"></i>
-                            </div>
-                            <div>
-                                <h6 class="fw-bold text-dark m-0">Aset {{ $inventory->status ?? 'Tersedia' }}</h6>
-                                <small class="text-muted">Barang dalam kondisi terdata secara digital dan siap digunakan.</small>
-                            </div>
-                        </div>
-                        <div class="text-end">
-                            <small class="text-muted d-block">Status terakhir diperbarui pada</small>
-                            <small class="fw-semibold text-dark">{{ $inventory->updated_at ? $inventory->updated_at->format('d F Y H:i') . ' WIB' : '-' }}</small>
-                        </div>
-                    </div>
+                    @endif
                 </div>
 
             </div>

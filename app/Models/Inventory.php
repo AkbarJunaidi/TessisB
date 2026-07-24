@@ -20,6 +20,7 @@ class Inventory extends Model
         'serial_number',
         'description',
         'status',
+        'brand',
         'image',
         'qr_code', // Kolom bawaan tetap dipertahankan untuk menyimpan path berkas gambar QR
     ];
