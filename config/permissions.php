@@ -44,6 +44,16 @@ return [
             ],
         ],
 
+        'surat_jalan' => [
+            'label' => 'Surat Jalan',
+            'icon'  => 'bi-file-earmark-text',
+            'actions' => [
+                'view'   => 'Melihat surat jalan',
+                'create' => 'Membuat surat jalan',
+                'print'  => 'Cetak / download surat jalan',
+            ],
+        ],
+
         'data_integration' => [
             'label' => 'Integrasi Data',
             'icon'  => 'bi-hdd-network',
@@ -99,6 +109,9 @@ return [
                 'view' => true, 'create_project' => true, 'edit_project' => true, 'delete_project' => true,
                 'create_task' => true, 'edit_task' => true, 'delete_task' => true, 'update_status' => true,
             ],
+            'surat_jalan' => [
+                'view' => true, 'create' => true, 'print' => true,
+            ],
             'data_integration' => [
                 'view' => true, 'upload' => true, 'download' => true, 'delete' => true,
                 'create_folder' => true, 'rename' => true,
@@ -118,6 +131,9 @@ return [
                 'view' => true, 'create_project' => true, 'edit_project' => true, 'delete_project' => true,
                 'create_task' => true, 'edit_task' => true, 'delete_task' => true, 'update_status' => true,
             ],
+            'surat_jalan' => [
+                'view' => true, 'create' => false, 'print' => true,
+            ],
             'data_integration' => [
                 'view' => true, 'upload' => true, 'download' => true, 'delete' => true,
                 'create_folder' => true, 'rename' => true,
@@ -136,6 +152,9 @@ return [
             'tracking_progress' => [
                 'view' => true, 'create_project' => false, 'edit_project' => false, 'delete_project' => false,
                 'create_task' => true, 'edit_task' => true, 'delete_task' => false, 'update_status' => true,
+            ],
+            'surat_jalan' => [
+                'view' => true, 'create' => false, 'print' => false,
             ],
             'data_integration' => [
                 'view' => true, 'upload' => true, 'download' => true, 'delete' => false,

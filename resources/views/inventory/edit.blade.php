@@ -76,6 +76,28 @@
                         @enderror
                     </div>
 
+                    <!-- Jumlah Barang (Quantity Total) -->
+                    <div class="col-12 col-md-6">
+                        <label for="quantity_total" class="form-label fw-semibold small text-secondary">Jumlah Barang (Unit) <span class="text-danger">*</span></label>
+                        <input type="number"
+                               min="1"
+                               name="quantity_total"
+                               id="quantity_total"
+                               class="form-control @error('quantity_total') is-invalid @enderror"
+                               value="{{ old('quantity_total', $inventory->quantity_total ?? 1) }}"
+                               required>
+                        @error('quantity_total')
+                            <div class="invalid-feedback">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ $message }}
+                            </div>
+                        @enderror
+                        @if(($inventory->qty_in_use ?? 0) > 0)
+                            <div class="form-text text-warning">
+                                <i class="bi bi-info-circle"></i> {{ $inventory->qty_in_use }} unit sedang dipakai di Surat Jalan aktif. Jumlah tidak boleh diturunkan di bawah angka ini.
+                            </div>
+                        @endif
+                    </div>
+
                     <!-- Status Barang (Dropdown) & Brand -->
                     <div class="col-12 col-md-6">
                         <label for="status" class="form-label fw-semibold small text-secondary">Status Barang <span class="text-danger">*</span></label>
@@ -114,16 +136,16 @@
                     <div class="col-12">
                         <label for="description" class="form-label fw-semibold small text-secondary d-flex justify-content-between">
                             <span>Deskripsi Barang</span>
-                            <span class="text-muted fw-normal" id="descriptionCounter">0/610</span>
+                            <span class="text-muted fw-normal" id="descriptionCounter">0/500</span>
                         </label>
                         <textarea class="form-control @error('description') is-invalid @enderror"
                                   id="description"
                                   name="description"
                                   rows="3"
-                                  maxlength="610"
-                                  placeholder="Tambahkan deskripsi atau catatan kondisi fisik barang... (maksimal 610 karakter)">{{ old('description', $inventory->description) }}</textarea>
+                                  maxlength="500"
+                                  placeholder="Tambahkan deskripsi atau catatan kondisi fisik barang... (maksimal 500 karakter)">{{ old('description', $inventory->description) }}</textarea>
                         <div class="form-text text-muted small mt-1">
-                            <i class="bi bi-info-circle me-1"></i> Maksimal 610 karakter.
+                            <i class="bi bi-info-circle me-1"></i> Maksimal 500 karakter agar tetap rapi saat dicetak ke laporan PDF.
                         </div>
                         @error('description')
                             <div class="invalid-feedback">
@@ -383,7 +405,7 @@
         const descriptionCounter = document.getElementById('descriptionCounter');
         if (descriptionField && descriptionCounter) {
             function updateDescriptionCounter() {
-                descriptionCounter.textContent = descriptionField.value.length + '/610';
+                descriptionCounter.textContent = descriptionField.value.length + '/500';
             }
             descriptionField.addEventListener('input', updateDescriptionCounter);
             updateDescriptionCounter();

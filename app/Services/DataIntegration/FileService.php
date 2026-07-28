@@ -81,6 +81,34 @@ class FileService
     }
 
     /**
+     * Mendaftarkan/memperbarui entri File untuk berkas yang SUDAH tersimpan di disk
+     * (misalnya PDF hasil generate seperti Surat Jalan), bukan hasil upload multipart.
+     * updateOrCreate berdasarkan folder_id + file_path agar generate ulang (mis. print
+     * ulang setelah data berubah) tidak membuat duplikat entri di Document Center.
+     */
+    public function registerGeneratedFile(
+        int $folderId,
+        string $storedPath,
+        string $displayName,
+        int $fileSize,
+        string $fileType = 'pdf'
+    ): File {
+
+        return File::updateOrCreate(
+            [
+                'folder_id' => $folderId,
+                'file_path' => $storedPath,
+            ],
+            [
+                'user_id'   => Auth::id(),
+                'file_name' => $displayName,
+                'file_size' => $fileSize,
+                'file_type' => $fileType,
+            ]
+        );
+    }
+
+    /**
      * Download file.
      */
     public function downloadFile(File $file): BinaryFileResponse

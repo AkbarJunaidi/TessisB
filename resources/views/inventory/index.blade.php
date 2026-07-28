@@ -124,9 +124,9 @@
                                     </span>
                                 </td>
 
-                                <!-- Status Barang (Badge Bootstrap) -->
+                                <!-- Status Barang (Badge Bootstrap) - otomatis "Tersedia" jika masih ada unit available -->
                                 <td class="py-3">
-                                    @switch($item->status)
+                                    @switch($item->display_status)
                                         @case('Tersedia')
                                             <span class="badge bg-success px-2 py-1">Tersedia</span>
                                             @break

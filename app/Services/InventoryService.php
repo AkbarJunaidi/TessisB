@@ -33,7 +33,7 @@ class InventoryService
      */
     public function getAllPaginated(array $filters = [], int $perPage = 10): LengthAwarePaginator
     {
-        $query = Inventory::query();
+        $query = Inventory::withAvailability();
 
         // Search HANYA berdasarkan Nama Barang
         if (!empty($filters['search'])) {
@@ -69,6 +69,7 @@ class InventoryService
                 'brand'         => $data['brand'] ?? null,
                 'image'         => $imagePath,
                 'qr_code'       => null,
+                'quantity_total' => $data['quantity_total'] ?? 1,
             ]);
 
             // Generate file fisik QR Code berdasarkan serial_number
@@ -133,6 +134,7 @@ class InventoryService
                 'status'        => $data['status'] ?? $inventory->status,
                 'brand'         => $data['brand'] ?? null,
                 'image'         => $inventory->image,
+                'quantity_total' => $data['quantity_total'] ?? $inventory->quantity_total,
             ]);
 
             // Logika Siklus Hidup File QR Code

@@ -46,10 +46,25 @@
                 <!-- Badge Status & Edit Aset Row -->
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div>
-                        @php $statusColor = $inventory->statusColor(); @endphp
-                        <span class="badge bg-{{ $statusColor }}-subtle text-{{ $statusColor }} border border-{{ $statusColor }}-subtle px-3 py-2 rounded-pill fw-semibold">
-                            <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> {{ strtoupper($inventory->status ?? 'TERSEDIA') }}
-                        </span>
+                        @switch($inventory->display_status)
+                            @case('Tersedia')
+                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> TERSEDIA</span>
+                                @break
+                            @case('Dipinjam')
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> DIPINJAM</span>
+                                @break
+                            @case('Perbaikan')
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> PERBAIKAN</span>
+                                @break
+                            @case('Rusak')
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> RUSAK</span>
+                                @break
+                            @case('Hilang')
+                                <span class="badge bg-dark-subtle text-dark border border-dark-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> HILANG</span>
+                                @break
+                            @default
+                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> {{ strtoupper($inventory->status ?? 'TERSEDIA') }}</span>
+                        @endswitch
                     </div>
                 </div>
 
@@ -215,7 +230,15 @@
                                         </tr>
                                         <tr>
                                             <td class="text-muted py-2">Status Barang</td>
-                                            <td class="py-2">: <span class="badge bg-{{ $inventory->statusColor() }}-subtle text-{{ $inventory->statusColor() }} border border-{{ $inventory->statusColor() }}-subtle px-2 py-1">{{ strtoupper($inventory->status ?? 'TERSEDIA') }}</span></td>
+                                            <td class="py-2">: <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">{{ strtoupper($inventory->display_status ?? 'TERSEDIA') }}</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted py-2">Jumlah Barang</td>
+                                            <td class="py-2">:
+                                                <span class="fw-semibold">{{ $inventory->quantity_total }} unit total</span>
+                                                <span class="text-success">({{ $inventory->qty_available }} tersedia</span>,
+                                                <span class="text-secondary">{{ $inventory->qty_in_use }} sedang dipakai)</span>
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td class="text-muted py-2">Brand</td>

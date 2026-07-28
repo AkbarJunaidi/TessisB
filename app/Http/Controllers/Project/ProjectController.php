@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Project;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Project\ProjectCrewRequest;
 use App\Http\Requests\Project\ProjectRequest;
 use App\Models\Project;
+use App\Services\ProjectCrewService;
 use App\Services\ProjectService;
 use App\Services\TaskService;
 use Illuminate\Http\RedirectResponse;
@@ -18,17 +20,31 @@ class ProjectController extends Controller
      */
     public function __construct(
         protected ProjectService $projectService,
+        protected ProjectCrewService $projectCrewService,
         protected TaskService $taskService
     ) {}
 
     /**
-     * Menampilkan daftar project.
+     * Menampilkan daftar project: stat card, kalender, dan tabel dengan filter.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $projects = $this->projectService->getAllPaginated(10);
+        $filters = $request->only(['search', 'status', 'pic', 'month', 'date']);
 
-        return view('project.index', compact('projects'));
+        $projects = $this->projectService->getAllPaginated($filters, 10);
+        $stats    = $this->projectService->getStats();
+
+        $calendarMonth = (int) ($request->query('cal_month', now()->month));
+        $calendarYear  = (int) ($request->query('cal_year', now()->year));
+        $calendarData  = $this->projectService->getCalendarData($calendarMonth, $calendarYear);
+
+        $pics = $this->projectService->getDistinctPics();
+
+        $allProjectsForPicker = Project::select('id', 'name')->orderBy('name')->get();
+
+        return view('project.index', compact(
+            'projects', 'stats', 'calendarData', 'calendarMonth', 'calendarYear', 'pics', 'filters', 'allProjectsForPicker'
+        ));
     }
 
     /**
@@ -54,51 +70,51 @@ class ProjectController extends Controller
     }
 
     /**
-     * Menampilkan Board Project.
+     * Menampilkan Detail Project: header, info kunci, crew, aksi cepat,
+     * tab Overview/Kanban/Barang/Dokumen/Catatan.
      */
     public function show(Project $project): View
     {
-        $groupedTasks = $this->taskService
-            ->getTasksByProject($project);
+        $groupedTasks = $this->taskService->getTasksByProject($project);
+
+        $project->load([
+            'creator',
+            'crews',
+            'notes.user',
+            'suratJalans.items.inventory',
+            'folder.files.user',
+        ]);
+
+        $allUsers = \App\Models\User::where('status', 'active')->orderBy('name')->get();
+        $allFolders = \App\Models\Folder::orderBy('name')->get();
 
         return view(
-            'project.board',
-            compact(
-                'project',
-                'groupedTasks'
-            )
+            'project.show',
+            compact('project', 'groupedTasks', 'allUsers', 'allFolders')
         );
     }
 
     /**
-     * Menambahkan list/kolom board baru pada project.
+     * Menampilkan halaman edit project.
      */
-    public function storeList(
-        Request $request,
-        Project $project
-    ): RedirectResponse {
+    public function edit(Project $project): View
+    {
+        return view('project.edit', compact('project'));
+    }
 
-        $request->validate([
-            'label' => ['required', 'string', 'max:50'],
-        ], [
-            'label.required' => 'Nama list wajib diisi.',
-            'label.max'      => 'Nama list maksimal 50 karakter.',
-        ]);
+    /**
+     * Memperbarui data project.
+     */
+    public function update(ProjectRequest $request, Project $project): RedirectResponse
+    {
+        $this->projectService->updateProject(
+            $project,
+            $request->validated()
+        );
 
-        try {
-
-            $this->projectService->addBoardList(
-                $project,
-                $request->label
-            );
-
-            return back()->with('success', 'List baru berhasil ditambahkan.');
-
-        } catch (\InvalidArgumentException $e) {
-
-            return back()->with('error', $e->getMessage());
-
-        }
+        return redirect()
+            ->route('projects.show', $project)
+            ->with('success', 'Project berhasil diperbarui.');
     }
 
     /**
@@ -111,5 +127,36 @@ class ProjectController extends Controller
         return redirect()
             ->route('projects.index')
             ->with('success', 'Project berhasil dihapus.');
+    }
+
+    /**
+     * Mengubah status project (dipakai oleh stepper status di Detail Project).
+     */
+    public function updateStatus(Request $request, Project $project): RedirectResponse
+    {
+        $request->validate([
+            'status' => ['required', 'in:Draft,Scheduled,Confirmed,In Progress,On Review,Done'],
+        ]);
+
+        $project->update(['status' => $request->input('status')]);
+
+        return redirect()
+            ->route('projects.show', $project)
+            ->with('success', 'Status project berhasil diperbarui.');
+    }
+
+    /**
+     * Memperbarui Crew/Tim Project (Super Admin & Admin).
+     */
+    public function updateCrew(ProjectCrewRequest $request, Project $project): RedirectResponse
+    {
+        $this->projectCrewService->syncCrew(
+            $project,
+            $request->validated()['crew'] ?? []
+        );
+
+        return redirect()
+            ->route('projects.show', $project)
+            ->with('success', 'Crew project berhasil diperbarui.');
     }
 }

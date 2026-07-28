@@ -102,4 +102,36 @@ class FolderService
 
         return $deleted;
     }
+
+    /**
+     * Mengambil folder khusus sebuah project (Document Center), atau membuatnya
+     * otomatis jika belum ada. Struktur: root "Projects" > "<Nama Project>".
+     * Dipanggil otomatis saat project baru dibuat (lihat ProjectService::createProject).
+     */
+    public function getOrCreateProjectFolder(\App\Models\Project $project): Folder
+    {
+        if ($project->folder) {
+            return $project->folder;
+        }
+
+        $rootFolder = Folder::whereNull('parent_id')
+            ->whereNull('project_id')
+            ->where('name', 'Projects')
+            ->first();
+
+        if (!$rootFolder) {
+            $rootFolder = Folder::create([
+                'name'       => 'Projects',
+                'parent_id'  => null,
+                'created_by' => Auth::id(),
+            ]);
+        }
+
+        return Folder::create([
+            'name'       => $project->name,
+            'parent_id'  => $rootFolder->id,
+            'project_id' => $project->id,
+            'created_by' => Auth::id(),
+        ]);
+    }
 }
