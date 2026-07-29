@@ -24,13 +24,6 @@
         </div>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-    @if(session('error'))
-        <div class="alert alert-danger">{{ session('error') }}</div>
-    @endif
-
     <div class="card shadow-sm border-0 rounded-3">
         <div class="card-body p-4">
             <h6 class="fw-bold mb-3">Daftar Barang</h6>

@@ -15,16 +15,6 @@
         </a>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
-            <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-check-circle-fill text-success fs-5"></i>
-                <div>{{ session('success') }}</div>
-            </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
     <div class="row g-4">
         <div class="col-12 col-lg-8">
             <div class="card shadow-sm border-0 rounded-3 bg-white mb-4">
@@ -107,9 +97,10 @@
                         <label for="status" class="form-label fw-semibold small text-secondary">Update Progress Status</label>
                         <div class="d-flex gap-2">
                             <select name="status" id="status" class="form-select fw-bold text-dark">
-                                @foreach($task->project->getBoardLists() as $list)
-                                    <option value="{{ $list['label'] }}" {{ $task->status === $list['label'] ? 'selected' : '' }}>{{ $list['label'] }}</option>
-                                @endforeach
+                                <option value="Todo" {{ $task->status === 'Todo' ? 'selected' : '' }}>Todo</option>
+                                <option value="In Progress" {{ $task->status === 'In Progress' ? 'selected' : '' }}>In Progress</option>
+                                <option value="Review" {{ $task->status === 'Review' ? 'selected' : '' }}>Review</option>
+                                <option value="Done" {{ $task->status === 'Done' ? 'selected' : '' }}>Done</option>
                             </select>
                             <button type="submit" class="btn btn-dark fw-medium px-3">Update</button>
                         </div>
