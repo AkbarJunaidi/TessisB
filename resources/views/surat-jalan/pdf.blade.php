@@ -181,7 +181,7 @@
         }
 
         .catatan-box {
-            border: 1px solid #333333;
+            border: 1px solid #000000;
             padding: 6px 8px;
             font-size: 9pt;
             min-height: 45px;
