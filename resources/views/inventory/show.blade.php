@@ -327,7 +327,39 @@
         </div>
     </div>
 
+    <!-- CARD BARU: Unit Tersedia (ringkasan status per-unit fisik) -->
+    <div class="card shadow-sm border-0 rounded-3 bg-white mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold m-0">Unit Tersedia</h6>
+                <span class="text-muted small">{{ $inventory->qty_available }} dari {{ $inventory->quantity_total }} unit bisa dipinjam sekarang</span>
+            </div>
+            <div class="row g-2">
+                @forelse($inventory->units as $unit)
+                    @php
+                        $badgeClass = match($unit->status) {
+                            'Tersedia'  => 'bg-success-subtle text-success border-success-subtle',
+                            'Perbaikan' => 'bg-warning-subtle text-warning border-warning-subtle',
+                            'Rusak'     => 'bg-danger-subtle text-danger border-danger-subtle',
+                            'Hilang'    => 'bg-secondary-subtle text-secondary border-secondary-subtle',
+                            default     => 'bg-light text-dark border',
+                        };
+                    @endphp
+                    <div class="col-6 col-md-3 col-lg-2">
+                        <div class="border rounded-3 p-2 text-center {{ $badgeClass }}">
+                            <div class="fw-bold">#{{ $unit->unit_number }}</div>
+                            <div class="small">{{ $unit->status }}</div>
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-muted small m-0">Belum ada data unit fisik untuk barang ini.</p>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
 </div>
+
 
 <!-- FIXED BOTTOM ACTION BAR UNTUK MOBILE (SEPERTI CONTOH GAMBAR) -->
 <div class="d-md-none fixed-bottom bg-white border-top shadow-lg py-2 px-3">

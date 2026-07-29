@@ -1,5 +1,20 @@
 @php
     $old = fn ($field, $default = null) => old($field, $project?->{$field} ?? $default);
+
+    // HTML <input type="date"> butuh format persis "Y-m-d". Kolom event_date di-cast
+    // Carbon, jadi kalau di-echo langsung hasilnya "Y-m-d H:i:s" dan browser gagal isi otomatis.
+    $oldDate = function ($field) use ($project) {
+        $value = old($field, $project?->{$field});
+        return $value ? \Carbon\Carbon::parse($value)->format('Y-m-d') : '';
+    };
+
+    // HTML <input type="time"> hanya boleh "H:i" (tanpa detik), kalau ada detik browser
+    // otomatis memunculkan kolom detik tambahan sehingga terlihat "18.00.00".
+    $oldTime = function ($field) use ($project) {
+        $value = old($field, $project?->{$field});
+        return $value ? \Carbon\Carbon::parse($value)->format('H:i') : '';
+    };
+
     $categories = ['Wedding', 'Corporate', 'Graduation', 'Live Streaming', 'Product Launch', 'Lainnya'];
 @endphp
 
@@ -47,7 +62,7 @@
         <label for="event_date" class="form-label fw-semibold small text-secondary">Tanggal Acara <span class="text-danger">*</span></label>
         <input type="date" name="event_date" id="event_date"
                class="form-control @error('event_date') is-invalid @enderror"
-               value="{{ $old('event_date') }}" required>
+               value="{{ $oldDate('event_date') }}" required>
         @error('event_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
@@ -55,7 +70,7 @@
         <label for="event_time_start" class="form-label fw-semibold small text-secondary">Jam Mulai <span class="text-danger">*</span></label>
         <input type="time" name="event_time_start" id="event_time_start"
                class="form-control @error('event_time_start') is-invalid @enderror"
-               value="{{ $old('event_time_start') }}" required>
+               value="{{ $oldTime('event_time_start') }}" required>
         @error('event_time_start')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
@@ -63,7 +78,7 @@
         <label for="event_time_end" class="form-label fw-semibold small text-secondary">Jam Selesai</label>
         <input type="time" name="event_time_end" id="event_time_end"
                class="form-control @error('event_time_end') is-invalid @enderror"
-               value="{{ $old('event_time_end') }}">
+               value="{{ $oldTime('event_time_end') }}">
         @error('event_time_end')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 

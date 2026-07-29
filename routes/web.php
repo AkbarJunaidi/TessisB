@@ -69,6 +69,10 @@ Route::middleware('auth')->group(function () {
         Route::get('inventory/report/download-all-pdf', [InventoryController::class, 'downloadAllPdf'])
             ->name('inventory.download-all-pdf');
 
+        // FITUR Kelola Unit Fisik (AJAX per-baris)
+        Route::patch('inventory/{inventory}/units/{unit}/status', [InventoryController::class, 'updateUnitStatus'])
+            ->name('inventory.units.update-status');
+
     });
 
     // Modul Tracking Progress (Project & Task)

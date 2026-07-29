@@ -212,6 +212,65 @@
             </div>
         </div>
 
+        <!-- CARD BARU: Kelola Unit Fisik (AJAX per-baris) -->
+        <div class="card shadow-sm border-0 rounded-3 bg-white mb-4">
+            <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="card-title fw-bold text-dark m-0">Kelola Unit Fisik ({{ $inventory->quantity_total }} unit)</h5>
+                </div>
+                <span class="text-muted small">1 Serial Number / QR untuk seluruh unit</span>
+            </div>
+            <div class="card-body p-4">
+                <div id="unitStatusAlert" class="alert d-none" role="alert"></div>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr class="text-uppercase text-secondary small">
+                                <th>Unit #</th>
+                                <th>Status Saat Ini</th>
+                                <th style="width:260px;">Ubah Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="unitStatusTableBody">
+                            @foreach($inventory->units as $unit)
+                                @php
+                                    $badgeClass = match($unit->status) {
+                                        'Tersedia'  => 'bg-success-subtle text-success border border-success-subtle',
+                                        'Perbaikan' => 'bg-warning-subtle text-warning border border-warning-subtle',
+                                        'Rusak'     => 'bg-danger-subtle text-danger border border-danger-subtle',
+                                        'Hilang'    => 'bg-secondary-subtle text-secondary border border-secondary-subtle',
+                                        default     => 'bg-light text-dark border',
+                                    };
+                                @endphp
+                                <tr data-unit-row="{{ $unit->id }}">
+                                    <td class="fw-semibold">#{{ $unit->unit_number }}</td>
+                                    <td>
+                                        <span class="badge rounded-pill px-3 py-2 unit-status-badge {{ $badgeClass }}">{{ strtoupper($unit->status) }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-2">
+                                            <select class="form-select form-select-sm unit-status-select">
+                                                @foreach(['Tersedia', 'Perbaikan', 'Rusak', 'Hilang'] as $statusOption)
+                                                    <option value="{{ $statusOption }}" @selected($unit->status === $statusOption)>{{ $statusOption }}</option>
+                                                @endforeach
+                                            </select>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-primary save-unit-status"
+                                                    data-unit-id="{{ $unit->id }}"
+                                                    data-url="{{ route('inventory.units.update-status', [$inventory, $unit]) }}">
+                                                <i class="bi bi-check-lg"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-muted small mb-0">Ubah "Jumlah Barang" di form atas untuk menambah/mengurangi unit. Mengurangi jumlah hanya bisa dilakukan pada unit berstatus Tersedia.</p>
+            </div>
+        </div>
+
         <!-- CARD 3: Informasi Tambahan -->
         @php
             $hasExistingAttrs = ($inventory->attributes && $inventory->attributes->count() > 0);
@@ -411,5 +470,67 @@
             updateDescriptionCounter();
         }
     });
+
+    // Kelola Unit Fisik: update status per-baris via AJAX (tanpa reload halaman, tanpa submit form utama)
+    (function () {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        const alertBox = document.getElementById('unitStatusAlert');
+        const badgeClassMap = {
+            'Tersedia':  'bg-success-subtle text-success border border-success-subtle',
+            'Perbaikan': 'bg-warning-subtle text-warning border border-warning-subtle',
+            'Rusak':     'bg-danger-subtle text-danger border border-danger-subtle',
+            'Hilang':    'bg-secondary-subtle text-secondary border border-secondary-subtle',
+        };
+
+        function showAlert(message, isError) {
+            alertBox.textContent = message;
+            alertBox.classList.remove('d-none', 'alert-success', 'alert-danger');
+            alertBox.classList.add(isError ? 'alert-danger' : 'alert-success');
+            setTimeout(() => alertBox.classList.add('d-none'), 3000);
+        }
+
+        document.querySelectorAll('.save-unit-status').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const row = btn.closest('tr');
+                const select = row.querySelector('.unit-status-select');
+                const badge = row.querySelector('.unit-status-badge');
+                const newStatus = select.value;
+                const url = btn.dataset.url;
+
+                btn.disabled = true;
+                const originalIcon = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                fetch(url, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ status: newStatus }),
+                })
+                    .then(async (response) => {
+                        const data = await response.json();
+                        if (!response.ok) {
+                            throw new Error(data.message || 'Gagal memperbarui status unit.');
+                        }
+                        return data;
+                    })
+                    .then((data) => {
+                        badge.textContent = newStatus.toUpperCase();
+                        badge.className = 'badge rounded-pill px-3 py-2 unit-status-badge ' + (badgeClassMap[newStatus] || 'bg-light text-dark border');
+                        showAlert(data.message, false);
+                    })
+                    .catch((err) => {
+                        showAlert(err.message, true);
+                    })
+                    .finally(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = originalIcon;
+                    });
+            });
+        });
+    })();
 </script>
 @endsection

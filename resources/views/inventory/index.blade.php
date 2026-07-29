@@ -145,6 +145,7 @@
                                         @default
                                             <span class="badge bg-success px-2 py-1">{{ $item->status ?? 'Tersedia' }}</span>
                                     @endswitch
+                                    <div class="small text-muted mt-1">{{ $item->qty_available }}/{{ $item->quantity_total }} unit tersedia</div>
                                 </td>
 
                                 <!-- Tanggal Input -->

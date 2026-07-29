@@ -20,8 +20,8 @@ class ProjectRequest extends FormRequest
             'category'    => ['required', 'string', 'max:100'],
 
             'event_date'       => ['required', 'date', 'after_or_equal:today'],
-            'event_time_start' => ['required', 'date_format:H:i'],
-            'event_time_end'   => ['nullable', 'date_format:H:i', 'after:event_time_start'],
+            'event_time_start' => ['required', 'date_format:H:i,H:i:s'],
+            'event_time_end'   => ['nullable', 'date_format:H:i,H:i:s', 'after:event_time_start'],
 
             'location' => ['required', 'string', 'max:255'],
             'address'  => ['required', 'string'],
