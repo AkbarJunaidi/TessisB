@@ -33,9 +33,18 @@
                 <h6 class="fw-bold mb-3">Informasi Surat Jalan</h6>
 
                 <div class="row g-3">
-                    <div class="col-md-6">
+                    <div class="col-md-5">
                         <label class="form-label fw-semibold small text-secondary">Kepada <span class="text-danger">*</span></label>
                         <input type="text" name="kepada" class="form-control" placeholder="Contoh: Bapak Arnold | GKI Sepanjang" value="{{ old('kepada', $project->client) }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold small text-secondary">Keperluan Barang <span class="text-danger">*</span></label>
+                        <select name="keperluan" class="form-select" required>
+                            <option value="">Pilih Keperluan</option>
+                            @foreach(['Dokumentasi Video', 'Dokumentasi Foto', 'Dokumentasi Foto & Video', 'Live Streaming', 'Lainnya'] as $keperluanOption)
+                                <option value="{{ $keperluanOption }}" @selected(old('keperluan') === $keperluanOption)>{{ $keperluanOption }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-semibold small text-secondary">PIC <span class="text-danger">*</span></label>
@@ -143,16 +152,13 @@
     function addRow() {
         const html = `
             <div class="row g-2 mb-2 align-items-center item-row" data-index="${rowIndex}">
-                <div class="col-md-5">
+                <div class="col-md-7">
                     <select name="items[${rowIndex}][inventory_id]" class="form-select form-select-sm item-select" required>
                         <option value="">Pilih Barang</option>
                         ${buildOptions(null)}
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <input type="text" name="items[${rowIndex}][kategori_item]" class="form-control form-control-sm" placeholder="Kategori (opsional), contoh: Dokumentasi Video">
-                </div>
-                <div class="col-md-2">
                     <input type="number" min="1" name="items[${rowIndex}][qty]" class="form-control form-control-sm item-qty" placeholder="Qty" required>
                 </div>
                 <div class="col-md-1">

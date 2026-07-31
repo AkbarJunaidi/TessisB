@@ -146,6 +146,25 @@ class ProjectController extends Controller
     }
 
     /**
+     * Menambahkan list/kolom Kanban baru (fitur "Add List").
+     */
+    public function storeList(Request $request, Project $project): RedirectResponse
+    {
+        $request->validate([
+            'label' => ['required', 'string', 'max:50'],
+        ]);
+
+        $colors = ['secondary', 'primary', 'warning', 'success', 'info', 'danger', 'dark'];
+        $color = $colors[count($project->getBoardLists()) % count($colors)];
+
+        $project->addBoardList($request->input('label'), $color);
+
+        return redirect()
+            ->route('projects.show', $project)
+            ->with('success', 'List baru berhasil ditambahkan ke board.');
+    }
+
+    /**
      * Memperbarui Crew/Tim Project (Super Admin & Admin).
      */
     public function updateCrew(ProjectCrewRequest $request, Project $project): RedirectResponse

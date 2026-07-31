@@ -24,6 +24,14 @@
         </div>
     </div>
 
+    <!-- Alert Success -->
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <!-- Form Search & Filter Status -->
     <div class="card shadow-sm border-0 rounded-3 bg-white mb-4">
         <div class="card-body p-3">
@@ -37,7 +45,7 @@
                         <input type="text"
                                name="search"
                                class="form-control bg-light border-start-0 ps-0"
-                               placeholder="Cari berdasarkan nama barang..."
+                               placeholder="Cari berdasarkan nama barang atau brand..."
                                value="{{ request('search') }}">
                     </div>
                 </div>

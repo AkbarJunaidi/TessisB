@@ -24,15 +24,24 @@
         </div>
     </div>
 
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
+
     <div class="card shadow-sm border-0 rounded-3">
         <div class="card-body p-4">
-            <h6 class="fw-bold mb-3">Daftar Barang</h6>
+            <h6 class="fw-bold mb-1">Daftar Barang</h6>
+            @if($suratJalan->keperluan)
+                <p class="text-muted small mb-3">Keperluan: <span class="fw-semibold text-dark">{{ $suratJalan->keperluan }}</span></p>
+            @endif
             <div class="table-responsive">
                 <table class="table table-sm align-middle">
                     <thead>
                         <tr class="text-muted small">
                             <th>Barang</th>
-                            <th>Kategori</th>
                             <th class="text-center">Dipakai</th>
                             <th class="text-center">Dikembalikan</th>
                             <th class="text-center">Sisa</th>
@@ -44,7 +53,6 @@
                             @php $sisa = $item->qty_dipakai - $item->qty_dikembalikan; @endphp
                             <tr>
                                 <td>{{ $item->inventory->name }}</td>
-                                <td>{{ $item->kategori_item ?? '-' }}</td>
                                 <td class="text-center">{{ $item->qty_dipakai }}</td>
                                 <td class="text-center">{{ $item->qty_dikembalikan }}</td>
                                 <td class="text-center">

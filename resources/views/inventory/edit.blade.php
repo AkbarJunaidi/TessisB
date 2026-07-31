@@ -234,32 +234,46 @@
                         <tbody id="unitStatusTableBody">
                             @foreach($inventory->units as $unit)
                                 @php
-                                    $badgeClass = match($unit->status) {
+                                    $badgeClass = match($unit->display_status) {
                                         'Tersedia'  => 'bg-success-subtle text-success border border-success-subtle',
+                                        'Dipinjam'  => 'bg-primary-subtle text-primary border border-primary-subtle',
                                         'Perbaikan' => 'bg-warning-subtle text-warning border border-warning-subtle',
                                         'Rusak'     => 'bg-danger-subtle text-danger border border-danger-subtle',
                                         'Hilang'    => 'bg-secondary-subtle text-secondary border border-secondary-subtle',
                                         default     => 'bg-light text-dark border',
                                     };
                                 @endphp
-                                <tr data-unit-row="{{ $unit->id }}">
+                                <tr data-unit-row="{{ $unit->id }}" data-on-loan="{{ $unit->surat_jalan_item_id ? '1' : '0' }}">
                                     <td class="fw-semibold">#{{ $unit->unit_number }}</td>
                                     <td>
-                                        <span class="badge rounded-pill px-3 py-2 unit-status-badge {{ $badgeClass }}">{{ strtoupper($unit->status) }}</span>
+                                        <span class="badge rounded-pill px-3 py-2 unit-status-badge {{ $badgeClass }}">{{ strtoupper($unit->display_status) }}</span>
+                                        @if($unit->surat_jalan_item_id)
+                                            <div class="small text-muted mt-1">Dipinjam via {{ $unit->suratJalanItem->suratJalan->nomor ?? '-' }}</div>
+                                        @endif
                                     </td>
                                     <td>
-                                        <div class="d-flex gap-2">
-                                            <select class="form-select form-select-sm unit-status-select">
-                                                @foreach(['Tersedia', 'Perbaikan', 'Rusak', 'Hilang'] as $statusOption)
-                                                    <option value="{{ $statusOption }}" @selected($unit->status === $statusOption)>{{ $statusOption }}</option>
-                                                @endforeach
-                                            </select>
-                                            <button type="button"
-                                                    class="btn btn-sm btn-outline-primary save-unit-status"
-                                                    data-unit-id="{{ $unit->id }}"
-                                                    data-url="{{ route('inventory.units.update-status', [$inventory, $unit]) }}">
-                                                <i class="bi bi-check-lg"></i>
-                                            </button>
+                                        <div class="d-flex flex-column gap-1">
+                                            <div class="d-flex gap-2">
+                                                <select class="form-select form-select-sm unit-status-select" @disabled($unit->surat_jalan_item_id)>
+                                                    @if($unit->surat_jalan_item_id)
+                                                        <option value="Dipinjam" selected>Dipinjam</option>
+                                                    @else
+                                                        @foreach(['Tersedia', 'Perbaikan', 'Rusak', 'Hilang'] as $statusOption)
+                                                            <option value="{{ $statusOption }}" @selected($unit->status === $statusOption)>{{ $statusOption }}</option>
+                                                        @endforeach
+                                                    @endif
+                                                </select>
+                                                <button type="button"
+                                                        class="btn btn-sm btn-outline-primary save-unit-status"
+                                                        data-unit-id="{{ $unit->id }}"
+                                                        data-url="{{ route('inventory.units.update-status', [$inventory, $unit]) }}"
+                                                        @disabled($unit->surat_jalan_item_id)>
+                                                    <i class="bi bi-check-lg"></i>
+                                                </button>
+                                            </div>
+                                            @if($unit->surat_jalan_item_id)
+                                                <span class="small text-muted">Sedang dipinjam - tunggu dikembalikan.</span>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -477,6 +491,7 @@
         const alertBox = document.getElementById('unitStatusAlert');
         const badgeClassMap = {
             'Tersedia':  'bg-success-subtle text-success border border-success-subtle',
+            'Dipinjam':  'bg-primary-subtle text-primary border border-primary-subtle',
             'Perbaikan': 'bg-warning-subtle text-warning border border-warning-subtle',
             'Rusak':     'bg-danger-subtle text-danger border border-danger-subtle',
             'Hilang':    'bg-secondary-subtle text-secondary border border-secondary-subtle',
@@ -518,8 +533,10 @@
                         return data;
                     })
                     .then((data) => {
-                        badge.textContent = newStatus.toUpperCase();
-                        badge.className = 'badge rounded-pill px-3 py-2 unit-status-badge ' + (badgeClassMap[newStatus] || 'bg-light text-dark border');
+                        const onLoan = row.dataset.onLoan === '1';
+                        const displayed = onLoan ? 'Dipinjam' : newStatus;
+                        badge.textContent = displayed.toUpperCase();
+                        badge.className = 'badge rounded-pill px-3 py-2 unit-status-badge ' + (badgeClassMap[displayed] || 'bg-light text-dark border');
                         showAlert(data.message, false);
                     })
                     .catch((err) => {

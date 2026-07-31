@@ -118,14 +118,19 @@ class Inventory extends Model
             }
 
             // Hitung status mayoritas dari unit yang sudah di-eager-load (relationLoaded),
-            // fallback ke kolom status lama jika belum ada unit sama sekali (data transisi).
+            // berbasis display_status tiap unit (jadi "Dipinjam" ikut dihitung, bukan
+            // cuma status kondisi mentah) - fallback ke query kalau belum di-eager-load,
+            // dan ke kolom status lama kalau belum ada unit sama sekali (data transisi).
             if ($this->relationLoaded('units') && $this->units->isNotEmpty()) {
-                return $this->units->countBy('status')->sortDesc()->keys()->first();
+                return $this->units->countBy(fn ($unit) => $unit->display_status)->sortDesc()->keys()->first();
             }
 
             if ($this->exists) {
-                $majority = $this->units()->selectRaw('status, COUNT(*) as total')
-                    ->groupBy('status')->orderByDesc('total')->value('status');
+                $majority = $this->units()
+                    ->selectRaw("CASE WHEN surat_jalan_item_id IS NOT NULL THEN 'Dipinjam' ELSE status END as computed_status, COUNT(*) as total")
+                    ->groupBy('computed_status')
+                    ->orderByDesc('total')
+                    ->value('computed_status');
 
                 if ($majority) {
                     return $majority;

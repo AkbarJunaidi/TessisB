@@ -58,7 +58,7 @@ class InventoryController extends Controller
      */
     public function show(Inventory $inventory): View
     {
-        $inventory->load('attributes', 'units');
+        $inventory->load('attributes', 'units.suratJalanItem.suratJalan');
 
         return view('inventory.show', compact('inventory'));
     }
@@ -68,7 +68,7 @@ class InventoryController extends Controller
      */
     public function edit(Inventory $inventory): View
     {
-        $inventory->load('attributes', 'units');
+        $inventory->load('attributes', 'units.suratJalanItem.suratJalan');
 
         return view('inventory.edit', compact('inventory'));
     }
@@ -110,7 +110,11 @@ class InventoryController extends Controller
             return response()->json(['message' => 'Unit tidak ditemukan pada barang ini.'], 404);
         }
 
-        $updated = $this->inventoryService->updateUnitStatus($unit, $request->input('status'));
+        try {
+            $updated = $this->inventoryService->updateUnitStatus($unit, $request->input('status'));
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
 
         return response()->json([
             'message' => "Status Unit #{$updated->unit_number} berhasil diperbarui.",

@@ -19,12 +19,24 @@ class Project extends Model
     protected $casts = [
         'deadline'   => 'date',
         'event_date' => 'date',
+        'board_lists' => 'array',
+    ];
+
+    /**
+     * Daftar list/kolom board default kalau project belum pernah custom.
+     */
+    public const DEFAULT_BOARD_LISTS = [
+        ['label' => 'Todo', 'color' => 'secondary'],
+        ['label' => 'In Progress', 'color' => 'primary'],
+        ['label' => 'Review', 'color' => 'warning'],
+        ['label' => 'Done', 'color' => 'success'],
     ];
 
     protected $fillable = [
         'name',
         'description',
         'deadline',
+        'board_lists',
         'created_by',
         'client',
         'pic',
@@ -38,6 +50,26 @@ class Project extends Model
         'priority',
         'status',
     ];
+
+    /**
+     * Daftar list/kolom Kanban board project ini (custom kalau pernah
+     * ditambah lewat "Add List", atau 4 default kalau belum pernah).
+     */
+    public function getBoardLists(): array
+    {
+        return $this->board_lists ?: self::DEFAULT_BOARD_LISTS;
+    }
+
+    /**
+     * Menambahkan list/kolom board baru (dipanggil dari fitur "Add List").
+     */
+    public function addBoardList(string $label, string $color = 'secondary'): void
+    {
+        $lists = $this->getBoardLists();
+        $lists[] = ['label' => $label, 'color' => $color];
+
+        $this->update(['board_lists' => $lists]);
+    }
 
     /**
      * Relasi One-to-Many: Sebuah Project memiliki banyak Tasks.

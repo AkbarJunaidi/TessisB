@@ -6,7 +6,7 @@
     <style>
         @page {
             size: a4 portrait;
-            margin: 1.2cm;
+            margin: 0.5cm 1.8cm 1.8cm 1.8cm;
         }
 
         * {
@@ -18,7 +18,8 @@
         }
 
         body {
-            font-family: 'Helvetica', 'Arial', sans-serif;
+            /* Font default untuk isi dokumen */
+            font-family: 'Times-Roman', 'Times New Roman', serif;
             color: #222222;
             line-height: 1.4;
             margin: 0;
@@ -42,29 +43,55 @@
             vertical-align: middle;
         }
 
-        /* LOGO STYLING */
+        /* LOGO CELL (Tanpa Garis Vertikal) */
+        .logo-cell {
+            width: 22%;
+            padding-right: 12px;
+            padding-top: 6px;
+        }
+
         .header-logo {
-            width: 120px;
+            width: 115px;
             height: auto;
             display: block;
         }
 
+        /* DETAIL PERUSAHAAN */
+        .brand-cell {
+            width: 78%;
+            padding-left: 0px;
+        }
+
+        /* BRAND NAME (Fake Bold untuk DomPDF) */
         .brand-name {
-            font-size: 14pt;
+            font-family: 'Helvetica-Bold', 'Helvetica', sans-serif;
+            font-size: 16pt;
             font-weight: bold;
-            color: #0d3b66;
-            letter-spacing: 0.3px;
+            color: #000000;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            margin-bottom: 2px;
+            text-shadow: 0.5px 0px 0px #000000; /* Menambah ketebalan ekstra di DomPDF */
         }
+
+        /* BRAND SUB */
         .brand-sub {
-            font-size: 8.5pt;
+            font-family: 'Times-BoldItalic', 'Times-Roman', serif;
+            font-size: 10.5pt;
+            /* font-style: italic; */
             font-weight: bold;
-            color: #444444;
-            margin-top: 2px;
+            color: #111111;
+            letter-spacing: 1.5px;
+            margin-bottom: 3px;
         }
+
+        /* BRAND ADDRESS */
         .brand-address {
+            font-family: 'Times-Bold', 'Times-Roman', serif;
             font-size: 7.5pt;
-            color: #666666;
-            margin-top: 2px;
+            font-weight: bold;
+            color: #222222;
+            letter-spacing: 0.3px;
         }
 
         .divider {
@@ -94,14 +121,9 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 12px;
-            font-size: 9pt;
-        }
-        .info-table td {
-            vertical-align: top;
-            padding: 2px 0;
+            font-size: 11pt;
         }
         .info-label {
-            width: 90px;
             color: #555555;
         }
         .info-colon {
@@ -117,7 +139,7 @@
         .item-table th, .item-table td {
             border: 1px solid #333333;
             padding: 6px 8px;
-            font-size: 9pt;
+            font-size: 10pt;
             vertical-align: top;
         }
         .item-table th {
@@ -215,7 +237,7 @@
         }
         .footer-contact {
             text-align: center;
-            font-size: 7.5pt;
+            font-size: 9pt;
             color: #555555;
         }
 
@@ -234,10 +256,9 @@
 
     <table class="header-table">
         <tr>
-            <!-- Kolom Logo -->
-            <td style="width: 15%; padding-right: 10px;">
+            <!-- Kolom Logo (Tanpa Garis Vertikal) -->
+            <td class="logo-cell">
                 @php
-                    // $imagePath = public_path('image/LogoAP.png');
                     $imagePath = public_path('image/Arindra.png');
                     if (file_exists($imagePath)) {
                         $imageData = base64_encode(file_get_contents($imagePath));
@@ -254,15 +275,12 @@
                     <span style="font-size: 8pt; color: red;">Logo Tidak Ditemukan</span>
                 @endif
             </td>
+
             <!-- Kolom Nama & Detail Perusahaan -->
-            <td style="width: 55%;">
+            <td class="brand-cell">
                 <p class="brand-name">CV. ARINDRA PRODUCTION</p>
                 <p class="brand-sub">Creative House Production</p>
-                <p class="brand-address">Alamat: Bendul Merisi Selatan 3/102 Surabaya | Telp: 031-8431462 | WA: 081252200899</p>
-            </td>
-            <!-- Kolom Status Badge -->
-            <td style="width: 30%; text-align: right;">
-                <span class="status-badge">{{ strtoupper($suratJalan->status) }}</span>
+                <p class="brand-address">Alamat : Bendul Merisi Selatan 3/102 Surabaya, Telp : 031- 8431462, Whatsapp : 081252200899</p>
             </td>
         </tr>
     </table>
@@ -272,22 +290,35 @@
     <p class="doc-title">Surat Jalan</p>
     <p class="doc-number">No. {{ $suratJalan->nomor }}</p>
 
+    <!-- INFO KEPADA (Pindah Baris) & TANGGAL/PIC -->
     <table class="info-table">
         <tr>
-            <td class="info-label">Kepada</td>
-            <td class="info-colon">:</td>
-            <td style="font-weight: bold; width: 40%;">{{ $suratJalan->kepada }}</td>
-            <td class="info-label" style="width: 100px;">Tanggal Terbit</td>
-            <td class="info-colon">:</td>
-            <td>{{ \Carbon\Carbon::parse($suratJalan->tanggal_terbit)->translatedFormat('d / m / Y') }}</td>
-        </tr>
-        <tr>
-            <td class="info-label">&nbsp;</td>
-            <td class="info-colon"></td>
-            <td></td>
-            <td class="info-label">PIC</td>
-            <td class="info-colon">:</td>
-            <td>{{ $suratJalan->pic }}</td>
+            <!-- Kolom Kepada: Isi berpindah ke bawah label -->
+            <!-- hapus br dan div ganti dengan spant  -->
+
+
+            <td style="width: 50%; vertical-align: top;">
+                <span class="info-label">Kepada :</span><br>
+                <div style="font-weight: bold; margin-top: 3px; padding-left: 2px;">
+                    {!! nl2br(e($suratJalan->kepada)) !!}
+                </div>
+            </td>
+
+            <!-- Kolom Detail Kanan: Tanggal Terbit & PIC -->
+            <td style="width: 50%; vertical-align: top;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td class="info-label" style="width: 95px; padding: 2px 0;">Tanggal Terbit</td>
+                        <td class="info-colon" style="padding: 2px 0;">:</td>
+                        <td style="padding: 2px 0;">{{ \Carbon\Carbon::parse($suratJalan->tanggal_terbit)->translatedFormat('d / m / Y') }}</td>
+                    </tr>
+                    <tr>
+                        <td class="info-label" style="padding: 2px 0;">PIC</td>
+                        <td class="info-colon" style="padding: 2px 0;">:</td>
+                        <td style="padding: 2px 0;">{{ $suratJalan->pic }}</td>
+                    </tr>
+                </table>
+            </td>
         </tr>
     </table>
 
@@ -302,7 +333,7 @@
             <tr>
                 <td class="item-no">1</td>
                 <td>
-                    @php $grouped = $suratJalan->items->groupBy(fn ($i) => $i->kategori_item ?: 'Barang'); @endphp
+                    @php $grouped = $suratJalan->keperluan ? $suratJalan->items->groupBy(fn () => $suratJalan->keperluan) : $suratJalan->items->groupBy(fn ($i) => $i->kategori_item ?: 'Barang'); @endphp
                     @foreach($grouped as $kategori => $rows)
                         <p class="item-category">{{ $kategori }}</p>
                         @foreach($rows as $row)

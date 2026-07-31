@@ -35,9 +35,13 @@ class InventoryService
     {
         $query = Inventory::withAvailability();
 
-        // Search HANYA berdasarkan Nama Barang
+        // Search berdasarkan Nama Barang ATAU Brand
         if (!empty($filters['search'])) {
-            $query->where('name', 'like', '%' . trim($filters['search']) . '%');
+            $keyword = trim($filters['search']);
+            $query->where(function ($q) use ($keyword) {
+                $q->where('name', 'like', '%' . $keyword . '%')
+                  ->orWhere('brand', 'like', '%' . $keyword . '%');
+            });
         }
 
         // Filter berdasarkan Dropdown Status
@@ -225,6 +229,13 @@ class InventoryService
                 );
             }
 
+            $sedangDipinjam = $unitsToRemove->firstWhere('surat_jalan_item_id', '!=', null);
+            if ($sedangDipinjam) {
+                throw new \Exception(
+                    "Tidak bisa mengurangi Jumlah Barang: Unit #{$sedangDipinjam->unit_number} sedang dipinjam lewat Surat Jalan. Tunggu sampai unit itu dikembalikan."
+                );
+            }
+
             \App\Models\InventoryUnit::whereIn('id', $unitsToRemove->pluck('id'))->delete();
         }
     }
@@ -234,6 +245,10 @@ class InventoryService
      */
     public function updateUnitStatus(\App\Models\InventoryUnit $unit, string $status): \App\Models\InventoryUnit
     {
+        if ($unit->surat_jalan_item_id) {
+            throw new \Exception("Unit #{$unit->unit_number} sedang dipinjam - status tidak bisa diubah manual sampai dikembalikan.");
+        }
+
         $unit->update(['status' => $status]);
 
         $this->activityLogService->log(

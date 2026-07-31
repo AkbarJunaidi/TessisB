@@ -86,6 +86,9 @@ Route::middleware('auth')->group(function () {
         Route::patch('projects/{project}/update-status', [ProjectController::class, 'updateStatus'])
             ->name('projects.update-status');
 
+        Route::post('projects/{project}/lists', [ProjectController::class, 'storeList'])
+            ->name('projects.lists.store');
+
         Route::post('projects/notes', [ProjectNoteController::class, 'store'])
             ->name('projects.notes.store');
 

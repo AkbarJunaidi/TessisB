@@ -15,8 +15,9 @@ class SuratJalanRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'kepada' => ['required', 'string', 'max:255'],
-            'pic'    => ['required', 'string', 'max:255'],
+            'kepada'    => ['required', 'string', 'max:255'],
+            'keperluan' => ['required', 'string', 'in:Dokumentasi Video,Dokumentasi Foto,Dokumentasi Foto & Video,Live Streaming,Lainnya'],
+            'pic'       => ['required', 'string', 'max:255'],
             'tanggal_terbit' => ['required', 'date'],
 
             'tanggal_keberangkatan' => ['nullable', 'date'],
@@ -34,7 +35,6 @@ class SuratJalanRequest extends FormRequest
 
             'items'                     => ['required', 'array', 'min:1'],
             'items.*.inventory_id'      => ['required', 'integer', 'exists:inventories,id'],
-            'items.*.kategori_item'     => ['nullable', 'string', 'max:100'],
             'items.*.qty'               => ['required', 'integer', 'min:1'],
         ];
     }
@@ -43,6 +43,8 @@ class SuratJalanRequest extends FormRequest
     {
         return [
             'kepada.required'        => 'Nama penerima (Kepada) wajib diisi.',
+            'keperluan.required'     => 'Keperluan barang wajib dipilih.',
+            'keperluan.in'           => 'Keperluan barang tidak valid.',
             'pic.required'           => 'PIC wajib diisi.',
             'tanggal_terbit.required' => 'Tanggal terbit wajib diisi.',
             'lokasi_acara.required'  => 'Lokasi acara wajib diisi.',

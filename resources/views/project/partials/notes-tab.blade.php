@@ -4,6 +4,8 @@
 <div class="card border-0 shadow-sm rounded-3">
     <div class="card-body">
 
+        <h6 class="fw-bold mb-3">Catatan</h6>
+
         <form action="{{ route('projects.notes.store') }}" method="POST" class="mb-4">
             @csrf
             <input type="hidden" name="project_id" value="{{ $project->id }}">

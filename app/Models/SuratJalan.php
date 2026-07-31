@@ -19,6 +19,7 @@ class SuratJalan extends Model
         'project_id',
         'created_by',
         'kepada',
+        'keperluan',
         'pic',
         'tanggal_terbit',
         'tanggal_keberangkatan',

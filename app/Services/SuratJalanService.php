@@ -48,6 +48,7 @@ class SuratJalanService
                 'project_id'             => $project->id,
                 'created_by'             => Auth::id(),
                 'kepada'                 => $data['kepada'],
+                'keperluan'              => $data['keperluan'],
                 'pic'                    => $data['pic'],
                 'tanggal_terbit'         => $data['tanggal_terbit'],
                 'tanggal_keberangkatan'  => $data['tanggal_keberangkatan'] ?? null,
@@ -75,16 +76,32 @@ class SuratJalanService
                     throw new Exception("Stok \"{$inventory->name}\" tidak mencukupi saat penyimpanan (kemungkinan diambil Surat Jalan lain secara bersamaan).");
                 }
 
-                SuratJalanItem::create([
+                $suratJalanItem = SuratJalanItem::create([
                     'surat_jalan_id'   => $suratJalan->id,
                     'inventory_id'     => $inventory->id,
-                    'kategori_item'    => $row['kategori_item'] ?? null,
                     'qty_dipakai'      => $row['qty'],
                     'qty_dikembalikan' => 0,
                 ]);
                 // Catatan: qty_available Inventory dihitung otomatis (accessor) dari
                 // SUM(qty_dipakai - qty_dikembalikan) pada surat_jalan_items, sehingga
                 // baris di atas SUDAH otomatis "mengurangi" stok tanpa kolom terpisah.
+
+                // Tandai unit fisik spesifik mana yang benar-benar keluar (bukan cuma
+                // hitungan qty), supaya "Kelola Unit Fisik" & "Unit Tersedia" akurat
+                // menampilkan unit mana yang sedang dipakai.
+                $unitsToAssign = $inventory->units()
+                    ->where('status', 'Tersedia')
+                    ->whereNull('surat_jalan_item_id')
+                    ->orderBy('unit_number')
+                    ->limit($row['qty'])
+                    ->get();
+
+                if ($unitsToAssign->count() < $row['qty']) {
+                    throw new Exception("Unit fisik \"{$inventory->name}\" yang benar-benar tersedia tidak mencukupi.");
+                }
+
+                \App\Models\InventoryUnit::whereIn('id', $unitsToAssign->pluck('id'))
+                    ->update(['surat_jalan_item_id' => $suratJalanItem->id]);
             }
 
             $this->activityLogService->log(
@@ -179,6 +196,16 @@ class SuratJalanService
             $item->update([
                 'qty_dikembalikan' => $item->qty_dikembalikan + $qty,
             ]);
+
+            // Lepaskan sejumlah `$qty` unit fisik yang tadinya terhubung ke item ini,
+            // supaya unit itu kembali terlihat "Tersedia" (bukan "Dipakai") lagi.
+            $unitsToRelease = \App\Models\InventoryUnit::where('surat_jalan_item_id', $item->id)
+                ->orderBy('unit_number')
+                ->limit($qty)
+                ->get();
+
+            \App\Models\InventoryUnit::whereIn('id', $unitsToRelease->pluck('id'))
+                ->update(['surat_jalan_item_id' => null]);
 
             $suratJalan = $item->suratJalan()->with('items')->first();
             $allReturned = $suratJalan->items->every(fn ($i) => $i->qty_dikembalikan >= $i->qty_dipakai);

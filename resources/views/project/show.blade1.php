@@ -62,7 +62,7 @@
                             <li><a class="dropdown-item" href="{{ route('surat-jalan.create', $project) }}"><i class="bi bi-plus-lg me-1"></i> Buat Surat Jalan</a></li>
                         @endif
                         <li>
-                            <a class="dropdown-item go-to-surat-jalan-tab" href="#tab-suratjalan">
+                            <a class="dropdown-item go-to-surat-jalan-tab" href="#tab-suratjalan" data-bs-toggle="tab">
                                 <i class="bi bi-eye me-1"></i> Lihat Surat Jalan
                             </a>
                         </li>
@@ -77,7 +77,7 @@
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm rounded-3 h-100">
                 <div class="card-body">
-                    <h5 class="fw-bold mb-3">{{ $project->category ?: '-' }}</h5>
+                    <h6 class="fw-bold mb-3">{{ $project->category ?: '-' }}</h6>
                     <div class="row g-3 small">
                         <div class="col-md-6">
                             <div class="text-muted">Client</div>
@@ -129,6 +129,9 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h6 class="fw-bold m-0">Dokumen</h6>
                         <div class="d-flex align-items-center gap-2">
+                            <button type="button" class="btn btn-sm btn-primary d-flex align-items-center justify-content-center rounded-circle p-0" style="width:28px;height:28px;" data-bs-toggle="modal" data-bs-target="#uploadDocModal" title="Tambah Dokumen">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
                             @if($project->folder)
                                 <a href="{{ route('folders.show', $project->folder) }}" class="small text-decoration-none">Lihat Semua</a>
                             @endif
@@ -235,23 +238,9 @@
         });
     });
 
-    // "Lihat Surat Jalan" di dropdown header: pindah tab (dengan memicu tombol tab
-    // aslinya secara langsung, supaya Bootstrap benar-benar menonaktifkan tab yang
-    // sedang aktif) + scroll ke section tab-nya + sinkronkan bottom nav mobile
+    // "Lihat Surat Jalan" di dropdown header: pindah tab + scroll ke section tab-nya
     document.querySelectorAll('.go-to-surat-jalan-tab').forEach(function (link) {
-        link.addEventListener('click', function (e) {
-            e.preventDefault();
-
-            const realTabButton = document.querySelector('#projectTabs [data-bs-target="#tab-suratjalan"]');
-            if (realTabButton) {
-                bootstrap.Tab.getOrCreateInstance(realTabButton).show();
-            }
-
-            // Sinkronkan highlight bottom nav mobile juga
-            document.querySelectorAll('.mobile-tab-link').forEach(l => l.classList.remove('active', 'text-primary'));
-            const mobileLink = document.querySelector('.mobile-tab-link[href="#tab-suratjalan"]');
-            if (mobileLink) mobileLink.classList.add('active', 'text-primary');
-
+        link.addEventListener('click', function () {
             setTimeout(function () {
                 const tabsSection = document.getElementById('projectTabs');
                 if (tabsSection) tabsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
