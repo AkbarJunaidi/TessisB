@@ -11,6 +11,7 @@ use App\Http\Controllers\Project\ProjectNoteController;
 use App\Http\Controllers\Project\SuratJalanController;
 use App\Http\Controllers\Task\CommentController;
 use App\Http\Controllers\Task\TaskController;
+use App\Http\Controllers\Tracking\BorrowedItemController;
 use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -146,6 +147,17 @@ Route::middleware('auth')->group(function () {
 
         Route::post('surat-jalan/items/{item}/return', [SuratJalanController::class, 'returnItem'])
             ->name('surat-jalan.items.return');
+
+        Route::post('barang-pinjaman/{project}/return', [BorrowedItemController::class, 'returnUnits'])
+            ->name('borrowed-items.return');
+
+    });
+
+    // Modul Barang Pinjaman - lihat (Super Admin, Admin, Employee sesuai permission surat_jalan.view)
+    Route::middleware('role:super_admin,admin,employee')->group(function () {
+
+        Route::get('barang-pinjaman', [BorrowedItemController::class, 'index'])
+            ->name('borrowed-items.index');
 
     });
 

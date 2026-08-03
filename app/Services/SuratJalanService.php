@@ -188,31 +188,14 @@ class SuratJalanService
         return DB::transaction(function () use ($item, $qty) {
             $item = SuratJalanItem::where('id', $item->id)->lockForUpdate()->first();
 
-            $sisa = $item->qty_dipakai - $item->qty_dikembalikan;
-            if ($qty > $sisa) {
-                throw new Exception("Jumlah pengembalian melebihi sisa barang yang masih dipakai ({$sisa} unit).");
-            }
-
-            $item->update([
-                'qty_dikembalikan' => $item->qty_dikembalikan + $qty,
-            ]);
-
-            // Lepaskan sejumlah `$qty` unit fisik yang tadinya terhubung ke item ini,
-            // supaya unit itu kembali terlihat "Tersedia" (bukan "Dipakai") lagi.
+            // Unit fisik dipilih otomatis (nomor terkecil dulu) karena caller cuma
+            // memberi angka qty, bukan unit spesifik mana yang mau dikembalikan.
             $unitsToRelease = \App\Models\InventoryUnit::where('surat_jalan_item_id', $item->id)
                 ->orderBy('unit_number')
                 ->limit($qty)
                 ->get();
 
-            \App\Models\InventoryUnit::whereIn('id', $unitsToRelease->pluck('id'))
-                ->update(['surat_jalan_item_id' => null]);
-
-            $suratJalan = $item->suratJalan()->with('items')->first();
-            $allReturned = $suratJalan->items->every(fn ($i) => $i->qty_dikembalikan >= $i->qty_dipakai);
-
-            if ($allReturned && $suratJalan->status !== 'Selesai') {
-                $suratJalan->update(['status' => 'Selesai']);
-            }
+            ['item' => $updatedItem, 'suratJalan' => $suratJalan] = $this->applyReturn($item, $unitsToRelease);
 
             $this->activityLogService->log(
                 Auth::id(),
@@ -220,7 +203,94 @@ class SuratJalanService
                 "Mengembalikan {$qty} unit barang pada Surat Jalan {$suratJalan->nomor}"
             );
 
-            return $item->fresh();
+            return $updatedItem;
         });
+    }
+
+    /**
+     * Mengembalikan sekumpulan unit fisik SPESIFIK (dipilih manual oleh user,
+     * misal dari Card di halaman Barang Pinjaman) - bukan cuma angka qty.
+     * Bisa mencakup unit dari beberapa SuratJalanItem berbeda sekaligus
+     * (misal Monitor #1 dari SJ-0003 dan Kamera #2 dari SJ-0003 dalam 1 project),
+     * makanya dikelompokkan per item dulu sebelum diproses.
+     *
+     * @param  \Illuminate\Support\Collection<int, \App\Models\InventoryUnit>  $units
+     * @return array{updated_items: int, project_still_has_borrowed: bool}
+     *
+     * @throws Exception
+     */
+    public function returnUnitsForProject(\App\Models\Project $project, \Illuminate\Support\Collection $units): array
+    {
+        return DB::transaction(function () use ($project, $units) {
+            $groupedByItem = $units->groupBy('surat_jalan_item_id');
+            $updatedCount = 0;
+
+            foreach ($groupedByItem as $itemId => $unitsGroup) {
+                $item = SuratJalanItem::where('id', $itemId)->lockForUpdate()->first();
+
+                if (!$item) {
+                    continue;
+                }
+
+                // Proteksi: pastikan item ini benar-benar milik project yang diminta,
+                // bukan project lain (mencegah request yang dimanipulasi).
+                $suratJalan = $item->suratJalan;
+                if (!$suratJalan || $suratJalan->project_id !== $project->id) {
+                    throw new Exception('Salah satu barang tidak berasal dari project ini.');
+                }
+
+                $this->applyReturn($item, $unitsGroup);
+                $updatedCount++;
+            }
+
+            $this->activityLogService->log(
+                Auth::id(),
+                'Tracking Progress',
+                "Mengembalikan {$units->count()} unit barang pinjaman project \"{$project->name}\""
+            );
+
+            $stillHasBorrowed = SuratJalanItem::whereHas('suratJalan', fn ($q) => $q->where('project_id', $project->id))
+                ->whereColumn('qty_dipakai', '>', 'qty_dikembalikan')
+                ->exists();
+
+            return [
+                'updated_items' => $updatedCount,
+                'project_still_has_borrowed' => $stillHasBorrowed,
+            ];
+        });
+    }
+
+    /**
+     * Inti proses pengembalian: validasi sisa, tambah qty_dikembalikan, lepaskan
+     * unit fisik yang diberikan, dan tandai Surat Jalan "Selesai" kalau seluruh
+     * itemnya sudah kembali. Dipakai bersama oleh returnItem() dan
+     * returnUnitsForProject() supaya logic-nya satu sumber (tidak duplikat).
+     *
+     * @throws Exception
+     */
+    private function applyReturn(SuratJalanItem $item, \Illuminate\Support\Collection $unitsToRelease): array
+    {
+        $qty = $unitsToRelease->count();
+        $sisa = $item->qty_dipakai - $item->qty_dikembalikan;
+
+        if ($qty > $sisa) {
+            throw new Exception("Jumlah pengembalian melebihi sisa barang yang masih dipakai ({$sisa} unit).");
+        }
+
+        $item->update([
+            'qty_dikembalikan' => $item->qty_dikembalikan + $qty,
+        ]);
+
+        \App\Models\InventoryUnit::whereIn('id', $unitsToRelease->pluck('id'))
+            ->update(['surat_jalan_item_id' => null]);
+
+        $suratJalan = $item->suratJalan()->with('items')->first();
+        $allReturned = $suratJalan->items->every(fn ($i) => $i->qty_dikembalikan >= $i->qty_dipakai);
+
+        if ($allReturned && $suratJalan->status !== 'Selesai') {
+            $suratJalan->update(['status' => 'Selesai']);
+        }
+
+        return ['item' => $item->fresh(), 'suratJalan' => $suratJalan];
     }
 }

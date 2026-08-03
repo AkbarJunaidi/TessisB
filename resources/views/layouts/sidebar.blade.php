@@ -47,7 +47,7 @@
 
         <!--tracking progress-->
         @php
-            $trackActive = request()->routeIs('projects.*') || request()->routeIs('tasks.*') || request()->routeIs('activity-logs.*');
+            $trackActive = request()->routeIs('projects.*') || request()->routeIs('tasks.*') || request()->routeIs('activity-logs.*') || request()->routeIs('borrowed-items.*');
         @endphp
         <li class="nav-item">
             <a href="#menuTracking" data-bs-toggle="collapse" class="nav-link text-white d-flex align-items-center justify-content-between {{ $trackActive ? 'fw-semibold' : 'opacity-75' }}" aria-expanded="{{ $trackActive ? 'true' : 'false' }}">
@@ -61,6 +61,11 @@
                     <li class="nav-item">
                         <a href="{{ route('projects.index') }}" class="nav-link sidebar-dropdown-item text-dark px-3 py-2 {{ request()->routeIs('projects.index') || request()->routeIs('projects.show') || request()->routeIs('tasks.show') ? 'fw-bold bg-light border-start border-3 border-primary' : '' }}">
                             <i class="bi bi-kanban me-2 text-muted"></i> Projects
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('borrowed-items.index') }}" class="nav-link sidebar-dropdown-item text-dark px-3 py-2 {{ request()->routeIs('borrowed-items.*') ? 'fw-bold bg-light border-start border-3 border-primary' : '' }}">
+                            <i class="bi bi-box-arrow-in-left me-2 text-muted"></i> Barang Pinjaman
                         </a>
                     </li>
                     <li class="nav-item">
