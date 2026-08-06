@@ -47,16 +47,16 @@
 
         /* SISI KIRI (KOLOM QR CODE): Mengatur porsi area 42% dan memberi batas garis putus-putus */
         .td-qr {
-            width: 42%;
+            width: 41%;
             text-align: center;
-            vertical-align: middle;
-            padding-right: 15px;
+            vertical-align: middle; 
+            padding-right: 10px;
             border-right: 2px dashed #dddddd;
         }
 
         /* SISI KANAN (KOLOM INFORMASI TEKS): Mengatur porsi area 58% dengan format teks rata kiri */
         .td-text {
-            width: 58%;
+            width: 59%;
             vertical-align: middle;
             padding-left: 20px;
             text-align: left;
@@ -68,10 +68,10 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 180px;
+            width: 200px;
             height: auto;
-            margin-top: -120px;  /* Setengah dari perkiraan tinggi logo untuk center vertikal */
-            margin-left: -85px;  /* Menggeser setengah lebar logo agar pas tengah di kolom teks */
+            margin-top: -125px;  /* kurangi untuk geser ke atas */
+            margin-left: -95px; /* kurangi untuk geser ke kiri */
             opacity: 0.44;
             z-index: 1;
         }
