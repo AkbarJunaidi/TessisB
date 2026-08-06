@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Project;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Project\ProjectCrewRequest;
+use App\Http\Requests\Project\ProjectFinanceRequest;
 use App\Http\Requests\Project\ProjectRequest;
 use App\Models\Project;
 use App\Services\ProjectCrewService;
+use App\Services\ProjectFinanceService;
 use App\Services\ProjectService;
 use App\Services\TaskService;
 use Illuminate\Http\RedirectResponse;
@@ -21,6 +23,7 @@ class ProjectController extends Controller
     public function __construct(
         protected ProjectService $projectService,
         protected ProjectCrewService $projectCrewService,
+        protected ProjectFinanceService $projectFinanceService,
         protected TaskService $taskService
     ) {}
 
@@ -83,6 +86,7 @@ class ProjectController extends Controller
             'notes.user',
             'suratJalans.items.inventory',
             'folder.files.user',
+            'financeItems',
         ]);
 
         $allUsers = \App\Models\User::where('status', 'active')->orderBy('name')->get();
@@ -143,6 +147,24 @@ class ProjectController extends Controller
         return redirect()
             ->route('projects.show', $project)
             ->with('success', 'Status project berhasil diperbarui.');
+    }
+
+    /**
+     * Menyimpan Data Keuangan project (Pendapatan & Pengeluaran manual).
+     * Khusus Super Admin - dijaga lewat authorize() di ProjectFinanceRequest
+     * dan juga role middleware di route.
+     */
+    public function updateFinance(ProjectFinanceRequest $request, Project $project): RedirectResponse
+    {
+        $this->projectFinanceService->syncFinanceItems(
+            $project,
+            $request->validated()['incomes'] ?? [],
+            $request->validated()['expenses'] ?? []
+        );
+
+        return redirect()
+            ->route('projects.show', $project)
+            ->with('success', 'Data keuangan project berhasil disimpan.');
     }
 
     /**

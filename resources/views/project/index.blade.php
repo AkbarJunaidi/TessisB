@@ -146,6 +146,15 @@
                         <span class="text-warning">&#9679;</span> 3-4 Project &nbsp;
                         <span class="text-danger">&#9679;</span> &gt; 4 Project
                     </div>
+
+                    @if(auth()->user()->isSuperAdmin())
+                        <hr class="my-3">
+                        <button type="button" id="exportMonthlyReportBtn" class="btn btn-outline-primary btn-sm w-100 d-flex align-items-center justify-content-center gap-2"
+                                data-month="{{ $calendarMonth }}" data-year="{{ $calendarYear }}">
+                            <span class="btn-text"><i class="bi bi-file-earmark-pdf me-1"></i> Export Laporan Bulanan</span>
+                            <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>
@@ -303,6 +312,59 @@
         const url = document.getElementById('pickProjectSelect').value;
         if (url) { window.location.href = url; }
     });
+</script>
+@endif
+
+@if(auth()->user()->isSuperAdmin())
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const btn = document.getElementById('exportMonthlyReportBtn');
+    if (!btn) return;
+
+    btn.addEventListener('click', function () {
+        const month = btn.dataset.month;
+        const year = btn.dataset.year;
+        const btnText = btn.querySelector('.btn-text');
+        const spinner = btn.querySelector('.spinner-border');
+
+        btn.disabled = true;
+        btnText.classList.add('d-none');
+        spinner.classList.remove('d-none');
+
+        fetch(`{{ route('reports.finance.monthly') }}?month=${month}&year=${year}`, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+        })
+            .then(async function (response) {
+                if (!response.ok) {
+                    const data = await response.json().catch(() => ({}));
+                    throw new Error(data.message || 'Gagal membuat laporan.');
+                }
+                return response.blob();
+            })
+            .then(function (blob) {
+                const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+                const filename = `Laporan-Keuangan-${monthNames[month - 1]}-${year}.pdf`;
+
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(function (err) {
+                alert(err.message);
+            })
+            .finally(function () {
+                btn.disabled = false;
+                btnText.classList.remove('d-none');
+                spinner.classList.add('d-none');
+            });
+    });
+});
 </script>
 @endif
 @endsection

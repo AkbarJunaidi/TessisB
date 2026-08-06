@@ -8,6 +8,7 @@ use App\Http\Controllers\DataIntegration\FolderController;
 use App\Http\Controllers\Inventory\InventoryController;
 use App\Http\Controllers\Project\ProjectController;
 use App\Http\Controllers\Project\ProjectNoteController;
+use App\Http\Controllers\Report\FinancialReportController;
 use App\Http\Controllers\Project\SuratJalanController;
 use App\Http\Controllers\Task\CommentController;
 use App\Http\Controllers\Task\TaskController;
@@ -125,6 +126,12 @@ Route::middleware('auth')->group(function () {
 
         Route::post('projects/{project}/surat-jalan', [SuratJalanController::class, 'store'])
             ->name('surat-jalan.store');
+
+        Route::put('projects/{project}/finance', [ProjectController::class, 'updateFinance'])
+            ->name('projects.finance.update');
+
+        Route::get('reports/finance/monthly', [FinancialReportController::class, 'exportMonthly'])
+            ->name('reports.finance.monthly');
 
     });
 

@@ -60,6 +60,26 @@
             vertical-align: middle;
             padding-left: 20px;
             text-align: left;
+            position: relative; /* Menjadi acuan patokan posisi logo */
+        }
+
+        /* WATERMARK LOGO AP3 (Center Presisi & Opacity 54%) */
+        .bg-watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 180px;
+            height: auto;
+            margin-top: -120px;  /* Setengah dari perkiraan tinggi logo untuk center vertikal */
+            margin-left: -85px;  /* Menggeser setengah lebar logo agar pas tengah di kolom teks */
+            opacity: 0.44;
+            z-index: 1;
+        }
+
+        /* KONTEN TEKS (Di atas logo) */
+        .content-container {
+            position: relative;
+            z-index: 2;
         }
 
         /* DRAF ELEMEN QR: Dimensi gambar matriks QR code agar konsisten dan tajam */
@@ -111,8 +131,21 @@
                         </td>
 
                         <td class="td-text">
-                            <div class="item-name">{{ $inventory->name }}</div>
-                            <div class="serial-badge">{{ $inventory->serial_number }}</div>
+                            @php
+                                $logoPath = public_path('image/LogoAP3.png');
+                                $logoSrc = file_exists($logoPath)
+                                    ? 'data:' . mime_content_type($logoPath) . ';base64,' . base64_encode(file_get_contents($logoPath))
+                                    : null;
+                            @endphp
+
+                            @if($logoSrc)
+                                <img src="{{ $logoSrc }}" class="bg-watermark">
+                            @endif
+
+                            <div class="content-container">
+                                <div class="item-name">{{ $inventory->name }}</div>
+                                <div class="serial-badge">{{ $inventory->serial_number }}</div>
+                            </div>
                         </td>
                     </tr>
                 </table>

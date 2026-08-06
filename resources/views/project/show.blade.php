@@ -175,6 +175,77 @@
         </div>
     </div>
 
+    @if(auth()->user()->isSuperAdmin())
+        <div class="row g-3 mb-3">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm rounded-3">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3">Data Keuangan</h6>
+
+                        <form id="financeForm" action="{{ route('projects.finance.update', $project) }}" method="POST">
+                            @csrf
+                            @method('PUT')
+
+                            {{-- PENDAPATAN --}}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="fw-bold m-0">Pendapatan</h6>
+                                <button type="button" id="addIncomeRow" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-plus-lg me-1"></i> Tambah Pendapatan
+                                </button>
+                            </div>
+                            <div class="row g-2 small text-secondary fw-semibold mb-1 d-none d-md-flex">
+                                <div class="col-md-4">Nominal (Rp)</div>
+                                <div class="col-md-7">Keterangan</div>
+                            </div>
+                            <div id="incomeRows">
+                                @foreach($project->financeItems->where('type', 'income')->values() as $i => $item)
+                                    @include('project.partials.finance-row', ['group' => 'incomes', 'index' => $i, 'item' => $item])
+                                @endforeach
+                            </div>
+                            <div class="p-2 px-3 rounded-3 bg-success-subtle d-flex justify-content-between align-items-center mb-4 mt-2">
+                                <span class="fw-semibold small">Total Pendapatan</span>
+                                <span class="fw-bold text-success" id="totalIncomeDisplay">{{ \App\Support\Money::formatRupiah($project->total_income) }}</span>
+                            </div>
+
+                            {{-- PENGELUARAN --}}
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="fw-bold m-0">Pengeluaran</h6>
+                                <button type="button" id="addExpenseRow" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-plus-lg me-1"></i> Tambah Pengeluaran
+                                </button>
+                            </div>
+                            <div class="row g-2 small text-secondary fw-semibold mb-1 d-none d-md-flex">
+                                <div class="col-md-4">Nominal (Rp)</div>
+                                <div class="col-md-7">Keterangan</div>
+                            </div>
+                            <div id="expenseRows">
+                                @foreach($project->financeItems->where('type', 'expense')->values() as $i => $item)
+                                    @include('project.partials.finance-row', ['group' => 'expenses', 'index' => $i, 'item' => $item])
+                                @endforeach
+                            </div>
+                            <div class="p-2 px-3 rounded-3 bg-danger-subtle d-flex justify-content-between align-items-center mb-4 mt-2">
+                                <span class="fw-semibold small">Total Pengeluaran</span>
+                                <span class="fw-bold text-danger" id="totalExpenseDisplay">{{ \App\Support\Money::formatRupiah($project->total_expense) }}</span>
+                            </div>
+
+                            {{-- LABA BERSIH --}}
+                            <div class="p-3 rounded-3 {{ $project->profit >= 0 ? 'bg-success-subtle' : 'bg-danger-subtle' }} d-flex justify-content-between align-items-center mb-3" id="profitBox">
+                                <span class="fw-bold">Laba Bersih</span>
+                                <span class="fw-bold fs-5 {{ $project->profit >= 0 ? 'text-success' : 'text-danger' }}" id="profitDisplay">{{ \App\Support\Money::formatRupiah($project->profit) }}</span>
+                            </div>
+
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-save me-1"></i> Simpan Data Keuangan
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- Tabs --}}
     <ul class="nav nav-tabs mb-3 d-none d-md-flex" id="projectTabs" role="tablist">
         <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-kanban" type="button">Kanban</button></li>
@@ -259,4 +330,96 @@
         });
     });
 </script>
+
+{{-- Script Data Keuangan: tambah/hapus baris + kalkulasi total live (client-side) --}}
+@if(auth()->user()->isSuperAdmin())
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let incomeIndex = {{ $project->financeItems->where('type', 'income')->count() }};
+    let expenseIndex = {{ $project->financeItems->where('type', 'expense')->count() }};
+
+    const incomeRows = document.getElementById('incomeRows');
+    const expenseRows = document.getElementById('expenseRows');
+
+    function formatRupiah(value) {
+        return 'Rp ' + Math.round(value).toLocaleString('id-ID');
+    }
+
+    function buildRow(group, index) {
+        return `
+            <div class="row g-2 mb-2 finance-row">
+                <div class="col-4">
+                    <input type="text" inputmode="numeric" name="${group}[${index}][amount]" class="form-control form-control-sm finance-amount-input" placeholder="0" required>
+                </div>
+                <div class="col-7">
+                    <input type="text" name="${group}[${index}][description]" class="form-control form-control-sm" placeholder="Keterangan">
+                </div>
+                <div class="col-1">
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-finance-row"><i class="bi bi-trash"></i></button>
+                </div>
+            </div>`;
+    }
+
+    function parseAmount(value) {
+        // Hilangkan semua karakter selain digit (titik ribuan dibuang), baru jadi angka murni
+        const digitsOnly = String(value).replace(/\D/g, '');
+        return digitsOnly === '' ? 0 : parseInt(digitsOnly, 10);
+    }
+
+    function recalculate() {
+        const sumRows = (container) => Array.from(container.querySelectorAll('.finance-amount-input'))
+            .reduce((sum, input) => sum + parseAmount(input.value), 0);
+
+        const totalIncome = sumRows(incomeRows);
+        const totalExpense = sumRows(expenseRows);
+        const profit = totalIncome - totalExpense;
+
+        document.getElementById('totalIncomeDisplay').textContent = formatRupiah(totalIncome);
+        document.getElementById('totalExpenseDisplay').textContent = formatRupiah(totalExpense);
+
+        const profitDisplay = document.getElementById('profitDisplay');
+        const profitBox = document.getElementById('profitBox');
+        profitDisplay.textContent = formatRupiah(profit);
+
+        profitDisplay.classList.toggle('text-success', profit >= 0);
+        profitDisplay.classList.toggle('text-danger', profit < 0);
+        profitBox.classList.toggle('bg-success-subtle', profit >= 0);
+        profitBox.classList.toggle('bg-danger-subtle', profit < 0);
+    }
+
+    document.getElementById('addIncomeRow').addEventListener('click', function () {
+        incomeRows.insertAdjacentHTML('beforeend', buildRow('incomes', incomeIndex));
+        incomeIndex++;
+    });
+
+    document.getElementById('addExpenseRow').addEventListener('click', function () {
+        expenseRows.insertAdjacentHTML('beforeend', buildRow('expenses', expenseIndex));
+        expenseIndex++;
+    });
+
+    document.getElementById('financeForm').addEventListener('click', function (e) {
+        const btn = e.target.closest('.remove-finance-row');
+        if (btn) {
+            btn.closest('.finance-row').remove();
+            recalculate();
+        }
+    });
+
+    document.getElementById('financeForm').addEventListener('input', function (e) {
+        if (e.target.classList.contains('finance-amount-input')) {
+            const cursorFromEnd = e.target.value.length - e.target.selectionStart;
+            const rawValue = parseAmount(e.target.value);
+
+            e.target.value = rawValue === 0 ? '' : rawValue.toLocaleString('id-ID');
+
+            // Pertahankan posisi kursor relatif dari akhir teks, supaya tidak "lompat" ke ujung
+            const newPos = Math.max(e.target.value.length - cursorFromEnd, 0);
+            e.target.setSelectionRange(newPos, newPos);
+
+            recalculate();
+        }
+    });
+});
+</script>
+@endif
 @endsection

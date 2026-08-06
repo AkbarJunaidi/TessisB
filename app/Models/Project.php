@@ -52,6 +52,44 @@ class Project extends Model
     ];
 
     /**
+     * Relasi ke seluruh item Pendapatan & Pengeluaran project ini.
+     */
+    public function financeItems(): HasMany
+    {
+        return $this->hasMany(ProjectFinanceItem::class);
+    }
+
+    /**
+     * Total Pendapatan (jumlah seluruh baris item bertipe income).
+     */
+    protected function totalIncome(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::get(
+            fn () => (float) $this->financeItems->where('type', 'income')->sum('amount')
+        );
+    }
+
+    /**
+     * Total Pengeluaran (jumlah seluruh baris item bertipe expense).
+     */
+    protected function totalExpense(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::get(
+            fn () => (float) $this->financeItems->where('type', 'expense')->sum('amount')
+        );
+    }
+
+    /**
+     * Laba bersih project ini (Total Pendapatan - Total Pengeluaran).
+     */
+    protected function profit(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::get(
+            fn () => $this->total_income - $this->total_expense
+        );
+    }
+
+    /**
      * Daftar list/kolom Kanban board project ini (custom kalau pernah
      * ditambah lewat "Add List", atau 4 default kalau belum pernah).
      */
