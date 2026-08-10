@@ -58,12 +58,34 @@ class FinancialReportService
         $totalRevenue = (float) $projects->sum(fn (Project $p) => $p->total_income);
         $totalExpense = (float) $projects->sum(fn (Project $p) => $p->total_expense);
 
+        // Rekap per-baris (bukan per-project) - dipakai untuk tabel "Rekap Pendapatan"
+        // dan "Rekap Pengeluaran", diurutkan dari yang paling awal diinput.
+        $incomeItems = $projects
+            ->flatMap(fn (Project $p) => $p->financeItems->where('type', 'income')
+                ->map(function ($item) use ($p) {
+                    $item->project_name = $p->name;
+                    return $item;
+                }))
+            ->sortBy('created_at')
+            ->values();
+
+        $expenseItems = $projects
+            ->flatMap(fn (Project $p) => $p->financeItems->where('type', 'expense')
+                ->map(function ($item) use ($p) {
+                    $item->project_name = $p->name;
+                    return $item;
+                }))
+            ->sortBy('created_at')
+            ->values();
+
         return [
             'projects' => $projects,
             'total_project' => $projects->count(),
             'total_revenue' => $totalRevenue,
             'total_expense' => $totalExpense,
             'total_profit' => $totalRevenue - $totalExpense,
+            'income_items' => $incomeItems,
+            'expense_items' => $expenseItems,
         ];
     }
 

@@ -6,7 +6,7 @@
     <style>
         @page {
             size: a4 portrait;
-            margin: 0.5cm 1.8cm 1cm 1.8cm;
+            margin: 4cm 1.8cm 2cm 1.8cm;
         }
 
         * {
@@ -33,11 +33,18 @@
             padding: 0;
         }
 
-        /* HEADER */
+        /* HEADER (fixed - berulang di setiap halaman) */
+        .page-header-fixed {
+            position: fixed;
+            top: -136px;
+            left: 0;
+            right: 0;
+        }
+
         .header-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 4px;
+            margin-bottom: 1px;
         }
         .header-table td {
             vertical-align: middle;
@@ -95,17 +102,21 @@
 
         .divider {
             border-top: 2px solid #0d3b66;
-            margin: 6px 0 12px 0;
+            margin: 0px 0 20px 0;
         }
 
         .doc-title {
             text-align: center;
             font-size: 13pt;
             font-weight: bold;
-            text-decoration: underline;
-            margin-bottom: 2px;
+            margin: 0 0 10px 0;
             color: #111111;
             text-transform: uppercase;
+        }
+
+        .doc-title span {
+            border-bottom: 1.5px solid #111111;
+            padding-bottom: 4px;
         }
 
         .doc-period {
@@ -130,6 +141,12 @@
             margin-bottom: 6px;
             border-bottom: 1px solid #999999;
             padding-bottom: 3px;
+            page-break-after: avoid; /* judul tidak boleh jadi baris terakhir sendirian di halaman */
+        }
+
+        /* Blok yang harus utuh - kalau tidak muat di sisa halaman, pindah semua ke halaman baru */
+        .section-block {
+            page-break-inside: avoid;
         }
         .summary-table {
             width: 100%;
@@ -165,6 +182,12 @@
             text-align: center;
             font-weight: bold;
         }
+        .project-table thead {
+            display: table-header-group;
+        }
+        .project-table tr {
+            page-break-inside: avoid;
+        }
         .col-no {
             width: 24px;
             text-align: center;
@@ -178,10 +201,33 @@
             background-color: #f5f5f5;
         }
 
-        /* FOOTER CONTAINER STYLING */
+        /* TABEL REKAP PENDAPATAN/PENGELUARAN */
+        .recap-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 14px;
+            font-size: 8.5pt;
+        }
+        .recap-table th, .recap-table td {
+            border: 1px solid #666666;
+            padding: 5px 6px;
+        }
+        .recap-table th {
+            background-color: #f0f4f8;
+            text-align: center;
+            font-weight: bold;
+        }
+        .recap-table thead {
+            display: table-header-group; /* thead berulang otomatis kalau tabel lanjut ke halaman baru */
+        }
+        .recap-table tr {
+            page-break-inside: avoid;
+        }
+
+        /* FOOTER CONTAINER STYLING (fixed - berulang di setiap halaman) */
         .footer-container {
-            position: absolute;
-            bottom: 0;
+            position: fixed;
+            bottom: -30px;
             left: 0;
             right: 0;
             width: 100%;
@@ -208,61 +254,65 @@
 </head>
 <body>
 
-    <table class="header-table">
-        <tr>
-            <!-- Kolom Logo (Tanpa Garis Vertikal) -->
-            <td class="logo-cell">
-                @php
-                    $imagePath = public_path('image/Arindra.png');
-                    if (file_exists($imagePath)) {
-                        $imageData = base64_encode(file_get_contents($imagePath));
-                        $mimeType = mime_content_type($imagePath);
-                        $src = 'data:' . $mimeType . ';base64,' . $imageData;
-                    } else {
-                        $src = '';
-                    }
-                @endphp
+    <div class="page-header-fixed">
+        <table class="header-table">
+            <tr>
+                <!-- Kolom Logo (Tanpa Garis Vertikal) -->
+                <td class="logo-cell">
+                    @php
+                        $imagePath = public_path('image/Arindra.png');
+                        if (file_exists($imagePath)) {
+                            $imageData = base64_encode(file_get_contents($imagePath));
+                            $mimeType = mime_content_type($imagePath);
+                            $src = 'data:' . $mimeType . ';base64,' . $imageData;
+                        } else {
+                            $src = '';
+                        }
+                    @endphp
 
-                @if($src)
-                    <img src="{{ $src }}" class="header-logo" alt="Logo">
-                @else
-                    <span style="font-size: 8pt; color: red;">Logo Tidak Ditemukan</span>
-                @endif
-            </td>
+                    @if($src)
+                        <img src="{{ $src }}" class="header-logo" alt="Logo">
+                    @else
+                        <span style="font-size: 8pt; color: red;">Logo Tidak Ditemukan</span>
+                    @endif
+                </td>
 
-            <!-- Kolom Nama & Detail Perusahaan -->
-            <td class="brand-cell">
-                <p class="brand-name">CV. ARINDRA PRODUCTION</p>
-                <p class="brand-sub">Creative House Production</p>
-                <p class="brand-address">Alamat : Bendul Merisi Selatan 3/102 Surabaya, Telp : 031- 8431462, Whatsapp : 081252200899</p>
-            </td>
-        </tr>
-    </table>
+                <!-- Kolom Nama & Detail Perusahaan -->
+                <td class="brand-cell">
+                    <p class="brand-name">CV. ARINDRA PRODUCTION</p>
+                    <p class="brand-sub">Creative House Production</p>
+                    <p class="brand-address">Alamat : Bendul Merisi Selatan 3/102 Surabaya, Telp : 031- 8431462, Whatsapp : 081252200899</p>
+                </td>
+            </tr>
+        </table>
 
-    <div class="divider"></div>
+        <div class="divider"></div>
+    </div>
 
-    <p class="doc-title">Laporan Keuangan Bulanan</p>
+    <p class="doc-title"><span>Laporan Keuangan Bulanan</span></p>
     <p class="doc-period">Periode: {{ $periodDate->translatedFormat('F Y') }}</p>
 
-    <p class="summary-title">Ringkasan</p>
-    <table class="summary-table">
-        <tr>
-            <td class="summary-label">Total Project</td>
-            <td class="summary-value">{{ $summary['total_project'] }} Project</td>
-        </tr>
-        <tr>
-            <td class="summary-label">Total Pendapatan</td>
-            <td class="summary-value">{{ \App\Support\Money::formatRupiah($summary['total_revenue']) }}</td>
-        </tr>
-        <tr>
-            <td class="summary-label">Total Pengeluaran</td>
-            <td class="summary-value">{{ \App\Support\Money::formatRupiah($summary['total_expense']) }}</td>
-        </tr>
-        <tr>
-            <td class="summary-label">Laba Bersih</td>
-            <td class="summary-value">{{ \App\Support\Money::formatRupiah($summary['total_profit']) }}</td>
-        </tr>
-    </table>
+    <div class="section-block">
+        <p class="summary-title">Ringkasan</p>
+        <table class="summary-table">
+            <tr>
+                <td class="summary-label">Total Project</td>
+                <td class="summary-value">{{ $summary['total_project'] }} Project</td>
+            </tr>
+            <tr>
+                <td class="summary-label">Total Pendapatan</td>
+                <td class="summary-value">{{ \App\Support\Money::formatRupiah($summary['total_revenue']) }}</td>
+            </tr>
+            <tr>
+                <td class="summary-label">Total Pengeluaran</td>
+                <td class="summary-value">{{ \App\Support\Money::formatRupiah($summary['total_expense']) }}</td>
+            </tr>
+            <tr>
+                <td class="summary-label">Laba Bersih</td>
+                <td class="summary-value">{{ \App\Support\Money::formatRupiah($summary['total_profit']) }}</td>
+            </tr>
+        </table>
+    </div>
 
     <p class="summary-title">Daftar Project</p>
     <table class="project-table">
@@ -294,6 +344,62 @@
                 <td class="col-money">{{ \App\Support\Money::formatRupiah($summary['total_revenue']) }}</td>
                 <td class="col-money">{{ \App\Support\Money::formatRupiah($summary['total_expense']) }}</td>
                 <td class="col-money">{{ \App\Support\Money::formatRupiah($summary['total_profit']) }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p class="summary-title">Rekap Pendapatan</p>
+    <table class="recap-table">
+        <thead>
+            <tr>
+                <th style="width:80px;">Tanggal Diinput</th>
+                <th>Nama Project</th>
+                <th>Keterangan</th>
+                <th style="width:110px;">Nominal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($summary['income_items'] as $item)
+                <tr>
+                    <td>{{ $item->created_at->translatedFormat('d M Y') }}</td>
+                    <td>{{ $item->project_name }}</td>
+                    <td>{{ $item->description ?: '-' }}</td>
+                    <td class="col-money">{{ \App\Support\Money::formatRupiah($item->amount) }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="4" style="text-align:center; color:#777777;">Tidak ada data pendapatan.</td></tr>
+            @endforelse
+            <tr class="total-row">
+                <td colspan="3" style="text-align:right;">Total Pendapatan</td>
+                <td class="col-money">{{ \App\Support\Money::formatRupiah($summary['total_revenue']) }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p class="summary-title">Rekap Pengeluaran</p>
+    <table class="recap-table">
+        <thead>
+            <tr>
+                <th style="width:80px;">Tanggal Diinput</th>
+                <th>Nama Project</th>
+                <th>Keterangan</th>
+                <th style="width:110px;">Nominal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($summary['expense_items'] as $item)
+                <tr>
+                    <td>{{ $item->created_at->translatedFormat('d M Y') }}</td>
+                    <td>{{ $item->project_name }}</td>
+                    <td>{{ $item->description ?: '-' }}</td>
+                    <td class="col-money">{{ \App\Support\Money::formatRupiah($item->amount) }}</td>
+                </tr>
+            @empty
+                <tr><td colspan="4" style="text-align:center; color:#777777;">Tidak ada data pengeluaran.</td></tr>
+            @endforelse
+            <tr class="total-row">
+                <td colspan="3" style="text-align:right;">Total Pengeluaran</td>
+                <td class="col-money">{{ \App\Support\Money::formatRupiah($summary['total_expense']) }}</td>
             </tr>
         </tbody>
     </table>
