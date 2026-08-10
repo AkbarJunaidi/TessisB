@@ -14,7 +14,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f8f9fa;
             overflow-x: hidden;
-        }
+        }  
         #wrapper {
             display: flex;
             width: 100vw;
@@ -59,16 +59,36 @@
             @include('layouts.navbar')
 
             <main class="main-content">
-                @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                @endif
-
                 @yield('content')
             </main>
         </div>
+    </div>
+
+    {{-- Toast notifikasi global (auto-hilang, mengambang, tidak mendorong konten halaman).
+         Dipakai di SELURUH halaman - jangan tambahkan alert session('success')/session('error')
+         lokal lagi di masing-masing view, cukup andalkan ini. --}}
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        @if(session('success'))
+            <div class="toast align-items-center text-bg-success border-0 shadow" role="alert" data-bs-autohide="true" data-bs-delay="4000" id="globalToastSuccess">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="toast align-items-center text-bg-danger border-0 shadow" role="alert" data-bs-autohide="true" data-bs-delay="6000" id="globalToastError">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ session('error') }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        @endif
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -81,6 +101,12 @@
                     document.getElementById("sidebar-wrapper").classList.toggle("toggled");
                 });
             }
+
+            // Tampilkan toast notifikasi global (kalau ada) - auto-hilang sendiri
+            document.querySelectorAll('.toast-container .toast').forEach(function (toastEl) {
+                const toast = new bootstrap.Toast(toastEl);
+                toast.show();
+            });
         });
     </script>
 </body>

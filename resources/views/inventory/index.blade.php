@@ -45,7 +45,7 @@
                         <input type="text"
                                name="search"
                                class="form-control bg-light border-start-0 ps-0"
-                               placeholder="Cari berdasarkan nama barang..."
+                               placeholder="Cari berdasarkan nama barang atau brand..."
                                value="{{ request('search') }}">
                     </div>
                 </div>
@@ -124,9 +124,9 @@
                                     </span>
                                 </td>
 
-                                <!-- Status Barang (Badge Bootstrap) -->
+                                <!-- Status Barang (Badge Bootstrap) - otomatis "Tersedia" jika masih ada unit available -->
                                 <td class="py-3">
-                                    @switch($item->status)
+                                    @switch($item->display_status)
                                         @case('Tersedia')
                                             <span class="badge bg-success px-2 py-1">Tersedia</span>
                                             @break
@@ -145,6 +145,7 @@
                                         @default
                                             <span class="badge bg-success px-2 py-1">{{ $item->status ?? 'Tersedia' }}</span>
                                     @endswitch
+                                    <div class="small text-muted mt-1">{{ $item->qty_available }}/{{ $item->quantity_total }} unit tersedia</div>
                                 </td>
 
                                 <!-- Tanggal Input -->

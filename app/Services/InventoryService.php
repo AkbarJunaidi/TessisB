@@ -33,11 +33,15 @@ class InventoryService
      */
     public function getAllPaginated(array $filters = [], int $perPage = 10): LengthAwarePaginator
     {
-        $query = Inventory::query();
+        $query = Inventory::withAvailability();
 
-        // Search HANYA berdasarkan Nama Barang
+        // Search berdasarkan Nama Barang ATAU Brand
         if (!empty($filters['search'])) {
-            $query->where('name', 'like', '%' . trim($filters['search']) . '%');
+            $keyword = trim($filters['search']);
+            $query->where(function ($q) use ($keyword) {
+                $q->where('name', 'like', '%' . $keyword . '%')
+                  ->orWhere('brand', 'like', '%' . $keyword . '%');
+            });
         }
 
         // Filter berdasarkan Dropdown Status
@@ -69,6 +73,7 @@ class InventoryService
                 'brand'         => $data['brand'] ?? null,
                 'image'         => $imagePath,
                 'qr_code'       => null,
+                'quantity_total' => $data['quantity_total'] ?? 1,
             ]);
 
             // Generate file fisik QR Code berdasarkan serial_number
@@ -77,6 +82,9 @@ class InventoryService
             $inventory->update([
                 'qr_code' => $qrCodePath,
             ]);
+
+            // Generate Unit Fisik sejumlah quantity_total (1 serial number/QR untuk seluruh unit)
+            $this->syncUnits($inventory, $inventory->quantity_total);
 
             // Simpan Informasi Tambahan (Dynamic Attributes) jika opsi dipilih
             $useAttributes = filter_var($data['use_attributes'] ?? false, FILTER_VALIDATE_BOOLEAN);
@@ -133,6 +141,7 @@ class InventoryService
                 'status'        => $data['status'] ?? $inventory->status,
                 'brand'         => $data['brand'] ?? null,
                 'image'         => $inventory->image,
+                'quantity_total' => $data['quantity_total'] ?? $inventory->quantity_total,
             ]);
 
             // Logika Siklus Hidup File QR Code
@@ -160,6 +169,9 @@ class InventoryService
                 }
             }
 
+            // Sinkronisasi Unit Fisik mengikuti perubahan quantity_total
+            $this->syncUnits($inventory, $inventory->quantity_total);
+
             // Sinkronisasi Informasi Tambahan (Dynamic Attributes)
             $useAttributes = filter_var($data['use_attributes'] ?? false, FILTER_VALIDATE_BOOLEAN);
             if ($useAttributes && !empty($data['attributes']) && is_array($data['attributes'])) {
@@ -178,6 +190,74 @@ class InventoryService
 
             return $inventory->fresh(['attributes']);
         });
+    }
+
+    /**
+     * Menyinkronkan Unit Fisik agar jumlahnya selalu sama dengan quantity_total.
+     * - Jika quantity_total bertambah, unit baru dibuat dengan status default "Tersedia".
+     * - Jika quantity_total berkurang, unit dengan nomor tertinggi akan dihapus,
+     *   TAPI hanya yang berstatus "Tersedia" (aman dihapus). Jika unit yang harus
+     *   dihapus ternyata berstatus Rusak/Perbaikan/Hilang, proses dibatalkan dengan
+     *   pesan error agar admin menyelesaikan status unit tersebut dulu.
+     *
+     * @throws \Exception
+     */
+    private function syncUnits(Inventory $inventory, int $targetQuantity): void
+    {
+        $currentUnits = $inventory->units()->orderBy('unit_number')->get();
+        $currentCount = $currentUnits->count();
+
+        if ($targetQuantity > $currentCount) {
+            $newUnits = [];
+            for ($i = $currentCount + 1; $i <= $targetQuantity; $i++) {
+                $newUnits[] = [
+                    'inventory_id' => $inventory->id,
+                    'unit_number'  => $i,
+                    'status'       => 'Tersedia',
+                    'created_at'   => now(),
+                    'updated_at'   => now(),
+                ];
+            }
+            \App\Models\InventoryUnit::insert($newUnits);
+        } elseif ($targetQuantity < $currentCount) {
+            $unitsToRemove = $currentUnits->sortByDesc('unit_number')->take($currentCount - $targetQuantity);
+
+            $nonTersedia = $unitsToRemove->firstWhere('status', '!=', 'Tersedia');
+            if ($nonTersedia) {
+                throw new \Exception(
+                    "Tidak bisa mengurangi Jumlah Barang: Unit #{$nonTersedia->unit_number} berstatus \"{$nonTersedia->status}\" (bukan Tersedia). Selesaikan status unit tersebut terlebih dahulu."
+                );
+            }
+
+            $sedangDipinjam = $unitsToRemove->firstWhere('surat_jalan_item_id', '!=', null);
+            if ($sedangDipinjam) {
+                throw new \Exception(
+                    "Tidak bisa mengurangi Jumlah Barang: Unit #{$sedangDipinjam->unit_number} sedang dipinjam lewat Surat Jalan. Tunggu sampai unit itu dikembalikan."
+                );
+            }
+
+            \App\Models\InventoryUnit::whereIn('id', $unitsToRemove->pluck('id'))->delete();
+        }
+    }
+
+    /**
+     * Mengubah status kondisi 1 unit fisik (dipakai endpoint AJAX per-baris).
+     */
+    public function updateUnitStatus(\App\Models\InventoryUnit $unit, string $status): \App\Models\InventoryUnit
+    {
+        if ($unit->surat_jalan_item_id) {
+            throw new \Exception("Unit #{$unit->unit_number} sedang dipinjam - status tidak bisa diubah manual sampai dikembalikan.");
+        }
+
+        $unit->update(['status' => $status]);
+
+        $this->activityLogService->log(
+            Auth::id(),
+            'Inventory',
+            "Ubah status Unit #{$unit->unit_number} ({$unit->inventory->name}) menjadi \"{$status}\""
+        );
+
+        return $unit->fresh();
     }
 
     /**

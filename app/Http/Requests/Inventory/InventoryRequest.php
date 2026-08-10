@@ -31,7 +31,7 @@ class InventoryRequest extends FormRequest
                 // Mengizinkan nomor seri yang sama diabaikan jika sedang melakukan proses edit data sendiri
                 'unique:inventories,serial_number,' . $inventoryId
             ],
-            'description' => ['nullable', 'string', 'max:610'],
+            'description' => ['nullable', 'string', 'max:500'],
             'status' => [
                 'required',
                 'string',
@@ -39,6 +39,21 @@ class InventoryRequest extends FormRequest
                 Rule::in(['Tersedia', 'Dipinjam', 'Perbaikan', 'Rusak', 'Hilang'])
             ],
             'brand' => ['nullable', 'string', 'max:100'],
+            'quantity_total' => [
+                'required',
+                'integer',
+                'min:1',
+                function ($attribute, $value, $fail) use ($inventoryId) {
+                    if (!$inventoryId) {
+                        return;
+                    }
+
+                    $inventory = \App\Models\Inventory::find($inventoryId);
+                    if ($inventory && $value < $inventory->qty_in_use) {
+                        $fail("Jumlah barang tidak boleh diturunkan di bawah {$inventory->qty_in_use} unit yang sedang dipakai di Surat Jalan aktif.");
+                    }
+                },
+            ],
             'image' => [
                 'nullable',
                 'image',
@@ -70,8 +85,11 @@ class InventoryRequest extends FormRequest
             'image.image' => 'Berkas harus berupa gambar.',
             'image.mimes' => 'Format gambar harus jpeg, png, jpg, atau webp.',
             'image.max' => 'Ukuran gambar tidak boleh melebihi 5MB.',
-            'description.max' => 'Deskripsi barang maksimal 610 karakter.',
+            'description.max' => 'Deskripsi barang maksimal 500 karakter.',
             'brand.max' => 'Brand maksimal 100 karakter.',
+            'quantity_total.required' => 'Jumlah barang wajib diisi.',
+            'quantity_total.integer' => 'Jumlah barang harus berupa angka.',
+            'quantity_total.min' => 'Jumlah barang minimal 1 unit.',
             'attributes.max' => 'Informasi tambahan maksimal 8 baris agar laporan PDF tetap muat 1 halaman.',
             'attributes.*.name.max' => 'Nama informasi tambahan maksimal 40 karakter.',
             'attributes.*.value.max' => 'Nilai informasi tambahan maksimal 100 karakter.',

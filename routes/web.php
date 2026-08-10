@@ -7,8 +7,12 @@ use App\Http\Controllers\DataIntegration\FileController;
 use App\Http\Controllers\DataIntegration\FolderController;
 use App\Http\Controllers\Inventory\InventoryController;
 use App\Http\Controllers\Project\ProjectController;
+use App\Http\Controllers\Project\ProjectNoteController;
+use App\Http\Controllers\Report\FinancialReportController;
+use App\Http\Controllers\Project\SuratJalanController;
 use App\Http\Controllers\Task\CommentController;
 use App\Http\Controllers\Task\TaskController;
+use App\Http\Controllers\Tracking\BorrowedItemController;
 use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -67,6 +71,10 @@ Route::middleware('auth')->group(function () {
         Route::get('inventory/report/download-all-pdf', [InventoryController::class, 'downloadAllPdf'])
             ->name('inventory.download-all-pdf');
 
+        // FITUR Kelola Unit Fisik (AJAX per-baris)
+        Route::patch('inventory/{inventory}/units/{unit}/status', [InventoryController::class, 'updateUnitStatus'])
+            ->name('inventory.units.update-status');
+
     });
 
     // Modul Tracking Progress (Project & Task)
@@ -74,10 +82,20 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('projects', ProjectController::class);
 
-        Route::post(
-            'projects/{project}/lists',
-            [ProjectController::class, 'storeList']
-        )->name('projects.lists.store');
+        Route::put('projects/{project}/crew', [ProjectController::class, 'updateCrew'])
+            ->name('projects.crew.update');
+
+        Route::patch('projects/{project}/update-status', [ProjectController::class, 'updateStatus'])
+            ->name('projects.update-status');
+
+        Route::post('projects/{project}/lists', [ProjectController::class, 'storeList'])
+            ->name('projects.lists.store');
+
+        Route::post('projects/notes', [ProjectNoteController::class, 'store'])
+            ->name('projects.notes.store');
+
+        Route::delete('projects/notes/{note}', [ProjectNoteController::class, 'destroy'])
+            ->name('projects.notes.destroy');
 
         Route::resource('tasks', TaskController::class)
             ->only([
@@ -97,6 +115,56 @@ Route::middleware('auth')->group(function () {
             'tasks/comments',
             [CommentController::class, 'store']
         )->name('tasks.comments.store');
+
+    });
+
+    // Modul Surat Jalan - pembuatan khusus Super Admin sesuai alur yang disepakati
+    Route::middleware('role:super_admin')->group(function () {
+
+        Route::get('projects/{project}/surat-jalan/create', [SuratJalanController::class, 'create'])
+            ->name('surat-jalan.create');
+
+        Route::post('projects/{project}/surat-jalan', [SuratJalanController::class, 'store'])
+            ->name('surat-jalan.store');
+
+        Route::put('projects/{project}/finance', [ProjectController::class, 'updateFinance'])
+            ->name('projects.finance.update');
+
+        Route::get('reports/finance/monthly', [FinancialReportController::class, 'exportMonthly'])
+            ->name('reports.finance.monthly');
+
+    });
+
+    // Modul Surat Jalan - lihat & cetak (Super Admin, Admin, Employee sesuai permission)
+    Route::middleware('role:super_admin,admin,employee')->group(function () {
+
+        Route::get('surat-jalan/{suratJalan}', [SuratJalanController::class, 'show'])
+            ->name('surat-jalan.show');
+
+        Route::get('surat-jalan/{suratJalan}/preview', [SuratJalanController::class, 'preview'])
+            ->name('surat-jalan.preview');
+
+        Route::get('surat-jalan/{suratJalan}/download', [SuratJalanController::class, 'download'])
+            ->name('surat-jalan.download');
+
+    });
+
+    // Modul Surat Jalan - kembalikan barang (Super Admin & Admin)
+    Route::middleware('role:super_admin,admin')->group(function () {
+
+        Route::post('surat-jalan/items/{item}/return', [SuratJalanController::class, 'returnItem'])
+            ->name('surat-jalan.items.return');
+
+        Route::post('barang-pinjaman/{project}/return', [BorrowedItemController::class, 'returnUnits'])
+            ->name('borrowed-items.return');
+
+    });
+
+    // Modul Barang Pinjaman - lihat (Super Admin, Admin, Employee sesuai permission surat_jalan.view)
+    Route::middleware('role:super_admin,admin,employee')->group(function () {
+
+        Route::get('barang-pinjaman', [BorrowedItemController::class, 'index'])
+            ->name('borrowed-items.index');
 
     });
 

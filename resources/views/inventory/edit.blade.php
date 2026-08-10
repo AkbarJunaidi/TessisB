@@ -76,6 +76,28 @@
                         @enderror
                     </div>
 
+                    <!-- Jumlah Barang (Quantity Total) -->
+                    <div class="col-12 col-md-6">
+                        <label for="quantity_total" class="form-label fw-semibold small text-secondary">Jumlah Barang (Unit) <span class="text-danger">*</span></label>
+                        <input type="number"
+                               min="1"
+                               name="quantity_total"
+                               id="quantity_total"
+                               class="form-control @error('quantity_total') is-invalid @enderror"
+                               value="{{ old('quantity_total', $inventory->quantity_total ?? 1) }}"
+                               required>
+                        @error('quantity_total')
+                            <div class="invalid-feedback">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ $message }}
+                            </div>
+                        @enderror
+                        @if(($inventory->qty_in_use ?? 0) > 0)
+                            <div class="form-text text-warning">
+                                <i class="bi bi-info-circle"></i> {{ $inventory->qty_in_use }} unit sedang dipakai di Surat Jalan aktif. Jumlah tidak boleh diturunkan di bawah angka ini.
+                            </div>
+                        @endif
+                    </div>
+
                     <!-- Status Barang (Dropdown) & Brand -->
                     <div class="col-12 col-md-6">
                         <label for="status" class="form-label fw-semibold small text-secondary">Status Barang <span class="text-danger">*</span></label>
@@ -114,16 +136,16 @@
                     <div class="col-12">
                         <label for="description" class="form-label fw-semibold small text-secondary d-flex justify-content-between">
                             <span>Deskripsi Barang</span>
-                            <span class="text-muted fw-normal" id="descriptionCounter">0/610</span>
+                            <span class="text-muted fw-normal" id="descriptionCounter">0/500</span>
                         </label>
                         <textarea class="form-control @error('description') is-invalid @enderror"
                                   id="description"
                                   name="description"
                                   rows="3"
-                                  maxlength="610"
-                                  placeholder="Tambahkan deskripsi atau catatan kondisi fisik barang... (maksimal 610 karakter)">{{ old('description', $inventory->description) }}</textarea>
+                                  maxlength="500"
+                                  placeholder="Tambahkan deskripsi atau catatan kondisi fisik barang... (maksimal 500 karakter)">{{ old('description', $inventory->description) }}</textarea>
                         <div class="form-text text-muted small mt-1">
-                            <i class="bi bi-info-circle me-1"></i> Maksimal 610 karakter.
+                            <i class="bi bi-info-circle me-1"></i> Maksimal 500 karakter agar tetap rapi saat dicetak ke laporan PDF.
                         </div>
                         @error('description')
                             <div class="invalid-feedback">
@@ -187,6 +209,79 @@
                         @endif
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- CARD BARU: Kelola Unit Fisik (AJAX per-baris) -->
+        <div class="card shadow-sm border-0 rounded-3 bg-white mb-4">
+            <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="card-title fw-bold text-dark m-0">Kelola Unit Fisik ({{ $inventory->quantity_total }} unit)</h5>
+                </div>
+                <span class="text-muted small">1 Serial Number / QR untuk seluruh unit</span>
+            </div>
+            <div class="card-body p-4">
+                <div id="unitStatusAlert" class="alert d-none" role="alert"></div>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr class="text-uppercase text-secondary small">
+                                <th>Unit #</th>
+                                <th>Status Saat Ini</th>
+                                <th style="width:260px;">Ubah Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="unitStatusTableBody">
+                            @foreach($inventory->units as $unit)
+                                @php
+                                    $badgeClass = match($unit->display_status) {
+                                        'Tersedia'  => 'bg-success-subtle text-success border border-success-subtle',
+                                        'Dipinjam'  => 'bg-primary-subtle text-primary border border-primary-subtle',
+                                        'Perbaikan' => 'bg-warning-subtle text-warning border border-warning-subtle',
+                                        'Rusak'     => 'bg-danger-subtle text-danger border border-danger-subtle',
+                                        'Hilang'    => 'bg-secondary-subtle text-secondary border border-secondary-subtle',
+                                        default     => 'bg-light text-dark border',
+                                    };
+                                @endphp
+                                <tr data-unit-row="{{ $unit->id }}" data-on-loan="{{ $unit->surat_jalan_item_id ? '1' : '0' }}">
+                                    <td class="fw-semibold">#{{ $unit->unit_number }}</td>
+                                    <td>
+                                        <span class="badge rounded-pill px-3 py-2 unit-status-badge {{ $badgeClass }}">{{ strtoupper($unit->display_status) }}</span>
+                                        @if($unit->surat_jalan_item_id)
+                                            <div class="small text-muted mt-1">Dipinjam via {{ $unit->suratJalanItem->suratJalan->nomor ?? '-' }}</div>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <div class="d-flex flex-column gap-1">
+                                            <div class="d-flex gap-2">
+                                                <select class="form-select form-select-sm unit-status-select" @disabled($unit->surat_jalan_item_id)>
+                                                    @if($unit->surat_jalan_item_id)
+                                                        <option value="Dipinjam" selected>Dipinjam</option>
+                                                    @else
+                                                        @foreach(['Tersedia', 'Perbaikan', 'Rusak', 'Hilang'] as $statusOption)
+                                                            <option value="{{ $statusOption }}" @selected($unit->status === $statusOption)>{{ $statusOption }}</option>
+                                                        @endforeach
+                                                    @endif
+                                                </select>
+                                                <button type="button"
+                                                        class="btn btn-sm btn-outline-primary save-unit-status"
+                                                        data-unit-id="{{ $unit->id }}"
+                                                        data-url="{{ route('inventory.units.update-status', [$inventory, $unit]) }}"
+                                                        @disabled($unit->surat_jalan_item_id)>
+                                                    <i class="bi bi-check-lg"></i>
+                                                </button>
+                                            </div>
+                                            @if($unit->surat_jalan_item_id)
+                                                <span class="small text-muted">Sedang dipinjam - tunggu dikembalikan.</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-muted small mb-0">Ubah "Jumlah Barang" di form atas untuk menambah/mengurangi unit. Mengurangi jumlah hanya bisa dilakukan pada unit berstatus Tersedia.</p>
             </div>
         </div>
 
@@ -383,11 +478,76 @@
         const descriptionCounter = document.getElementById('descriptionCounter');
         if (descriptionField && descriptionCounter) {
             function updateDescriptionCounter() {
-                descriptionCounter.textContent = descriptionField.value.length + '/610';
+                descriptionCounter.textContent = descriptionField.value.length + '/500';
             }
             descriptionField.addEventListener('input', updateDescriptionCounter);
             updateDescriptionCounter();
         }
     });
+
+    // Kelola Unit Fisik: update status per-baris via AJAX (tanpa reload halaman, tanpa submit form utama)
+    (function () {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        const alertBox = document.getElementById('unitStatusAlert');
+        const badgeClassMap = {
+            'Tersedia':  'bg-success-subtle text-success border border-success-subtle',
+            'Dipinjam':  'bg-primary-subtle text-primary border border-primary-subtle',
+            'Perbaikan': 'bg-warning-subtle text-warning border border-warning-subtle',
+            'Rusak':     'bg-danger-subtle text-danger border border-danger-subtle',
+            'Hilang':    'bg-secondary-subtle text-secondary border border-secondary-subtle',
+        };
+
+        function showAlert(message, isError) {
+            alertBox.textContent = message;
+            alertBox.classList.remove('d-none', 'alert-success', 'alert-danger');
+            alertBox.classList.add(isError ? 'alert-danger' : 'alert-success');
+            setTimeout(() => alertBox.classList.add('d-none'), 3000);
+        }
+
+        document.querySelectorAll('.save-unit-status').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const row = btn.closest('tr');
+                const select = row.querySelector('.unit-status-select');
+                const badge = row.querySelector('.unit-status-badge');
+                const newStatus = select.value;
+                const url = btn.dataset.url;
+
+                btn.disabled = true;
+                const originalIcon = btn.innerHTML;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                fetch(url, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ status: newStatus }),
+                })
+                    .then(async (response) => {
+                        const data = await response.json();
+                        if (!response.ok) {
+                            throw new Error(data.message || 'Gagal memperbarui status unit.');
+                        }
+                        return data;
+                    })
+                    .then((data) => {
+                        const onLoan = row.dataset.onLoan === '1';
+                        const displayed = onLoan ? 'Dipinjam' : newStatus;
+                        badge.textContent = displayed.toUpperCase();
+                        badge.className = 'badge rounded-pill px-3 py-2 unit-status-badge ' + (badgeClassMap[displayed] || 'bg-light text-dark border');
+                        showAlert(data.message, false);
+                    })
+                    .catch((err) => {
+                        showAlert(err.message, true);
+                    })
+                    .finally(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = originalIcon;
+                    });
+            });
+        });
+    })();
 </script>
 @endsection

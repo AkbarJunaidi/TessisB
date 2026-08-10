@@ -58,7 +58,7 @@ class InventoryController extends Controller
      */
     public function show(Inventory $inventory): View
     {
-        $inventory->load('attributes');
+        $inventory->load('attributes', 'units.suratJalanItem.suratJalan');
 
         return view('inventory.show', compact('inventory'));
     }
@@ -68,7 +68,7 @@ class InventoryController extends Controller
      */
     public function edit(Inventory $inventory): View
     {
-        $inventory->load('attributes');
+        $inventory->load('attributes', 'units.suratJalanItem.suratJalan');
 
         return view('inventory.edit', compact('inventory'));
     }
@@ -81,15 +81,45 @@ class InventoryController extends Controller
         Inventory $inventory
     ): RedirectResponse {
 
-        $this->inventoryService->updateInventory(
-            $inventory,
-            $request->validated(),
-            $request->file('image')
-        );
+        try {
+            $this->inventoryService->updateInventory(
+                $inventory,
+                $request->validated(),
+                $request->file('image')
+            );
+        } catch (\Exception $e) {
+            return redirect()->back()->withInput()->with('error', $e->getMessage());
+        }
 
         return redirect()
             ->route('inventory.show', $inventory)
             ->with('success', 'Data inventory berhasil diperbarui.');
+    }
+
+    /**
+     * [AJAX] Mengubah status kondisi 1 unit fisik (Tersedia/Rusak/Perbaikan/Hilang)
+     * tanpa reload halaman - dipanggil per-baris dari tabel Kelola Unit Fisik.
+     */
+    public function updateUnitStatus(Request $request, Inventory $inventory, \App\Models\InventoryUnit $unit): \Illuminate\Http\JsonResponse
+    {
+        $request->validate([
+            'status' => ['required', 'in:Tersedia,Rusak,Perbaikan,Hilang'],
+        ]);
+
+        if ($unit->inventory_id !== $inventory->id) {
+            return response()->json(['message' => 'Unit tidak ditemukan pada barang ini.'], 404);
+        }
+
+        try {
+            $updated = $this->inventoryService->updateUnitStatus($unit, $request->input('status'));
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json([
+            'message' => "Status Unit #{$updated->unit_number} berhasil diperbarui.",
+            'unit'    => $updated,
+        ]);
     }
 
     /**

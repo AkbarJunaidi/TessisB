@@ -47,19 +47,39 @@
 
         /* SISI KIRI (KOLOM QR CODE): Mengatur porsi area 42% dan memberi batas garis putus-putus */
         .td-qr {
-            width: 42%;
+            width: 41%;
             text-align: center;
-            vertical-align: middle;
-            padding-right: 15px;
+            vertical-align: middle; 
+            padding-right: 10px;
             border-right: 2px dashed #dddddd;
         }
 
         /* SISI KANAN (KOLOM INFORMASI TEKS): Mengatur porsi area 58% dengan format teks rata kiri */
         .td-text {
-            width: 58%;
+            width: 59%;
             vertical-align: middle;
             padding-left: 20px;
             text-align: left;
+            position: relative; /* Menjadi acuan patokan posisi logo */
+        }
+
+        /* WATERMARK LOGO AP3 (Center Presisi & Opacity 54%) */
+        .bg-watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200px;
+            height: auto;
+            margin-top: -125px;  /* kurangi untuk geser ke atas */
+            margin-left: -95px; /* kurangi untuk geser ke kiri */
+            opacity: 0.44;
+            z-index: 1;
+        }
+
+        /* KONTEN TEKS (Di atas logo) */
+        .content-container {
+            position: relative;
+            z-index: 2;
         }
 
         /* DRAF ELEMEN QR: Dimensi gambar matriks QR code agar konsisten dan tajam */
@@ -111,8 +131,21 @@
                         </td>
 
                         <td class="td-text">
-                            <div class="item-name">{{ $inventory->name }}</div>
-                            <div class="serial-badge">{{ $inventory->serial_number }}</div>
+                            @php
+                                $logoPath = public_path('image/LogoAP3.png');
+                                $logoSrc = file_exists($logoPath)
+                                    ? 'data:' . mime_content_type($logoPath) . ';base64,' . base64_encode(file_get_contents($logoPath))
+                                    : null;
+                            @endphp
+
+                            @if($logoSrc)
+                                <img src="{{ $logoSrc }}" class="bg-watermark">
+                            @endif
+
+                            <div class="content-container">
+                                <div class="item-name">{{ $inventory->name }}</div>
+                                <div class="serial-badge">{{ $inventory->serial_number }}</div>
+                            </div>
                         </td>
                     </tr>
                 </table>

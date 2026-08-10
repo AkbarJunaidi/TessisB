@@ -46,10 +46,25 @@
                 <!-- Badge Status & Edit Aset Row -->
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div>
-                        @php $statusColor = $inventory->statusColor(); @endphp
-                        <span class="badge bg-{{ $statusColor }}-subtle text-{{ $statusColor }} border border-{{ $statusColor }}-subtle px-3 py-2 rounded-pill fw-semibold">
-                            <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> {{ strtoupper($inventory->status ?? 'TERSEDIA') }}
-                        </span>
+                        @switch($inventory->display_status)
+                            @case('Tersedia')
+                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> TERSEDIA</span>
+                                @break
+                            @case('Dipinjam')
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> DIPINJAM</span>
+                                @break
+                            @case('Perbaikan')
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> PERBAIKAN</span>
+                                @break
+                            @case('Rusak')
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> RUSAK</span>
+                                @break
+                            @case('Hilang')
+                                <span class="badge bg-dark-subtle text-dark border border-dark-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> HILANG</span>
+                                @break
+                            @default
+                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> {{ strtoupper($inventory->status ?? 'TERSEDIA') }}</span>
+                        @endswitch
                     </div>
                 </div>
 
@@ -215,7 +230,15 @@
                                         </tr>
                                         <tr>
                                             <td class="text-muted py-2">Status Barang</td>
-                                            <td class="py-2">: <span class="badge bg-{{ $inventory->statusColor() }}-subtle text-{{ $inventory->statusColor() }} border border-{{ $inventory->statusColor() }}-subtle px-2 py-1">{{ strtoupper($inventory->status ?? 'TERSEDIA') }}</span></td>
+                                            <td class="py-2">: <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">{{ strtoupper($inventory->display_status ?? 'TERSEDIA') }}</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted py-2">Jumlah Barang</td>
+                                            <td class="py-2">:
+                                                <span class="fw-semibold">{{ $inventory->quantity_total }} unit total</span>
+                                                <span class="text-success">({{ $inventory->qty_available }} tersedia</span>,
+                                                <span class="text-secondary">{{ $inventory->qty_in_use }} sedang dipakai)</span>
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td class="text-muted py-2">Brand</td>
@@ -304,7 +327,43 @@
         </div>
     </div>
 
+    <!-- CARD BARU: Status Unit Fisik (ringkasan status per-unit, terintegrasi dengan Surat Jalan) -->
+    <div class="card shadow-sm border-0 rounded-3 bg-white mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold m-0">Status Unit Fisik</h6>
+                <span class="text-muted small">{{ $inventory->qty_available }} dari {{ $inventory->quantity_total }} unit bisa dipinjam sekarang</span>
+            </div>
+            <div class="row g-2">
+                @forelse($inventory->units as $unit)
+                    @php
+                        $badgeClass = match($unit->display_status) {
+                            'Tersedia'  => 'bg-success-subtle text-success border-success-subtle',
+                            'Dipinjam'  => 'bg-primary-subtle text-primary border-primary-subtle',
+                            'Perbaikan' => 'bg-warning-subtle text-warning border-warning-subtle',
+                            'Rusak'     => 'bg-danger-subtle text-danger border-danger-subtle',
+                            'Hilang'    => 'bg-secondary-subtle text-secondary border-secondary-subtle',
+                            default     => 'bg-light text-dark border',
+                        };
+                    @endphp
+                    <div class="col-6 col-md-3 col-lg-2">
+                        <div class="border rounded-3 p-2 text-center {{ $badgeClass }}">
+                            <div class="fw-bold">#{{ $unit->unit_number }}</div>
+                            <div class="small">{{ $unit->display_status }}</div>
+                            @if($unit->surat_jalan_item_id)
+                                <div class="small text-truncate" style="font-size:.65rem;">{{ $unit->suratJalanItem->suratJalan->nomor ?? '' }}</div>
+                            @endif
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-muted small m-0">Belum ada data unit fisik untuk barang ini.</p>
+                @endforelse
+            </div>
+        </div>
+    </div>
+
 </div>
+
 
 <!-- FIXED BOTTOM ACTION BAR UNTUK MOBILE (SEPERTI CONTOH GAMBAR) -->
 <div class="d-md-none fixed-bottom bg-white border-top shadow-lg py-2 px-3">

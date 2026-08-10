@@ -22,8 +22,18 @@ class Folder extends Model
     protected $fillable = [
         'name',
         'parent_id',
+        'project_id',
         'created_by',
     ];
+
+    /**
+     * Relasi ke Project pemilik folder ini (Belongs To), jika folder ini
+     * adalah folder khusus Document Center suatu project.
+     */
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
+    }
 
     /**
      * Relasi ke User pembuat folder (Belongs To).

@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Project extends Model
 {
@@ -14,43 +16,97 @@ class Project extends Model
 
     protected $table = 'projects';
 
-    protected $fillable = [
-        'name',
-        'description',
-        'deadline',
-        'created_by',
-        'board_lists',
-    ];
-
     protected $casts = [
+        'deadline'   => 'date',
+        'event_date' => 'date',
         'board_lists' => 'array',
     ];
 
     /**
-     * List/kolom board default, dipakai selama project belum
-     * punya board_lists sendiri (kompatibel dengan data lama).
+     * Daftar list/kolom board default kalau project belum pernah custom.
      */
     public const DEFAULT_BOARD_LISTS = [
-        ['label' => 'Todo',        'color' => 'secondary'],
+        ['label' => 'Todo', 'color' => 'secondary'],
         ['label' => 'In Progress', 'color' => 'primary'],
-        ['label' => 'Review',      'color' => 'warning'],
-        ['label' => 'Done',        'color' => 'success'],
+        ['label' => 'Review', 'color' => 'warning'],
+        ['label' => 'Done', 'color' => 'success'],
+    ];
+
+    protected $fillable = [
+        'name',
+        'description',
+        'deadline',
+        'board_lists',
+        'created_by',
+        'client',
+        'pic',
+        'category',
+        'event_date',
+        'event_time_start',
+        'event_time_end',
+        'location',
+        'address',
+        'estimated_duration_minutes',
+        'priority',
+        'status',
     ];
 
     /**
-     * Palet warna yang dipakai berurutan untuk list baru yang ditambahkan user.
+     * Relasi ke seluruh item Pendapatan & Pengeluaran project ini.
      */
-    public const LIST_COLOR_PALETTE = [
-        'secondary', 'primary', 'warning', 'success', 'info', 'danger', 'dark',
-    ];
+    public function financeItems(): HasMany
+    {
+        return $this->hasMany(ProjectFinanceItem::class);
+    }
 
     /**
-     * Daftar list/kolom board project ini.
-     * Jika project belum punya board_lists sendiri, pakai default.
+     * Total Pendapatan (jumlah seluruh baris item bertipe income).
+     */
+    protected function totalIncome(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::get(
+            fn () => (float) $this->financeItems->where('type', 'income')->sum('amount')
+        );
+    }
+
+    /**
+     * Total Pengeluaran (jumlah seluruh baris item bertipe expense).
+     */
+    protected function totalExpense(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::get(
+            fn () => (float) $this->financeItems->where('type', 'expense')->sum('amount')
+        );
+    }
+
+    /**
+     * Laba bersih project ini (Total Pendapatan - Total Pengeluaran).
+     */
+    protected function profit(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::get(
+            fn () => $this->total_income - $this->total_expense
+        );
+    }
+
+    /**
+     * Daftar list/kolom Kanban board project ini (custom kalau pernah
+     * ditambah lewat "Add List", atau 4 default kalau belum pernah).
      */
     public function getBoardLists(): array
     {
         return $this->board_lists ?: self::DEFAULT_BOARD_LISTS;
+    }
+
+    /**
+     * Menambahkan list/kolom board baru (dipanggil dari fitur "Add List").
+     */
+    public function addBoardList(string $label, string $color = 'secondary'): void
+    {
+        $lists = $this->getBoardLists();
+        $lists[] = ['label' => $label, 'color' => $color];
+
+        $this->update(['board_lists' => $lists]);
     }
 
     /**
@@ -67,5 +123,40 @@ class Project extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Relasi Many-to-Many: Crew/Tim Project (harus user terdaftar),
+     * beserta peran mereka di project ini (role_label).
+     */
+    public function crews(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'project_users')
+            ->withPivot('role_label')
+            ->withTimestamps();
+    }
+
+    /**
+     * Relasi One-to-Many: Catatan pada project.
+     */
+    public function notes(): HasMany
+    {
+        return $this->hasMany(ProjectNote::class);
+    }
+
+    /**
+     * Relasi One-to-One: Folder khusus Document Center milik project ini.
+     */
+    public function folder(): HasOne
+    {
+        return $this->hasOne(Folder::class);
+    }
+
+    /**
+     * Relasi One-to-Many: Surat Jalan yang diterbitkan untuk project ini.
+     */
+    public function suratJalans(): HasMany
+    {
+        return $this->hasMany(SuratJalan::class);
     }
 }
