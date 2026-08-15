@@ -12,6 +12,7 @@ use App\Services\ProjectFinanceService;
 use App\Services\ProjectService;
 use App\Services\TaskService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -124,6 +125,17 @@ class ProjectController extends Controller
     /**
      * Menghapus project.
      */
+    /**
+     * Mengecek status pengembalian barang inventory (Surat Jalan) milik project
+     * ini. Dipanggil via AJAX saat popup konfirmasi Hapus Project dibuka.
+     */
+    public function returnStatus(Project $project): JsonResponse
+    {
+        return response()->json(
+            $this->projectService->getUnreturnedInventoryItems($project)
+        );
+    }
+
     public function destroy(Project $project): RedirectResponse
     {
         $this->projectService->deleteProject($project);

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Builder;
@@ -26,6 +27,7 @@ class Inventory extends Model
         'image',
         'qr_code', // Kolom bawaan tetap dipertahankan untuk menyimpan path berkas gambar QR
         'quantity_total',
+        'deleted_by',
     ];
 
 // Relasi ke Model InventoryAttribute (Has Many)
@@ -158,5 +160,13 @@ class Inventory extends Model
 
             return null;
         });
+    }
+
+    /**
+     * Relasi BelongsTo: User yang melakukan penghapusan (untuk fitur Trash).
+     */
+    public function deletedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
     }
 }

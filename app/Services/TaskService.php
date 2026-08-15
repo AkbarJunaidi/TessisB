@@ -108,6 +108,10 @@ class TaskService
     //  * Menghapus task (Soft Delete).
     public function deleteTask(Task $task): bool
     {
+        // Catat siapa yang menghapus (dibaca oleh fitur Trash) sebelum soft delete,
+        // karena SoftDeletes::delete() hanya menyimpan kolom deleted_at/updated_at.
+        $task->update(['deleted_by' => Auth::id()]);
+
         $deleted = $task->delete();
 
         if ($deleted) {

@@ -49,6 +49,7 @@ class Project extends Model
         'estimated_duration_minutes',
         'priority',
         'status',
+        'deleted_by',
     ];
 
     /**
@@ -158,5 +159,13 @@ class Project extends Model
     public function suratJalans(): HasMany
     {
         return $this->hasMany(SuratJalan::class);
+    }
+
+    /**
+     * Relasi BelongsTo: User yang melakukan penghapusan (untuk fitur Trash).
+     */
+    public function deletedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
     }
 }

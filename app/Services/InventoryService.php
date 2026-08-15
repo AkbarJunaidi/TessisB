@@ -265,6 +265,10 @@ class InventoryService
      */
     public function deleteInventory(Inventory $inventory): bool
     {
+        // Catat siapa yang menghapus (dibaca oleh fitur Trash) sebelum soft delete,
+        // karena SoftDeletes::delete() hanya menyimpan kolom deleted_at/updated_at.
+        $inventory->update(['deleted_by' => Auth::id()]);
+
         $deleted = $inventory->delete();
 
         if ($deleted) {

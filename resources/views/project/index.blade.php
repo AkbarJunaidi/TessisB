@@ -262,9 +262,22 @@
                                     @endif
                                 </td>
                                 <td class="py-3 text-center pe-3">
-                                    <a href="{{ route('projects.show', $project) }}" class="btn btn-sm btn-outline-secondary">
-                                        <i class="bi bi-eye"></i> Detail
-                                    </a>
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="{{ route('projects.show', $project) }}" class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-eye"></i> Detail
+                                        </a>
+                                        @if(auth()->user()->hasPermission('tracking_progress', 'delete_project'))
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#deleteProjectModal"
+                                                    data-id="{{ $project->id }}"
+                                                    data-name="{{ $project->name }}"
+                                                    title="Hapus Project">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -281,6 +294,111 @@
     </div>
 
 </div>
+
+{{-- Modal Konfirmasi Hapus Project --}}
+@if(auth()->user()->hasPermission('tracking_progress', 'delete_project'))
+<div class="modal fade" id="deleteProjectModal" tabindex="-1" aria-labelledby="deleteProjectModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title fw-bold" id="deleteProjectModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Konfirmasi Hapus Project
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form id="deleteProjectForm" method="POST">
+                @csrf
+                @method('DELETE')
+
+                <div class="modal-body p-4">
+                    <p class="text-dark fw-medium mb-3">Apakah Anda yakin ingin menghapus project ini?</p>
+
+                    <div class="bg-light p-3 rounded-3 border">
+                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem;">NAMA PROJECT:</small>
+                        <span id="modal-project-name" class="fw-bold text-dark fs-6">-</span>
+                    </div>
+
+                    <small class="text-danger d-block mt-3">
+                        <i class="bi bi-info-circle me-1"></i>Data ini akan dipindahkan ke Trash dan masih dapat dipulihkan kembali.
+                    </small>
+
+                    <div id="return-status-loading" class="text-muted small mt-3 d-none">
+                        <span class="spinner-border spinner-border-sm me-1"></span> Memeriksa status pengembalian barang...
+                    </div>
+
+                    <div id="return-status-ok" class="text-success small mt-3 d-none">
+                        <i class="bi bi-check-circle me-1"></i>Seluruh barang yang dipinjam untuk project ini sudah dikembalikan.
+                    </div>
+
+                    <div id="return-status-warning" class="alert alert-warning small mt-3 mb-0 d-none">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        Barang berikut untuk project ini <strong>belum dikembalikan</strong>:
+                        <ul id="return-status-list" class="mb-0 mt-2 ps-3"></ul>
+                        <div class="mt-2">Jika project ini dihapus, unit barang di atas akan otomatis ditandai <strong>"Hilang"</strong> di Inventory.</div>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light border-top p-3">
+                    <button type="button" class="btn btn-secondary px-3 fw-medium" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger px-4 fw-medium shadow-sm">Ya, Hapus</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const deleteModal = document.getElementById('deleteProjectModal');
+        if (deleteModal) {
+            const loadingEl  = document.getElementById('return-status-loading');
+            const okEl       = document.getElementById('return-status-ok');
+            const warningEl  = document.getElementById('return-status-warning');
+            const listEl     = document.getElementById('return-status-list');
+
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+
+                const id = button.getAttribute('data-id');
+                const name = button.getAttribute('data-name');
+
+                document.getElementById('modal-project-name').textContent = name;
+                document.getElementById('deleteProjectForm').action = `/projects/${id}`;
+
+                // Reset & cek status pengembalian barang setiap kali modal dibuka
+                okEl.classList.add('d-none');
+                warningEl.classList.add('d-none');
+                listEl.innerHTML = '';
+                loadingEl.classList.remove('d-none');
+
+                fetch(`/projects/${id}/return-status`, {
+                    headers: { 'Accept': 'application/json' },
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        loadingEl.classList.add('d-none');
+
+                        if (data.fully_returned) {
+                            okEl.classList.remove('d-none');
+                            return;
+                        }
+
+                        data.items.forEach((item) => {
+                            const li = document.createElement('li');
+                            li.textContent = `${item.inventory_name} - ${item.qty_belum_kembali} unit (Surat Jalan ${item.surat_jalan_nomor})`;
+                            listEl.appendChild(li);
+                        });
+                        warningEl.classList.remove('d-none');
+                    })
+                    .catch(() => {
+                        loadingEl.classList.add('d-none');
+                    });
+            });
+        }
+    });
+</script>
+@endif
 
 {{-- Modal pilih project untuk Buat Surat Jalan langsung dari halaman index --}}
 @if(auth()->user()->hasPermission('surat_jalan', 'create'))

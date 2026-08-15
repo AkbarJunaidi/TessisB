@@ -25,6 +25,7 @@ class File extends Model
         'file_path',
         'file_size',
         'file_type',
+        'deleted_by',
     ];
 
     /**
@@ -68,5 +69,13 @@ class File extends Model
         }
 
         return round($bytes, 2) . ' ' . $units[$i];
+    }
+
+    /**
+     * Relasi BelongsTo: User yang melakukan penghapusan (untuk fitur Trash).
+     */
+    public function deletedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
     }
 }

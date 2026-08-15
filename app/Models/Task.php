@@ -22,6 +22,7 @@ class Task extends Model
         'priority',
         'deadline',
         'assigned_to',
+        'deleted_by',
     ];
 
     /**
@@ -46,5 +47,13 @@ class Task extends Model
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class, 'task_id');
+    }
+
+    /**
+     * Relasi BelongsTo: User yang melakukan penghapusan (untuk fitur Trash).
+     */
+    public function deletedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
     }
 }

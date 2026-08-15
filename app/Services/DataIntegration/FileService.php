@@ -178,6 +178,10 @@ class FileService
     {
         try {
 
+            // Catat siapa yang menghapus (dibaca oleh fitur Trash) sebelum soft delete,
+            // karena SoftDeletes::delete() hanya menyimpan kolom deleted_at/updated_at.
+            $file->update(['deleted_by' => Auth::id()]);
+
             $deleted = $file->delete();
 
             if ($deleted) {

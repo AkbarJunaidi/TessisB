@@ -13,6 +13,7 @@ use App\Http\Controllers\Project\SuratJalanController;
 use App\Http\Controllers\Task\CommentController;
 use App\Http\Controllers\Task\TaskController;
 use App\Http\Controllers\Tracking\BorrowedItemController;
+use App\Http\Controllers\Trash\TrashController;
 use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -81,6 +82,9 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:super_admin,admin,employee')->group(function () {
 
         Route::resource('projects', ProjectController::class);
+
+        Route::get('projects/{project}/return-status', [ProjectController::class, 'returnStatus'])
+            ->name('projects.return-status');
 
         Route::put('projects/{project}/crew', [ProjectController::class, 'updateCrew'])
             ->name('projects.crew.update');
@@ -175,6 +179,29 @@ Route::middleware('auth')->group(function () {
             '/activity-logs',
             [ActivityLogController::class, 'index']
         )->name('activity-logs.index');
+
+    });
+
+    // Modul Trash - lihat & pulihkan (Super Admin & Admin)
+    Route::middleware('role:super_admin,admin')->group(function () {
+
+        Route::get('/trash', [TrashController::class, 'index'])
+            ->name('trash.index');
+
+        Route::patch('/trash/{type}/{id}/restore', [TrashController::class, 'restore'])
+            ->whereIn('type', ['project', 'task', 'inventory', 'folder', 'file'])
+            ->whereNumber('id')
+            ->name('trash.restore');
+
+    });
+
+    // Modul Trash - hapus permanen (HANYA Super Admin)
+    Route::middleware('role:super_admin')->group(function () {
+
+        Route::delete('/trash/{type}/{id}', [TrashController::class, 'forceDelete'])
+            ->whereIn('type', ['project', 'task', 'inventory', 'folder', 'file'])
+            ->whereNumber('id')
+            ->name('trash.force-delete');
 
     });
 

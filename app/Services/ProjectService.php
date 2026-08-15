@@ -3,10 +3,14 @@
 namespace App\Services;
 
 use App\Models\Project;
+use App\Models\SuratJalan;
+use App\Models\SuratJalanItem;
+use App\Models\InventoryUnit;
 use App\Services\ActivityLog\ActivityLogService;
 use App\Services\DataIntegration\FolderService;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ProjectService
 {
@@ -141,19 +145,124 @@ class ProjectService
         return $project;
     }
 
+    /**
+     * Mengecek status pengembalian barang (Surat Jalan) milik project ini.
+     * Dipakai pada popup konfirmasi Hapus Project agar admin tahu jika masih
+     * ada barang inventory yang belum dikembalikan sebelum project dihapus.
+     *
+     * @return array{fully_returned: bool, items: array<int, array{inventory_name:string, qty_belum_kembali:int, surat_jalan_nomor:string}>}
+     */
+    public function getUnreturnedInventoryItems(Project $project): array
+    {
+        $unreturnedItems = SuratJalanItem::query()
+            ->select(['id', 'surat_jalan_id', 'inventory_id', 'qty_dipakai', 'qty_dikembalikan'])
+            ->whereColumn('qty_dipakai', '>', 'qty_dikembalikan')
+            ->whereHas('suratJalan', fn ($query) => $query->where('project_id', $project->id))
+            ->with([
+                'inventory:id,name',
+                'suratJalan:id,nomor',
+            ])
+            ->get();
+
+        $items = $unreturnedItems->map(fn (SuratJalanItem $item) => [
+            'inventory_name'    => $item->inventory->name ?? 'Barang tidak ditemukan',
+            'qty_belum_kembali' => $item->qty_dipakai - $item->qty_dikembalikan,
+            'surat_jalan_nomor' => $item->suratJalan->nomor ?? '-',
+        ])->values()->all();
+
+        return [
+            'fully_returned' => empty($items),
+            'items'          => $items,
+        ];
+    }
+
 //  Menghapus project (Soft Delete).
     public function deleteProject(Project $project): bool
     {
-        $deleted = $project->delete();
+        return DB::transaction(function () use ($project) {
 
-        if ($deleted) {
-            $this->activityLogService->log(
-                Auth::id(),
-                'Tracking Progress',
-                'Delete Project'
-            );
+            // Barang yang masih dipinjam (belum dikembalikan) lewat Surat Jalan
+            // project ini tidak akan pernah bisa dikembalikan lagi lewat alur
+            // normal setelah project-nya hilang dari daftar, jadi unit fisiknya
+            // ditandai "Hilang" di Inventory supaya stok tidak menggantung
+            // selamanya berstatus "Dipinjam" tanpa project yang jelas.
+            $this->markUnreturnedUnitsAsLost($project);
+
+            // Catat siapa yang menghapus (dibaca oleh fitur Trash) sebelum soft delete,
+            // karena SoftDeletes::delete() hanya menyimpan kolom deleted_at/updated_at.
+            $project->update(['deleted_by' => Auth::id()]);
+
+            $deleted = $project->delete();
+
+            if ($deleted) {
+                $this->activityLogService->log(
+                    Auth::id(),
+                    'Tracking Progress',
+                    'Delete Project'
+                );
+            }
+
+            return $deleted;
+        });
+    }
+
+    /**
+     * Menandai seluruh unit fisik Inventory yang masih dipinjam (lewat Surat
+     * Jalan Item yang belum sepenuhnya dikembalikan) milik project ini sebagai
+     * "Hilang", dan melepaskan tautannya ke Surat Jalan Item tersebut.
+     *
+     * qty_dikembalikan pada SuratJalanItem ikut ditutup (disamakan dengan
+     * qty_dipakai) - BUKAN berarti barang benar-benar kembali secara fisik,
+     * tapi supaya penghitungan qty_in_use / qty_available di Inventory (yang
+     * bersumber dari selisih qty_dipakai - qty_dikembalikan) tidak terus
+     * menganggap barang "sedang dipinjam aktif" selamanya untuk project yang
+     * sudah tidak ada. Status "Hilang" pada unit fisiknya-lah yang menjadi
+     * catatan sesungguhnya bahwa barang ini tidak kembali secara normal.
+     *
+     * @return int Jumlah unit yang ditandai Hilang.
+     */
+    private function markUnreturnedUnitsAsLost(Project $project): int
+    {
+        $unreturnedItems = SuratJalanItem::query()
+            ->whereColumn('qty_dipakai', '>', 'qty_dikembalikan')
+            ->whereHas('suratJalan', fn ($query) => $query->where('project_id', $project->id))
+            ->get(['id', 'surat_jalan_id', 'qty_dipakai', 'qty_dikembalikan']);
+
+        if ($unreturnedItems->isEmpty()) {
+            return 0;
         }
 
-        return $deleted;
+        $totalUnitsLost = 0;
+        $affectedSuratJalanIds = [];
+
+        foreach ($unreturnedItems as $item) {
+            $unitIds = InventoryUnit::where('surat_jalan_item_id', $item->id)->pluck('id');
+
+            if ($unitIds->isNotEmpty()) {
+                InventoryUnit::whereIn('id', $unitIds)->update([
+                    'status' => 'Hilang',
+                    'surat_jalan_item_id' => null,
+                ]);
+
+                $totalUnitsLost += $unitIds->count();
+            }
+
+            // Tutup sisa qty yang belum kembali sebagai selesai/resolved (hilang),
+            // supaya qty_in_use & qty_available di Inventory tetap akurat.
+            $item->update(['qty_dikembalikan' => $item->qty_dipakai]);
+
+            $affectedSuratJalanIds[$item->surat_jalan_id] = true;
+        }
+
+        // Kalau seluruh item pada Surat Jalan terkait kini sudah resolved
+        // (kembali normal ATAU ditutup sebagai hilang), tandai Selesai supaya
+        // Surat Jalan tidak menggantung berstatus "Aktif" untuk project yang
+        // sudah tidak ada lagi.
+        SuratJalan::whereIn('id', array_keys($affectedSuratJalanIds))
+            ->whereDoesntHave('items', fn ($q) => $q->whereColumn('qty_dipakai', '>', 'qty_dikembalikan'))
+            ->where('status', '!=', 'Selesai')
+            ->update(['status' => 'Selesai']);
+
+        return $totalUnitsLost;
     }
 }

@@ -24,6 +24,7 @@ class Folder extends Model
         'parent_id',
         'project_id',
         'created_by',
+        'deleted_by',
     ];
 
     /**
@@ -75,5 +76,13 @@ class Folder extends Model
     public function files(): HasMany
     {
         return $this->hasMany(File::class, 'folder_id');
+    }
+
+    /**
+     * Relasi BelongsTo: User yang melakukan penghapusan (untuk fitur Trash).
+     */
+    public function deletedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
     }
 }

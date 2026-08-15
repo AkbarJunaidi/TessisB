@@ -141,6 +141,15 @@
             </li>
         @endif
 
+        @if(auth()->user()->hasRole('super_admin', 'admin'))
+            <li class="nav-item mb-1">
+                <a href="{{ route('trash.index') }}"
+                    class="nav-link text-white {{ request()->routeIs('trash.*') ? 'active fw-semibold' : 'opacity-75' }}">
+                    <i class="bi bi-trash me-2"></i> Trash
+                </a>
+            </li>
+        @endif
+
     </ul>
 
     <hr class="border-secondary my-3">
