@@ -79,7 +79,7 @@ class ProjectService
             ->toArray();
     }
 
-// Daftar PIC unik untuk dropdown filter.test
+// Daftar PIC unik untuk dropdown filter
     public function getDistinctPics(): array
     {
         return Project::whereNotNull('pic')->distinct()->orderBy('pic')->pluck('pic')->toArray();
@@ -205,22 +205,7 @@ class ProjectService
             return $deleted;
         });
     }
-
-    /**
-     * Menandai seluruh unit fisik Inventory yang masih dipinjam (lewat Surat
-     * Jalan Item yang belum sepenuhnya dikembalikan) milik project ini sebagai
-     * "Hilang", dan melepaskan tautannya ke Surat Jalan Item tersebut.
-     *
-     * qty_dikembalikan pada SuratJalanItem ikut ditutup (disamakan dengan
-     * qty_dipakai) - BUKAN berarti barang benar-benar kembali secara fisik,
-     * tapi supaya penghitungan qty_in_use / qty_available di Inventory (yang
-     * bersumber dari selisih qty_dipakai - qty_dikembalikan) tidak terus
-     * menganggap barang "sedang dipinjam aktif" selamanya untuk project yang
-     * sudah tidak ada. Status "Hilang" pada unit fisiknya-lah yang menjadi
-     * catatan sesungguhnya bahwa barang ini tidak kembali secara normal.
-     *
-     * @return int Jumlah unit yang ditandai Hilang.
-     */
+//untuk menandai unit inventory yang belum dikembalikan sebagai "Hilang" saat project dihapus.
     private function markUnreturnedUnitsAsLost(Project $project): int
     {
         $unreturnedItems = SuratJalanItem::query()
