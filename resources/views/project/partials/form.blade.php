@@ -58,15 +58,24 @@
         @error('pic')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
-    <div class="col-md-4">
-        <label for="event_date" class="form-label fw-semibold small text-secondary">Tanggal Acara <span class="text-danger">*</span></label>
+    <div class="col-md-6">
+        <label for="event_date" class="form-label fw-semibold small text-secondary">Tanggal Acara Mulai <span class="text-danger">*</span></label>
         <input type="date" name="event_date" id="event_date"
                class="form-control @error('event_date') is-invalid @enderror"
                value="{{ $oldDate('event_date') }}" required>
         @error('event_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
-    <div class="col-md-4">
+    <div class="col-md-6">
+        <label for="event_end_date" class="form-label fw-semibold small text-secondary">Tanggal Acara Selesai</label>
+        <input type="date" name="event_end_date" id="event_end_date"
+               class="form-control @error('event_end_date') is-invalid @enderror"
+               value="{{ $oldDate('event_end_date') }}">
+        <div class="form-text">Kosongkan jika acara berlangsung 1 hari saja.</div>
+        @error('event_end_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
+    </div>
+
+    <div class="col-md-6">
         <label for="event_time_start" class="form-label fw-semibold small text-secondary">Jam Mulai <span class="text-danger">*</span></label>
         <input type="time" name="event_time_start" id="event_time_start"
                class="form-control @error('event_time_start') is-invalid @enderror"
@@ -74,7 +83,7 @@
         @error('event_time_start')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
-    <div class="col-md-4">
+    <div class="col-md-6">
         <label for="event_time_end" class="form-label fw-semibold small text-secondary">Jam Selesai</label>
         <input type="time" name="event_time_end" id="event_time_end"
                class="form-control @error('event_time_end') is-invalid @enderror"
@@ -127,3 +136,32 @@
     </div>
 
 </div>
+
+<script>
+    // Tanggal Acara Selesai tidak boleh lebih awal dari Tanggal Acara Mulai -
+    // batas "min" disinkronkan di sisi client supaya user tidak salah pilih
+    // (validasi sesungguhnya tetap di server lewat ProjectRequest).
+    document.addEventListener('DOMContentLoaded', function () {
+        const startInput = document.getElementById('event_date');
+        const endInput   = document.getElementById('event_end_date');
+
+        if (!startInput || !endInput) {
+            return;
+        }
+
+        function syncEndDateMin() {
+            if (!startInput.value) {
+                return;
+            }
+
+            endInput.min = startInput.value;
+
+            if (endInput.value && endInput.value < startInput.value) {
+                endInput.value = startInput.value;
+            }
+        }
+
+        syncEndDateMin();
+        startInput.addEventListener('change', syncEndDateMin);
+    });
+</script>

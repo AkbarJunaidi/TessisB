@@ -89,7 +89,12 @@
                         </div>
                         <div class="col-md-6">
                             <div class="text-muted">Tanggal Acara</div>
-                            <div class="fw-semibold">{{ optional($project->event_date)->translatedFormat('d F Y') }}</div>
+                            <div class="fw-semibold">
+                                {{ optional($project->event_date)->translatedFormat('d F Y') }}
+                                @if($project->event_end_date && !$project->event_end_date->isSameDay($project->event_date))
+                                    &ndash; {{ $project->event_end_date->translatedFormat('d F Y') }}
+                                @endif
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <div class="text-muted">Jam Acara</div>
@@ -122,7 +127,7 @@
 
         {{-- Crew + Dokumen --}}
         <div class="col-lg-4 d-flex flex-column gap-3">
-            @include('project.partials.crew-form', ['project' => $project, 'allUsers' => $allUsers])
+            @include('project.partials.crew-form', ['project' => $project])
 
             <div class="card border-0 shadow-sm rounded-3">
                 <div class="card-body">

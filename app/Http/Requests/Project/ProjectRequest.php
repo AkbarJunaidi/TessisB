@@ -22,6 +22,7 @@ class ProjectRequest extends FormRequest
             'category'    => ['required', 'string', 'max:100'],
 
             'event_date'       => ['required', 'date', 'after_or_equal:today'],
+            'event_end_date'   => ['nullable', 'date', 'after_or_equal:event_date'],
             'event_time_start' => ['required', 'date_format:H:i,H:i:s'],
             'event_time_end'   => ['nullable', 'date_format:H:i,H:i:s', 'after:event_time_start'],
 
@@ -40,7 +41,7 @@ class ProjectRequest extends FormRequest
     }
 
     /**
-     * Deadline lama otomatis mengikuti Tanggal Acara jika tidak dikirim,
+     * Deadline lama otomatis mengikuti Tanggal Acara Mulai jika tidak dikirim,
      * agar fitur lama yang bergantung pada kolom "deadline" tetap konsisten.
      */
     protected function prepareForValidation(): void
@@ -58,8 +59,9 @@ class ProjectRequest extends FormRequest
             'pic.required'      => 'PIC wajib diisi.',
             'category.required' => 'Kategori project wajib dipilih.',
 
-            'event_date.required'       => 'Tanggal acara wajib diisi.',
-            'event_date.after_or_equal' => 'Tanggal acara tidak boleh sebelum hari ini.',
+            'event_date.required'       => 'Tanggal acara mulai wajib diisi.',
+            'event_date.after_or_equal' => 'Tanggal acara mulai tidak boleh sebelum hari ini.',
+            'event_end_date.after_or_equal' => 'Tanggal acara selesai tidak boleh sebelum tanggal acara mulai.',
             'event_time_start.required'    => 'Jam mulai acara wajib diisi.',
             'event_time_start.date_format' => 'Format jam mulai tidak valid.',
             'event_time_end.after'         => 'Jam selesai harus setelah jam mulai.',

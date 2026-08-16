@@ -6,6 +6,7 @@ use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\DataIntegration\FileController;
 use App\Http\Controllers\DataIntegration\FolderController;
 use App\Http\Controllers\Inventory\InventoryController;
+use App\Http\Controllers\Notification\NotificationController;
 use App\Http\Controllers\Project\ProjectController;
 use App\Http\Controllers\Project\ProjectNoteController;
 use App\Http\Controllers\Report\FinancialReportController;
@@ -192,6 +193,15 @@ Route::middleware('auth')->group(function () {
             '/activity-logs',
             [ActivityLogController::class, 'index']
         )->name('activity-logs.index');
+
+    });
+
+    // Modul Notifikasi Navbar (Super Admin & Admin) - endpoint AJAX, di-poll
+    // berkala oleh navbar.blade.php.
+    Route::middleware('role:super_admin,admin')->group(function () {
+
+        Route::get('notifications/active', [NotificationController::class, 'active'])
+            ->name('notifications.active');
 
     });
 

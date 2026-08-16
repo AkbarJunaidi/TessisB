@@ -103,12 +103,11 @@ class ProjectController extends Controller
             'financeItems',
         ]);
 
-        $allUsers = \App\Models\User::where('status', 'active')->orderBy('name')->get();
         $allFolders = \App\Models\Folder::orderBy('name')->get();
 
         return view(
             'project.show',
-            compact('project', 'groupedTasks', 'allUsers', 'allFolders')
+            compact('project', 'groupedTasks', 'allFolders')
         );
     }
 

@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Project extends Model
 {
@@ -17,8 +16,9 @@ class Project extends Model
     protected $table = 'projects';
 
     protected $casts = [
-        'deadline'   => 'date',
-        'event_date' => 'date',
+        'deadline'    => 'date',
+        'event_date'  => 'date',
+        'event_end_date' => 'date',
         'board_lists' => 'array',
     ];
 
@@ -42,6 +42,7 @@ class Project extends Model
         'pic',
         'category',
         'event_date',
+        'event_end_date',
         'event_time_start',
         'event_time_end',
         'location',
@@ -127,14 +128,12 @@ class Project extends Model
     }
 
     /**
-     * Relasi Many-to-Many: Crew/Tim Project (harus user terdaftar),
-     * beserta peran mereka di project ini (role_label).
+     * Relasi One-to-Many: Crew/Tim Project. Nama diinput bebas sebagai teks
+     * (lihat ProjectCrew) - TIDAK harus user terdaftar di sistem.
      */
-    public function crews(): BelongsToMany
+    public function crews(): HasMany
     {
-        return $this->belongsToMany(User::class, 'project_users')
-            ->withPivot('role_label')
-            ->withTimestamps();
+        return $this->hasMany(ProjectCrew::class);
     }
 
     /**

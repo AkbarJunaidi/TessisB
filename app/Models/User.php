@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -89,16 +88,6 @@ class User extends Authenticatable
     public function folders(): HasMany
     {
         return $this->hasMany(Folder::class, 'created_by');
-    }
-
-    /**
-     * Relasi Many-to-Many: Project di mana user ini menjadi Crew/Tim.
-     */
-    public function crewProjects(): BelongsToMany
-    {
-        return $this->belongsToMany(Project::class, 'project_users')
-            ->withPivot('role_label')
-            ->withTimestamps();
     }
 
     /**

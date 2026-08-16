@@ -1,5 +1,6 @@
 {{-- Partial: Crew / Tim Project
-     Variabel yang dibutuhkan saat di-include: $project, $allUsers (koleksi User aktif) --}}
+     Variabel yang dibutuhkan saat di-include: $project
+     Crew berupa nama teks bebas - TIDAK perlu punya akun user. --}}
 
 <div class="card border-0 shadow-sm rounded-3">
     <div class="card-body">
@@ -19,7 +20,7 @@
                     {{ strtoupper(substr($crew->name, 0, 1)) }}
                 </div>
                 <div>
-                    <div class="small fw-semibold">{{ $crew->pivot->role_label }}</div>
+                    <div class="small fw-semibold">{{ $crew->role_label }}</div>
                     <div class="small text-muted">{{ $crew->name }}</div>
                 </div>
             </div>
@@ -45,16 +46,12 @@
                         @forelse($project->crews as $index => $crew)
                             <div class="row g-2 mb-2 crew-row">
                                 <div class="col-6">
-                                    <select name="crew[{{ $index }}][user_id]" class="form-select form-select-sm" required>
-                                        <option value="">Pilih User</option>
-                                        @foreach($allUsers as $user)
-                                            <option value="{{ $user->id }}" @selected($user->id === $crew->id)>{{ $user->name }}</option>
-                                        @endforeach
-                                    </select>
+                                    <input type="text" name="crew[{{ $index }}][name]" class="form-control form-control-sm"
+                                           placeholder="Nama crew" value="{{ $crew->name }}" required>
                                 </div>
                                 <div class="col-5">
                                     <input type="text" name="crew[{{ $index }}][role_label]" class="form-control form-control-sm"
-                                           placeholder="Role (contoh: Videographer)" value="{{ $crew->pivot->role_label }}" required>
+                                           placeholder="Role (contoh: Videographer)" value="{{ $crew->role_label }}" required>
                                 </div>
                                 <div class="col-1">
                                     <button type="button" class="btn btn-sm btn-outline-danger remove-crew-row"><i class="bi bi-x"></i></button>
@@ -79,12 +76,8 @@
 <template id="crewRowTemplate">
     <div class="row g-2 mb-2 crew-row">
         <div class="col-6">
-            <select name="crew[__INDEX__][user_id]" class="form-select form-select-sm" required>
-                <option value="">Pilih User</option>
-                @foreach($allUsers as $user)
-                    <option value="{{ $user->id }}">{{ $user->name }}</option>
-                @endforeach
-            </select>
+            <input type="text" name="crew[__INDEX__][name]" class="form-control form-control-sm"
+                   placeholder="Nama crew" required>
         </div>
         <div class="col-5">
             <input type="text" name="crew[__INDEX__][role_label]" class="form-control form-control-sm"
