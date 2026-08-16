@@ -8,7 +8,7 @@ class ReturnBorrowedUnitsRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // Dilindungi auth + role middleware + permission check di route/controller
+        return $this->user()?->hasPermission('borrowed_items', 'process_return') ?? false;
     }
 
     public function rules(): array

@@ -12,7 +12,9 @@ class UserRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $action = $this->route()?->getActionMethod() === 'update' ? 'edit_user' : 'create_user';
+
+        return $this->user()?->hasPermission('user_management', $action) ?? false;
     }
 
     /**

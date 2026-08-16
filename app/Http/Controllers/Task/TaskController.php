@@ -11,6 +11,7 @@ use App\Services\TaskService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -34,6 +35,12 @@ class TaskController extends Controller
      */
     public function create(Request $request): View
     {
+        abort_unless(
+            Auth::user()?->hasPermission('tracking_progress', 'create_task'),
+            403,
+            'Anda tidak memiliki hak akses untuk menambah task.'
+        );
+
         $project = Project::findOrFail($request->get('project_id'));
 
         $users = User::where('status', 'active')
@@ -142,6 +149,12 @@ class TaskController extends Controller
      */
     public function destroy(Task $task): RedirectResponse
     {
+        abort_unless(
+            Auth::user()?->hasPermission('tracking_progress', 'delete_task'),
+            403,
+            'Anda tidak memiliki hak akses untuk menghapus task.'
+        );
+
         $projectId = $task->project_id;
 
         $this->taskService->deleteTask($task);

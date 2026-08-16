@@ -8,6 +8,7 @@ use App\Models\Inventory;
 use App\Services\InventoryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class InventoryController extends Controller
@@ -24,6 +25,12 @@ class InventoryController extends Controller
      */
     public function index(Request $request): View
     {
+        abort_unless(
+            Auth::user()?->hasPermission('inventory', 'view'),
+            403,
+            'Anda tidak memiliki hak akses untuk melihat data inventory.'
+        );
+
         $filters = $request->only(['search', 'status']);
         $inventories = $this->inventoryService->getAllPaginated($filters, 10);
 
@@ -35,6 +42,12 @@ class InventoryController extends Controller
      */
     public function create(): View
     {
+        abort_unless(
+            Auth::user()?->hasPermission('inventory', 'create'),
+            403,
+            'Anda tidak memiliki hak akses untuk menambah data inventory.'
+        );
+
         return view('inventory.create');
     }
 
@@ -68,6 +81,12 @@ class InventoryController extends Controller
      */
     public function edit(Inventory $inventory): View
     {
+        abort_unless(
+            Auth::user()?->hasPermission('inventory', 'edit'),
+            403,
+            'Anda tidak memiliki hak akses untuk mengubah data inventory.'
+        );
+
         $inventory->load('attributes', 'units.suratJalanItem.suratJalan');
 
         return view('inventory.edit', compact('inventory'));
@@ -127,6 +146,12 @@ class InventoryController extends Controller
      */
     public function destroy(Inventory $inventory): RedirectResponse
     {
+        abort_unless(
+            Auth::user()?->hasPermission('inventory', 'delete'),
+            403,
+            'Anda tidak memiliki hak akses untuk menghapus data inventory.'
+        );
+
         $this->inventoryService->deleteInventory($inventory);
 
         return redirect()

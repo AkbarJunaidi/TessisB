@@ -13,7 +13,9 @@ class TaskRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $action = $this->route()?->getActionMethod() === 'update' ? 'edit_task' : 'create_task';
+
+        return $this->user()?->hasPermission('tracking_progress', $action) ?? false;
     }
 
     /**

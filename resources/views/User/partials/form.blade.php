@@ -96,6 +96,7 @@
             Role
         </label>
 
+        @if(auth()->user()->isSuperAdmin())
         <select
             name="role"
             id="role"
@@ -132,6 +133,15 @@
                 {{ $message }}
             </div>
         @enderror
+        @else
+        {{-- Hanya Super Admin yang boleh mengubah role user. Field tetap
+             dikirim (readonly) supaya validasi 'role required' tetap lolos,
+             tapi nilainya tidak akan diproses jika bukan Super Admin yang
+             mengirim (lihat UserService::updateUser). --}}
+        <input type="text" class="form-control" value="{{ ucwords(str_replace('_', ' ', $user->role ?? '')) }}" disabled>
+        <input type="hidden" name="role" value="{{ $user->role ?? '' }}">
+        <small class="text-muted">Hanya Super Admin yang dapat mengubah role.</small>
+        @endif
     </div>
 
     <div class="col-md-6 mb-3">
@@ -170,11 +180,17 @@
 
 </div>
 
+@if(auth()->user()->isSuperAdmin())
 <div class="card border-0 shadow-sm mt-3 mb-3">
     <div class="card-body">
         @include('user.partials.permission-card')
     </div>
 </div>
+@else
+<div class="alert alert-secondary mt-3 mb-3 small">
+    <i class="bi bi-lock me-1"></i> Hanya Super Admin yang dapat mengubah Hak Akses Pengguna.
+</div>
+@endif
 
 <div class="d-flex justify-content-end gap-2 mt-4">
 

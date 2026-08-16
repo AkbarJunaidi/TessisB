@@ -7,6 +7,7 @@ use App\Services\Reports\FinancialReportService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Exception;
 
 class FinancialReportController extends Controller
@@ -20,9 +21,18 @@ class FinancialReportController extends Controller
      * sedang dipilih di Kalender Project. Kalau ada project yang belum
      * lengkap data keuangannya, kembalikan error JSON (422) - front-end
      * (fetch AJAX) yang menampilkan pesannya, PDF tidak jadi dibuat.
+     *
+     * Default-nya hanya Super Admin (lihat config/permissions.php), tapi bisa
+     * diaktifkan untuk role lain lewat Permission Override di Edit User.
      */
     public function exportMonthly(Request $request): Response|JsonResponse
     {
+        abort_unless(
+            Auth::user()?->hasPermission('finance', 'export_report'),
+            403,
+            'Anda tidak memiliki hak akses untuk export laporan keuangan.'
+        );
+
         $validated = $request->validate([
             'month' => ['required', 'integer', 'between:1,12'],
             'year'  => ['required', 'integer', 'between:2020,2100'],

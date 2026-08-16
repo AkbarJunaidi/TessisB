@@ -7,6 +7,7 @@ use App\Http\Requests\Tracking\ReturnBorrowedUnitsRequest;
 use App\Models\Project;
 use App\Services\BorrowedItemService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class BorrowedItemController extends Controller
@@ -20,6 +21,12 @@ class BorrowedItemController extends Controller
      */
     public function index(): View
     {
+        abort_unless(
+            Auth::user()?->hasPermission('borrowed_items', 'view'),
+            403,
+            'Anda tidak memiliki hak akses untuk melihat Barang Pinjaman.'
+        );
+
         $projects = $this->borrowedItemService->getProjectsWithBorrowedItems();
         $unitsByProject = $this->borrowedItemService->getBorrowedUnitsGroupedByProject($projects);
 

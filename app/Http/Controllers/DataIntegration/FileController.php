@@ -7,6 +7,7 @@ use App\Http\Requests\DataIntegration\FileRequest;
 use App\Models\File;
 use App\Services\DataIntegration\FileService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Exception;
@@ -31,6 +32,12 @@ class FileController extends Controller
      */
     public function myFiles(): View
     {
+        abort_unless(
+            Auth::user()?->hasPermission('data_integration', 'view'),
+            403,
+            'Anda tidak memiliki hak akses untuk melihat Integrasi Data.'
+        );
+
         $files = $this->fileService->getMyFiles();
 
         return view(
@@ -73,6 +80,12 @@ class FileController extends Controller
     public function download(
         File $file
     ): BinaryFileResponse|RedirectResponse {
+
+        abort_unless(
+            Auth::user()?->hasPermission('data_integration', 'download'),
+            403,
+            'Anda tidak memiliki hak akses untuk mendownload file.'
+        );
 
         try {
 
@@ -151,6 +164,12 @@ class FileController extends Controller
     public function destroy(
         File $file
     ): RedirectResponse {
+
+        abort_unless(
+            Auth::user()?->hasPermission('data_integration', 'delete'),
+            403,
+            'Anda tidak memiliki hak akses untuk menghapus file.'
+        );
 
         try {
 

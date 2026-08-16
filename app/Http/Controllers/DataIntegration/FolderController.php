@@ -8,6 +8,7 @@ use App\Services\DataIntegration\FolderService;
 use App\Models\Folder;
 use App\Models\File;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Exception;
 
@@ -28,6 +29,12 @@ class FolderController extends Controller
      */
     public function index(): View
     {
+        abort_unless(
+            Auth::user()?->hasPermission('data_integration', 'view'),
+            403,
+            'Anda tidak memiliki hak akses untuk melihat Integrasi Data.'
+        );
+
         // Mengambil folder tingkat paling atas (root) yang tidak memiliki parent
         $folders = Folder::with('user')
             ->whereNull('parent_id')
@@ -54,6 +61,12 @@ class FolderController extends Controller
      */
     public function show(Folder $folder): View
     {
+        abort_unless(
+            Auth::user()?->hasPermission('data_integration', 'view'),
+            403,
+            'Anda tidak memiliki hak akses untuk melihat Integrasi Data.'
+        );
+
         // Ambil anak folder (sub-folder) langsung di bawah folder aktif saat ini
         $subFolders = Folder::with('user')
             ->where('parent_id', $folder->id)
@@ -91,6 +104,12 @@ class FolderController extends Controller
      */
     public function rename(Folder $folder, \Illuminate\Http\Request $request): RedirectResponse
     {
+        abort_unless(
+            Auth::user()?->hasPermission('data_integration', 'rename'),
+            403,
+            'Anda tidak memiliki hak akses untuk mengubah nama folder.'
+        );
+
         $request->validate(['name' => 'required|string|max:255']);
         $this->folderService->renameFolder($folder, $request->name);
         return redirect()->back()->with('success', 'Folder berhasil diubah namanya.');
@@ -101,6 +120,14 @@ class FolderController extends Controller
      */
     public function move(Folder $folder, \Illuminate\Http\Request $request): RedirectResponse
     {
+        // 'move' belum punya action khusus di katalog permission - disamakan
+        // dengan 'rename' karena sama-sama aksi reorganisasi folder.
+        abort_unless(
+            Auth::user()?->hasPermission('data_integration', 'rename'),
+            403,
+            'Anda tidak memiliki hak akses untuk memindahkan folder.'
+        );
+
         try {
             $targetId = $request->input('target_folder_id') ?: null;
             $this->folderService->moveFolder($folder, $targetId);
@@ -115,6 +142,12 @@ class FolderController extends Controller
      */
     public function destroy(Folder $folder): RedirectResponse
     {
+        abort_unless(
+            Auth::user()?->hasPermission('data_integration', 'delete'),
+            403,
+            'Anda tidak memiliki hak akses untuk menghapus folder.'
+        );
+
         $this->folderService->deleteFolder($folder);
         return redirect()->back()->with('success', 'Folder dan seluruh isinya berhasil dihapus.');
     }

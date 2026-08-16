@@ -24,9 +24,11 @@
             <h4 class="fw-bold text-dark m-0">Detail Inventory</h4>
             <p class="text-muted small m-0">Informasi lengkap aset barang</p>
         </div>
+        @if(auth()->user()->hasPermission('inventory', 'edit'))
         <a href="{{ route('inventory.edit', $inventory->id) }}" class="btn btn-sm btn-outline-primary fw-medium rounded-2">
             <i class="bi bi-pencil me-1"></i> Edit Aset
         </a>
+        @endif
     </div>
 
     <!-- Alert Success -->
@@ -290,9 +292,11 @@
                         <h6 class="fw-bold text-dark m-0">Aksi Cepat</h6>
                     </div>
                     <div class="card-body p-4 d-grid gap-2">
+                        @if(auth()->user()->hasPermission('inventory', 'edit'))
                         <a href="{{ route('inventory.edit', $inventory->id) }}" class="btn btn-outline-primary py-2 fw-medium rounded-2">
                             <i class="bi bi-pencil me-1"></i> Edit Aset
                         </a>
+                        @endif
                         <a href="{{ route('inventory.preview-qr', $inventory->id) }}" target="_blank" class="btn btn-outline-primary py-2 fw-medium rounded-2">
                             <i class="bi bi-qr-code-scan me-1"></i> Preview QR Label
                         </a>

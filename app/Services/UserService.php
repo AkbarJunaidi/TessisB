@@ -53,11 +53,29 @@ class UserService
 
     /**
      * Memperbarui data user.
+     *
+     * Role & permission_overrides HANYA diproses jika yang melakukan aksi ini
+     * (Auth::user()) adalah Super Admin - meskipun route/permission
+     * 'edit_user' sudah didelegasikan ke Admin, field role & hak akses tetap
+     * diabaikan dari input Admin. Ini mencegah Admin memberi dirinya sendiri
+     * (lewat akun user lain) hak akses lebih tinggi atau menaikkan role user
+     * manapun menjadi Super Admin lewat form Edit User.
      */
     public function updateUser(User $user, array $data): User
     {
+        $actorIsSuperAdmin = Auth::user()?->isSuperAdmin() ?? false;
+
+        // Admin yang diberi permission 'edit_user' tetap tidak boleh mengubah
+        // (termasuk menonaktifkan) akun Super Admin manapun.
+        if (!$actorIsSuperAdmin && $user->isSuperAdmin()) {
+            throw new Exception(
+                'Anda tidak memiliki hak akses untuk mengubah akun Super Admin.'
+            );
+        }
+
         if (
             $user->id === Auth::id() &&
+            $actorIsSuperAdmin &&
             $user->role !== $data['role']
         ) {
             throw new Exception(
@@ -74,16 +92,21 @@ class UserService
             );
         }
 
-        $user->update([
+        $payload = [
             'name'   => $data['name'],
             'email'  => $data['email'],
-            'role'   => $data['role'],
             'status' => $data['status'],
-            'permission_overrides' => $this->resolvePermissionOverrides(
+        ];
+
+        if ($actorIsSuperAdmin) {
+            $payload['role'] = $data['role'];
+            $payload['permission_overrides'] = $this->resolvePermissionOverrides(
                 $data['role'],
                 $data['permissions'] ?? []
-            ),
-        ]);
+            );
+        }
+
+        $user->update($payload);
 
         if (!empty($data['password'])) {
             $user->update([
@@ -253,6 +276,14 @@ class UserService
         if ($user->id === Auth::id()) {
             throw new Exception(
                 'Anda tidak dapat menghapus akun sendiri.'
+            );
+        }
+
+        // Admin yang diberi permission 'delete_user' tetap tidak boleh
+        // menghapus akun Super Admin manapun.
+        if (!(Auth::user()?->isSuperAdmin() ?? false) && $user->isSuperAdmin()) {
+            throw new Exception(
+                'Anda tidak memiliki hak akses untuk menghapus akun Super Admin.'
             );
         }
 

@@ -16,7 +16,7 @@
             </a>
         </li>
 
-        @if(auth()->user()->hasRole('super_admin', 'admin'))
+        @if(auth()->user()->hasPermission('inventory', 'view'))
 
             @php
                 $invActive = request()->routeIs('inventory.*');
@@ -35,17 +35,20 @@
                                 <i class="bi bi-list-ul me-2 text-muted"></i> Inventory List
                             </a>
                         </li>
+                        @if(auth()->user()->hasPermission('inventory', 'create'))
                         <li class="nav-item">
                             <a href="{{ route('inventory.create') }}" class="nav-link sidebar-dropdown-item text-dark px-3 py-2 {{ request()->routeIs('inventory.create') ? 'fw-bold bg-light border-start border-3 border-primary' : '' }}">
                                 <i class="bi bi-plus-circle me-2 text-muted"></i> Add Inventory
                             </a>
                         </li>
+                        @endif
                     </ul>
                 </div>
             </li>
         @endif
 
         <!--tracking progress-->
+        @if(auth()->user()->hasPermission('tracking_progress', 'view'))
         @php
             $trackActive = request()->routeIs('projects.*') || request()->routeIs('tasks.*') || request()->routeIs('activity-logs.*') || request()->routeIs('borrowed-items.*');
         @endphp
@@ -64,15 +67,19 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                    @if(auth()->user()->hasPermission('borrowed_items', 'view'))
                         <a href="{{ route('borrowed-items.index') }}" class="nav-link sidebar-dropdown-item text-dark px-3 py-2 {{ request()->routeIs('borrowed-items.*') ? 'fw-bold bg-light border-start border-3 border-primary' : '' }}">
                             <i class="bi bi-box-arrow-in-left me-2 text-muted"></i> Barang Pinjaman
                         </a>
+                    @endif
                     </li>
+                    @if(auth()->user()->hasPermission('tracking_progress', 'create_project'))
                     <li class="nav-item">
                         <a href="{{ route('projects.create') }}" class="nav-link sidebar-dropdown-item text-dark px-3 py-2 {{ request()->routeIs('projects.create') ? 'fw-bold bg-light border-start border-3 border-primary' : '' }}">
                             <i class="bi bi-folder-plus me-2 text-muted"></i> Add Project
                         </a>
                     </li>
+                    @endif
 
                     @if(auth()->user()->hasRole('super_admin', 'admin'))
                         <li class="nav-item">
@@ -84,8 +91,10 @@
                 </ul>
             </div>
         </li>
+        @endif
 
         <!--integrasi data-->
+        @if(auth()->user()->hasPermission('data_integration', 'view'))
         @php
             $intActive = request()->routeIs('folders.*') || request()->routeIs('files.*');
         @endphp
@@ -111,8 +120,9 @@
                 </ul>
             </div>
         </li>
+        @endif
 
-        @if(auth()->user()->isSuperAdmin())
+        @if(auth()->user()->hasPermission('user_management', 'view_user'))
             <!--user management-->
             @php
                 $userActive = request()->routeIs('users.*');
@@ -131,11 +141,13 @@
                                 <i class="bi bi-person-lines-fill me-2 text-muted"></i> Data User
                             </a>
                         </li>
+                        @if(auth()->user()->isSuperAdmin())
                         <li class="nav-item">
                             <a href="{{ route('users.create') }}" class="nav-link sidebar-dropdown-item text-dark px-3 py-2 {{ request()->routeIs('users.create') ? 'fw-bold bg-light border-start border-3 border-primary' : '' }}">
                                 <i class="bi bi-person-plus me-2 text-muted"></i> Add User
                             </a>
                         </li>
+                        @endif
                     </ul>
                 </div>
             </li>

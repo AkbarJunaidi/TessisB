@@ -12,7 +12,7 @@ class FolderRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return Auth::check();
+        return $this->user()?->hasPermission('data_integration', 'create_folder') ?? false;
     }
 
     /**

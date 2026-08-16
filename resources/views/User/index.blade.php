@@ -18,6 +18,7 @@
             </p>
         </div>
 
+        @if(auth()->user()->isSuperAdmin())
         <a
             href="{{ route('users.create') }}"
             class="btn btn-primary"
@@ -25,6 +26,7 @@
             <i class="bi bi-person-plus me-2"></i>
             Add User
         </a>
+        @endif
 
     </div>
 
@@ -147,13 +149,16 @@
                                         <i class="bi bi-eye"></i>
                                     </a>
 
+                                    @if(auth()->user()->hasPermission('user_management', 'edit_user'))
                                     <a
                                         href="{{ route('users.edit', $user) }}"
                                         class="btn btn-sm btn-warning"
                                     >
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
+                                    @endif
 
+                                    @if(auth()->user()->hasPermission('user_management', 'delete_user'))
                                     <form
                                         action="{{ route('users.destroy', $user) }}"
                                         method="POST"
@@ -172,6 +177,7 @@
                                         </button>
 
                                     </form>
+                                    @endif
 
                                 </td>
 

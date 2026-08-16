@@ -67,6 +67,25 @@ return [
             ],
         ],
 
+        'finance' => [
+            'label' => 'Data Keuangan',
+            'icon'  => 'bi-cash-coin',
+            'actions' => [
+                'view'          => 'Melihat data keuangan project',
+                'manage'        => 'Mengisi / mengubah data keuangan project',
+                'export_report' => 'Export laporan keuangan bulanan (PDF)',
+            ],
+        ],
+
+        'borrowed_items' => [
+            'label' => 'Barang Pinjaman',
+            'icon'  => 'bi-box-arrow-in-left',
+            'actions' => [
+                'view'           => 'Melihat daftar barang pinjaman',
+                'process_return' => 'Proses pengembalian barang pinjaman',
+            ],
+        ],
+
         'user_management' => [
             'label' => 'User Management',
             'icon'  => 'bi-people',
@@ -116,6 +135,12 @@ return [
                 'view' => true, 'upload' => true, 'download' => true, 'delete' => true,
                 'create_folder' => true, 'rename' => true,
             ],
+            'finance' => [
+                'view' => true, 'manage' => true, 'export_report' => true,
+            ],
+            'borrowed_items' => [
+                'view' => true, 'process_return' => true,
+            ],
             'user_management' => [
                 'view_user' => true, 'create_user' => true, 'edit_user' => true, 'delete_user' => true,
                 'reset_password' => true, 'change_role' => true,
@@ -138,6 +163,14 @@ return [
                 'view' => true, 'upload' => true, 'download' => true, 'delete' => true,
                 'create_folder' => true, 'rename' => true,
             ],
+            'finance' => [
+                // Default: HANYA Super Admin yang bisa akses data keuangan.
+                // Bisa diaktifkan per-user lewat Permission Override di Edit User.
+                'view' => false, 'manage' => false, 'export_report' => false,
+            ],
+            'borrowed_items' => [
+                'view' => true, 'process_return' => true,
+            ],
             'user_management' => [
                 'view_user' => false, 'create_user' => false, 'edit_user' => false, 'delete_user' => false,
                 'reset_password' => false, 'change_role' => false,
@@ -159,6 +192,12 @@ return [
             'data_integration' => [
                 'view' => true, 'upload' => true, 'download' => true, 'delete' => false,
                 'create_folder' => false, 'rename' => false,
+            ],
+            'finance' => [
+                'view' => false, 'manage' => false, 'export_report' => false,
+            ],
+            'borrowed_items' => [
+                'view' => true, 'process_return' => false,
             ],
             'user_management' => [
                 'view_user' => false, 'create_user' => false, 'edit_user' => false, 'delete_user' => false,

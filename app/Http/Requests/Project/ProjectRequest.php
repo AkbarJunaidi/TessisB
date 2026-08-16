@@ -8,7 +8,9 @@ class ProjectRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // Izin dilewati karena sudah dilindungi auth + role middleware global
+        $action = $this->route()?->getActionMethod() === 'update' ? 'edit_project' : 'create_project';
+
+        return $this->user()?->hasPermission('tracking_progress', $action) ?? false;
     }
 
     public function rules(): array

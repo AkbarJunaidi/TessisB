@@ -175,13 +175,14 @@
         </div>
     </div>
 
-    @if(auth()->user()->isSuperAdmin())
+    @if(auth()->user()->hasPermission('finance', 'view'))
         <div class="row g-3 mb-3">
             <div class="col-12">
                 <div class="card border-0 shadow-sm rounded-3">
                     <div class="card-body">
                         <h6 class="fw-bold mb-3">Data Keuangan</h6>
 
+                        @if(auth()->user()->hasPermission('finance', 'manage'))
                         <form id="financeForm" action="{{ route('projects.finance.update', $project) }}" method="POST">
                             @csrf
                             @method('PUT')
@@ -240,6 +241,60 @@
                                 </button>
                             </div>
                         </form>
+                        @else
+                        {{-- Hanya boleh melihat (hasPermission finance.view tanpa finance.manage) --}}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-bold m-0">Pendapatan</h6>
+                        </div>
+                        <div class="table-responsive mb-3">
+                            <table class="table table-sm align-middle mb-0">
+                                <tbody>
+                                    @forelse($project->financeItems->where('type', 'income') as $item)
+                                        <tr>
+                                            <td class="fw-semibold text-success" style="width: 35%;">{{ \App\Support\Money::formatRupiah($item->amount) }}</td>
+                                            <td class="text-muted">{{ $item->description ?: '-' }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr><td class="text-muted small">Belum ada data pendapatan.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="p-2 px-3 rounded-3 bg-success-subtle d-flex justify-content-between align-items-center mb-4">
+                            <span class="fw-semibold small">Total Pendapatan</span>
+                            <span class="fw-bold text-success">{{ \App\Support\Money::formatRupiah($project->total_income) }}</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-bold m-0">Pengeluaran</h6>
+                        </div>
+                        <div class="table-responsive mb-3">
+                            <table class="table table-sm align-middle mb-0">
+                                <tbody>
+                                    @forelse($project->financeItems->where('type', 'expense') as $item)
+                                        <tr>
+                                            <td class="fw-semibold text-danger" style="width: 35%;">{{ \App\Support\Money::formatRupiah($item->amount) }}</td>
+                                            <td class="text-muted">{{ $item->description ?: '-' }}</td>
+                                        </tr>
+                                    @empty
+                                        <tr><td class="text-muted small">Belum ada data pengeluaran.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="p-2 px-3 rounded-3 bg-danger-subtle d-flex justify-content-between align-items-center mb-3">
+                            <span class="fw-semibold small">Total Pengeluaran</span>
+                            <span class="fw-bold text-danger">{{ \App\Support\Money::formatRupiah($project->total_expense) }}</span>
+                        </div>
+
+                        <div class="p-3 rounded-3 {{ $project->profit >= 0 ? 'bg-success-subtle' : 'bg-danger-subtle' }} d-flex justify-content-between align-items-center">
+                            <span class="fw-bold">Laba Bersih</span>
+                            <span class="fw-bold fs-5 {{ $project->profit >= 0 ? 'text-success' : 'text-danger' }}">{{ \App\Support\Money::formatRupiah($project->profit) }}</span>
+                        </div>
+                        <small class="text-muted d-block mt-3">
+                            <i class="bi bi-info-circle me-1"></i>Anda hanya memiliki akses lihat untuk data keuangan.
+                        </small>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -332,7 +387,7 @@
 </script>
 
 {{-- Script Data Keuangan: tambah/hapus baris + kalkulasi total live (client-side) --}}
-@if(auth()->user()->isSuperAdmin())
+@if(auth()->user()->hasPermission('finance', 'manage'))
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     let incomeIndex = {{ $project->financeItems->where('type', 'income')->count() }};

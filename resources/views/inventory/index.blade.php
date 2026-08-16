@@ -17,10 +17,12 @@
             <a href="{{ route('inventory.download-all-pdf') }}" class="btn btn-outline-danger d-flex align-items-center gap-2 shadow-sm fw-medium">
                 <i class="bi bi-file-earmark-pdf-fill"></i> Download Semua Report
             </a>
+            @if(auth()->user()->hasPermission('inventory', 'create'))
             <!-- Tombol Tambah Inventory -->
             <a href="{{ route('inventory.create') }}" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm fw-medium">
                 <i class="bi bi-plus-circle"></i> Tambah Inventory
             </a>
+            @endif
         </div>
     </div>
 
@@ -171,6 +173,7 @@
                                         </a>
 
                                         <!-- Delete Item -->
+                                        @if(auth()->user()->hasPermission('inventory', 'delete'))
                                         <button type="button"
                                                 class="btn btn-sm btn-outline-danger px-2 fw-medium rounded-2 d-flex align-items-center gap-1"
                                                 data-bs-toggle="modal"
@@ -181,6 +184,7 @@
                                                 title="Delete Item">
                                             <i class="bi bi-trash"></i>
                                         </button>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

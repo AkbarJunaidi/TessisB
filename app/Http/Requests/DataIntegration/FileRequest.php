@@ -13,7 +13,20 @@ class FileRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return Auth::check();
+        $user = $this->user();
+
+        if (!$user) {
+            return false;
+        }
+
+        return match ($this->route()?->getActionMethod()) {
+            'store'  => $user->hasPermission('data_integration', 'upload'),
+            'rename' => $user->hasPermission('data_integration', 'rename'),
+            // 'move' belum punya action khusus di katalog permission - disamakan
+            // dengan 'rename' karena sama-sama aksi reorganisasi file.
+            'move'   => $user->hasPermission('data_integration', 'rename'),
+            default  => false,
+        };
     }
 
     /**

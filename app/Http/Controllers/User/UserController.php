@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\UserService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class UserController extends Controller
@@ -23,6 +24,12 @@ class UserController extends Controller
 // Menampilkan daftar user.
     public function index(): View
     {
+        abort_unless(
+            Auth::user()?->hasPermission('user_management', 'view_user'),
+            403,
+            'Anda tidak memiliki hak akses untuk melihat data user.'
+        );
+
         $users = $this->userService->getAllPaginated(10);
 
         return view('user.index', compact('users'));
@@ -59,12 +66,24 @@ class UserController extends Controller
 // Menampilkan detail user.
     public function show(User $user): View
     {
+        abort_unless(
+            Auth::user()?->hasPermission('user_management', 'view_user'),
+            403,
+            'Anda tidak memiliki hak akses untuk melihat data user.'
+        );
+
         return view('user.show', compact('user'));
     }
 
 // Menampilkan form edit user.
     public function edit(User $user): View
     {
+        abort_unless(
+            Auth::user()?->hasPermission('user_management', 'edit_user'),
+            403,
+            'Anda tidak memiliki hak akses untuk mengubah data user.'
+        );
+
         return view('user.edit', array_merge(
             compact('user'),
             $this->buildPermissionViewData($user)
@@ -76,6 +95,12 @@ class UserController extends Controller
         UserRequest $request,
         User $user
     ): RedirectResponse {
+
+        abort_unless(
+            Auth::user()?->hasPermission('user_management', 'edit_user'),
+            403,
+            'Anda tidak memiliki hak akses untuk mengubah data user.'
+        );
 
         try {
 
@@ -207,6 +232,12 @@ class UserController extends Controller
     public function destroy(
         User $user
     ): RedirectResponse {
+
+        abort_unless(
+            Auth::user()?->hasPermission('user_management', 'delete_user'),
+            403,
+            'Anda tidak memiliki hak akses untuk menghapus user.'
+        );
 
         try {
 

@@ -9,11 +9,13 @@ class InventoryRequest extends FormRequest
 {
     /**
      * Menentukan apakah pengguna diizinkan melakukan request ini.
+     * 'store' -> permission 'create', 'update' -> permission 'edit'.
      */
     public function authorize(): bool
     {
-        // Izin diberikan karena rute ini sudah dilindungi oleh middleware 'auth' global
-        return true;
+        $action = $this->route()?->getActionMethod() === 'update' ? 'edit' : 'create';
+
+        return $this->user()?->hasPermission('inventory', $action) ?? false;
     }
 
 //  Aturan validasi yang diterapkan pada input form inventory.

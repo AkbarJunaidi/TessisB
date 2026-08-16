@@ -131,6 +131,15 @@ Route::middleware('auth')->group(function () {
         Route::post('projects/{project}/surat-jalan', [SuratJalanController::class, 'store'])
             ->name('surat-jalan.store');
 
+    });
+
+    // Modul Data Keuangan - default hanya Super Admin (lihat config/permissions.php
+    // -> role_defaults.*.finance), tapi bisa diatur per-user lewat Permission
+    // Override di Edit User. Gate role di sini sengaja dibuat luas; otorisasi
+    // sesungguhnya ada di ProjectFinanceRequest::authorize() dan
+    // FinancialReportController::exportMonthly() lewat hasPermission().
+    Route::middleware('role:super_admin,admin,employee')->group(function () {
+
         Route::put('projects/{project}/finance', [ProjectController::class, 'updateFinance'])
             ->name('projects.finance.update');
 
@@ -153,8 +162,11 @@ Route::middleware('auth')->group(function () {
 
     });
 
-    // Modul Surat Jalan - kembalikan barang (Super Admin & Admin)
-    Route::middleware('role:super_admin,admin')->group(function () {
+    // Modul Surat Jalan - kembalikan barang. Role gate dibuat luas; otorisasi
+    // sesungguhnya ada di ReturnBarangRequest / ReturnBorrowedUnitsRequest lewat
+    // hasPermission('borrowed_items', 'process_return') sehingga bisa diatur
+    // per-user lewat Permission Override (termasuk untuk role Employee).
+    Route::middleware('role:super_admin,admin,employee')->group(function () {
 
         Route::post('surat-jalan/items/{item}/return', [SuratJalanController::class, 'returnItem'])
             ->name('surat-jalan.items.return');
@@ -164,7 +176,8 @@ Route::middleware('auth')->group(function () {
 
     });
 
-    // Modul Barang Pinjaman - lihat (Super Admin, Admin, Employee sesuai permission surat_jalan.view)
+    // Modul Barang Pinjaman - lihat (otorisasi sesungguhnya lewat hasPermission
+    // borrowed_items.view di BorrowedItemController::index)
     Route::middleware('role:super_admin,admin,employee')->group(function () {
 
         Route::get('barang-pinjaman', [BorrowedItemController::class, 'index'])
@@ -253,9 +266,58 @@ Route::middleware('auth')->group(function () {
     });
 
     // Modul User Management
+    //
+    // 1) Create/store didaftarkan lebih dulu (sebelum show/{user}) supaya
+    //    '/users/create' tidak tertangkap wildcard {user}. Tetap Super Admin
+    //    saja - lihat catatan keamanan di grup ke-3.
     Route::middleware('role:super_admin')->group(function () {
 
-        Route::resource('users', UserController::class);
+        Route::get('users/create', [UserController::class, 'create'])
+            ->name('users.create');
+
+        Route::post('users', [UserController::class, 'store'])
+            ->name('users.store');
+
+    });
+
+    // 2) Lihat daftar & detail user - BISA didelegasikan lewat Permission
+    //    Override (user_management.view_user), makanya role gate dibuat
+    //    lebih luas; otorisasi sesungguhnya lewat hasPermission() di
+    //    UserController::index()/show().
+    Route::middleware('role:super_admin,admin')->group(function () {
+
+        Route::get('users', [UserController::class, 'index'])
+            ->name('users.index');
+
+        Route::get('users/{user}', [UserController::class, 'show'])
+            ->name('users.show');
+
+    });
+
+    // 3) Edit & Hapus user - BISA didelegasikan lewat Permission Override
+    //    (user_management.edit_user / delete_user). CATATAN KEAMANAN: kalau
+    //    Admin diberi edit_user, field Role & Hak Akses (permission_overrides)
+    //    pada form Edit tetap diabaikan kalau bukan Super Admin yang mengirim
+    //    (lihat UserService::updateUser) - jadi Admin hanya bisa mengubah
+    //    nama/email/status/password user lain, tidak bisa menaikkan role
+    //    atau memberi hak akses lebih lewat form ini.
+    Route::middleware('role:super_admin,admin')->group(function () {
+
+        Route::get('users/{user}/edit', [UserController::class, 'edit'])
+            ->name('users.edit');
+
+        Route::match(['put', 'patch'], 'users/{user}', [UserController::class, 'update'])
+            ->name('users.update');
+
+        Route::delete('users/{user}', [UserController::class, 'destroy'])
+            ->name('users.destroy');
+
+    });
+
+    // 4) Reset password, ubah role, ubah status - SELALU Super Admin, TIDAK
+    //    bisa didelegasikan lewat Permission Override (reset password = ambil
+    //    alih akun orang lain; ubah role = jalur lain untuk eskalasi privilege).
+    Route::middleware('role:super_admin')->group(function () {
 
         Route::patch(
             'users/{user}/status',

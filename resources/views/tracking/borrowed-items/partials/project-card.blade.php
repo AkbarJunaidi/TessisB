@@ -18,7 +18,7 @@
             </div>
         </div>
 
-        @if(auth()->user()->hasPermission('surat_jalan', 'create'))
+        @if(auth()->user()->hasPermission('borrowed_items', 'process_return'))
             <button type="button" class="btn btn-sm btn-primary btn-konfirmasi flex-shrink-0" data-project-id="{{ $project->id }}">
                 Konfirmasi
             </button>

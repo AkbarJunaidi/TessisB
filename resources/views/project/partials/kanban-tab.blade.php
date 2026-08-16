@@ -10,9 +10,11 @@
     <button type="button" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-2 fw-medium" data-bs-toggle="modal" data-bs-target="#modalAddList">
         <i class="bi bi-layout-three-columns"></i> Add List
     </button>
+    @if(auth()->user()->hasPermission('tracking_progress', 'create_task'))
     <a href="{{ route('tasks.create', ['project_id' => $project->id]) }}" class="btn btn-primary btn-sm d-flex align-items-center gap-2 shadow-sm fw-medium">
         <i class="bi bi-plus-lg"></i> Add New Task
     </a>
+    @endif
 </div>
 
 <div class="modal fade" id="modalAddList" tabindex="-1" aria-hidden="true">

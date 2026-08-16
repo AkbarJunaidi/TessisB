@@ -28,9 +28,15 @@ class ProjectFinanceRequest extends FormRequest
         ]);
     }
 
+    /**
+     * Default-nya hanya Super Admin yang bisa mengisi/mengubah data keuangan
+     * (lihat config/permissions.php -> role_defaults.admin.finance.manage = false).
+     * Bisa diaktifkan untuk role lain (mis. Admin) lewat Permission Override
+     * pada halaman Edit User, tanpa perlu mengubah kode ini.
+     */
     public function authorize(): bool
     {
-        return $this->user()?->isSuperAdmin() ?? false;
+        return $this->user()?->hasPermission('finance', 'manage') ?? false;
     }
 
     public function rules(): array

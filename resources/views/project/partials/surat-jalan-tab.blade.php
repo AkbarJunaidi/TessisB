@@ -65,7 +65,7 @@
                                                             <span class="badge {{ $sisa > 0 ? 'bg-warning-subtle text-warning' : 'bg-success-subtle text-success' }}">{{ $sisa }}</span>
                                                         </td>
                                                         <td class="text-end">
-                                                            @if($sisa > 0 && auth()->user()->hasPermission('surat_jalan', 'create'))
+                                                            @if($sisa > 0 && auth()->user()->hasPermission('borrowed_items', 'process_return'))
                                                                 <form action="{{ route('surat-jalan.items.return', $item) }}" method="POST" class="d-inline-flex gap-1 justify-content-end">
                                                                     @csrf
                                                                     <input type="number" name="qty" min="1" max="{{ $sisa }}" value="{{ $sisa }}" class="form-control form-control-sm" style="width:70px;">

@@ -14,6 +14,7 @@ use App\Services\TaskService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class ProjectController extends Controller
@@ -33,6 +34,12 @@ class ProjectController extends Controller
      */
     public function index(Request $request): View
     {
+        abort_unless(
+            Auth::user()?->hasPermission('tracking_progress', 'view'),
+            403,
+            'Anda tidak memiliki hak akses untuk melihat project.'
+        );
+
         $filters = $request->only(['search', 'status', 'pic', 'month', 'date']);
 
         $projects = $this->projectService->getAllPaginated($filters, 10);
@@ -56,6 +63,12 @@ class ProjectController extends Controller
      */
     public function create(): View
     {
+        abort_unless(
+            Auth::user()?->hasPermission('tracking_progress', 'create_project'),
+            403,
+            'Anda tidak memiliki hak akses untuk menambah project.'
+        );
+
         return view('project.create');
     }
 
@@ -104,6 +117,12 @@ class ProjectController extends Controller
      */
     public function edit(Project $project): View
     {
+        abort_unless(
+            Auth::user()?->hasPermission('tracking_progress', 'edit_project'),
+            403,
+            'Anda tidak memiliki hak akses untuk mengubah project.'
+        );
+
         return view('project.edit', compact('project'));
     }
 
@@ -138,6 +157,12 @@ class ProjectController extends Controller
 
     public function destroy(Project $project): RedirectResponse
     {
+        abort_unless(
+            Auth::user()?->hasPermission('tracking_progress', 'delete_project'),
+            403,
+            'Anda tidak memiliki hak akses untuk menghapus project.'
+        );
+
         $this->projectService->deleteProject($project);
 
         return redirect()

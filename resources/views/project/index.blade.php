@@ -147,7 +147,7 @@
                         <span class="text-danger">&#9679;</span> &gt; 4 Project
                     </div>
 
-                    @if(auth()->user()->isSuperAdmin())
+                    @if(auth()->user()->hasPermission('finance', 'export_report'))
                         <hr class="my-3">
                         <button type="button" id="exportMonthlyReportBtn" class="btn btn-outline-primary btn-sm w-100 d-flex align-items-center justify-content-center gap-2"
                                 data-month="{{ $calendarMonth }}" data-year="{{ $calendarYear }}">
@@ -433,7 +433,7 @@
 </script>
 @endif
 
-@if(auth()->user()->isSuperAdmin())
+@if(auth()->user()->hasPermission('finance', 'export_report'))
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const btn = document.getElementById('exportMonthlyReportBtn');
