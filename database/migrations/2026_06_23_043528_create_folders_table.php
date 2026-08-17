@@ -21,6 +21,13 @@ return new class extends Migration
                 ->constrained('folders')
                 ->onDelete('cascade'); // Jika folder induk dihapus, subfolder di dalamnya otomatis terhapus
 
+            // Folder khusus dokumen 1 project (nullable = folder bersama biasa)
+            $table->foreignId('project_id')
+                ->nullable()
+                ->unique()
+                ->constrained('projects')
+                ->nullOnDelete();
+
             // Relasi ke tabel users sebagai pembuat folder
             $table->foreignId('created_by')
                 ->constrained('users')

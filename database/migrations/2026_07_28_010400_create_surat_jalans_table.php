@@ -16,6 +16,9 @@ return new class extends Migration
                 $table->foreignId('project_id')->constrained('projects')->onDelete('cascade');
                 $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
 
+                $table->string('kepada')->nullable();
+                $table->string('keperluan')->nullable();
+
                 $table->string('pic')->nullable();
                 $table->date('tanggal_terbit');
 
@@ -25,6 +28,7 @@ return new class extends Migration
                 $table->date('tanggal_gladi_bersih')->nullable();
                 $table->time('waktu_gladi_bersih')->nullable();
                 $table->date('tanggal_acara')->nullable();
+                $table->date('tanggal_acara_selesai')->nullable();
                 $table->time('waktu_acara')->nullable();
                 $table->string('lokasi_acara')->nullable();
 

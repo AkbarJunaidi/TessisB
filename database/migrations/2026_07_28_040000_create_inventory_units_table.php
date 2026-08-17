@@ -19,6 +19,11 @@ return new class extends Migration
                 $table->foreignId('inventory_id')->constrained('inventories')->onDelete('cascade');
                 $table->unsignedInteger('unit_number');
                 $table->string('status')->default('Tersedia'); // Tersedia, Rusak, Perbaikan, Hilang
+
+                // Unit yang sedang dipinjam lewat Surat Jalan Item ini (null = di gudang)
+                $table->foreignId('surat_jalan_item_id')->nullable()
+                    ->constrained('surat_jalan_items')->nullOnDelete();
+
                 $table->timestamps();
 
                 $table->unique(['inventory_id', 'unit_number']);

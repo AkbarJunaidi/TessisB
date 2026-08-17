@@ -13,6 +13,7 @@ return new class extends Migration
                 $table->id();
                 $table->foreignId('surat_jalan_id')->constrained('surat_jalans')->onDelete('cascade');
                 $table->foreignId('inventory_id')->constrained('inventories')->onDelete('cascade');
+                $table->string('kategori_item')->nullable();
 
                 $table->unsignedInteger('qty_dipakai');
                 $table->unsignedInteger('qty_dikembalikan')->default(0);
