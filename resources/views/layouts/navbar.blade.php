@@ -73,6 +73,8 @@
 
     .notif-ticker {
         position: relative;
+        width: 100%;
+        flex: 1 1 auto;
         height: 26px;
         overflow: hidden;
         perspective: 500px;
