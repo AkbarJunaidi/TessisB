@@ -6,7 +6,7 @@
 
     <hr class="border-white opacity-25 my-3">
 
-    <ul class="nav nav-pills flex-column mb-auto gap-1">
+    <ul class="nav nav-pills flex-column mb-auto gap-1" id="sidebarMenuAccordion">
 
 
         <li class="nav-item mb-1">
@@ -28,7 +28,7 @@
                     </div>
                     <i class="bi bi-chevron-down fs-7 sidebar-collapse-icon"></i>
                 </a>
-                <div class="collapse {{ $invActive ? 'show' : '' }}" id="menuInventory">
+                <div class="collapse {{ $invActive ? 'show' : '' }}" id="menuInventory" data-bs-parent="#sidebarMenuAccordion">
                     <ul class="nav flex-column bg-white rounded-3 mt-1 mx-2 py-2 shadow-sm overflow-hidden">
                         <li class="nav-item">
                             <a href="{{ route('inventory.index') }}" class="nav-link sidebar-dropdown-item text-dark px-3 py-2 {{ request()->routeIs('inventory.index') || request()->routeIs('inventory.show') || request()->routeIs('inventory.edit') ? 'fw-bold bg-light border-start border-3 border-primary' : '' }}">
@@ -59,7 +59,7 @@
                 </div>
                 <i class="bi bi-chevron-down fs-7 sidebar-collapse-icon"></i>
             </a>
-            <div class="collapse {{ $trackActive ? 'show' : '' }}" id="menuTracking">
+            <div class="collapse {{ $trackActive ? 'show' : '' }}" id="menuTracking" data-bs-parent="#sidebarMenuAccordion">
                 <ul class="nav flex-column bg-white rounded-3 mt-1 mx-2 py-2 shadow-sm overflow-hidden">
                     <li class="nav-item">
                         <a href="{{ route('projects.index') }}" class="nav-link sidebar-dropdown-item text-dark px-3 py-2 {{ request()->routeIs('projects.index') || request()->routeIs('projects.show') || request()->routeIs('tasks.show') ? 'fw-bold bg-light border-start border-3 border-primary' : '' }}">
@@ -105,7 +105,7 @@
                 </div>
                 <i class="bi bi-chevron-down fs-7 sidebar-collapse-icon"></i>
             </a>
-            <div class="collapse {{ $intActive ? 'show' : '' }}" id="menuIntegrasi">
+            <div class="collapse {{ $intActive ? 'show' : '' }}" id="menuIntegrasi" data-bs-parent="#sidebarMenuAccordion">
                 <ul class="nav flex-column bg-white rounded-3 mt-1 mx-2 py-2 shadow-sm overflow-hidden">
                     <li class="nav-item">
                         <a href="{{ route('folders.index') }}" class="nav-link sidebar-dropdown-item text-dark px-3 py-2 {{ request()->routeIs('folders.index') || request()->routeIs('folders.show') ? 'fw-bold bg-light border-start border-3 border-primary' : '' }}">
@@ -134,7 +134,7 @@
                     </div>
                     <i class="bi bi-chevron-down fs-7 sidebar-collapse-icon"></i>
                 </a>
-                <div class="collapse {{ $userActive ? 'show' : '' }}" id="menuUser">
+                <div class="collapse {{ $userActive ? 'show' : '' }}" id="menuUser" data-bs-parent="#sidebarMenuAccordion">
                     <ul class="nav flex-column bg-white rounded-3 mt-1 mx-2 py-2 shadow-sm overflow-hidden">
                         <li class="nav-item">
                             <a href="{{ route('users.index') }}" class="nav-link sidebar-dropdown-item text-dark px-3 py-2 {{ request()->routeIs('users.index') || request()->routeIs('users.edit') ? 'fw-bold bg-light border-start border-3 border-primary' : '' }}">
