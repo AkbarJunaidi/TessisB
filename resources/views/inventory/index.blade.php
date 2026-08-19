@@ -84,7 +84,7 @@
     <!-- Table Inventory List -->
     <div class="card shadow-sm border-0 rounded-3 bg-white">
         <div class="card-body p-0">
-            <div class="table-responsive">
+            <div class="table-responsive ap-table-stack">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light text-secondary small text-uppercase">
                         <tr>
@@ -100,7 +100,7 @@
                         @forelse($inventories as $index => $item)
                             <tr>
                                 <!-- Foto Barang -->
-                                <td class="ps-4 py-3">
+                                <td class="ps-4 py-3 ap-td-block" data-label="Foto Barang">
                                     @if($item->image)
                                         <img src="{{ asset('storage/' . $item->image) }}"
                                              alt="Foto {{ $item->name }}"
@@ -115,19 +115,19 @@
                                 </td>
 
                                 <!-- Nama Barang -->
-                                <td class="py-3 fw-bold text-dark">
+                                <td class="py-3 fw-bold text-dark" data-label="Nama Barang">
                                     {{ $item->name }}
                                 </td>
 
                                 <!-- Serial Number -->
-                                <td class="py-3 text-secondary">
+                                <td class="py-3 text-secondary" data-label="Serial Number">
                                     <span class="badge bg-light text-dark border px-2 py-1 font-monospace fw-medium">
                                         {{ $item->serial_number }}
                                     </span>
                                 </td>
 
                                 <!-- Status Barang (Badge Bootstrap) - otomatis "Tersedia" jika masih ada unit available -->
-                                <td class="py-3">
+                                <td class="py-3" data-label="Status Barang">
                                     @switch($item->display_status)
                                         @case('Tersedia')
                                             <span class="badge bg-success px-2 py-1">Tersedia</span>
@@ -151,12 +151,12 @@
                                 </td>
 
                                 <!-- Tanggal Input -->
-                                <td class="py-3 text-secondary">
+                                <td class="py-3 text-secondary" data-label="Tanggal Input">
                                     {{ $item->created_at ? $item->created_at->format('d M Y') : '-' }}
                                 </td>
 
                                 <!-- Action Buttons (View, Download Report, Delete HANYA) -->
-                                <td class="py-3 text-center pe-4">
+                                <td class="py-3 text-center pe-4 ap-td-block" data-label="Aksi">
                                     <div class="d-flex justify-content-center gap-2">
                                         <!-- View Detail -->
                                         <a href="{{ route('inventory.show', $item->id) }}"

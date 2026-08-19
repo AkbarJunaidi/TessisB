@@ -30,7 +30,7 @@
 
             <div class="col">
                 <div class="card h-100 shadow-sm border-0 bg-white rounded-4 hover-elevate" style="border-left: 5px solid #0d6efd !important;">
-                    <div class="card-body p-4">
+                    <div class="card-body p-3 p-md-4">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <span class="text-muted small text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">Inventory</span>
@@ -46,7 +46,7 @@
 
             <div class="col">
                 <div class="card h-100 shadow-sm border-0 bg-white rounded-4 hover-elevate" style="border-left: 5px solid #198754 !important;">
-                    <div class="card-body p-4">
+                    <div class="card-body p-3 p-md-4">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <span class="text-muted small text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">Project</span>
@@ -62,7 +62,7 @@
 
             <div class="col">
                 <div class="card h-100 shadow-sm border-0 bg-white rounded-4 hover-elevate" style="border-left: 5px solid #ffc107 !important;">
-                    <div class="card-body p-4">
+                    <div class="card-body p-3 p-md-4">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <span class="text-muted small text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">Task</span>
@@ -78,7 +78,7 @@
 
             <div class="col">
                 <div class="card h-100 shadow-sm border-0 bg-white rounded-4 hover-elevate" style="border-left: 5px solid #0dcaf0 !important;">
-                    <div class="card-body p-4">
+                    <div class="card-body p-3 p-md-4">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <span class="text-muted small text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">Files</span>
@@ -94,7 +94,7 @@
 
             <div class="col">
                 <div class="card h-100 shadow-sm border-0 bg-white rounded-4 hover-elevate" style="border-left: 5px solid #6c757d !important;">
-                    <div class="card-body p-4">
+                    <div class="card-body p-3 p-md-4">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <span class="text-muted small text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 1px;">Users</span>
@@ -127,7 +127,7 @@
                     </div>
 
                     <div class="card-body p-0">
-                        <div class="table-responsive">
+                        <div class="table-responsive ap-table-stack">
                             <table class="table table-hover align-middle table-nowrap mb-0">
                                 <thead class="table-light text-muted small text-uppercase table-custom-header">
                                     <tr>
@@ -140,10 +140,10 @@
                                 <tbody class="small text-dark border-top-0">
                                     @forelse($recentActivities as $activity)
                                         <tr>
-                                            <td class="ps-4 py-3 fw-medium text-secondary">
+                                            <td class="ps-4 py-3 fw-medium text-secondary" data-label="Date Time">
                                                 <i class="bi bi-calendar-event me-2 text-muted"></i>{{ $activity->created_at->format('d/m/Y H:i') }}
                                             </td>
-                                            <td class="py-3">
+                                            <td class="py-3" data-label="User">
                                                 <div class="d-flex align-items-center gap-3">
                                                     <div class="bg-light rounded-circle d-flex align-items-center justify-content-center fw-bold text-primary shadow-sm" style="width: 32px; height: 32px; font-size: 0.8rem;">
                                                         {{ strtoupper(substr($activity->user->name ?? 'SY', 0, 2)) }}
@@ -151,12 +151,12 @@
                                                     <span class="fw-semibold text-dark">{{ $activity->user->name ?? 'System / Deleted User' }}</span>
                                                 </div>
                                             </td>
-                                            <td class="py-3">
+                                            <td class="py-3" data-label="Module">
                                                 <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2 fw-semibold rounded-pill" style="font-size: 0.75rem; letter-spacing: 0.3px;">
                                                     {{ $activity->module }}
                                                 </span>
                                             </td>
-                                            <td class="py-3 pe-4">
+                                            <td class="py-3 pe-4" data-label="Action">
                                                 @if(in_array($activity->action, ['Delete', 'Logout']))
                                                     <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 fw-semibold rounded-pill" style="font-size: 0.75rem; letter-spacing: 0.3px;">{{ $activity->action }}</span>
                                                 @elseif(in_array($activity->action, ['Create', 'Login', 'Upload']))

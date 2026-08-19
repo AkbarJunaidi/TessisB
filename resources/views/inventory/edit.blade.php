@@ -385,7 +385,7 @@
         </div>
 
         <!-- Form Submit & Cancel Actions -->
-        <div class="d-flex justify-content-end gap-2 mb-5">
+        <div class="d-flex justify-content-end gap-2 mb-5 ap-form-actions">
             <a href="{{ route('inventory.show', $inventory->id) }}" class="btn btn-light px-4 fw-medium">Batal</a>
             <button type="submit" class="btn btn-primary px-4 fw-medium shadow-sm">
                 <i class="bi bi-check-circle-fill me-1"></i> Simpan Perubahan

@@ -165,6 +165,137 @@ table td.text-end {
 }
 
 /* --------------------------------------------------------------------------
+   4. TABEL RESPONSIF - pola "tabel jadi kartu" di bawah 768px (md)
+   Dipakai di SEMUA tabel data utama (Inventory, Project, User Management,
+   Activity Log, Trash, dst). JANGAN menulis media query tabel baru di
+   tempat lain - cukup pakai class di sini + atribut data-label per <td>.
+
+   Cara pakai di Blade:
+   1. Tambahkan class "ap-table-stack" di <div class="table-responsive">
+      pembungkus tabel -> <div class="table-responsive ap-table-stack">
+   2. Tiap <td> di <tbody> diberi atribut data-label="Nama Kolom" (sama
+      dengan teks <th> di atasnya). <thead> otomatis disembunyikan di
+      mobile, label inilah yang menggantikan header kolom.
+   3. Untuk sel yang "berat" secara visual (foto, grup tombol aksi) dan
+      tidak enak dipaksa sejajar kanan-kiri dengan labelnya, tambahkan
+      class "ap-td-block" - kontennya jadi block penuh di bawah labelnya.
+   4. Baris kosong/pesan "belum ada data" (<td colspan>) tidak perlu diberi
+      data-label - otomatis tampil polos tanpa label.
+   -------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    .ap-table-stack table thead {
+        display: none;
+    }
+
+    .ap-table-stack table,
+    .ap-table-stack table tbody,
+    .ap-table-stack table tr {
+        display: block;
+        width: 100%;
+    }
+
+    .ap-table-stack table tr {
+        margin-bottom: .875rem;
+        padding: .25rem 1rem;
+        background-color: var(--ap-white);
+        border: 1px solid var(--ap-border);
+        border-radius: var(--ap-radius-md);
+        box-shadow: var(--ap-shadow-sm);
+    }
+    .ap-table-stack table tr:last-child {
+        margin-bottom: 0;
+    }
+    /* Kartu bukan baris tabel yang bisa "dihover"/di-tap seperti link -
+       matikan efek hover Bootstrap (table-hover) TOTAL di mode kartu.
+       PENTING: Bootstrap menaruh highlight-nya langsung di elemen <td>
+       (bukan <tr>), jadi harus ditimpa juga langsung di <td>/<th> - kalau
+       cuma di <tr> tidak akan menang lawan aturan Bootstrap-nya. */
+    .ap-table-stack table.table-hover tbody tr:hover,
+    .ap-table-stack table.table-hover tbody tr:hover > * {
+        --bs-table-accent-bg: transparent;
+    }
+    .ap-table-stack table tr,
+    .ap-table-stack table td,
+    .ap-table-stack table th {
+        -webkit-tap-highlight-color: transparent; /* matikan kilatan abu-abu bawaan browser HP saat disentuh */
+    }
+
+    .ap-table-stack table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        width: 100%;
+        padding: .625rem 0 !important;
+        border-bottom: 1px dashed var(--ap-border) !important;
+        border-top: none !important;
+        background-color: transparent !important; /* cegah Bootstrap mewarnai per-sel (hover/stripe) - warna kartu cukup dari tr */
+        box-shadow: none !important; /* Bootstrap mewarnai hover lewat box-shadow inset di sel ini, bukan cuma background-color */
+        text-align: right;
+        white-space: normal !important; /* lawan class text-nowrap di beberapa tabel */
+    }
+    .ap-table-stack table td:last-child {
+        border-bottom: none !important;
+    }
+
+    .ap-table-stack table td::before {
+        content: attr(data-label);
+        flex-shrink: 0;
+        padding-right: .75rem;
+        font-weight: 600;
+        font-size: .7rem;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        color: var(--ap-slate);
+        text-align: left;
+    }
+
+    /* Sel tanpa data-label (baris kosong/pesan) - polos, tanpa label, rata tengah */
+    .ap-table-stack table td:not([data-label]) {
+        display: block;
+        text-align: center;
+    }
+
+    /* Sel "berat": foto, grup tombol aksi - block penuh di bawah labelnya,
+       bukan dipaksa sejajar kanan-kiri seperti sel teks biasa. */
+    .ap-table-stack table td.ap-td-block {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+    .ap-table-stack table td.ap-td-block::before {
+        padding-right: 0;
+        margin-bottom: .5rem;
+    }
+    .ap-table-stack table td.ap-td-block > * {
+        width: 100%;
+    }
+
+    /* Grup tombol aksi jadi rata lebar & gampang disentuh jari, bukan
+       kumpulan ikon kecil berjejer seperti tampilan desktop. */
+    .ap-table-stack table td.ap-td-block .d-flex.justify-content-center,
+    .ap-table-stack table td.ap-td-block .d-flex.justify-content-end {
+        justify-content: flex-start !important;
+        flex-wrap: wrap;
+    }
+    .ap-table-stack table td.ap-td-block .btn {
+        flex: 1 1 auto;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   4b. TARGET SENTUH - tombol kecil (aksi tabel, ikon) dibuat cukup besar
+   untuk jari di tablet & mobile, tanpa mengubah ukuran visualnya di desktop.
+   -------------------------------------------------------------------------- */
+@media (max-width: 991.98px) {
+    .btn-sm {
+        min-height: 38px;
+        padding-top: .45rem;
+        padding-bottom: .45rem;
+    }
+}
+
+/* --------------------------------------------------------------------------
    6. SIDEBAR - permukaan & navigasi
    Sengaja TIDAK memakai bg-primary Bootstrap: warna sidebar (Ink Navy)
    dipisahkan dari --bs-primary (Production Blue, dipakai tombol/link/aksi
@@ -173,14 +304,27 @@ table td.text-end {
    -------------------------------------------------------------------------- */
 .ap-sidebar {
     background-color: var(--ap-navy);
+    /* PENTING: pakai min-height, BUKAN height (Bootstrap h-100 lama dibuang
+       dari markup-nya). Isi sidebar sekarang lebih panjang dari tinggi
+       layar di beberapa device (menu + kartu profil + tombol Keluar) -
+       kalau div ini pakai height:100% yang KAKU, kotaknya berhenti persis
+       di tinggi wrapper, tapi konten yang meluap tetap tampil DI LUAR
+       kotak itu (tidak background) - makanya bagian bawah sidebar
+       (profil & tombol keluar) terlihat transparan/tembus ke konten
+       halaman di belakangnya saat di-scroll. min-height membiarkan
+       kotaknya ikut memanjang mengikuti isi, jadi warna navy selalu
+       menutupi SEMUA konten, termasuk bagian yang perlu di-scroll. */
+    min-height: 100%;
 }
 
-/* Menu tingkat atas yang sedang aktif (Dashboard, Trash) - aksen garis kiri
-   + tint lembut, BUKAN blok solid, supaya menyatu dengan background gelap. */
+/* Menu tingkat atas yang sedang aktif (Dashboard, Activity Logs, Trash, dan
+   dropdown Inventory/Progress Management/Integrasi Data/User Management saat
+   salah satu halaman di dalamnya sedang dibuka) - blok solid Production Blue,
+   supaya kontras & jelas terlihat sebagai menu yang sedang aktif. */
 .ap-sidebar .nav-pills .nav-link.active {
-    background-color: var(--ap-navy-soft);
-    border-left: 3px solid var(--ap-blue);
-    border-radius: 0 var(--ap-radius-sm) var(--ap-radius-sm) 0;
+    background-color: var(--ap-blue);
+    border-radius: var(--ap-radius-md);
+    box-shadow: var(--ap-shadow-sm);
     color: #fff !important;
     opacity: 1 !important;
 }
@@ -210,6 +354,11 @@ table td.text-end {
         top: 0;
         left: 0;
         height: 100vh;
+        height: 100dvh; /* perbaikan bug: 100vh statis dihitung dari viewport awal (termasuk address
+                            bar browser HP) dan tidak update saat halaman di-scroll/address bar
+                            menyusut - 100dvh mengikuti tinggi viewport yang sebenarnya secara live,
+                            jadi warna sidebar tidak lagi "terpotong" mengambang di bagian bawah saat
+                            di-scroll. Browser lama yang belum kenal dvh otomatis pakai baris di atasnya. */
         width: min(85vw, 300px);
         min-width: 0;
         max-width: none;
@@ -270,4 +419,61 @@ table td.text-end {
 .ap-shadow-hover:hover {
     box-shadow: var(--ap-shadow-md);
     transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   9. AKSI FORM STICKY (mobile) - tombol utama form panjang (Simpan, Batal,
+   dst) tetap gampang dijangkau tanpa scroll ke paling bawah di HP/tablet.
+   Sama sekali tidak mengubah tampilan desktop.
+
+   Cara pakai: tambahkan class "ap-form-actions" pada div footer tombol
+   form yang sudah ada (biasanya <div class="d-flex justify-content-end
+   gap-2 ...">) - tidak perlu markup baru.
+   -------------------------------------------------------------------------- */
+@media (max-width: 767.98px) {
+    .ap-form-actions {
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        background-color: var(--ap-white);
+        border-top: 1px solid var(--ap-border);
+        padding-top: .75rem;
+        padding-bottom: calc(.75rem + env(safe-area-inset-bottom, 0px));
+        margin-bottom: 0 !important;
+    }
+
+    /* Tombol jadi rata lebar berdampingan, bukan menumpuk kecil di kanan */
+    .ap-form-actions .btn {
+        flex: 1 1 0;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   10. KOMPONEN KECIL - target sentuh & konsistensi di tablet/mobile
+   (pagination, tombol tutup alert/modal, filter select/input kecil).
+   Sentuhan akhir dari rencana responsif - tidak mengubah tampilan desktop.
+   -------------------------------------------------------------------------- */
+@media (max-width: 991.98px) {
+    /* Pagination - angka halaman & panah cukup besar untuk jari */
+    .pagination .page-link {
+        min-width: 40px;
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Tombol tutup alert/toast/modal (X) - area sentuh dilebarkan lewat
+       padding, tanpa memperbesar ikonnya secara visual */
+    .btn-close {
+        padding: .65rem !important;
+    }
+
+    /* Select/input kecil di form filter (Inventory, Project, Activity Log,
+       Trash) - tinggi dinaikkan sedikit supaya nyaman disentuh & diketik,
+       ukuran font & tampilan tetap sama seperti *-sm bawaan Bootstrap */
+    .form-select-sm,
+    .form-control-sm {
+        min-height: 36px;
+    }
 }

@@ -98,12 +98,12 @@
     <div class="card shadow-sm border-0 rounded-3 bg-white">
         <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
             <h6 class="m-0 fw-bold text-dark"><i class="bi bi-trash me-2"></i>Data Terhapus</h6>
-            <span class="badge bg-secondary text-white fw-medium rounded-pill px-3 py-1.5" style="font-size: 0.8rem;" id="trashTotalBadge">
+            <span class="badge bg-secondary text-white fw-medium rounded-pill px-3 py-2" style="font-size: 0.8rem;" id="trashTotalBadge">
                 {{ $trashItems->total() }} Total Data
             </span>
         </div>
         <div class="card-body p-0">
-            <div class="table-responsive">
+            <div class="table-responsive ap-table-stack">
                 <table class="table table-hover align-middle mb-0 text-nowrap">
                     <thead class="table-light text-secondary small text-uppercase">
                         <tr>

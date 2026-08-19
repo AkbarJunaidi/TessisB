@@ -34,7 +34,7 @@
 
         <div class="card-body">
 
-            <div class="table-responsive">
+            <div class="table-responsive ap-table-stack">
 
                 <table class="table table-hover align-middle">
 
@@ -68,11 +68,11 @@
 
                             <tr>
 
-                                <td>
+                                <td data-label="#">
                                     {{ $loop->iteration + ($users->firstItem() - 1) }}
                                 </td>
 
-                                <td>
+                                <td data-label="Nama">
 
                                     <strong>
                                         {{ $user->name }}
@@ -80,13 +80,13 @@
 
                                 </td>
 
-                                <td>
+                                <td data-label="Email">
 
                                     {{ $user->email }}
 
                                 </td>
 
-                                <td>
+                                <td data-label="Role">
 
                                     @switch($user->role)
 
@@ -116,7 +116,7 @@
 
                                 </td>
 
-                                <td>
+                                <td data-label="Status">
 
                                     @if($user->status == 'active')
 
@@ -134,13 +134,13 @@
 
                                 </td>
 
-                                <td>
+                                <td data-label="Last Login">
 
                                     {{ $user->last_login_at?->format('d M Y H:i') ?? '-' }}
 
                                 </td>
 
-                                <td class="text-center">
+                                <td class="text-center ap-td-block" data-label="Action">
 
                                     <a
                                         href="{{ route('users.show', $user) }}"

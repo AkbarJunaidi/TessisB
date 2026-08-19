@@ -1,4 +1,4 @@
-<div class="d-flex flex-column flex-shrink-0 p-3 text-white ap-sidebar h-100">
+<div class="d-flex flex-column flex-shrink-0 p-3 text-white ap-sidebar">
     {{-- Tombol tutup - hanya terlihat saat sidebar jadi drawer (tablet/mobile) --}}
     <button type="button" class="ap-sidebar-close-btn btn btn-sm btn-outline-light rounded-circle align-self-end mb-2"
             id="sidebarCloseBtn" style="display: none; width: 32px; height: 32px;" aria-label="Tutup menu">
@@ -28,7 +28,7 @@
                 $invActive = request()->routeIs('inventory.*');
             @endphp
             <li class="nav-item">
-                <a href="#menuInventory" data-bs-toggle="collapse" class="nav-link text-white d-flex align-items-center justify-content-between {{ $invActive ? 'fw-semibold' : 'opacity-75' }}" aria-expanded="{{ $invActive ? 'true' : 'false' }}">
+                <a href="#menuInventory" data-bs-toggle="collapse" class="nav-link text-white d-flex align-items-center justify-content-between {{ $invActive ? 'active fw-semibold' : 'opacity-75' }}" aria-expanded="{{ $invActive ? 'true' : 'false' }}">
                     <div>
                         <i class="bi bi-box-seam me-2"></i> Inventory
                     </div>
@@ -53,15 +53,15 @@
             </li>
         @endif
 
-        <!--tracking progress-->
+        <!--tracking progress / progress management-->
         @if(auth()->user()->hasPermission('tracking_progress', 'view'))
         @php
-            $trackActive = request()->routeIs('projects.*') || request()->routeIs('tasks.*') || request()->routeIs('activity-logs.*') || request()->routeIs('borrowed-items.*');
+            $trackActive = request()->routeIs('projects.*') || request()->routeIs('tasks.*') || request()->routeIs('borrowed-items.*');
         @endphp
         <li class="nav-item">
-            <a href="#menuTracking" data-bs-toggle="collapse" class="nav-link text-white d-flex align-items-center justify-content-between {{ $trackActive ? 'fw-semibold' : 'opacity-75' }}" aria-expanded="{{ $trackActive ? 'true' : 'false' }}">
+            <a href="#menuTracking" data-bs-toggle="collapse" class="nav-link text-white d-flex align-items-center justify-content-between {{ $trackActive ? 'active fw-semibold' : 'opacity-75' }}" aria-expanded="{{ $trackActive ? 'true' : 'false' }}">
                 <div>
-                    <i class="bi bi-kanban me-2"></i> Tracking Progress
+                    <i class="bi bi-kanban me-2"></i> Progress Management
                 </div>
                 <i class="bi bi-chevron-down fs-7 sidebar-collapse-icon"></i>
             </a>
@@ -86,14 +86,6 @@
                         </a>
                     </li>
                     @endif
-
-                    @if(auth()->user()->hasRole('super_admin', 'admin'))
-                        <li class="nav-item">
-                            <a href="{{ route('activity-logs.index') }}" class="nav-link sidebar-dropdown-item text-dark px-3 py-2 {{ request()->routeIs('activity-logs.index') ? 'fw-bold bg-light border-start border-3 border-primary' : '' }}">
-                                <i class="bi bi-journal-text me-2 text-muted"></i> Activity Logs
-                            </a>
-                        </li>
-                    @endif
                 </ul>
             </div>
         </li>
@@ -105,7 +97,7 @@
             $intActive = request()->routeIs('folders.*') || request()->routeIs('files.*');
         @endphp
         <li class="nav-item">
-            <a href="#menuIntegrasi" data-bs-toggle="collapse" class="nav-link text-white d-flex align-items-center justify-content-between {{ $intActive ? 'fw-semibold' : 'opacity-75' }}" aria-expanded="{{ $intActive ? 'true' : 'false' }}">
+            <a href="#menuIntegrasi" data-bs-toggle="collapse" class="nav-link text-white d-flex align-items-center justify-content-between {{ $intActive ? 'active fw-semibold' : 'opacity-75' }}" aria-expanded="{{ $intActive ? 'true' : 'false' }}">
                 <div>
                     <i class="bi bi-database me-2"></i> Integrasi Data
                 </div>
@@ -134,7 +126,7 @@
                 $userActive = request()->routeIs('users.*');
             @endphp
             <li class="nav-item">
-                <a href="#menuUser" data-bs-toggle="collapse" class="nav-link text-white d-flex align-items-center justify-content-between {{ $userActive ? 'fw-semibold' : 'opacity-75' }}" aria-expanded="{{ $userActive ? 'true' : 'false' }}">
+                <a href="#menuUser" data-bs-toggle="collapse" class="nav-link text-white d-flex align-items-center justify-content-between {{ $userActive ? 'active fw-semibold' : 'opacity-75' }}" aria-expanded="{{ $userActive ? 'true' : 'false' }}">
                     <div>
                         <i class="bi bi-people me-2"></i> User Management
                     </div>
@@ -161,6 +153,15 @@
 
         @if(auth()->user()->hasRole('super_admin', 'admin'))
             <li class="nav-item mb-1">
+                <a href="{{ route('activity-logs.index') }}"
+                    class="nav-link text-white {{ request()->routeIs('activity-logs.*') ? 'active fw-semibold' : 'opacity-75' }}">
+                    <i class="bi bi-journal-text me-2"></i> Activity Logs
+                </a>
+            </li>
+        @endif
+
+        @if(auth()->user()->hasRole('super_admin', 'admin'))
+            <li class="nav-item mb-1">
                 <a href="{{ route('trash.index') }}"
                     class="nav-link text-white {{ request()->routeIs('trash.*') ? 'active fw-semibold' : 'opacity-75' }}">
                     <i class="bi bi-trash me-2"></i> Trash
@@ -170,43 +171,43 @@
 
     </ul>
 
-    <hr class="border-secondary my-3">
+    <hr class="border-white opacity-25 my-3">
 
-    <!--profil pengguna-->
-    <div class="px-2 mb-3">
-        <div class="d-flex align-items-center p-3 rounded-5 bg-white bg-opacity-10 border border-white border-opacity-25 shadow-sm">
-            @auth
+    <!--profil pengguna & keluar sistem-->
+    <div class="px-1">
+        @auth
+            <div class="d-flex align-items-center gap-2 mb-3 p-2 rounded-4 bg-white bg-opacity-10">
                 <!--inisial user-->
-                <div class="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm flex-shrink-0"
-                     style="width: 42px; height: 42px; font-size: 1.2rem;">
+                <div class="bg-white bg-opacity-25 text-white rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
+                     style="width: 38px; height: 38px; font-size: 1.05rem;">
                     {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                 </div>
                 <!--nama dan info-->
-                <div class="ms-3 overflow-hidden">
-                    <div class="text-white fw-semibold text-truncate mb-0 lh-1" style="font-size: 0.95rem;">
+                <div class="overflow-hidden">
+                    <div class="text-white fw-bold text-truncate lh-1" style="font-size: 1rem;">
                         {{ Auth::user()->name }}
                     </div>
-                    <small class="text-white-50 text-truncate d-block mt-1" style="font-size: 0.75rem;">
+                    <small class="text-white-50 text-truncate d-block mt-1" style="font-size: 0.74rem;" title="{{ Auth::user()->email ?? 'Administrator' }}">
                         {{ Auth::user()->email ?? 'Administrator' }}
                     </small>
                 </div>
-            @endauth
-        </div>
+            </div>
+        @endauth
+
+        <!--keluar sistem-->
+        <form action="{{ route('logout') }}"
+            method="POST"
+            onsubmit="return confirm('Apakah Anda yakin ingin keluar sistem?');">
+
+            @csrf
+
+            <button type="submit"
+                class="btn btn-outline-light rounded-4 w-100 d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold">
+                <i class="bi bi-box-arrow-left"></i> Keluar Sistem
+            </button>
+
+        </form>
     </div>
-
-    <!--keluar sistem-->
-    <form action="{{ route('logout') }}"
-        method="POST"
-        onsubmit="return confirm('Apakah Anda yakin ingin keluar sistem?');">
-
-        @csrf
-
-        <button type="submit"
-            class="btn btn-sm btn-outline-danger w-100 d-flex align-items-center justify-content-center py-2">
-            <i class="bi bi-box-arrow-left me-2"></i> Keluar Sistem
-        </button>
-
-    </form>
 </div>
 
 <style>

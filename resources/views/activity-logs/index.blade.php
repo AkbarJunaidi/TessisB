@@ -106,12 +106,12 @@
     <div class="card shadow-sm border-0 rounded-3 bg-white">
         <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
             <h6 class="m-0 fw-bold text-dark"><i class="bi bi-list-ul me-2"></i>Data Audit Trail Logs</h6>
-            <span class="badge bg-secondary text-white fw-medium rounded-pill px-3 py-1.5" style="font-size: 0.8rem;">
+            <span class="badge bg-secondary text-white fw-medium rounded-pill px-3 py-2" style="font-size: 0.8rem;">
                 {{ $logs->total() }} Total Logs
             </span>
         </div>
         <div class="card-body p-0">
-            <div class="table-responsive">
+            <div class="table-responsive ap-table-stack">
                 <table class="table table-hover align-middle mb-0 text-nowrap">
                     <thead class="table-light text-secondary small text-uppercase">
                         <tr>
@@ -124,10 +124,10 @@
                     <tbody class="small text-dark">
                         @forelse($logs as $log)
                             <tr>
-                                <td class="ps-4 py-3 text-secondary fw-medium">
+                                <td class="ps-4 py-3 text-secondary fw-medium" data-label="Date Time">
                                     <i class="bi bi-calendar-event me-2"></i>{{ $log->created_at->format('d/m/Y H:i') }}
                                 </td>
-                                <td>
+                                <td data-label="User">
                                     <div class="d-flex align-items-center gap-2">
                                         <div class="bg-light text-primary rounded-circle d-flex align-items-center justify-content-center fw-semibold" style="width: 28px; height: 28px; font-size: 0.75rem; border: 1px solid #e2e8f0;">
                                             {{ strtoupper(substr($log->user->name ?? 'SY', 0, 2)) }}
@@ -135,12 +135,12 @@
                                         <span class="fw-semibold">{{ $log->user->name ?? 'System / Deleted User' }}</span>
                                     </div>
                                 </td>
-                                <td>
-                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle px-2 py-1.5 fw-medium" style="font-size: 0.8rem;">
+                                <td data-label="Module">
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle px-2 py-2 fw-medium" style="font-size: 0.8rem;">
                                         {{ class_basename($log->module) }}
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="Action">
                                     @php $lowerAction = strtolower($log->action); @endphp
                                     @if(in_array($lowerAction, ['delete', 'deleted', 'logout']))
                                         <span class="text-danger fw-semibold"><i class="bi bi-circle-fill me-1 small" style="font-size: 0.5rem;"></i>{{ ucfirst($log->action) }}</span>

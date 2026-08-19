@@ -24,7 +24,7 @@
 
                 <hr class="border-light my-4">
 
-                <div class="d-flex justify-content-end gap-2">
+                <div class="d-flex justify-content-end gap-2 ap-form-actions">
                     <button type="reset" class="btn btn-light px-4 fw-medium">Reset</button>
                     <button type="submit" class="btn btn-primary px-4 fw-medium shadow-sm">
                         <i class="bi bi-folder-plus me-1"></i> Simpan Project

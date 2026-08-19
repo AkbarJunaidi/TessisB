@@ -31,10 +31,11 @@
             display: flex;
             width: 100vw;
             height: 100vh;
+            height: 100dvh; /* ikut tinggi viewport yang sebenarnya di HP (bukan cuma nilai awal saat address bar masih terlihat) */
         }
         #sidebar-wrapper {
-            min-width: 260px;
-            max-width: 260px;
+            min-width: 280px;
+            max-width: 280px;
             /* Warna sidebar diatur oleh class ap-sidebar di sidebar.blade.php.
                Perilaku drawer responsif (tablet/mobile) diatur terpusat di
                public/css/theme.css bagian "SIDEBAR RESPONSIF" - jangan
@@ -43,6 +44,7 @@
         #page-content-wrapper {
             width: 100%;
             height: 100vh;
+            height: 100dvh; /* sama seperti #wrapper - hindari sisa area tak terwarnai saat address bar HP menyusut/scroll */
             display: flex;
             flex-direction: column;
             overflow-y: auto;

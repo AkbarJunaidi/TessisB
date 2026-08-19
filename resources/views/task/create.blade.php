@@ -76,7 +76,7 @@
 
                 <hr class="border-light my-4">
 
-                <div class="d-flex justify-content-end gap-2">
+                <div class="d-flex justify-content-end gap-2 ap-form-actions">
                     <button type="submit" class="btn btn-primary px-4 fw-medium shadow-sm">
                         <i class="bi bi-plus-circle-fill me-1"></i> Submit Task
                     </button>

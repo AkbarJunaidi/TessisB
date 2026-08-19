@@ -192,7 +192,7 @@
 </div>
 @endif
 
-<div class="d-flex justify-content-end gap-2 mt-4">
+<div class="d-flex justify-content-end gap-2 mt-4 ap-form-actions">
 
     <a
         href="{{ route('users.index') }}"
