@@ -1,4 +1,10 @@
-<div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-primary h-100">
+<div class="d-flex flex-column flex-shrink-0 p-3 text-white ap-sidebar h-100">
+    {{-- Tombol tutup - hanya terlihat saat sidebar jadi drawer (tablet/mobile) --}}
+    <button type="button" class="ap-sidebar-close-btn btn btn-sm btn-outline-light rounded-circle align-self-end mb-2"
+            id="sidebarCloseBtn" style="display: none; width: 32px; height: 32px;" aria-label="Tutup menu">
+        <i class="bi bi-x-lg"></i>
+    </button>
+
     <!-- Brand Info -->
     <a href="{{ route('dashboard') }}" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
         <img src="{{ asset('image/logo.png') }}" alt="logo" class="me-2" style="height: 72px; width: auto; object-fit: contain;">
@@ -212,12 +218,11 @@
         transform: rotate(180deg);
     }
 
-    /*efek hover putih*/
+    /*efek hover - warna diatur di public/css/theme.css (.sidebar-dropdown-item:hover)*/
     .sidebar-dropdown-item {
         transition: all 0.2s ease;
     }
     .sidebar-dropdown-item:hover {
-        background-color: #0d84fc;
         padding-left: 1.25rem !important;
     }
 </style>

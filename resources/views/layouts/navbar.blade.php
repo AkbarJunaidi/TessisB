@@ -99,7 +99,7 @@
     }
 
     .notif-ticker-item:hover {
-        color: #0d6efd;
+        color: var(--ap-blue);
     }
 
     .notif-ticker-item.is-active {

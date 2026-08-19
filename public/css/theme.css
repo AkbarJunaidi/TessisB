@@ -1,0 +1,273 @@
+/* ==========================================================================
+   TEMA CV. ARINDRA PRODUCTION
+   ==========================================================================
+   File ini adalah SATU-SATUNYA sumber warna, font, radius, dan shadow untuk
+   seluruh aplikasi. Jangan menambahkan warna/font hardcode baru di file
+   Blade lain - selalu tambahkan/ubah di sini dulu, lalu pakai lewat
+   var(--ap-...) atau class utility Bootstrap (bg-primary, text-danger, dst)
+   yang otomatis mengikuti token ini.
+
+   Cara kerja: Bootstrap 5.3 sudah mengekspos hampir semua warnanya sebagai
+   CSS custom property di :root (--bs-primary, --bs-danger, dst). File ini
+   menimpa variabel-variabel itu, jadi HAMPIR SEMUA komponen Bootstrap yang
+   sudah dipakai di 48 halaman Blade otomatis ikut berubah tanpa perlu
+   menyentuh file-file itu satu per satu. Untuk beberapa komponen (button)
+   yang menyimpan warnanya sendiri secara internal, kita timpa juga secara
+   eksplisit di bagian "Override Komponen" di bawah.
+
+   Muat file ini SETELAH bootstrap.min.css di layouts/app.blade.php, supaya
+   aturan di sini menang.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. TOKEN WARNA
+   Nama token (--ap-*) dipakai langsung di CSS custom kita sendiri.
+   Nilai yang sama juga dipetakan ke variabel Bootstrap (--bs-*) di bawah,
+   supaya seluruh class bawaan Bootstrap (bg-primary, btn-danger, dst) ikut.
+   -------------------------------------------------------------------------- */
+:root {
+    /* Warna utama */
+    --ap-navy:        #14213D; /* Ink Navy - sidebar, header, teks judul */
+    --ap-navy-soft:   #1C2E52; /* varian sedikit lebih terang, untuk hover di area gelap */
+    --ap-blue:        #206eeb; /* Production Blue - tombol aksi utama, link */
+    --ap-blue-tint:   #EAF0F9; /* tint lembut Production Blue - background aktif/hover di area terang */
+    --ap-red:         #D6423C; /* Tally Red - notifikasi aktif, status bahaya/urgent */
+    --ap-red-tint:    #FBEAEA;
+    --ap-amber:       #E8A33D; /* Signal Amber - status pending/warning */
+    --ap-amber-tint:  #FCF1E0;
+    --ap-green:       #2F9E5B; /* status selesai/sukses (tone disesuaikan, makna tetap hijau=OK) */
+    --ap-green-tint:  #E7F5EC;
+
+    /* Netral */
+    --ap-ink:         #1F2430; /* teks utama di atas background terang */
+    --ap-slate:       #6B7280; /* teks sekunder/muted */
+    --ap-border:      #E4E7EC;
+    --ap-paper:       #F7F8FA; /* background halaman */
+    --ap-white:       #FFFFFF;
+
+    /* Tipografi */
+    --ap-font-display: 'Space Grotesk', 'Segoe UI', Tahoma, Arial, sans-serif;
+    --ap-font-body:     'Inter', 'Segoe UI', Tahoma, Arial, sans-serif;
+
+    /* Radius & shadow - dipakai konsisten, jangan menulis angka radius baru di tempat lain */
+    --ap-radius-sm: 8px;
+    --ap-radius-md: 14px;
+    --ap-radius-lg: 20px;
+    --ap-shadow-sm: 0 1px 2px rgba(20, 33, 61, .06);
+    --ap-shadow-md: 0 6px 20px rgba(20, 33, 61, .08);
+
+    /* ---- Pemetaan ke variabel Bootstrap (efeknya menyebar ke seluruh app) ---- */
+    --bs-primary:      var(--ap-blue);
+    --bs-primary-rgb:  47, 93, 168;
+    --bs-link-color:   var(--ap-blue);
+    --bs-link-hover-color: var(--ap-navy);
+    --bs-link-color-rgb: 47, 93, 168;
+    --bs-link-hover-color-rgb: 20, 33, 61;
+
+    --bs-danger:       var(--ap-red);
+    --bs-danger-rgb:   214, 66, 60;
+
+    --bs-warning:      var(--ap-amber);
+    --bs-warning-rgb:  232, 163, 61;
+
+    --bs-success:      var(--ap-green);
+    --bs-success-rgb:  47, 158, 91;
+
+    --bs-body-font-family: var(--ap-font-body);
+    --bs-body-color:   var(--ap-ink);
+    --bs-body-bg:       var(--ap-paper);
+    --bs-border-color:  var(--ap-border);
+
+    --bs-border-radius:      var(--ap-radius-sm);
+    --bs-border-radius-sm:   6px;
+    --bs-border-radius-lg:   var(--ap-radius-md);
+    --bs-border-radius-xl:   var(--ap-radius-lg);
+}
+
+/* --------------------------------------------------------------------------
+   2. TIPOGRAFI
+   Inter untuk body/teks/form/tabel (keterbacaan tinggi, dipakai berjam-jam).
+   Space Grotesk untuk heading & angka besar (identitas, dipakai secukupnya).
+   -------------------------------------------------------------------------- */
+h1, h2, h3, h4, h5, h6,
+.navbar-brand,
+.ap-display {
+    font-family: var(--ap-font-display);
+    letter-spacing: -0.01em;
+}
+
+/* Angka besar di stat card / ringkasan - dashboard, detail project, dll */
+.ap-stat-number {
+    font-family: var(--ap-font-display);
+    font-feature-settings: 'tnum' 1; /* angka rata lebar, rapi dibaca sejajar */
+}
+
+/* Kolom nominal uang & kuantitas di tabel - biar sejajar saat di-scan cepat */
+.ap-numeric,
+table td.text-end {
+    font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   3. OVERRIDE KOMPONEN
+   Button Bootstrap menyimpan warnanya sendiri secara internal (bukan
+   mewarisi --bs-primary langsung), jadi ditimpa eksplisit di sini memakai
+   mekanisme variabel resmi Bootstrap 5.3 sendiri (bukan hack !important).
+   -------------------------------------------------------------------------- */
+.btn-primary {
+    --bs-btn-bg: var(--ap-blue);
+    --bs-btn-border-color: var(--ap-blue);
+    --bs-btn-hover-bg: var(--ap-navy);
+    --bs-btn-hover-border-color: var(--ap-navy);
+    --bs-btn-active-bg: var(--ap-navy);
+    --bs-btn-active-border-color: var(--ap-navy);
+    --bs-btn-disabled-bg: var(--ap-blue);
+    --bs-btn-disabled-border-color: var(--ap-blue);
+    --bs-btn-focus-shadow-rgb: 47, 93, 168;
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--ap-blue);
+    --bs-btn-border-color: var(--ap-blue);
+    --bs-btn-hover-bg: var(--ap-blue);
+    --bs-btn-hover-border-color: var(--ap-blue);
+    --bs-btn-active-bg: var(--ap-blue);
+    --bs-btn-active-border-color: var(--ap-blue);
+    --bs-btn-focus-shadow-rgb: 47, 93, 168;
+}
+
+.btn-danger {
+    --bs-btn-bg: var(--ap-red);
+    --bs-btn-border-color: var(--ap-red);
+    --bs-btn-hover-bg: #B93530;
+    --bs-btn-hover-border-color: #B93530;
+    --bs-btn-active-bg: #B93530;
+    --bs-btn-active-border-color: #B93530;
+    --bs-btn-focus-shadow-rgb: 214, 66, 60;
+}
+
+.btn-outline-danger {
+    --bs-btn-color: var(--ap-red);
+    --bs-btn-border-color: var(--ap-red);
+    --bs-btn-hover-bg: var(--ap-red);
+    --bs-btn-hover-border-color: var(--ap-red);
+    --bs-btn-active-bg: var(--ap-red);
+    --bs-btn-active-border-color: var(--ap-red);
+    --bs-btn-focus-shadow-rgb: 214, 66, 60;
+}
+
+.btn-warning {
+    --bs-btn-bg: var(--ap-amber);
+    --bs-btn-border-color: var(--ap-amber);
+    --bs-btn-color: #1F2430;
+    --bs-btn-hover-bg: #D3902E;
+    --bs-btn-hover-border-color: #D3902E;
+}
+
+/* --------------------------------------------------------------------------
+   6. SIDEBAR - permukaan & navigasi
+   Sengaja TIDAK memakai bg-primary Bootstrap: warna sidebar (Ink Navy)
+   dipisahkan dari --bs-primary (Production Blue, dipakai tombol/link/aksi
+   di seluruh app) supaya keduanya bisa punya kontras jelas satu sama lain
+   (highlight menu aktif harus terlihat beda dari background sidebar).
+   -------------------------------------------------------------------------- */
+.ap-sidebar {
+    background-color: var(--ap-navy);
+}
+
+/* Menu tingkat atas yang sedang aktif (Dashboard, Trash) - aksen garis kiri
+   + tint lembut, BUKAN blok solid, supaya menyatu dengan background gelap. */
+.ap-sidebar .nav-pills .nav-link.active {
+    background-color: var(--ap-navy-soft);
+    border-left: 3px solid var(--ap-blue);
+    border-radius: 0 var(--ap-radius-sm) var(--ap-radius-sm) 0;
+    color: #fff !important;
+    opacity: 1 !important;
+}
+
+.ap-sidebar .nav-pills .nav-link:not(.active):hover {
+    background-color: var(--ap-navy-soft);
+}
+
+/* Hover submenu putih (item Inventory List, Add Project, dst di dalam kotak
+   putih submenu) - tint lembut Production Blue, bukan warna solid. */
+.sidebar-dropdown-item:hover {
+    background-color: var(--ap-blue-tint) !important;
+}
+
+/* --------------------------------------------------------------------------
+   7. SIDEBAR RESPONSIF - drawer off-canvas di tablet & mobile
+   ≥992px (lg)   : sidebar selalu terlihat, statis, tanpa overlay.
+   768-991px (md): drawer + overlay gelap, dibuka lewat tombol hamburger.
+   <768px        : sama seperti md, lebar drawer proporsional ke layar kecil.
+   Dikontrol lewat class .ap-sidebar-open pada <body> (ditambah/dicabut oleh
+   JS di layouts/app.blade.php) - satu sumber state, bukan tersebar di
+   beberapa file.
+   -------------------------------------------------------------------------- */
+@media (max-width: 991.98px) {
+    #sidebar-wrapper {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: min(85vw, 300px);
+        min-width: 0;
+        max-width: none;
+        z-index: 1045;
+        transform: translateX(-100%);
+        transition: transform .3s ease;
+        overflow-y: auto;
+    }
+
+    body.ap-sidebar-open #sidebar-wrapper {
+        transform: translateX(0);
+        box-shadow: var(--ap-shadow-md);
+    }
+
+    #sidebarOverlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(20, 33, 61, .45);
+        z-index: 1040;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .3s ease;
+    }
+
+    body.ap-sidebar-open #sidebarOverlay {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .ap-sidebar-close-btn {
+        display: inline-flex !important;
+    }
+}
+
+@media (min-width: 992px) {
+    #sidebarOverlay {
+        display: none;
+    }
+
+    .ap-sidebar-close-btn {
+        display: none !important;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   5. UTILITAS TAMBAHAN (dipakai lintas halaman, jangan didefinisikan ulang
+   secara lokal di file Blade lain)
+   -------------------------------------------------------------------------- */
+.ap-card {
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-radius-md);
+    box-shadow: var(--ap-shadow-sm);
+}
+
+.ap-shadow-hover {
+    transition: box-shadow .2s ease, transform .2s ease;
+}
+.ap-shadow-hover:hover {
+    box-shadow: var(--ap-shadow-md);
+    transform: translateY(-1px);
+}
