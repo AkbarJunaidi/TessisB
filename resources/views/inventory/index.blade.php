@@ -4,222 +4,193 @@
 
 @section('content')
 
-<div class="container-fluid p-0">
-
-    <!-- Header Page -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h3 class="fw-bold text-dark m-0">Inventory List</h3>
-            <p class="text-muted small m-0">Kelola dan pantau seluruh data aset barang fisik perusahaan.</p>
-        </div>
-        <div class="d-flex gap-2">
-            <!-- FITUR: Download Semua Report (Massal) -->
-            <a href="{{ route('inventory.download-all-pdf') }}" class="btn btn-outline-danger d-flex align-items-center gap-2 shadow-sm fw-medium">
-                <i class="bi bi-file-earmark-pdf-fill"></i> Download Semua Report
-            </a>
-            @if(auth()->user()->hasPermission('inventory', 'create'))
-            <!-- Tombol Tambah Inventory -->
-            <a href="{{ route('inventory.create') }}" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm fw-medium">
-                <i class="bi bi-plus-circle"></i> Tambah Inventory
-            </a>
-            @endif
-        </div>
+<div class="page-heading">
+    <div>
+        <h3>Inventory List</h3>
+        <p>Kelola dan pantau seluruh data aset barang fisik perusahaan.</p>
     </div>
-
-    <!-- Alert Success -->
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
-    <!-- Form Search & Filter Status -->
-    <div class="card shadow-sm border-0 rounded-3 bg-white mb-4">
-        <div class="card-body p-3">
-            <form action="{{ route('inventory.index') }}" method="GET" class="row g-3 align-items-center">
-                <!-- Search HANYA berdasarkan Nama Barang -->
-                <div class="col-12 col-md-6 col-lg-7">
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0 text-muted">
-                            <i class="bi bi-search"></i>
-                        </span>
-                        <input type="text"
-                               name="search"
-                               class="form-control bg-light border-start-0 ps-0"
-                               placeholder="Cari berdasarkan nama barang atau brand..."
-                               value="{{ request('search') }}">
-                    </div>
-                </div>
-
-                <!-- Dropdown Filter Status Barang -->
-                <div class="col-12 col-md-4 col-lg-3">
-                    <select name="status" class="form-select bg-light" onchange="this.form.submit()">
-                        <option value="Semua Status" {{ request('status') == 'Semua Status' || !request('status') ? 'selected' : '' }}>
-                            Semua Status
-                        </option>
-                        <option value="Tersedia" {{ request('status') == 'Tersedia' ? 'selected' : '' }}>Tersedia</option>
-                        <option value="Dipinjam" {{ request('status') == 'Dipinjam' ? 'selected' : '' }}>Dipinjam</option>
-                        <option value="Perbaikan" {{ request('status') == 'Perbaikan' ? 'selected' : '' }}>Perbaikan</option>
-                        <option value="Rusak" {{ request('status') == 'Rusak' ? 'selected' : '' }}>Rusak</option>
-                        <option value="Hilang" {{ request('status') == 'Hilang' ? 'selected' : '' }}>Hilang</option>
-                    </select>
-                </div>
-
-                <!-- Action Button Filter & Reset -->
-                <div class="col-12 col-md-2 col-lg-2 d-flex gap-2">
-                    <button type="submit" class="btn btn-secondary w-100 fw-medium">
-                        Filter
-                    </button>
-                    @if(request('search') || (request('status') && request('status') !== 'Semua Status'))
-                        <a href="{{ route('inventory.index') }}" class="btn btn-outline-secondary" title="Reset Filter">
-                            <i class="bi bi-arrow-counterclockwise"></i>
-                        </a>
-                    @endif
-                </div>
-            </form>
-        </div>
+    <div class="d-flex flex-wrap gap-2">
+        {{-- FITUR: Download Semua Report (Massal) --}}
+        <a href="{{ route('inventory.download-all-pdf') }}" class="btn btn-outline-danger d-flex align-items-center gap-2">
+            <i class="bi bi-file-earmark-pdf-fill"></i> <span class="d-none d-sm-inline">Download Semua Report</span>
+        </a>
+        <a href="{{ route('inventory.create') }}" class="btn btn-primary d-flex align-items-center gap-2">
+            <i class="bi bi-plus-circle"></i> Tambah Inventory
+        </a>
     </div>
-
-    <!-- Table Inventory List -->
-    <div class="card shadow-sm border-0 rounded-3 bg-white">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light text-secondary small text-uppercase">
-                        <tr>
-                            <th scope="col" class="ps-4 py-3" style="width: 10%;">Foto Barang</th>
-                            <th scope="col" class="py-3" style="width: 25%;">Nama Barang</th>
-                            <th scope="col" class="py-3" style="width: 20%;">Serial Number</th>
-                            <th scope="col" class="py-3" style="width: 15%;">Status Barang</th>
-                            <th scope="col" class="py-3" style="width: 15%;">Tanggal Input</th>
-                            <th scope="col" class="py-3 text-center pe-4" style="width: 15%;">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="small text-dark">
-                        @forelse($inventories as $index => $item)
-                            <tr>
-                                <!-- Foto Barang -->
-                                <td class="ps-4 py-3">
-                                    @if($item->image)
-                                        <img src="{{ asset('storage/' . $item->image) }}"
-                                             alt="Foto {{ $item->name }}"
-                                             class="img-thumbnail rounded shadow-sm"
-                                             style="width: 60px; height: 50px; object-fit: cover;">
-                                    @else
-                                        <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted border border-dashed shadow-sm"
-                                             style="width: 60px; height: 50px; font-size: 0.75rem;">
-                                            <i class="bi bi-image opacity-50 me-1"></i> No Pic
-                                        </div>
-                                    @endif
-                                </td>
-
-                                <!-- Nama Barang -->
-                                <td class="py-3 fw-bold text-dark">
-                                    {{ $item->name }}
-                                </td>
-
-                                <!-- Serial Number -->
-                                <td class="py-3 text-secondary">
-                                    <span class="badge bg-light text-dark border px-2 py-1 font-monospace fw-medium">
-                                        {{ $item->serial_number }}
-                                    </span>
-                                </td>
-
-                                <!-- Status Barang (Badge Bootstrap) - otomatis "Tersedia" jika masih ada unit available -->
-                                <td class="py-3">
-                                    @switch($item->display_status)
-                                        @case('Tersedia')
-                                            <span class="badge bg-success px-2 py-1">Tersedia</span>
-                                            @break
-                                        @case('Dipinjam')
-                                            <span class="badge bg-primary px-2 py-1">Dipinjam</span>
-                                            @break
-                                        @case('Perbaikan')
-                                            <span class="badge bg-warning text-dark px-2 py-1">Perbaikan</span>
-                                            @break
-                                        @case('Rusak')
-                                            <span class="badge bg-danger px-2 py-1">Rusak</span>
-                                            @break
-                                        @case('Hilang')
-                                            <span class="badge bg-dark px-2 py-1">Hilang</span>
-                                            @break
-                                        @default
-                                            <span class="badge bg-success px-2 py-1">{{ $item->status ?? 'Tersedia' }}</span>
-                                    @endswitch
-                                    <div class="small text-muted mt-1">{{ $item->qty_available }}/{{ $item->quantity_total }} unit tersedia</div>
-                                </td>
-
-                                <!-- Tanggal Input -->
-                                <td class="py-3 text-secondary">
-                                    {{ $item->created_at ? $item->created_at->format('d M Y') : '-' }}
-                                </td>
-
-                                <!-- Action Buttons (View, Download Report, Delete HANYA) -->
-                                <td class="py-3 text-center pe-4">
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <!-- View Detail -->
-                                        <a href="{{ route('inventory.show', $item->id) }}"
-                                           class="btn btn-sm btn-outline-primary px-2 fw-medium rounded-2 d-flex align-items-center gap-1"
-                                           title="View Detail">
-                                            <i class="bi bi-eye"></i> View
-                                        </a>
-
-                                        <!-- Download Report (PDF Single) -->
-                                        <a href="{{ route('inventory.download-pdf', $item->id) }}"
-                                           class="btn btn-sm btn-outline-danger px-2 fw-medium rounded-2 d-flex align-items-center gap-1"
-                                           title="Download Report PDF">
-                                            <i class="bi bi-file-earmark-pdf"></i>
-                                        </a>
-
-                                        <!-- Delete Item -->
-                                        @if(auth()->user()->hasPermission('inventory', 'delete'))
-                                        <button type="button"
-                                                class="btn btn-sm btn-outline-danger px-2 fw-medium rounded-2 d-flex align-items-center gap-1"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#deleteInventoryModal"
-                                                data-id="{{ $item->id }}"
-                                                data-name="{{ $item->name }}"
-                                                data-sn="{{ $item->serial_number }}"
-                                                title="Delete Item">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                        @endif
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="text-center py-5 text-muted bg-white rounded-bottom">
-                                    <i class="bi bi-box-seam text-secondary opacity-25 d-block mb-3" style="font-size: 3rem;"></i>
-                                    <p class="mb-1 fw-bold text-dark">Belum Ada Data Inventory</p>
-                                    <p class="text-muted small mb-0">Klik tombol "Tambah Inventory" di atas untuk menambahkan barang pertama Anda.</p>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Pagination -->
-    <div class="mt-4 d-flex justify-content-between align-items-center">
-        <div class="text-muted small">
-            Menampilkan {{ $inventories->firstItem() ?? 0 }} - {{ $inventories->lastItem() ?? 0 }} dari {{ $inventories->total() }} inventaris
-        </div>
-        <div>
-            {{ $inventories->links('pagination::bootstrap-5') }}
-        </div>
-    </div>
-
 </div>
 
-<!-- Delete Modal Confirmation -->
+@if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4 rounded-3" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
+{{-- Form Search & Filter Status --}}
+<div class="app-panel mb-4">
+    <div class="p-3 p-md-4">
+        <form action="{{ route('inventory.index') }}" method="GET" class="row g-3 align-items-center">
+            <div class="col-12 col-md-6 col-lg-7">
+                <label for="search" class="visually-hidden">Cari inventory</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" id="search" name="search"
+                           class="form-control bg-light border-start-0 ps-0"
+                           placeholder="Cari berdasarkan nama barang atau brand..."
+                           value="{{ request('search') }}">
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4 col-lg-3">
+                <label for="status" class="visually-hidden">Filter status</label>
+                <select name="status" id="status" class="form-select bg-light" onchange="this.form.submit()">
+                    <option value="Semua Status" {{ request('status') == 'Semua Status' || !request('status') ? 'selected' : '' }}>Semua Status</option>
+                    <option value="Tersedia" {{ request('status') == 'Tersedia' ? 'selected' : '' }}>Tersedia</option>
+                    <option value="Dipinjam" {{ request('status') == 'Dipinjam' ? 'selected' : '' }}>Dipinjam</option>
+                    <option value="Perbaikan" {{ request('status') == 'Perbaikan' ? 'selected' : '' }}>Perbaikan</option>
+                    <option value="Rusak" {{ request('status') == 'Rusak' ? 'selected' : '' }}>Rusak</option>
+                    <option value="Hilang" {{ request('status') == 'Hilang' ? 'selected' : '' }}>Hilang</option>
+                </select>
+            </div>
+
+            <div class="col-12 col-md-2 col-lg-2 d-flex gap-2">
+                <button type="submit" class="btn btn-secondary w-100">Filter</button>
+                @if(request('search') || (request('status') && request('status') !== 'Semua Status'))
+                    <a href="{{ route('inventory.index') }}" class="btn btn-outline-secondary" title="Reset Filter" aria-label="Reset filter">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                @endif
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Table Inventory List --}}
+<div class="app-panel overflow-hidden">
+    <div class="px-3 px-md-4 pt-3 pt-md-4">
+        <h6 class="fw-bold mb-3">Semua Barang ({{ $inventories->total() }})</h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover table-modern table-stack align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-4" style="width: 10%;">Foto</th>
+                    <th style="width: 25%;">Nama Barang</th>
+                    <th style="width: 20%;">Serial Number</th>
+                    <th style="width: 15%;">Status</th>
+                    <th style="width: 15%;">Tanggal Input</th>
+                    <th class="text-center pe-4" style="width: 15%;">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="small">
+                @forelse($inventories as $index => $item)
+                    <tr>
+                        <td class="ps-4 py-3" data-label="Foto">
+                            @if($item->image)
+                                <img src="{{ asset('storage/' . $item->image) }}"
+                                     alt="Foto {{ $item->name }}"
+                                     class="rounded-3 border"
+                                     style="width: 56px; height: 46px; object-fit: cover;">
+                            @else
+                                <div class="bg-light rounded-3 d-flex align-items-center justify-content-center text-muted border"
+                                     style="width: 56px; height: 46px; font-size: 0.7rem;">
+                                    <i class="bi bi-image opacity-50"></i>
+                                </div>
+                            @endif
+                        </td>
+
+                        <td class="py-3 fw-bold text-dark" data-label="Nama Barang">{{ $item->name }}</td>
+
+                        <td class="py-3 text-secondary" data-label="Serial Number">
+                            <span class="badge bg-light text-dark border px-2 py-1 font-monospace fw-medium">
+                                {{ $item->serial_number }}
+                            </span>
+                        </td>
+
+                        {{-- Status Barang - otomatis "Tersedia" jika masih ada unit available (logika tidak diubah) --}}
+                        <td class="py-3" data-label="Status">
+                            @switch($item->display_status)
+                                @case('Tersedia')
+                                    <span class="badge-soft-success">Tersedia</span>
+                                    @break
+                                @case('Dipinjam')
+                                    <span class="badge-soft-primary">Dipinjam</span>
+                                    @break
+                                @case('Perbaikan')
+                                    <span class="badge-soft-warning">Perbaikan</span>
+                                    @break
+                                @case('Rusak')
+                                    <span class="badge-soft-danger">Rusak</span>
+                                    @break
+                                @case('Hilang')
+                                    <span class="badge-soft-secondary">Hilang</span>
+                                    @break
+                                @default
+                                    <span class="badge-soft-success">{{ $item->status ?? 'Tersedia' }}</span>
+                            @endswitch
+                            <div class="small text-muted mt-1">{{ $item->qty_available }}/{{ $item->quantity_total }} unit tersedia</div>
+                        </td>
+
+                        <td class="py-3 text-secondary" data-label="Tanggal Input">{{ $item->created_at ? $item->created_at->format('d M Y') : '-' }}</td>
+
+                        <td class="py-3 text-center pe-4 cell-block" data-label="Aksi">
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="{{ route('inventory.show', $item->id) }}"
+                                   class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1"
+                                   title="Lihat Detail">
+                                    <i class="bi bi-eye"></i> <span class="d-none d-xl-inline">View</span>
+                                </a>
+                                <a href="{{ route('inventory.download-pdf', $item->id) }}"
+                                   class="btn btn-sm btn-outline-danger"
+                                   title="Download Report PDF" aria-label="Download report PDF">
+                                    <i class="bi bi-file-earmark-pdf"></i>
+                                </a>
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-danger"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteInventoryModal"
+                                        data-id="{{ $item->id }}"
+                                        data-name="{{ $item->name }}"
+                                        data-sn="{{ $item->serial_number }}"
+                                        title="Hapus" aria-label="Hapus item">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <div class="empty-icon"><i class="bi bi-box-seam"></i></div>
+                                <p class="mb-1 fw-bold text-dark">Belum Ada Data Inventory</p>
+                                <p class="text-muted small mb-0">Klik tombol "Tambah Inventory" di atas untuk menambahkan barang pertama Anda.</p>
+                            </div>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mt-4 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+    <div class="text-muted small">
+        Menampilkan {{ $inventories->firstItem() ?? 0 }} - {{ $inventories->lastItem() ?? 0 }} dari {{ $inventories->total() }} inventaris
+    </div>
+    <div>
+        {{ $inventories->links('pagination::bootstrap-5') }}
+    </div>
+</div>
+
+{{-- Delete Modal Confirmation --}}
 <div class="modal fade" id="deleteInventoryModal" tabindex="-1" aria-labelledby="deleteInventoryModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-danger text-white">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white rounded-top-4">
                 <h5 class="modal-title fw-bold" id="deleteInventoryModalLabel">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i>Konfirmasi Hapus Data
                 </h5>
@@ -235,11 +206,11 @@
 
                     <div class="bg-light p-3 rounded-3 border">
                         <div class="mb-2">
-                            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem;">NAMA BARANG:</small>
+                            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem;">Nama Barang</small>
                             <span id="modal-inventory-name" class="fw-bold text-dark fs-6">-</span>
                         </div>
                         <div>
-                            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem;">SERIAL NUMBER:</small>
+                            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem;">Serial Number</small>
                             <span id="modal-inventory-sn" class="font-monospace fw-semibold text-secondary">-</span>
                         </div>
                     </div>
@@ -250,8 +221,8 @@
                 </div>
 
                 <div class="modal-footer bg-light border-top p-3">
-                    <button type="button" class="btn btn-secondary px-3 fw-medium" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger px-4 fw-medium shadow-sm">Ya, Hapus</button>
+                    <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger px-4">Ya, Hapus</button>
                 </div>
             </form>
         </div>
@@ -264,14 +235,12 @@
         if (deleteModal) {
             deleteModal.addEventListener('show.bs.modal', function(event) {
                 const button = event.relatedTarget;
-
                 const id = button.getAttribute('data-id');
                 const name = button.getAttribute('data-name');
                 const sn = button.getAttribute('data-sn');
 
                 document.getElementById('modal-inventory-name').textContent = name;
                 document.getElementById('modal-inventory-sn').textContent = sn;
-
                 document.getElementById('deleteInventoryForm').action = `/inventory/${id}`;
             });
         }

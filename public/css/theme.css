@@ -1,0 +1,373 @@
+/* THEME.CSS — Design System Terpusat
+    Project: TessisB (Management Information System)
+    Dipakai di SELURUH halaman via layouts/app.blade.php & layouts/auth.blade.php.
+    Palet warna & identitas project TIDAK diubah — hanya dirapikan jadi token. */
+
+:root {
+    /* --- Warna dasar (identitas project: putih - biru muda - navy) --- */
+    --bg-page: #f8fbff;
+    --bg-soft: #eef6ff;
+    --bg-white: #ffffff;
+
+    --c-primary: #0d84fc;
+    --c-primary-rgb: 13, 132, 252;
+    --c-primary-hover: #0b6fd6;
+    --c-accent: #035eb9;
+    --c-navy: #0b2447;
+    --c-navy-2: #0f3163;
+    --c-navy-soft: #eef3fb;
+
+    --c-ink: #1f2937;
+    --c-muted: #64748b;
+    --c-border: #e6edf5;
+
+    /* --- Radius & Shadow (Soft UI, bukan neumorphism) --- */
+    --radius-sm: .5rem;
+    --radius-md: .9rem;
+    --radius-lg: 1.25rem;
+    --radius-pill: 50rem;
+
+    --shadow-xs: 0 1px 2px rgba(15, 23, 42, .05);
+    --shadow-sm: 0 2px 10px rgba(11, 36, 71, .06);
+    --shadow-md: 0 10px 26px -10px rgba(11, 36, 71, .18);
+    --shadow-lift: 0 16px 34px -12px rgba(11, 36, 71, .26);
+
+    --transition-fast: all .15s ease;
+    --transition-base: all .25s ease;
+}
+
+/* BASE */
+html { scroll-behavior: smooth; }
+
+body {
+    background-color: var(--bg-page);
+    color: var(--c-ink);
+    font-family: 'Segoe UI', system-ui, -apple-system, Roboto, Tahoma, Geneva, Verdana, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--c-primary); text-decoration: none; }
+a:hover { color: var(--c-accent); }
+
+/* Focus state jelas & konsisten (aksesibilitas keyboard) */
+a:focus-visible,
+button:focus-visible,
+.btn:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+[tabindex]:focus-visible {
+    outline: 2px solid var(--c-primary);
+    outline-offset: 2px;
+}
+
+/* RETHEME BOOTSTRAP COMPONENTS (tanpa build/Sass — override CSS var lokal)*/
+.btn {
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    padding-block: .55rem;
+    transition: var(--transition-fast);
+}
+.btn-lg { border-radius: var(--radius-md); }
+.btn-sm { border-radius: .45rem; }
+
+.btn-primary {
+    --bs-btn-bg: var(--c-primary);
+    --bs-btn-border-color: var(--c-primary);
+    --bs-btn-hover-bg: var(--c-primary-hover);
+    --bs-btn-hover-border-color: var(--c-primary-hover);
+    --bs-btn-active-bg: var(--c-accent);
+    --bs-btn-active-border-color: var(--c-accent);
+    --bs-btn-focus-shadow-rgb: var(--c-primary-rgb);
+    box-shadow: var(--shadow-xs);
+}
+.btn-primary:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+
+.btn-outline-primary {
+    --bs-btn-color: var(--c-primary);
+    --bs-btn-border-color: var(--c-primary);
+    --bs-btn-hover-bg: var(--c-primary);
+    --bs-btn-hover-border-color: var(--c-primary);
+    --bs-btn-active-bg: var(--c-primary);
+    --bs-btn-active-border-color: var(--c-primary);
+}
+
+.btn-secondary {
+    --bs-btn-bg: var(--c-navy);
+    --bs-btn-border-color: var(--c-navy);
+    --bs-btn-hover-bg: var(--c-navy-2);
+    --bs-btn-hover-border-color: var(--c-navy-2);
+}
+
+.text-primary { color: var(--c-primary) !important; }
+.bg-primary { background-color: var(--c-primary) !important; }
+.border-primary { border-color: var(--c-primary) !important; }
+.bg-primary-subtle { background-color: var(--bg-soft) !important; }
+
+.form-control, .form-select {
+    border-radius: var(--radius-sm);
+    border-color: var(--c-border);
+    padding-block: .6rem;
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--c-primary);
+    box-shadow: 0 0 0 .2rem rgba(var(--c-primary-rgb), .15);
+}
+.form-label { font-weight: 600; font-size: .875rem; color: var(--c-ink); }
+.form-check-input:checked { background-color: var(--c-primary); border-color: var(--c-primary); }
+.form-check-input:focus { box-shadow: 0 0 0 .2rem rgba(var(--c-primary-rgb), .15); }
+
+.card {
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+}
+
+.nav-pills .nav-link.active { background-color: var(--c-primary); }
+
+/* Highlight tipis saat dropdown sidebar sedang DIBUKA (klik toggle), beda
+   dari .active (biru solid) yang artinya "sedang di halaman ini". Dua state
+   ini sengaja dibedakan supaya tidak rancu: dropdown yang terbuka tapi
+   kamu belum pindah ke salah satu halaman di dalamnya cuma dapat tint
+   lembut, bukan blok biru penuh. */
+.app-sidebar .nav-link[aria-expanded="true"]:not(.active) {
+    background-color: rgba(255, 255, 255, .08);
+    border-radius: var(--radius-md, .5rem);
+}
+
+.page-link { color: var(--c-primary); border-radius: var(--radius-sm); margin-inline: 2px; border-color: var(--c-border); }
+.page-item.active .page-link { background-color: var(--c-primary); border-color: var(--c-primary); }
+
+.modal-content { border-radius: var(--radius-lg); border: none; box-shadow: var(--shadow-lift); }
+.dropdown-menu { border-radius: var(--radius-md); border-color: var(--c-border); box-shadow: var(--shadow-md); }
+.toast { border-radius: var(--radius-md); }
+
+.table > :not(caption) > * > * { vertical-align: middle; }
+
+/* ==========================================================================
+   KOMPONEN REUSABLE (dipakai lintas halaman)
+   ========================================================================== */
+
+/* --- Kartu statistik (Bento-style, dashboard & index halaman modul) --- */
+.stat-card {
+    background: var(--bg-white);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xs);
+    transition: var(--transition-base);
+    height: 100%;
+}
+.stat-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-3px);
+}
+.stat-card .icon-tile {
+    width: 46px; height: 46px;
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+
+/* --- Judul section halaman (header konsisten tiap modul) --- */
+.page-heading { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.page-heading h3 { font-weight: 700; letter-spacing: -.02em; color: var(--c-navy); margin: 0; }
+.page-heading p { color: var(--c-muted); margin: .15rem 0 0; font-size: .9rem; }
+
+/* --- Panel/Card umum pengganti card polos --- */
+.app-panel {
+    background: var(--bg-white);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xs);
+}
+.app-panel .app-panel-header {
+    padding: 1.1rem 1.35rem;
+    border-bottom: 1px solid var(--c-border);
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem;
+}
+
+/* --- Badge lembut (soft badge) --- */
+.badge-soft-primary   { background: rgba(var(--c-primary-rgb), .12); color: var(--c-accent); }
+.badge-soft-success   { background: rgba(25, 135, 84, .12); color: #146c43; }
+.badge-soft-danger    { background: rgba(220, 53, 69, .12); color: #b02a37; }
+.badge-soft-warning   { background: rgba(255, 193, 7, .18); color: #997404; }
+.badge-soft-secondary { background: rgba(11, 36, 71, .08); color: var(--c-navy); }
+.badge-soft-info      { background: rgba(13, 202, 240, .14); color: #0aa2c0; }
+[class^="badge-soft-"], [class*=" badge-soft-"] {
+    font-weight: 600; font-size: .74rem; letter-spacing: .02em;
+    padding: .4rem .7rem; border-radius: var(--radius-pill);
+}
+
+/* --- Empty state konsisten --- */
+.empty-state { text-align: center; padding: 3rem 1.5rem; color: var(--c-muted); }
+.empty-state .empty-icon {
+    width: 64px; height: 64px; margin: 0 auto 1rem;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-soft); color: var(--c-primary);
+    border-radius: 50%; font-size: 1.6rem;
+}
+
+/* --- Tabel modern (header lembut, hover halus) --- */
+.table-modern thead th {
+    background: var(--bg-soft);
+    color: var(--c-navy);
+    text-transform: uppercase;
+    font-size: .72rem;
+    letter-spacing: .04em;
+    font-weight: 700;
+    border-bottom: none;
+    padding-block: .85rem;
+}
+.table-modern tbody tr { transition: var(--transition-fast); }
+.table-modern tbody tr:hover { background-color: var(--bg-soft); }
+
+/* --- Avatar inisial bulat --- */
+.avatar-initial {
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%; font-weight: 700; flex-shrink: 0;
+    background: var(--bg-soft); color: var(--c-accent);
+}
+
+/* --- Utility hover-lift generik --- */
+.hover-lift { transition: var(--transition-base); }
+.hover-lift:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+
+/* --- Skeleton/soft divider --- */
+.divider-soft { border-color: var(--c-border); opacity: 1; }
+
+/* ==========================================================================
+   RESPONSIVE HELPERS
+   ========================================================================== */
+@media (max-width: 575.98px) {
+    .page-heading h3 { font-size: 1.25rem; }
+    .btn { padding-block: .5rem; }
+}
+
+/* ==========================================================================
+   TABEL RESPONSIF — pola "tabel jadi kartu" di bawah 768px.
+   Dipakai di SEMUA tabel data utama (Inventory, Project, User Management,
+   Activity Log, Trash, dst) - satu tempat, dipakai ulang lewat 2 langkah:
+
+   1. Tambahkan class "table-stack" langsung di elemen <table> itu sendiri,
+      sejajar class lain yang sudah ada -> class="table table-hover table-stack"
+   2. Beri atribut data-label="Nama Kolom" di tiap <td> pada <tbody>, isinya
+      sama dengan teks <th> di atasnya (header disembunyikan di mobile,
+      label inilah yang menggantikannya).
+
+   Untuk sel yang "berat" secara visual (foto, grup tombol aksi) dan tidak
+   enak dipaksa sejajar kanan-kiri dengan labelnya, tambahkan class
+   "cell-block" pada <td> tersebut - kontennya jadi block penuh di bawah
+   labelnya. Baris kosong/pesan "belum ada data" (<td colspan>) tidak perlu
+   diberi data-label - otomatis tampil polos tanpa label.
+   ========================================================================== */
+@media (max-width: 767.98px) {
+    .table-stack thead { display: none; }
+
+    .table-stack,
+    .table-stack tbody,
+    .table-stack tr {
+        display: block;
+        width: 100%;
+    }
+
+    .table-stack tr {
+        margin-bottom: .875rem;
+        padding: .25rem 1rem;
+        background-color: var(--bg-white);
+        border: 1px solid var(--c-border);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-xs);
+    }
+    .table-stack tr:last-child { margin-bottom: 0; }
+
+    /* PENTING (pelajaran dari bug sebelumnya): Bootstrap .table-hover dan
+       .table-modern menaruh warna hover-nya di <td>/<th>, BUKAN di <tr>.
+       Kalau ditimpa cuma di <tr>, tidak akan menang lawan aturan aslinya -
+       harus ditimpa langsung di elemen yang sama. Kartu bukan baris tabel
+       yang "dihover" seperti link, jadi efek hover/aksen Bootstrap dan
+       kilatan tap bawaan browser HP dimatikan total di mode kartu ini. */
+    .table-stack.table-hover tbody tr:hover,
+    .table-stack.table-hover tbody tr:hover > * {
+        --bs-table-accent-bg: transparent;
+    }
+    .table-stack tr,
+    .table-stack td,
+    .table-stack th {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .table-stack td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        width: 100%;
+        padding: .625rem 0 !important;
+        border-bottom: 1px dashed var(--c-border) !important;
+        border-top: none !important;
+        background-color: transparent !important; /* cegah Bootstrap/table-modern mewarnai per-sel - warna kartu cukup dari tr */
+        box-shadow: none !important; /* Bootstrap mewarnai hover lewat box-shadow inset di sel ini, bukan cuma background-color */
+        text-align: right;
+        white-space: normal !important; /* lawan class text-nowrap di beberapa tabel */
+    }
+    .table-stack td:last-child { border-bottom: none !important; }
+
+    .table-stack td::before {
+        content: attr(data-label);
+        flex-shrink: 0;
+        padding-right: .75rem;
+        font-weight: 700;
+        font-size: .7rem;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        color: var(--c-muted);
+        text-align: left;
+    }
+
+    /* Sel tanpa data-label (baris kosong/pesan) - polos, tanpa label, rata tengah */
+    .table-stack td:not([data-label]) {
+        display: block;
+        text-align: center;
+    }
+
+    /* Sel "berat": foto, grup tombol aksi - block penuh di bawah labelnya,
+       bukan dipaksa sejajar kanan-kiri seperti sel teks biasa. */
+    .table-stack td.cell-block {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+    .table-stack td.cell-block::before {
+        padding-right: 0;
+        margin-bottom: .5rem;
+    }
+    .table-stack td.cell-block > * { width: 100%; }
+
+    /* Grup tombol aksi jadi rata lebar & gampang disentuh jari, bukan
+       kumpulan ikon kecil berjejer seperti tampilan desktop. */
+    .table-stack td.cell-block .d-flex.justify-content-center,
+    .table-stack td.cell-block .d-flex.justify-content-end {
+        justify-content: flex-start !important;
+        flex-wrap: wrap;
+    }
+    .table-stack td.cell-block .btn { flex: 1 1 auto; }
+}
+
+/* --------------------------------------------------------------------------
+   TARGET SENTUH - tombol kecil, pagination, dan input kecil dibuat cukup
+   besar untuk jari di tablet/mobile, tanpa mengubah tampilan desktop.
+   -------------------------------------------------------------------------- */
+@media (max-width: 991.98px) {
+    .btn-sm { min-height: 38px; padding-block: .45rem; }
+
+    .page-link {
+        min-width: 40px;
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-close { padding: .65rem !important; }
+
+    .form-select-sm,
+    .form-control-sm { min-height: 36px; }
+}

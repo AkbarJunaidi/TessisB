@@ -3,22 +3,19 @@
 @section('title', 'Tambah Inventory Baru')
 
 @section('content')
-<div class="container-fluid p-0">
-
-    <!-- Header Page & Back Button -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="page-heading">
         <div>
-            <h3 class="fw-bold text-dark m-0">Add New Inventory</h3>
-            <p class="text-muted small m-0">Daftarkan aset barang fisik baru ke dalam sistem digital manajemen.</p>
+            <h3>Add New Inventory</h3>
+            <p>Daftarkan aset barang fisik baru ke dalam sistem digital manajemen.</p>
         </div>
-        <a href="{{ route('inventory.index') }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 fw-medium">
+        <a href="{{ route('inventory.index') }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2">
             <i class="bi bi-arrow-left"></i> Back to List
         </a>
     </div>
 
     <!-- Error Validation Alert -->
     @if ($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4 rounded-3" role="alert">
             <div class="d-flex align-items-center mb-1 fw-bold">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i> Terdapat kesalahan pada input form:
             </div>
@@ -35,13 +32,13 @@
         @csrf
 
         <!-- CARD 1: Informasi Utama -->
-        <div class="card shadow-sm border-0 rounded-3 bg-white mb-4">
-            <div class="card-header bg-white border-bottom py-3">
-                <h5 class="card-title fw-bold text-dark m-0 d-flex align-items-center gap-2">
+        <div class="app-panel mb-4">
+            <div class="app-panel-header">
+                <h5 class="fw-bold text-navy m-0 d-flex align-items-center gap-2">
                     <i class="bi bi-info-circle text-primary"></i> Informasi Utama
                 </h5>
             </div>
-            <div class="card-body p-4">
+            <div class="p-4">
                 <div class="row g-3">
                     <!-- Nama Barang -->
                     <div class="col-12 col-md-6">
@@ -156,13 +153,13 @@
         </div>
 
         <!-- CARD 2: Foto Barang -->
-        <div class="card shadow-sm border-0 rounded-3 bg-white mb-4">
-            <div class="card-header bg-white border-bottom py-3">
-                <h5 class="card-title fw-bold text-dark m-0 d-flex align-items-center gap-2">
+        <div class="app-panel mb-4">
+            <div class="app-panel-header">
+                <h5 class="fw-bold text-navy m-0 d-flex align-items-center gap-2">
                     <i class="bi bi-image text-primary"></i> Foto Barang
                 </h5>
             </div>
-            <div class="card-body p-4">
+            <div class="p-4">
                 <div class="mb-3">
                     <label for="image" class="form-label fw-semibold small text-secondary">Upload Gambar Barang</label>
                     <input type="file"
@@ -186,14 +183,16 @@
         @php
             $useAttributesDefault = old('use_attributes', '0');
         @endphp
-        <div class="card shadow-sm border-0 rounded-3 bg-white mb-4">
-            <div class="card-header bg-white border-bottom py-3">
-                <h5 class="card-title fw-bold text-dark m-0 d-flex align-items-center gap-2">
-                    <i class="bi bi-sliders text-primary"></i> Informasi Tambahan
-                </h5>
-                <p class="text-muted small mb-0 mt-1">Maksimal 7 baris informasi.</p>
+        <div class="app-panel mb-4">
+            <div class="app-panel-header">
+                <div>
+                    <h5 class="fw-bold text-navy m-0 d-flex align-items-center gap-2">
+                        <i class="bi bi-sliders text-primary"></i> Informasi Tambahan
+                    </h5>
+                    <p class="text-muted small mb-0 mt-1">Maksimal 7 baris informasi.</p>
+                </div>
             </div>
-            <div class="card-body p-4">
+            <div class="p-4">
                 <!-- Toggle Gunakan Informasi Tambahan -->
                 <div class="mb-4">
                     <label class="form-label fw-semibold small text-secondary d-block mb-2">Gunakan Informasi Tambahan?</label>
@@ -282,15 +281,13 @@
 
         <!-- Form Submit & Cancel Actions -->
         <div class="d-flex justify-content-end gap-2 mb-5">
-            <a href="{{ route('inventory.index') }}" class="btn btn-light px-4 fw-medium">Batal</a>
-            <button type="submit" class="btn btn-primary px-4 fw-medium shadow-sm">
+            <a href="{{ route('inventory.index') }}" class="btn btn-light px-4">Batal</a>
+            <button type="submit" class="btn btn-primary px-4">
                 <i class="bi bi-cloud-arrow-up-fill me-1"></i> Save Inventory
             </button>
         </div>
 
     </form>
-
-</div>
 
 <!-- JavaScript Vanilla Dynamic Attribute Key-Value Builder -->
 <script>

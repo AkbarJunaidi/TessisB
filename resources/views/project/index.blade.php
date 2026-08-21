@@ -230,7 +230,7 @@
             </form>
 
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table table-hover table-stack align-middle mb-0">
                     <thead class="table-light text-secondary small text-uppercase">
                         <tr>
                             <th class="ps-3 py-3">No</th>
@@ -246,22 +246,22 @@
                     <tbody class="small text-dark">
                         @forelse($projects as $index => $project)
                             <tr>
-                                <td class="ps-3 py-3 fw-semibold text-secondary">{{ $projects->firstItem() + $index }}</td>
-                                <td class="py-3 fw-semibold">{{ $project->name }}</td>
-                                <td class="py-3">{{ $project->pic }}</td>
-                                <td class="py-3">{{ optional($project->event_date)->translatedFormat('d M Y') }}</td>
-                                <td class="py-3">{{ $project->location }}</td>
-                                <td class="py-3">
+                                <td class="ps-3 py-3 fw-semibold text-secondary" data-label="No">{{ $projects->firstItem() + $index }}</td>
+                                <td class="py-3 fw-semibold" data-label="Nama Project">{{ $project->name }}</td>
+                                <td class="py-3" data-label="PIC">{{ $project->pic }}</td>
+                                <td class="py-3" data-label="Tanggal">{{ optional($project->event_date)->translatedFormat('d M Y') }}</td>
+                                <td class="py-3" data-label="Lokasi">{{ $project->location }}</td>
+                                <td class="py-3" data-label="Status">
                                     <span class="badge bg-light text-dark border">{{ $project->status }}</span>
                                 </td>
-                                <td class="py-3">
+                                <td class="py-3" data-label="Surat Jalan">
                                     @if($project->suratJalans->isNotEmpty())
                                         <a href="{{ route('surat-jalan.show', $project->suratJalans->first()) }}" class="text-primary">{{ $project->suratJalans->first()->nomor }}</a>
                                     @else
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
-                                <td class="py-3 text-center pe-3">
+                                <td class="py-3 text-center pe-3 cell-block" data-label="Aksi">
                                     <div class="d-flex justify-content-center gap-2">
                                         <a href="{{ route('projects.show', $project) }}" class="btn btn-sm btn-outline-secondary">
                                             <i class="bi bi-eye"></i> Detail

@@ -156,7 +156,7 @@
                 </form>
 
                 <p class="form-footer">
-                    &copy; 2026 AdminPro Inc. Seluruh hak cipta dilindungi.
+                    &copy; 2026 CV Arindra Production. Seluruh hak cipta dilindungi.
                 </p>
             </div>
         </div>

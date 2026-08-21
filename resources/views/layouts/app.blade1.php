@@ -67,41 +67,21 @@
     {{-- Layout shell styles: dipusatkan di sini karena spesifik struktural,
          bukan token desain umum (yang sudah ada di theme.css).
 
-         MEKANISME - 2 aturan yang saling melengkapi, BUKAN cuma "kunci
-         tinggi shell" seperti percobaan sebelumnya (itu ternyata rapuh -
-         kalau isi sidebar kebetulan lebih panjang dari 1 layar, konten
-         yang kelebihan itu genuinely tidak terjangkau sama sekali, bukan
-         cuma terpotong tampilan):
-
-         1. .app-shell pakai min-height (LANTAI minimal 1 layar, boleh
-            tumbuh lebih tinggi kalau perlu) - bukan height (kaku/mentok).
-         2. .app-main (area konten utama) pakai max-height (ATAP maksimal
-            1 layar) + overflow-y:auto - jadi HALAMAN PANJANG tidak pernah
-            menyeret shell/sidebar ikut tumbuh, karena kelebihannya
-            di-scroll sendiri di dalam .app-main.
-
-         Karena sidebar TIDAK diberi pembatas apa pun (tidak max-height,
-         tidak overflow sendiri), kalau suatu saat isinya (menu + dropdown
-         + Activity Logs + Trash + kartu profil) kebetulan lebih panjang
-         dari 1 layar, dia bebas mendorong .app-shell (yang cuma punya
-         lantai minimal, bukan langit-langit) tumbuh lebih tinggi - dan
-         HALAMAN yang scroll sedikit menampakkannya (fallback alami
-         browser), BUKAN sidebar dikasih scrollbar sendiri. Pembagian
-         tugas "shell=lantai, main=atap" inilah yang membuat 2 bug (halaman
-         panjang menyeret sidebar vs sidebar panjang kepotong) tidak bisa
-         terjadi bersamaan - keduanya diselesaikan oleh 2 aturan berbeda,
-         bukan 1 aturan yang dipaksa menyelesaikan keduanya sekaligus. --}}
+         MEKANISME (bukan cuma tampilan) diadopsi dari sistem lama yang
+         terbukti tidak pernah bug: shell dibuat TINGGI TETAP (dikunci ke
+         tinggi layar, bukan minimal), dan yang di-scroll adalah AREA KONTEN
+         di dalamnya (overflow-y: auto), BUKAN seluruh halaman/body. Karena
+         shell-nya dikunci ke tinggi layar, sidebar (yang ikut diregangkan
+         flexbox mengikuti tinggi shell) otomatis TIDAK PERNAH lebih tinggi
+         dari layar, apapun panjang halaman yang sedang dibuka - tidak perlu
+         lagi trik position:sticky atau align-items:flex-start. --}}
     <style>
         .app-shell {
             display: flex;
-            min-height: 100vh;
-            min-height: 100dvh; /* ikut tinggi viewport yang sebenarnya di HP */
+            height: 100vh;
+            height: 100dvh; /* ikut tinggi viewport yang sebenarnya di HP (bukan nilai awal saat address bar masih terlihat) */
             width: 100%;
-            /* PENTING: min-height, BUKAN height. Beda dari percobaan
-               sebelumnya - shell ini punya LANTAI minimal setinggi layar,
-               tapi BOLEH tumbuh lebih tinggi kalau memang dibutuhkan (lihat
-               .app-main di bawah untuk kenapa ini aman dari 2 bug
-               sekaligus). */
+            overflow: hidden; /* shell sendiri TIDAK PERNAH scroll - yang scroll adalah .app-main di dalamnya */
         }
 
         .app-sidebar {
@@ -110,29 +90,16 @@
             border-right: 1px solid rgba(255,255,255,.06);
         }
         /* Desktop (>=992px): offcanvas-lg otomatis jadi kolom statis oleh
-           Bootstrap, lalu default flexbox (align-items: stretch) membuat
-           sidebar ikut tinggi baris. Sengaja TIDAK diberi max-height atau
-           overflow-nya sendiri - kalau isinya (menu + 1 dropdown + Activity
-           Logs + Trash + kartu profil) kebetulan lebih panjang dari 1
-           layar, sidebar boleh mendorong .app-shell tumbuh lebih tinggi
-           dari 100vh, dan HALAMAN (bukan sidebar) yang scroll sedikit
-           untuk menampakkannya - graceful fallback alami, bukan scrollbar
-           terpisah di sidebar yang terlihat aneh. Ini aman dipakai karena
-           dropdown sudah dikelompokkan 1 accordion (data-bs-parent), jadi
-           kasus ini jarang kepakai. */
+           Bootstrap. Karena .app-shell sudah tinggi tetap (bukan minimal),
+           default flexbox (align-items: stretch) membuat sidebar otomatis
+           persis setinggi layar - selalu, tanpa perlu diatur manual lagi. */
 
         .app-main {
             flex: 1;
             min-width: 0; /* cegah overflow horizontal di flex child */
             display: flex;
             flex-direction: column;
-            max-height: 100vh;
-            max-height: 100dvh; /* KUNCI dari bug ini: dibatasi maksimal, BUKAN dikunci pas (height). Kalau halaman
-                                    panjang, area ini scroll SENDIRI dan tidak pernah menyeret .app-shell/sidebar
-                                    ikut tumbuh - beda dari sidebar di atas yang justru BOLEH menyeret shell tumbuh
-                                    kalau perlu. Pembagian tugas inilah yang membuat 2 bug (halaman panjang menyeret
-                                    sidebar, DAN sidebar panjang kepotong) tidak bisa terjadi bersamaan. */
-            overflow-y: auto;
+            overflow-y: auto; /* KUNCI: konten panjang di-scroll DI SINI, bukan di seluruh halaman */
         }
 
         .app-content {

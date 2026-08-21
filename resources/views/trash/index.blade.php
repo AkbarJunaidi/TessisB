@@ -104,7 +104,7 @@
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 text-nowrap">
+                <table class="table table-hover table-stack align-middle mb-0 text-nowrap">
                     <thead class="table-light text-secondary small text-uppercase">
                         <tr>
                             <th class="ps-4 py-3" style="width: 18%">Dihapus Pada</th>
