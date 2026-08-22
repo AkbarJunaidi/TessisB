@@ -234,6 +234,60 @@ button:focus-visible,
 .divider-soft { border-color: var(--c-border); opacity: 1; }
 
 /* ==========================================================================
+   SIDEBAR - logo header mobile
+   ========================================================================== */
+.sidebar-logo-mobile {
+    /* PENYEBAB ASLI gambar "kepotong ruang kosong" yang tidak pernah
+       hilang di percobaan-percobaan sebelumnya: file image/logo.png
+       ITU SENDIRI punya padding transparan ~15% di atas & bawah gambar
+       (dicek langsung isi filenya, bukan CSS-nya) - jadi berapa pun
+       margin/padding CSS di sekitarnya diubah, ruang kosong itu tetap
+       ada karena ruangnya ada DI DALAM piksel gambar, bukan di luar.
+       object-fit:cover + aspect-ratio yang cocok dengan rasio KONTEN
+       ASLI (bukan rasio file aslinya) memaksa browser men-scale &
+       memotong pas persis bagian transparan itu - tanpa perlu edit
+       file gambarnya sendiri (logo.png dipakai juga di sidebar desktop
+       & halaman login, jangan sampai perubahan ini kebawa ke sana). */
+    width: 100%;
+    height: auto;
+    aspect-ratio: 862 / 193; /* rasio KONTEN logo setelah padding transparan dibuang */
+    object-fit: cover;
+    object-position: center;
+}
+
+/* Wadah logo header mobile - ukurannya ikut lebar sidebar (bukan vw
+   viewport lagi), flex supaya logo & (nanti kalau perlu) elemen lain di
+   sampingnya rapi sejajar. Nempel di baris paling atas offcanvas-header. */
+.sidebar-logo-wrap {
+    display: flex;
+    align-items: center;
+    width: 68%; /* porsi dari lebar sidebar - sisanya untuk jarak & tombol tutup (X) */
+    max-width: 320px;
+}
+
+/* Garis pembatas di bawah header sidebar. PENTING - kenapa dipisah jadi
+   class sendiri, TIDAK pakai utility Bootstrap (my-2) sama sekali: semua
+   utility spacing Bootstrap (.my-2, .p-3, dst) di-generate dengan
+   !important - kalau class ini ditaruh BERBARENGAN dengan .my-2 di elemen
+   yang sama, override di sini tidak akan pernah menang walau ditulis
+   belakangan (itu penyebab percobaan sebelumnya kelihatan "tidak berubah
+   sama sekali" - bukan cuma kurang, tapi memang tidak pernah kepakai).
+   Makanya .sidebar-divider jadi SATU-SATUNYA sumber margin elemen ini -
+   tidak digabung dengan .my-2 lagi di HTML-nya. */
+.sidebar-divider {
+    margin-block: .5rem;
+}
+@media (max-width: 991.98px) {
+    .sidebar-divider { margin-block: .25rem !important; }
+
+    /* Sama seperti di atas - override padding atas offcanvas-body ini
+       WAJIB pakai !important & selector class sendiri (bukan gabung
+       dengan p-3/pt-2 di HTML), karena p-3 dari Bootstrap juga
+       !important dan akan selalu menang kalau ditulis campur. */
+    .sidebar-body { padding-top: .5rem !important; }
+}
+
+/* ==========================================================================
    RESPONSIVE HELPERS
    ========================================================================== */
 @media (max-width: 575.98px) {

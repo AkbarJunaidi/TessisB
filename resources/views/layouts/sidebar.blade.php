@@ -1,20 +1,20 @@
 {{-- Header offcanvas ini HANYA tampil di layar <992px (mobile/tablet).
      Di desktop, offcanvas-lg otomatis jadi sidebar statis tanpa header ini. --}}
-<div class="offcanvas-header d-lg-none px-3 pt-3">
-    <a href="{{ route('dashboard') }}" class="d-flex align-items-center text-decoration-none" id="appSidebarLabel">
-        <img src="{{ asset('image/logo.png') }}" alt="Logo" style="height: 44px; width: auto; object-fit: contain;">
+<div class="offcanvas-header d-lg-none px-3 pt-3 pb-2">
+    <a href="{{ route('dashboard') }}" class="sidebar-logo-wrap text-decoration-none" id="appSidebarLabel">
+        <img src="{{ asset('image/logo.png') }}" alt="Logo" class="sidebar-logo-mobile">
     </a>
     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#appSidebar" aria-label="Tutup menu"></button>
 </div>
 
-<div class="offcanvas-body d-flex flex-column p-3 text-white h-100">
+<div class="offcanvas-body d-flex flex-column p-3 text-white h-100 sidebar-body">
 
     {{-- Brand (hanya tampil di desktop; di mobile sudah ada di offcanvas-header) --}}
     <a href="{{ route('dashboard') }}" class="d-none d-lg-flex align-items-center text-white text-decoration-none mb-2 px-1">
         <img src="{{ asset('image/logo.png') }}" alt="Logo" style="height: 64px; width: auto; object-fit: contain;">
     </a>
 
-    <hr class="border-white opacity-10 my-2">
+    <hr class="border-white opacity-10 sidebar-divider">
 
     <ul class="nav nav-pills flex-column mb-auto gap-1 sidebar-nav" id="sidebarMenuAccordion" role="menu" aria-label="Menu utama">
 
