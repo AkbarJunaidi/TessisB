@@ -288,6 +288,38 @@ button:focus-visible,
 }
 
 /* ==========================================================================
+   KANBAN BOARD (Detail Project) - satu kolom penuh + tab pemilih di mobile.
+   Desktop TIDAK disentuh - board tetap sejajar ke samping seperti semula
+   (aturan di bawah hanya aktif di <768px, atau menimpa balik ke tampilan
+   asli di >=768px).
+   ========================================================================== */
+@media (max-width: 767.98px) {
+    /* Kolom yang lagi aktif (dipilih lewat tab) tampil PENUH LEBAR LAYAR,
+       bukan lagi terjepit 280-300px seperti di desktop. !important WAJIB
+       di sini karena lebar 280-300px aslinya ditulis sebagai inline
+       style="" di HTML (spesifisitasnya lebih tinggi dari class biasa). */
+    .kanban-board .kanban-col {
+        min-width: 100% !important;
+        max-width: 100% !important;
+        width: 100%;
+    }
+    .kanban-board .tab-content {
+        overflow: visible;
+    }
+}
+
+@media (min-width: 768px) {
+    /* Desktop: tab pemilih kolom cuma ada di mobile (lihat class
+       d-md-none di HTML), jadi status "aktif" dari tab tidak relevan lagi
+       di sini - SEMUA kolom board harus tetap tampil bersamaan seperti
+       sebelum fitur tab ini ada. Timpa balik display:none bawaan
+       Bootstrap untuk .tab-pane yang tidak "active". */
+    .kanban-board .kanban-col {
+        display: block !important;
+    }
+}
+
+/* ==========================================================================
    RESPONSIVE HELPERS
    ========================================================================== */
 @media (max-width: 575.98px) {

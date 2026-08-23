@@ -8,20 +8,79 @@
     <!-- Header Page & Back Button (Hanya Tampil di Desktop) -->
     <div class="d-none d-md-flex justify-content-between align-items-center mb-4">
         <div>
-            <h3 class="fw-bold text-dark m-0">Detail Inventory</h3>
+            <h3 class="fw-bold text-dark m-0 d-flex align-items-center gap-2">
+                {{ $inventory->name }}
+                @switch($inventory->display_status)
+                    @case('Tersedia')
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.65rem;"><i class="bi bi-circle-fill me-1" style="font-size: 0.45rem;"></i>TERSEDIA</span>
+                        @break
+                    @case('Dipinjam')
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.65rem;"><i class="bi bi-circle-fill me-1" style="font-size: 0.45rem;"></i>DIPINJAM</span>
+                        @break
+                    @case('Perbaikan')
+                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.65rem;"><i class="bi bi-circle-fill me-1" style="font-size: 0.45rem;"></i>PERBAIKAN</span>
+                        @break
+                    @case('Rusak')
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.65rem;"><i class="bi bi-circle-fill me-1" style="font-size: 0.45rem;"></i>RUSAK</span>
+                        @break
+                    @case('Hilang')
+                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.65rem;"><i class="bi bi-circle-fill me-1" style="font-size: 0.45rem;"></i>HILANG</span>
+                        @break
+                    @default
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.65rem;">{{ strtoupper($inventory->display_status ?? 'TERSEDIA') }}</span>
+                @endswitch
+            </h3>
             <p class="text-muted small m-0">Menampilkan informasi lengkap dan identitas aset barang.</p>
         </div>
-        <div>
+        <div class="d-flex align-items-center gap-2">
             <a href="{{ route('inventory.index') }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 fw-medium">
                 <i class="bi bi-arrow-left"></i> Kembali ke Daftar
             </a>
+            <a href="{{ route('inventory.preview-qr', $inventory->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 fw-medium">
+                <i class="bi bi-printer"></i> Print QR Label
+            </a>
+            <div class="dropdown">
+                <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-2 fw-medium" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-file-earmark-text"></i> Report
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                    <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('inventory.preview', $inventory->id) }}" target="_blank"><i class="bi bi-eye"></i> Preview</a></li>
+                    <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('inventory.download', $inventory->id) }}"><i class="bi bi-download"></i> Download</a></li>
+                </ul>
+            </div>
+            @if(auth()->user()->hasPermission('inventory', 'edit'))
+            <a href="{{ route('inventory.edit', $inventory->id) }}" class="btn btn-sm btn-primary d-flex align-items-center gap-2 fw-medium">
+                <i class="bi bi-pencil"></i> Edit Aset
+            </a>
+            @endif
         </div>
     </div>
 
     <!-- Header Page Mobile (Sederhana) -->
     <div class="d-md-none d-flex align-items-center justify-content-between mb-3 px-1">
         <div>
-            <h4 class="fw-bold text-dark m-0">Detail Inventory</h4>
+            <h4 class="fw-bold text-dark m-0 d-flex align-items-center gap-2 flex-wrap">
+                {{ $inventory->name }}
+                @switch($inventory->display_status)
+                    @case('Tersedia')
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.6rem;">TERSEDIA</span>
+                        @break
+                    @case('Dipinjam')
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.6rem;">DIPINJAM</span>
+                        @break
+                    @case('Perbaikan')
+                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.6rem;">PERBAIKAN</span>
+                        @break
+                    @case('Rusak')
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.6rem;">RUSAK</span>
+                        @break
+                    @case('Hilang')
+                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.6rem;">HILANG</span>
+                        @break
+                    @default
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.6rem;">{{ strtoupper($inventory->display_status ?? 'TERSEDIA') }}</span>
+                @endswitch
+            </h4>
             <p class="text-muted small m-0">Informasi lengkap aset barang</p>
         </div>
         @if(auth()->user()->hasPermission('inventory', 'edit'))
@@ -164,12 +223,13 @@
     <!-- ================= LAYOUT DESKTOP (TAMPIL HANYA DI LAYAR LEBAR / DESKTOP) ================= -->
     <div class="d-none d-md-block">
         <div class="row g-4">
-            <!-- SISI KIRI (8 KOLOM - GRID BENTO) -->
-            <div class="col-12 col-lg-8">
 
-                <!-- BARIS 1: Foto Fisik Barang & Deskripsi Barang -->
+            <!-- BARIS 1 (lebar penuh 12-kol): Foto Fisik Barang (sempit) + Deskripsi Barang
+                 (lebar, bentuk persegi panjang horizontal - menggantikan slot Deskripsi +
+                 Aksi Cepat yang lama sekaligus, sesuai sketsa yang dikirim). -->
+            <div class="col-12">
                 <div class="row g-4 mb-4">
-                    <div class="col-6">
+                    <div class="col-lg-4">
                         <div class="card shadow-sm border-0 rounded-3 bg-white h-100">
                             <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
                                 <h6 class="fw-bold text-dark m-0">Foto Fisik Barang</h6>
@@ -190,7 +250,7 @@
                         </div>
                     </div>
 
-                    <div class="col-6">
+                    <div class="col-lg-8">
                         <div class="card shadow-sm border-0 rounded-3 bg-white h-100">
                             <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
                                 <h6 class="fw-bold text-dark m-0">Deskripsi Barang</h6>
@@ -207,12 +267,14 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
-                @php
-                    $hasAttributes = $inventory->attributes && $inventory->attributes->count() > 0;
-                @endphp
+            @php
+                $hasAttributes = $inventory->attributes && $inventory->attributes->count() > 0;
+            @endphp
 
-                <!-- BARIS 2: Informasi Identitas Aset & Informasi Tambahan (kolom melebar penuh jika tidak ada Informasi Tambahan) -->
+            <!-- SISI KIRI (8 KOLOM): Informasi Identitas Aset & Informasi Tambahan -->
+            <div class="col-12 col-lg-8">
                 <div class="row g-4 mb-4">
                     <div class="{{ $hasAttributes ? 'col-6' : 'col-12' }}">
                         <div class="card shadow-sm border-0 rounded-3 bg-white h-100">
@@ -282,33 +344,10 @@
                         </div>
                     @endif
                 </div>
-
             </div>
 
-            <!-- SISI KANAN (AKSI & QR CODE) -->
+            <!-- SISI KANAN (4 KOLOM): QR Code Aset -->
             <div class="col-12 col-lg-4">
-                <div class="card shadow-sm border-0 rounded-3 bg-white mb-4">
-                    <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
-                        <h6 class="fw-bold text-dark m-0">Aksi Cepat</h6>
-                    </div>
-                    <div class="card-body p-4 d-grid gap-2">
-                        @if(auth()->user()->hasPermission('inventory', 'edit'))
-                        <a href="{{ route('inventory.edit', $inventory->id) }}" class="btn btn-outline-primary py-2 fw-medium rounded-2">
-                            <i class="bi bi-pencil me-1"></i> Edit Aset
-                        </a>
-                        @endif
-                        <a href="{{ route('inventory.preview-qr', $inventory->id) }}" target="_blank" class="btn btn-outline-primary py-2 fw-medium rounded-2">
-                            <i class="bi bi-qr-code-scan me-1"></i> Preview QR Label
-                        </a>
-                        <a href="{{ route('inventory.preview', $inventory->id) }}" target="_blank" class="btn btn-primary py-2 fw-medium rounded-2 shadow-sm">
-                            <i class="bi bi-file-earmark-pdf me-1"></i> Preview Report
-                        </a>
-                        <a href="{{ route('inventory.download', $inventory->id) }}" class="btn btn-dark py-2 fw-medium rounded-2 shadow-sm">
-                            <i class="bi bi-download text-success me-1"></i> Download Report
-                        </a>
-                    </div>
-                </div>
-
                 <div class="card shadow-sm border-0 rounded-3 bg-white">
                     <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
                         <h6 class="fw-bold text-dark m-0">QR Code Aset</h6>

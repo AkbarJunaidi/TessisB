@@ -314,7 +314,7 @@
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-dokumen" type="button">Dokumen</button></li>
     </ul>
 
-    <div class="tab-content">
+    <div class="tab-content" id="projectTabContent">
         <div class="tab-pane fade show active" id="tab-kanban">
             @include('project.partials.kanban-tab', ['project' => $project, 'groupedTasks' => $groupedTasks])
         </div>
@@ -342,27 +342,55 @@
 {{-- Bottom Navigation khusus Mobile (tanpa Floating Action Button, sesuai PRD) --}}
 <nav class="d-md-none fixed-bottom bg-white border-top shadow-sm">
     <div class="d-flex justify-content-around py-2">
-        <a href="#tab-kanban" data-bs-toggle="tab" class="text-center text-decoration-none text-secondary small mobile-tab-link active">
+        <a href="#tab-kanban" class="text-center text-decoration-none text-secondary small mobile-tab-link active">
             <i class="bi bi-kanban d-block fs-5"></i>Kanban
         </a>
-        <a href="#tab-barang" data-bs-toggle="tab" class="text-center text-decoration-none text-secondary small mobile-tab-link">
+        <a href="#tab-barang" class="text-center text-decoration-none text-secondary small mobile-tab-link">
             <i class="bi bi-box-seam d-block fs-5"></i>Barang
         </a>
-        <a href="#tab-suratjalan" data-bs-toggle="tab" class="text-center text-decoration-none text-secondary small mobile-tab-link">
+        <a href="#tab-suratjalan" class="text-center text-decoration-none text-secondary small mobile-tab-link">
             <i class="bi bi-file-earmark-text d-block fs-5"></i>Surat Jalan
         </a>
-        <a href="#tab-dokumen" data-bs-toggle="tab" class="text-center text-decoration-none text-secondary small mobile-tab-link">
+        <a href="#tab-dokumen" class="text-center text-decoration-none text-secondary small mobile-tab-link">
             <i class="bi bi-folder d-block fs-5"></i>Dokumen
         </a>
     </div>
 </nav>
 
 <script>
-    // Bottom nav mobile ikut menyorot tab aktif (konsisten dengan tab desktop)
+    // Bottom nav mobile - pindah tab, sorot highlight, DAN auto-scroll ke
+    // area tab-content-nya. PENTING: sengaja TIDAK mengandalkan
+    // data-bs-toggle="tab" bawaan di link ini lagi - link bottom nav ini
+    // bukan bagian dari grup tablist yang sama dengan <ul id="projectTabs">
+    // (beda container sama sekali), jadi Bootstrap tidak bisa menentukan
+    // dengan benar tab-pane mana yang harus disembunyikan/ditampilkan lewat
+    // atributnya sendiri (itu penyebab card-nya "diam" tidak ikut ganti
+    // walau tab di bottom nav sudah kesorot aktif). Solusinya: trigger
+    // tombol tab ASLI di #projectTabs secara langsung lewat Bootstrap Tab
+    // API - persis mekanisme yang sudah terbukti benar di link "Lihat
+    // Surat Jalan" di bawah.
     document.querySelectorAll('.mobile-tab-link').forEach(function (link) {
-        link.addEventListener('click', function () {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const targetSelector = this.getAttribute('href'); // contoh: "#tab-suratjalan"
+            const realTabButton = document.querySelector('#projectTabs [data-bs-target="' + targetSelector + '"]');
+            if (realTabButton) {
+                bootstrap.Tab.getOrCreateInstance(realTabButton).show();
+            }
+
             document.querySelectorAll('.mobile-tab-link').forEach(l => l.classList.remove('active', 'text-primary'));
             this.classList.add('active', 'text-primary');
+
+            setTimeout(function () {
+                // PENTING: target-nya .tab-content ("projectTabContent"),
+                // BUKAN #projectTabs (<ul> tab desktop) - <ul> itu
+                // "d-none" di mobile (disembunyikan, diganti bottom nav
+                // ini), jadi tidak punya posisi layout untuk di-scroll ke
+                // situ sama sekali kalau ditarget langsung.
+                const tabsSection = document.getElementById('projectTabContent');
+                if (tabsSection) tabsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 50);
         });
     });
 
@@ -384,7 +412,9 @@
             if (mobileLink) mobileLink.classList.add('active', 'text-primary');
 
             setTimeout(function () {
-                const tabsSection = document.getElementById('projectTabs');
+                // Sama seperti di atas - target .tab-content, bukan #projectTabs
+                // yang tersembunyi ("d-none") di mobile.
+                const tabsSection = document.getElementById('projectTabContent');
                 if (tabsSection) tabsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 50);
         });
