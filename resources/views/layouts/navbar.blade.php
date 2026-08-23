@@ -9,24 +9,31 @@
             <i class="bi bi-list fs-5"></i>
         </button>
 
-        <div>
-            <span class="fw-semibold text-navy d-block" style="font-size:.95rem;">
-                @yield('title', 'Dashboard')
-            </span>
-            <span class="text-muted d-none d-sm-block" style="font-size:.72rem;">
-                Sistem Informasi Manajemen
-            </span>
-        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div>
+                <span class="fw-semibold text-navy d-block" style="font-size:.95rem;">
+                    @yield('title', 'Dashboard')
+                </span>
+                <span class="text-muted d-none d-sm-block" style="font-size:.72rem;">
+                    Sistem Informasi Manajemen
+                </span>
+            </div>
 
-        {{-- Ticker notifikasi - teks pesan notifikasi aktif bergulir (animasi
-             slide ke atas), berganti otomatis tiap beberapa detik. Sumber
-             datanya SAMA dengan dropdown lonceng (satu fetch dipakai bersama,
-             tidak dobel request) - lihat script navbarNotif di bawah. Cuma
-             tampil di layar lebar (ruang navbar sempit di mobile, dan mobile
-             sudah punya bottom-nav sendiri untuk fokus konten). --}}
-        @if(auth()->user()->hasRole('super_admin', 'admin'))
-            <div class="flex-grow-1 mx-4 d-none d-lg-block position-relative overflow-hidden" id="navbarNotifTicker" style="max-width: 420px; height: 20px; visibility: hidden;"></div>
-        @endif
+            {{-- Ticker notifikasi - teks pesan notifikasi aktif bergulir (animasi
+                 slide ke atas), berganti otomatis tiap beberapa detik. Sumber
+                 datanya SAMA dengan dropdown lonceng di kanan (satu fetch dipakai
+                 bersama, tidak dobel request) - lihat script navbarNotif di bawah.
+                 Sengaja ditaruh NEMPEL di sebelah judul (dipisah garis "|"), bukan
+                 melebar ke tengah navbar - dan kapsulnya dibuat sepadan dengan
+                 kapsul jam di kanan (px-3 py-1 rounded-pill), bukan teks polos.
+                 Cuma tampil di layar lebar (ruang navbar sempit di mobile, dan
+                 mobile sudah punya bottom-nav sendiri untuk fokus konten). --}}
+            @if(auth()->user()->hasRole('super_admin', 'admin'))
+                <div class="vr d-none d-lg-block align-self-stretch" style="opacity: .15;"></div>
+                <div class="d-none d-lg-flex align-items-center rounded-pill px-3 py-1 position-relative overflow-hidden"
+                     id="navbarNotifTicker" style="height: 40px; width: 380px; flex-shrink: 0; visibility: hidden;"></div>
+            @endif
+        </div>
 
         <div class="ms-auto d-flex align-items-center gap-2 gap-md-3">
 
@@ -35,8 +42,9 @@
                  yang toh akan ditolak 403 oleh backend. --}}
             @if(auth()->user()->hasRole('super_admin', 'admin'))
                 <div class="dropdown">
-                    <button type="button" class="btn btn-light border rounded-circle position-relative d-flex align-items-center justify-content-center"
+                    <button type="button" class="btn btn-light border rounded-circle position-relative d-flex align-items-center justify-content-center navbar-notif-btn"
                             style="width: 38px; height: 38px;"
+                            id="navbarNotifBtn"
                             data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifikasi">
                         <i class="bi bi-bell fs-6"></i>
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="navbarNotifBadge" style="font-size: .6rem;"></span>
@@ -71,6 +79,7 @@
        Pakai transition CSS biasa, bukan library animasi eksternal. */
     #navbarNotifTicker .ticker-item {
         position: absolute;
+        padding-left: 12px;
         inset: 0;
         display: flex;
         align-items: center;
@@ -99,6 +108,34 @@
         text-overflow: ellipsis;
         white-space: nowrap;
     }
+    #navbarNotifTicker.has-notif {
+        /* border-radius & padding sekarang dari class Bootstrap (rounded-pill
+           px-3 py-1) langsung di elemennya - biar sepadan persis dengan
+           kapsul jam di sebelahnya, satu sumber ukuran yang sama. Di sini
+           tinggal warnanya saja. */
+        background-color: #fff1f0;
+        border: 1px solid #ffd4d1;
+    }
+    #navbarNotifTicker.has-notif .ticker-item {
+        color: #b02a37;
+    }
+    #navbarNotifTicker.has-notif .ticker-item i {
+        color: #dc3545;
+    }
+
+    /* Ikon lonceng ikut "menyala" (bukan cuma badge angkanya) begitu ada
+       notifikasi aktif - supaya lebih kerasa ada sesuatu yang perlu
+       diperhatikan, bukan cuma ikon netral seperti biasa. */
+    .navbar-notif-btn.has-notif {
+        background-color: #fff1f0 !important;
+        border-color: #ffb3ae !important;
+        color: #dc3545;
+        animation: navbarNotifPulse 2s ease-in-out infinite;
+    }
+    @keyframes navbarNotifPulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, .25); }
+        50% { box-shadow: 0 0 0 5px rgba(220, 53, 69, 0); }
+    }
 </style>
 
 {{-- Waktu nyata --}}
@@ -124,6 +161,7 @@
         const listEl = document.getElementById('navbarNotifList');
         const badgeEl = document.getElementById('navbarNotifBadge');
         const tickerEl = document.getElementById('navbarNotifTicker');
+        const notifBtn = document.getElementById('navbarNotifBtn');
         if (!listEl || !badgeEl) return;
 
         const notifUrl = @json(route('notifications.active'));
@@ -140,11 +178,13 @@
             if (!notifications.length) {
                 listEl.innerHTML = '<div class="text-center text-muted small py-4">Tidak ada notifikasi saat ini.</div>';
                 badgeEl.classList.add('d-none');
+                if (notifBtn) notifBtn.classList.remove('has-notif');
                 return;
             }
 
             badgeEl.textContent = notifications.length > 9 ? '9+' : notifications.length;
             badgeEl.classList.remove('d-none');
+            if (notifBtn) notifBtn.classList.add('has-notif');
 
             listEl.innerHTML = notifications.map(function (n) {
                 return `
@@ -171,10 +211,12 @@
 
             if (!notifications.length) {
                 tickerEl.style.visibility = 'hidden';
+                tickerEl.classList.remove('has-notif');
                 tickerEl.innerHTML = '';
                 return;
             }
 
+            tickerEl.classList.add('has-notif');
             tickerEl.innerHTML = notifications.map(function (n) {
                 return `
                     <div class="ticker-item">

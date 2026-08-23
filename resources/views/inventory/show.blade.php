@@ -221,14 +221,27 @@
 
 
     <!-- ================= LAYOUT DESKTOP (TAMPIL HANYA DI LAYAR LEBAR / DESKTOP) ================= -->
-    <div class="d-none d-md-block">
+    {{-- PENTING: mb-4 ditaruh di SINI (pembungkus paling luar), BUKAN di
+         salah satu row di dalamnya - supaya jaraknya ke "Status Unit
+         Fisik" (section terpisah, di luar grid ini, bukan bagian dari
+         .row g-4) tetap ada TANPA numpuk gutter row lain di dalamnya
+         seperti bug sebelumnya. --}}
+    <div class="d-none d-md-block mb-4">
         <div class="row g-4">
 
             <!-- BARIS 1 (lebar penuh 12-kol): Foto Fisik Barang (sempit) + Deskripsi Barang
                  (lebar, bentuk persegi panjang horizontal - menggantikan slot Deskripsi +
                  Aksi Cepat yang lama sekaligus, sesuai sketsa yang dikirim). -->
             <div class="col-12">
-                <div class="row g-4 mb-4">
+                {{-- PENTING: cuma "row g-4", TANPA mb-4 di sini - baris ini
+                     sudah jadi kolom (col-12) langsung di dalam .row g-4
+                     yang membungkusnya (baris 225), jadi jarak vertikal ke
+                     baris berikutnya SUDAH otomatis dari gutter row itu.
+                     Kalau ditambah mb-4 lagi di sini, jaraknya jadi dobel
+                     (gutter row + mb-4 numpuk) - itu penyebab jarak ke
+                     "Informasi Identitas Aset" kelihatan lebih lebar dari
+                     jarak-jarak lain di halaman ini. --}}
+                <div class="row g-4">
                     <div class="col-lg-4">
                         <div class="card shadow-sm border-0 rounded-3 bg-white h-100">
                             <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
@@ -275,7 +288,7 @@
 
             <!-- SISI KIRI (8 KOLOM): Informasi Identitas Aset & Informasi Tambahan -->
             <div class="col-12 col-lg-8">
-                <div class="row g-4 mb-4">
+                <div class="row g-4">
                     <div class="{{ $hasAttributes ? 'col-6' : 'col-12' }}">
                         <div class="card shadow-sm border-0 rounded-3 bg-white h-100">
                             <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
