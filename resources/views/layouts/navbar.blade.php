@@ -19,19 +19,25 @@
                 </span>
             </div>
 
-            {{-- Ticker notifikasi - teks pesan notifikasi aktif bergulir (animasi
-                 slide ke atas), berganti otomatis tiap beberapa detik. Sumber
-                 datanya SAMA dengan dropdown lonceng di kanan (satu fetch dipakai
-                 bersama, tidak dobel request) - lihat script navbarNotif di bawah.
-                 Sengaja ditaruh NEMPEL di sebelah judul (dipisah garis "|"), bukan
-                 melebar ke tengah navbar - dan kapsulnya dibuat sepadan dengan
-                 kapsul jam di kanan (px-3 py-1 rounded-pill), bukan teks polos.
-                 Cuma tampil di layar lebar (ruang navbar sempit di mobile, dan
-                 mobile sudah punya bottom-nav sendiri untuk fokus konten). --}}
+            {{-- Ticker notifikasi - teks pesan notifikasi aktif bergulir, berganti
+                 otomatis tiap beberapa detik. Sumber datanya SAMA dengan dropdown
+                 lonceng di kanan (satu fetch dipakai bersama, tidak dobel request).
+
+                 DIROMBAK TOTAL dari versi sebelumnya: dulu pakai beberapa elemen
+                 ditumpuk position:absolute (supaya bisa animasi geser), tapi itu
+                 yang bikin kapsulnya rusak/oval besar - karena elemen absolute
+                 tidak ikut dihitung lebar oleh CSS, jadi lebar kapsul harus
+                 dihitung manual lewat JS, dan gampang meleset timing-nya.
+
+                 SEKARANG cuma 1 elemen teks (TIDAK ditumpuk, TIDAK absolute).
+                 Efeknya: lebar kapsul otomatis mengikuti panjang teks lewat CSS
+                 biasa (flow dokumen normal) - TIDAK PERLU JS hitung lebar sama
+                 sekali, jadi tidak ada lagi celah untuk timing yang meleset. --}}
             @if(auth()->user()->hasRole('super_admin', 'admin'))
-                <div class="vr d-none d-lg-block align-self-stretch" style="opacity: .15;"></div>
-                <div class="d-none d-lg-flex align-items-center rounded-pill px-3 py-1 position-relative overflow-hidden"
-                     id="navbarNotifTicker" style="height: 40px; width: 380px; flex-shrink: 0; visibility: hidden;"></div>
+                <div class="vr d-none d-lg-block" style="opacity: .15; height: 28px;"></div>
+                <div class="rounded-pill" id="navbarNotifTicker">
+                    <div class="d-flex align-items-center gap-2" id="navbarNotifTickerContent"></div>
+                </div>
             @endif
         </div>
 
@@ -74,52 +80,35 @@
     .app-topbar { position: sticky; top: 0; z-index: 1030; }
     .text-navy { color: var(--c-navy); }
 
-    /* Ticker notifikasi navbar - tiap pesan ditumpuk absolute di posisi yang
-       sama, lalu digeser masuk/keluar lewat transform (slide ke atas).
-       Pakai transition CSS biasa, bukan library animasi eksternal. */
-    #navbarNotifTicker .ticker-item {
-        position: absolute;
-        padding-left: 12px;
-        inset: 0;
-        display: flex;
+    /* Kapsul ticker - satu elemen teks saja (bukan ditumpuk absolute),
+       lebarnya otomatis mengikuti panjang teks lewat flow CSS normal. */
+    #navbarNotifTicker {
+        height: 40px;
+        padding: 0 8px; /* jarak dalam kapsul - ganti angka ini kalau mau lebih renggang/rapat */
+        display: none; /* default: disembunyikan, JS yang membuka jadi flex kalau ada notifikasi */
         align-items: center;
-        gap: .4rem;
+        white-space: nowrap;
+    }
+    @media (min-width: 992px) {
+        #navbarNotifTicker.has-notif { display: flex; }
+    }
+    #navbarNotifTicker #navbarNotifTickerContent {
         font-size: .78rem;
-        color: var(--c-navy);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        opacity: 0;
-        transform: translateY(100%);
-        transition: transform .4s ease, opacity .4s ease;
-        pointer-events: none;
-    }
-    #navbarNotifTicker .ticker-item.active {
-        opacity: 1;
-        transform: translateY(0);
-        pointer-events: auto;
-    }
-    #navbarNotifTicker .ticker-item.leaving {
-        opacity: 0;
-        transform: translateY(-100%);
-    }
-    #navbarNotifTicker .ticker-item span {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+        max-width: 360px; /* jaring pengaman - pesan sangat panjang tetap dipotong rapi, tidak mendorong navbar */
+        transition: opacity .3s ease, transform .3s ease;
     }
     #navbarNotifTicker.has-notif {
-        /* border-radius & padding sekarang dari class Bootstrap (rounded-pill
-           px-3 py-1) langsung di elemennya - biar sepadan persis dengan
-           kapsul jam di sebelahnya, satu sumber ukuran yang sama. Di sini
-           tinggal warnanya saja. */
         background-color: #fff1f0;
         border: 1px solid #ffd4d1;
+        border-radius: 999px;
     }
-    #navbarNotifTicker.has-notif .ticker-item {
+    #navbarNotifTicker.has-notif #navbarNotifTickerContent {
         color: #b02a37;
     }
-    #navbarNotifTicker.has-notif .ticker-item i {
+    #navbarNotifTicker.has-notif #navbarNotifTickerContent i {
         color: #dc3545;
     }
 
@@ -161,12 +150,14 @@
         const listEl = document.getElementById('navbarNotifList');
         const badgeEl = document.getElementById('navbarNotifBadge');
         const tickerEl = document.getElementById('navbarNotifTicker');
+        const tickerContentEl = document.getElementById('navbarNotifTickerContent');
         const notifBtn = document.getElementById('navbarNotifBtn');
         if (!listEl || !badgeEl) return;
 
         const notifUrl = @json(route('notifications.active'));
         let tickerTimer = null;
         let tickerIndex = 0;
+        let tickerData = [];
 
         function escapeHtml(str) {
             const div = document.createElement('div');
@@ -199,54 +190,56 @@
             }).join('');
         }
 
-        // Ticker teks bergulir di navbar - pakai data notifikasi yang SAMA
-        // dengan dropdown lonceng di atas (satu fetch dipakai bersama).
+        // Ganti isi ticker dengan efek fade+geser sederhana (1 elemen teks,
+        // bukan ditumpuk) - teks lama pudar & naik dikit, baru isinya diganti
+        // saat sudah tak terlihat, lalu teks baru muncul dari bawah + memudar masuk.
+        function paintTickerItem(n) {
+            tickerContentEl.innerHTML = `<i class="bi ${n.icon}"></i><span>${escapeHtml(n.title)}: ${escapeHtml(n.message)}</span>`;
+        }
+
+        function showTickerItem(index) {
+            if (!tickerContentEl || !tickerData.length) return;
+            const n = tickerData[index];
+
+            tickerContentEl.style.opacity = '0';
+            tickerContentEl.style.transform = 'translateY(-6px)';
+
+            setTimeout(function () {
+                paintTickerItem(n);
+                tickerContentEl.style.transform = 'translateY(6px)';
+                requestAnimationFrame(function () {
+                    tickerContentEl.style.opacity = '1';
+                    tickerContentEl.style.transform = 'translateY(0)';
+                });
+            }, 300); // samakan dengan durasi transition di CSS
+        }
+
         function setupTicker(notifications) {
-            if (!tickerEl) return;
+            if (!tickerEl || !tickerContentEl) return;
 
             if (tickerTimer) {
                 clearInterval(tickerTimer);
                 tickerTimer = null;
             }
 
+            tickerData = notifications;
+
             if (!notifications.length) {
-                tickerEl.style.visibility = 'hidden';
                 tickerEl.classList.remove('has-notif');
-                tickerEl.innerHTML = '';
+                tickerContentEl.innerHTML = '';
                 return;
             }
 
             tickerEl.classList.add('has-notif');
-            tickerEl.innerHTML = notifications.map(function (n) {
-                return `
-                    <div class="ticker-item">
-                        <i class="bi ${n.icon}"></i>
-                        <span>${escapeHtml(n.title)}: ${escapeHtml(n.message)}</span>
-                    </div>
-                `;
-            }).join('');
-
-            tickerEl.style.visibility = 'visible';
             tickerIndex = 0;
+            paintTickerItem(tickerData[0]);
+            tickerContentEl.style.opacity = '1';
+            tickerContentEl.style.transform = 'translateY(0)';
 
-            const items = tickerEl.querySelectorAll('.ticker-item');
-            items[0].classList.add('active');
-
-            if (items.length > 1) {
+            if (tickerData.length > 1) {
                 tickerTimer = setInterval(function () {
-                    const current = items[tickerIndex];
-                    const nextIndex = (tickerIndex + 1) % items.length;
-                    const next = items[nextIndex];
-
-                    current.classList.remove('active');
-                    current.classList.add('leaving');
-                    next.classList.add('active');
-
-                    setTimeout(function () {
-                        current.classList.remove('leaving');
-                    }, 400); // samakan dengan durasi transition di CSS
-
-                    tickerIndex = nextIndex;
+                    tickerIndex = (tickerIndex + 1) % tickerData.length;
+                    showTickerItem(tickerIndex);
                 }, 5000);
             }
         }
