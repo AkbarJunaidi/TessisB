@@ -6,7 +6,7 @@
     <style>
         @page {
             size: a4 portrait;
-            margin: 0; /* full-bleed: kop atas & bawah 100% lebar halaman (2480px = 21cm @300dpi) */
+            margin: 1.8cm;
         }
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
@@ -17,35 +17,51 @@
             font-size: 10.5pt;
         }
 
-        /* KOP ATAS & BAWAH (letterhead) - tampil berulang di tiap halaman DOMPDF */
-        .kop-atas, .kop-bawah {
-            position: fixed;
-            left: 0;
-            right: 0;
+        /* HEADER */
+        .header-table {
             width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
         }
-        .kop-atas {
-            top: 0;
+        .header-table td {
+            vertical-align: middle;
         }
-        .kop-bawah {
-            bottom: 0;
+        .brand-name {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #1a3d8f;
+            margin: 0;
         }
-        .kop-atas img, .kop-bawah img {
-            width: 100%;
-            display: block;
+        .brand-sub {
+            font-size: 8pt;
+            color: #888888;
+            margin: 0;
         }
-        /* Margin isi dokumen: atas/bawah pas tinggi kop (5.03cm), kiri/kanan 1.8cm seperti semula */
-        .content-wrapper {
-            /* padding: 5.03cm 1.8cm; */
-            padding: 4.8cm 1.8cm;
-        }
-        .doc-title {
+        .header-title {
             text-align: center;
+        }
+        .report-title {
             font-size: 15pt;
             font-weight: bold;
             color: #1a3d8f;
+            margin: 0;
             letter-spacing: 0.5px;
-            margin: 0 0 14px 0;
+        }
+        .report-subtitle {
+            font-size: 9pt;
+            color: #1a3d8f;
+            letter-spacing: 1px;
+            margin: 2px 0 0 0;
+        }
+        .header-meta {
+            text-align: right;
+            font-size: 8.5pt;
+            color: #444444;
+        }
+        .header-rule {
+            border: none;
+            border-top: 2px solid #1a3d8f;
+            margin: 0 0 18px 0;
         }
 
         /* BAGIAN 1: FOTO + IDENTITAS */
@@ -174,32 +190,64 @@
             color: #777777;
         }
 
+        /* FOOTER */
+        .footer-container {
+            position: fixed;
+            bottom: 0px;
+            left: 0px;
+            right: 0px;
+            border-top: 2px solid #1a3d8f;
+            padding-top: 10px;
+            font-size: 8.5pt;
+            color: #666666;
+        }
+        .footer-table {
+            width: 100%;
+        }
+        .footer-right {
+            text-align: right;
+            font-size: 9pt;
+            font-weight: bold;
+            color: #1a3d8f;
+        }
     </style>
 </head>
 <body>
 
-    @php
-        $kopAtasPath = public_path('image/kopatas.png');
-        $kopAtasBase64 = file_exists($kopAtasPath)
-            ? 'data:' . mime_content_type($kopAtasPath) . ';base64,' . base64_encode(file_get_contents($kopAtasPath))
-            : '';
+    <table class="header-table">
+        <tr>
+            <td style="width: 30%;">
+                {{-- foto logo perusahaan --}}
+                @php
+                    $logoPath = public_path('image/logoAP.png');
+                    $logoBase64 = '';
+                    if (file_exists($logoPath)) {
+                        $logoType = mime_content_type($logoPath);
+                        $logoBase64 = 'data:' . $logoType . ';base64,' . base64_encode(file_get_contents($logoPath));
+                    }
+                @endphp
 
-        $kopBawahPath = public_path('image/kopbawah.png');
-        $kopBawahBase64 = file_exists($kopBawahPath)
-            ? 'data:' . mime_content_type($kopBawahPath) . ';base64,' . base64_encode(file_get_contents($kopBawahPath))
-            : '';
-    @endphp
+                @if($logoBase64)
+                    <img src="{{ $logoBase64 }}" alt="Logo" style="width: 180px; height: auto;">
+                @else
+                    <p class="brand-name">{{ config('app.name', 'TESSIS') }}</p>
+                @endif
 
-    @if($kopAtasBase64)
-        <div class="kop-atas"><img src="{{ $kopAtasBase64 }}" alt="Kop Atas"></div>
-    @endif
-    @if($kopBawahBase64)
-        <div class="kop-bawah"><img src="{{ $kopBawahBase64 }}" alt="Kop Bawah"></div>
-    @endif
 
-    <div class="content-wrapper">
+                {{-- <p class="brand-sub">CV. Arindra Production</p> --}}
 
-    <p class="doc-title">INVENTORY REPORT</p>
+            </td>
+            <td class="header-title" style="width: 40%;">
+                <p class="report-title">INVENTORY REPORT</p>
+                {{-- <p class="report-subtitle">LAPORAN INFORMASI ASET</p> --}}
+            </td>
+            <td class="header-meta" style="width: 30%;">
+                Generated :<br>
+                {{ $exportDate }}
+            </td>
+        </tr>
+    </table>
+    <hr class="header-rule">
 
     <!-- Bagian 1: Foto Barang & Informasi Identitas -->
     <table class="section-table">
@@ -300,7 +348,20 @@
         </tr>
     </table>
 
-    </div><!-- /content-wrapper -->
+    <div class="footer-container">
+        <table class="footer-table">
+            <tr>
+                <td>
+                    Dicetak oleh<br>
+                    {{ auth()->user()->name ?? 'Admin' }}<br>
+                    {{ $exportDate }}
+                </td>
+                <td class="footer-right">
+                    CV. Arindra Production<br>
+                </td>
+            </tr>
+        </table>
+    </div>
 
 </body>
 </html>
