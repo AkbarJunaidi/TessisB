@@ -1,8 +1,7 @@
 <nav class="app-topbar navbar navbar-expand-lg border-bottom bg-white px-3 px-md-4 py-2">
     <div class="container-fluid p-0">
 
-        {{-- Tombol buka sidebar: pakai atribut Bootstrap native (data-bs-toggle),
-             otomatis accessible (aria, focus-trap, keyboard Esc) tanpa JS tambahan. --}}
+        {{-- Tombol buka sidebar --}}
         <button class="btn btn-light border rounded-3 me-3 d-lg-none" type="button"
                 data-bs-toggle="offcanvas" data-bs-target="#appSidebar" aria-controls="appSidebar"
                 aria-label="Buka menu navigasi">
@@ -19,22 +18,8 @@
                 </span>
             </div>
 
-            {{-- Ticker notifikasi - teks pesan notifikasi aktif bergulir, berganti
-                 otomatis tiap beberapa detik. Sumber datanya SAMA dengan dropdown
-                 lonceng di kanan (satu fetch dipakai bersama, tidak dobel request).
-
-                 DIROMBAK TOTAL dari versi sebelumnya: dulu pakai beberapa elemen
-                 ditumpuk position:absolute (supaya bisa animasi geser), tapi itu
-                 yang bikin kapsulnya rusak/oval besar - karena elemen absolute
-                 tidak ikut dihitung lebar oleh CSS, jadi lebar kapsul harus
-                 dihitung manual lewat JS, dan gampang meleset timing-nya.
-
-                 SEKARANG cuma 1 elemen teks (TIDAK ditumpuk, TIDAK absolute).
-                 Efeknya: lebar kapsul otomatis mengikuti panjang teks lewat CSS
-                 biasa (flow dokumen normal) - TIDAK PERLU JS hitung lebar sama
-                 sekali, jadi tidak ada lagi celah untuk timing yang meleset. --}}
+            {{-- Ticker notifikasi, sumber data sama dengan dropdown lonceng --}}
             @if(auth()->user()->hasRole('super_admin', 'admin'))
-                <div class="vr d-none d-lg-block" style="opacity: .15; height: 28px;"></div>
                 <div class="rounded-pill" id="navbarNotifTicker">
                     <div class="d-flex align-items-center gap-2" id="navbarNotifTickerContent"></div>
                 </div>
@@ -43,9 +28,7 @@
 
         <div class="ms-auto d-flex align-items-center gap-2 gap-md-3">
 
-            {{-- Notifikasi navbar - Super Admin & Admin saja (sama seperti gate
-                 di NotificationController), supaya Employee tidak memicu fetch
-                 yang toh akan ditolak 403 oleh backend. --}}
+            {{-- Notifikasi navbar - Super Admin & Admin saja --}}
             @if(auth()->user()->hasRole('super_admin', 'admin'))
                 <div class="dropdown">
                     <button type="button" class="btn btn-light border rounded-circle position-relative d-flex align-items-center justify-content-center navbar-notif-btn"
@@ -80,16 +63,14 @@
     .app-topbar { position: sticky; top: 0; z-index: 1030; }
     .text-navy { color: var(--c-navy); }
 
-    /* Kapsul ticker - satu elemen teks saja (bukan ditumpuk absolute),
-       lebarnya otomatis mengikuti panjang teks lewat flow CSS normal. */
     #navbarNotifTicker {
         height: 40px;
-        padding: 0 8px; /* jarak dalam kapsul - ganti angka ini kalau mau lebih renggang/rapat */
-        display: none; /* default: disembunyikan, JS yang membuka jadi flex kalau ada notifikasi */
+        padding: 0 8px;
+        display: none;
         align-items: center;
         white-space: nowrap;
     }
-    @media (min-width: 992px) {
+    @media (min-width: 1156px) {
         #navbarNotifTicker.has-notif { display: flex; }
     }
     #navbarNotifTicker #navbarNotifTickerContent {
@@ -97,7 +78,7 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 360px; /* jaring pengaman - pesan sangat panjang tetap dipotong rapi, tidak mendorong navbar */
+        max-width: 360px;
         transition: opacity .3s ease, transform .3s ease;
     }
     #navbarNotifTicker.has-notif {
@@ -112,9 +93,6 @@
         color: #dc3545;
     }
 
-    /* Ikon lonceng ikut "menyala" (bukan cuma badge angkanya) begitu ada
-       notifikasi aktif - supaya lebih kerasa ada sesuatu yang perlu
-       diperhatikan, bukan cuma ikon netral seperti biasa. */
     .navbar-notif-btn.has-notif {
         background-color: #fff1f0 !important;
         border-color: #ffb3ae !important;
@@ -142,10 +120,7 @@
 
 @if(auth()->user()->hasRole('super_admin', 'admin'))
 <script>
-    // Notifikasi navbar - fetch dari endpoint yang sudah ada
-    // (notifications.active), di-poll berkala. Data selalu dihitung
-    // langsung oleh backend (bukan read/unread tersimpan), jadi cukup
-    // render ulang seluruh list tiap fetch, tidak perlu state tambahan.
+    // Notifikasi navbar, poll berkala dari endpoint notifications.active
     (function () {
         const listEl = document.getElementById('navbarNotifList');
         const badgeEl = document.getElementById('navbarNotifBadge');
@@ -190,9 +165,6 @@
             }).join('');
         }
 
-        // Ganti isi ticker dengan efek fade+geser sederhana (1 elemen teks,
-        // bukan ditumpuk) - teks lama pudar & naik dikit, baru isinya diganti
-        // saat sudah tak terlihat, lalu teks baru muncul dari bawah + memudar masuk.
         function paintTickerItem(n) {
             tickerContentEl.innerHTML = `<i class="bi ${n.icon}"></i><span>${escapeHtml(n.title)}: ${escapeHtml(n.message)}</span>`;
         }
@@ -211,7 +183,7 @@
                     tickerContentEl.style.opacity = '1';
                     tickerContentEl.style.transform = 'translateY(0)';
                 });
-            }, 300); // samakan dengan durasi transition di CSS
+            }, 300);
         }
 
         function setupTicker(notifications) {
@@ -261,7 +233,7 @@
         }
 
         loadNotifications();
-        setInterval(loadNotifications, 60000); // poll tiap 60 detik
+        setInterval(loadNotifications, 60000);
     })();
 </script>
 @endif

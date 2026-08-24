@@ -57,37 +57,33 @@
     </div>
 
     <!-- Header Page Mobile (Sederhana) -->
-    <div class="d-md-none d-flex align-items-center justify-content-between mb-3 px-1">
-        <div>
-            <h4 class="fw-bold text-dark m-0 d-flex align-items-center gap-2 flex-wrap">
-                {{ $inventory->name }}
-                @switch($inventory->display_status)
-                    @case('Tersedia')
-                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.6rem;">TERSEDIA</span>
-                        @break
-                    @case('Dipinjam')
-                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.6rem;">DIPINJAM</span>
-                        @break
-                    @case('Perbaikan')
-                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.6rem;">PERBAIKAN</span>
-                        @break
-                    @case('Rusak')
-                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.6rem;">RUSAK</span>
-                        @break
-                    @case('Hilang')
-                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.6rem;">HILANG</span>
-                        @break
-                    @default
-                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.6rem;">{{ strtoupper($inventory->display_status ?? 'TERSEDIA') }}</span>
-                @endswitch
-            </h4>
-            <p class="text-muted small m-0">Informasi lengkap aset barang</p>
+    <div class="d-md-none mb-3 px-1">
+        <div class="d-flex align-items-center justify-content-between gap-2">
+            <h4 class="fw-bold text-dark m-0">{{ $inventory->name }}</h4>
+            @switch($inventory->display_status)
+                @case('Tersedia')
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> TERSEDIA</span>
+                    @break
+                @case('Dipinjam')
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> DIPINJAM</span>
+                    @break
+                @case('Perbaikan')
+                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> PERBAIKAN</span>
+                    @break
+                @case('Rusak')
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> RUSAK</span>
+                    @break
+                @case('Hilang')
+                    <span class="badge bg-dark-subtle text-dark border border-dark-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> HILANG</span>
+                    @break
+                @default
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> {{ strtoupper($inventory->display_status ?? 'TERSEDIA') }}</span>
+            @endswitch
         </div>
-        @if(auth()->user()->hasPermission('inventory', 'edit'))
-        <a href="{{ route('inventory.edit', $inventory->id) }}" class="btn btn-sm btn-outline-primary fw-medium rounded-2">
-            <i class="bi bi-pencil me-1"></i> Edit Aset
+        <p class="text-muted small mb-2">Informasi lengkap aset barang</p>
+        <a href="{{ route('inventory.index') }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-2 fw-medium">
+            <i class="bi bi-arrow-left"></i> Kembali
         </a>
-        @endif
     </div>
 
     <!-- Alert Success -->
@@ -103,31 +99,6 @@
     <div class="d-md-none">
         <div class="card shadow-sm border-0 rounded-4 bg-white mb-4">
             <div class="card-body p-4">
-
-                <!-- Badge Status & Edit Aset Row -->
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div>
-                        @switch($inventory->display_status)
-                            @case('Tersedia')
-                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> TERSEDIA</span>
-                                @break
-                            @case('Dipinjam')
-                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> DIPINJAM</span>
-                                @break
-                            @case('Perbaikan')
-                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> PERBAIKAN</span>
-                                @break
-                            @case('Rusak')
-                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> RUSAK</span>
-                                @break
-                            @case('Hilang')
-                                <span class="badge bg-dark-subtle text-dark border border-dark-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> HILANG</span>
-                                @break
-                            @default
-                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> {{ strtoupper($inventory->status ?? 'TERSEDIA') }}</span>
-                        @endswitch
-                    </div>
-                </div>
 
                 <!-- Foto Utama Barang -->
                 <div class="text-center my-3 py-2">
@@ -421,33 +392,30 @@
 </div>
 
 
-<!-- FIXED BOTTOM ACTION BAR UNTUK MOBILE (SEPERTI CONTOH GAMBAR) -->
-<div class="d-md-none fixed-bottom bg-white border-top shadow-lg py-2 px-3">
-    <div class="row g-2 text-center">
-        <div class="col-3">
-            <a href="{{ route('inventory.preview-qr', $inventory->id) }}" target="_blank" class="btn btn-light border w-100 py-2 rounded-3 text-primary d-flex flex-column align-items-center justify-content-center">
-                <i class="bi bi-qr-code-scan fs-5 mb-1"></i>
-                <span style="font-size: 0.65rem;" class="fw-semibold text-dark">Preview QR</span>
-            </a>
-        </div>
-        <div class="col-3">
-            <a href="{{ route('inventory.preview', $inventory->id) }}" target="_blank" class="btn btn-light border w-100 py-2 rounded-3 text-primary d-flex flex-column align-items-center justify-content-center">
-                <i class="bi bi-file-earmark-pdf fs-5 mb-1"></i>
-                <span style="font-size: 0.65rem;" class="fw-semibold text-dark">Preview Report</span>
-            </a>
-        </div>
-        <div class="col-3">
-            <a href="{{ route('inventory.download', $inventory->id) }}" class="btn btn-light border w-100 py-2 rounded-3 text-success d-flex flex-column align-items-center justify-content-center">
-                <i class="bi bi-download fs-5 mb-1"></i>
-                <span style="font-size: 0.65rem;" class="fw-semibold text-dark">Download Report</span>
-            </a>
-        </div>
-        <div class="col-3">
-            <a href="{{ route('inventory.index') }}" class="btn btn-light border w-100 py-2 rounded-3 text-secondary d-flex flex-column align-items-center justify-content-center">
-                <i class="bi bi-arrow-left fs-5 mb-1"></i>
-                <span style="font-size: 0.65rem;" class="fw-semibold text-dark">Kembali</span>
-            </a>
-        </div>
+<!-- FIXED BOTTOM ACTION BAR UNTUK MOBILE (STYLE SAMA DENGAN BOTTOM NAV DETAIL PROJECT) -->
+<nav class="d-md-none fixed-bottom bg-white border-top shadow-sm">
+    <div class="d-flex justify-content-around py-2">
+        @if(auth()->user()->hasPermission('inventory', 'edit'))
+        <a href="{{ route('inventory.edit', $inventory->id) }}" class="text-center text-decoration-none text-secondary small inventory-mobile-nav-link">
+            <i class="bi bi-pencil-square d-block fs-5"></i>Edit
+        </a>
+        @endif
+        <a href="{{ route('inventory.preview-qr', $inventory->id) }}" target="_blank" class="text-center text-decoration-none text-secondary small inventory-mobile-nav-link">
+            <i class="bi bi-qr-code d-block fs-5"></i>Download QR
+        </a>
+        <a href="{{ route('inventory.preview', $inventory->id) }}" target="_blank" class="text-center text-decoration-none text-secondary small inventory-mobile-nav-link">
+            <i class="bi bi-file-earmark-pdf d-block fs-5"></i> preview
+        </a>
+        <a href="{{ route('inventory.download', $inventory->id) }}" class="text-center text-decoration-none text-secondary small inventory-mobile-nav-link">
+            <i class="bi bi-download d-block fs-5"></i> download
+        </a>
     </div>
-</div>
+</nav>
+
+<style>
+    .inventory-mobile-nav-link:active,
+    .inventory-mobile-nav-link:focus {
+        color: var(--bs-primary) !important;
+    }
+</style>
 @endsection

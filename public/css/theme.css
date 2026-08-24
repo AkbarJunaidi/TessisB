@@ -103,6 +103,12 @@ button:focus-visible,
 .border-primary { border-color: var(--c-primary) !important; }
 .bg-primary-subtle { background-color: var(--bg-soft) !important; }
 
+/* .bg-primary di atas pakai !important solid, jadi menimpa mekanisme
+   opacity Bootstrap (.bg-opacity-10 dkk) kalau dipakai bersamaan -
+   akibatnya kotak ikon yang harusnya biru pudar malah jadi biru penuh
+   dan ikonnya (text-primary, warna sama) jadi tidak kelihatan. */
+.bg-primary.bg-opacity-10 { background-color: rgba(var(--c-primary-rgb), .1) !important; }
+
 .form-control, .form-select {
     border-radius: var(--radius-sm);
     border-color: var(--c-border);
@@ -159,7 +165,8 @@ button:focus-visible,
     box-shadow: var(--shadow-md);
     transform: translateY(-3px);
 }
-.stat-card .icon-tile {
+.stat-card .icon-tile,
+.icon-tile {
     width: 46px; height: 46px;
     border-radius: var(--radius-sm);
     display: flex; align-items: center; justify-content: center;

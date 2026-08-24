@@ -77,46 +77,108 @@
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm rounded-3 h-100">
                 <div class="card-body">
-                    <h5 class="fw-bold mb-3">{{ $project->category ?: '-' }}</h5>
-                    <div class="row g-3 small">
-                        <div class="col-md-6">
-                            <div class="text-muted">Client</div>
-                            <div class="fw-semibold">{{ $project->client }}</div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="text-muted">PIC</div>
-                            <div class="fw-semibold">{{ $project->pic }}</div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="text-muted">Tanggal Acara</div>
-                            <div class="fw-semibold">
-                                {{ optional($project->event_date)->translatedFormat('d F Y') }}
-                                @if($project->event_end_date && !$project->event_end_date->isSameDay($project->event_date))
-                                    &ndash; {{ $project->event_end_date->translatedFormat('d F Y') }}
-                                @endif
+                    <h5 class="fw-bold mb-3 d-none d-md-block">{{ $project->category ?: '-' }}</h5>
+
+                    {{-- Desktop: grid 2 kolom (asli, tidak berubah) --}}
+                    <div class="d-none d-md-block">
+                        <div class="row g-3 small">
+                            <div class="col-md-6">
+                                <div class="text-muted">Client</div>
+                                <div class="fw-semibold">{{ $project->client }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-muted">PIC</div>
+                                <div class="fw-semibold">{{ $project->pic }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-muted">Tanggal Acara</div>
+                                <div class="fw-semibold">
+                                    {{ optional($project->event_date)->translatedFormat('d F Y') }}
+                                    @if($project->event_end_date && !$project->event_end_date->isSameDay($project->event_date))
+                                        &ndash; {{ $project->event_end_date->translatedFormat('d F Y') }}
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-muted">Jam Acara</div>
+                                <div class="fw-semibold">{{ substr($project->event_time_start ?? '', 0, 5) }}{{ $project->event_time_end ? ' - '.substr($project->event_time_end, 0, 5) : '' }} WIB</div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-muted">Lokasi / Venue</div>
+                                <div class="fw-semibold">{{ $project->location }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-muted">Alamat Lengkap</div>
+                                <div class="fw-semibold">{{ $project->address }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-muted">Estimasi Durasi</div>
+                                <div class="fw-semibold">{{ $project->estimated_duration_minutes ? round($project->estimated_duration_minutes / 60, 1).' jam' : '-' }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-muted">Prioritas</div>
+                                <div class="fw-semibold">{{ $project->priority }}</div>
+                            </div>
+                            <div class="col-12">
+                                <div class="text-muted">Deskripsi Project</div>
+                                <div>{{ $project->description ?: '-' }}</div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="text-muted">Jam Acara</div>
-                            <div class="fw-semibold">{{ substr($project->event_time_start ?? '', 0, 5) }}{{ $project->event_time_end ? ' - '.substr($project->event_time_end, 0, 5) : '' }} WIB</div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="text-muted">Lokasi / Venue</div>
-                            <div class="fw-semibold">{{ $project->location }}</div>
-                        </div>
-                        <div class="col-md-6">
+                    </div>
+
+                    {{-- Mobile: label kiri - nilai kanan, mirip Informasi Identitas Aset di Detail Inventory --}}
+                    <div class="d-md-none">
+                        <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                            <i class="bi bi-info-circle text-primary"></i> Informasi Project
+                        </h6>
+                        <table class="table table-borderless table-sm small align-middle mb-3">
+                            <tbody>
+                                <tr>
+                                    <td class="text-muted py-2 ps-0" style="width: 40%;">Kategori</td>
+                                    <td class="fw-bold text-dark py-2 text-end">{{ $project->category ?: '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted py-2 ps-0" style="width: 40%;">Client</td>
+                                    <td class="fw-bold text-dark py-2 text-end">{{ $project->client }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted py-2 ps-0">PIC</td>
+                                    <td class="fw-bold text-dark py-2 text-end">{{ $project->pic }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted py-2 ps-0">Tanggal Acara</td>
+                                    <td class="fw-bold text-dark py-2 text-end">
+                                        {{ optional($project->event_date)->translatedFormat('d F Y') }}
+                                        @if($project->event_end_date && !$project->event_end_date->isSameDay($project->event_date))
+                                            &ndash; {{ $project->event_end_date->translatedFormat('d F Y') }}
+                                        @endif
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted py-2 ps-0">Jam Acara</td>
+                                    <td class="fw-bold text-dark py-2 text-end">{{ substr($project->event_time_start ?? '', 0, 5) }}{{ $project->event_time_end ? ' - '.substr($project->event_time_end, 0, 5) : '' }} WIB</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted py-2 ps-0">Estimasi Durasi</td>
+                                    <td class="fw-bold text-dark py-2 text-end">{{ $project->estimated_duration_minutes ? round($project->estimated_duration_minutes / 60, 1).' jam' : '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted py-2 ps-0">Prioritas</td>
+                                    <td class="fw-bold text-dark py-2 text-end">{{ $project->priority }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted py-2 ps-0">Lokasi / Venue</td>
+                                    <td class="fw-bold text-dark py-2 text-end">{{ $project->location }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="mb-3 small">
                             <div class="text-muted">Alamat Lengkap</div>
                             <div class="fw-semibold">{{ $project->address }}</div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="text-muted">Estimasi Durasi</div>
-                            <div class="fw-semibold">{{ $project->estimated_duration_minutes ? round($project->estimated_duration_minutes / 60, 1).' jam' : '-' }}</div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="text-muted">Prioritas</div>
-                            <div class="fw-semibold">{{ $project->priority }}</div>
-                        </div>
-                        <div class="col-12">
+
+                        <div class="small">
                             <div class="text-muted">Deskripsi Project</div>
                             <div>{{ $project->description ?: '-' }}</div>
                         </div>
