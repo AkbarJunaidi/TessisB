@@ -415,6 +415,17 @@ button:focus-visible,
         text-align: left;
     }
 
+    /* Label field lepas (bukan tabel) - dipakai di kartu custom seperti tab
+       Surat Jalan mobile, supaya "rasa baca"-nya konsisten dengan label
+       data-label di atas: bold, uppercase, letter-spacing, kecil, muted. */
+    .field-label {
+        font-weight: 700;
+        font-size: .7rem;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        color: var(--c-muted);
+    }
+
     /* Sel tanpa data-label (baris kosong/pesan) - polos, tanpa label, rata tengah */
     .table-stack td:not([data-label]) {
         display: block;

@@ -5,7 +5,64 @@
     <div class="card-body p-4">
         <h6 class="fw-bold mb-3">Surat Jalan Project Ini</h6>
 
-        <div class="table-responsive">
+        {{-- ===== MOBILE: satu kartu per Surat Jalan ===== --}}
+        <div class="d-md-none">
+            @forelse($project->suratJalans as $sj)
+                <div class="border rounded-3 p-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">{{ $sj->nomor }}</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge {{ $sj->status === 'Selesai' ? 'bg-secondary' : 'bg-success' }}">{{ $sj->status }}</span>
+                            <button type="button" class="btn btn-sm btn-link text-muted p-0" data-bs-toggle="collapse" data-bs-target="#sjDetailMobile{{ $sj->id }}">
+                                <i class="bi bi-chevron-down small"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <hr class="my-2">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="field-label">Keperluan</span>
+                        <span class="text-end">{{ $sj->keperluan ?: '-' }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="field-label">Tanggal Terbit</span>
+                        <span>{{ \Carbon\Carbon::parse($sj->tanggal_terbit)->translatedFormat('d M Y') }}</span>
+                    </div>
+
+                    <div class="collapse" id="sjDetailMobile{{ $sj->id }}">
+                        <div class="bg-light rounded p-2 mb-3">
+                            @foreach($sj->items as $item)
+                                @php $sisa = $item->qty_dipakai - $item->qty_dikembalikan; @endphp
+                                <div class="d-flex justify-content-between align-items-center small py-1 {{ !$loop->last ? 'border-bottom' : '' }}">
+                                    <span>{{ $item->inventory->name ?? '-' }} <span class="text-muted">({{ $item->qty_dipakai }} dipakai, {{ $item->qty_dikembalikan }} kembali)</span></span>
+                                    <span class="badge {{ $sisa > 0 ? 'bg-warning-subtle text-warning' : 'bg-success-subtle text-success' }}">Sisa {{ $sisa }}</span>
+                                </div>
+                                @if($sisa > 0 && auth()->user()->hasPermission('borrowed_items', 'process_return'))
+                                    <form action="{{ route('surat-jalan.items.return', $item) }}" method="POST" class="d-flex gap-1 mt-1 mb-2">
+                                        @csrf
+                                        <input type="number" name="qty" min="1" max="{{ $sisa }}" value="{{ $sisa }}" class="form-control form-control-sm" style="width:70px;">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary flex-fill">Kembalikan</button>
+                                    </form>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('surat-jalan.preview', $sj) }}" target="_blank" class="btn btn-sm btn-outline-primary flex-fill">
+                            <i class="bi bi-eye"></i> Preview
+                        </a>
+                        <a href="{{ route('surat-jalan.download', $sj) }}" class="btn btn-sm btn-primary flex-fill">
+                            <i class="bi bi-download"></i> Download
+                        </a>
+                    </div>
+                </div>
+            @empty
+                <p class="text-center text-muted py-4 mb-0">Belum ada Surat Jalan untuk project ini.</p>
+            @endforelse
+        </div>
+
+        {{-- ===== DESKTOP: tabel ===== --}}
+        <div class="table-responsive d-none d-md-block">
             <table class="table align-middle">
                 <thead>
                     <tr class="text-muted small">
@@ -91,7 +148,10 @@
 </div>
 
 <script>
-    // Putar ikon chevron saat baris Surat Jalan di-expand/collapse
+    // Putar ikon chevron saat baris/kartu Surat Jalan di-expand/collapse.
+    // Selector ini otomatis mencakup dua bentuk id ("#sjDetail123" milik
+    // tabel desktop, dan "#sjDetailMobile123" milik kartu mobile) karena
+    // keduanya sama-sama diawali "#sjDetail".
     document.querySelectorAll('[data-bs-target^="#sjDetail"]').forEach(function (row) {
         const targetId = row.getAttribute('data-bs-target');
         const collapseEl = document.querySelector(targetId);
