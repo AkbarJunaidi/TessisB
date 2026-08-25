@@ -456,31 +456,48 @@
         });
     });
 
-    // "Lihat Surat Jalan" di dropdown header: pindah tab (dengan memicu tombol tab
-    // aslinya secara langsung, supaya Bootstrap benar-benar menonaktifkan tab yang
-    // sedang aktif) + scroll ke section tab-nya + sinkronkan bottom nav mobile
+    // "Lihat Surat Jalan" di dropdown header, DAN link "Surat Jalan" di halaman
+    // daftar project (kolom SURAT JALAN): keduanya perlu pindah tab (dengan memicu
+    // tombol tab aslinya secara langsung, supaya Bootstrap benar-benar menonaktifkan
+    // tab yang sedang aktif) + scroll ke section tab-nya + sinkronkan bottom nav mobile.
+    function goToSuratJalanTab() {
+        const realTabButton = document.querySelector('#projectTabs [data-bs-target="#tab-suratjalan"]');
+        if (realTabButton) {
+            bootstrap.Tab.getOrCreateInstance(realTabButton).show();
+        }
+
+        // Sinkronkan highlight bottom nav mobile juga
+        document.querySelectorAll('.mobile-tab-link').forEach(l => l.classList.remove('active', 'text-primary'));
+        const mobileLink = document.querySelector('.mobile-tab-link[href="#tab-suratjalan"]');
+        if (mobileLink) mobileLink.classList.add('active', 'text-primary');
+
+        setTimeout(function () {
+            // Sama seperti di atas - target .tab-content, bukan #projectTabs
+            // yang tersembunyi ("d-none") di mobile.
+            const tabsSection = document.getElementById('projectTabContent');
+            if (tabsSection) tabsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 50);
+    }
+
     document.querySelectorAll('.go-to-surat-jalan-tab').forEach(function (link) {
         link.addEventListener('click', function (e) {
             e.preventDefault();
-
-            const realTabButton = document.querySelector('#projectTabs [data-bs-target="#tab-suratjalan"]');
-            if (realTabButton) {
-                bootstrap.Tab.getOrCreateInstance(realTabButton).show();
-            }
-
-            // Sinkronkan highlight bottom nav mobile juga
-            document.querySelectorAll('.mobile-tab-link').forEach(l => l.classList.remove('active', 'text-primary'));
-            const mobileLink = document.querySelector('.mobile-tab-link[href="#tab-suratjalan"]');
-            if (mobileLink) mobileLink.classList.add('active', 'text-primary');
-
-            setTimeout(function () {
-                // Sama seperti di atas - target .tab-content, bukan #projectTabs
-                // yang tersembunyi ("d-none") di mobile.
-                const tabsSection = document.getElementById('projectTabContent');
-                if (tabsSection) tabsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 50);
+            goToSuratJalanTab();
         });
     });
+
+    // Datang dari halaman lain (mis. link "Surat Jalan" di daftar project) lewat
+    // URL berakhiran #tab-suratjalan: langsung buka tab-nya begitu halaman siap.
+    // PENTING: dibungkus DOMContentLoaded - script bootstrap.bundle.min.js baru
+    // dimuat lebih bawah di layouts/app.blade.php (setelah @yield('content')
+    // tempat blok script ini ikut ter-render), jadi kalau dipanggil langsung di
+    // sini, `bootstrap` masih undefined dan pemanggilannya diam-diam gagal.
+    document.addEventListener('DOMContentLoaded', function () {
+        if (window.location.hash === '#tab-suratjalan') {
+            goToSuratJalanTab();
+        }
+    });
+
 </script>
 
 {{-- Script Data Keuangan: tambah/hapus baris + kalkulasi total live (client-side) --}}

@@ -256,7 +256,7 @@
                                 </td>
                                 <td class="py-3" data-label="Surat Jalan">
                                     @if($project->suratJalans->isNotEmpty())
-                                        <a href="{{ route('surat-jalan.show', $project->suratJalans->first()) }}" class="text-primary">{{ $project->suratJalans->first()->nomor }}</a>
+                                        <a href="{{ route('projects.show', $project) }}#tab-suratjalan" class="text-primary">{{ $project->suratJalans->first()->nomor }}</a>
                                     @else
                                         <span class="text-muted">-</span>
                                     @endif
