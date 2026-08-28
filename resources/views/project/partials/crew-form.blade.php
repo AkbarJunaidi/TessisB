@@ -47,7 +47,7 @@
                             <div class="row g-2 mb-2 crew-row">
                                 <div class="col-6">
                                     <input type="text" name="crew[{{ $index }}][name]" class="form-control form-control-sm"
-                                           placeholder="Nama crew" value="{{ $crew->name }}" required>
+                                           placeholder="Nama crew" value="{{ $crew->name }}" required maxlength="80">
                                 </div>
                                 <div class="col-5">
                                     <input type="text" name="crew[{{ $index }}][role_label]" class="form-control form-control-sm"
@@ -77,7 +77,7 @@
     <div class="row g-2 mb-2 crew-row">
         <div class="col-6">
             <input type="text" name="crew[__INDEX__][name]" class="form-control form-control-sm"
-                   placeholder="Nama crew" required>
+                   placeholder="Nama crew" required maxlength="80">
         </div>
         <div class="col-5">
             <input type="text" name="crew[__INDEX__][role_label]" class="form-control form-control-sm"

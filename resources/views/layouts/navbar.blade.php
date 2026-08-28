@@ -1,16 +1,16 @@
 <nav class="app-topbar navbar navbar-expand-lg border-bottom bg-white px-3 px-md-4 py-2">
-    <div class="container-fluid p-0">
+    <div class="container-fluid p-0 flex-nowrap">
 
         {{-- Tombol buka sidebar --}}
-        <button class="btn btn-light border rounded-3 me-3 d-lg-none" type="button"
+        <button class="btn btn-light border rounded-3 me-3 d-lg-none flex-shrink-0" type="button"
                 data-bs-toggle="offcanvas" data-bs-target="#appSidebar" aria-controls="appSidebar"
                 aria-label="Buka menu navigasi">
             <i class="bi bi-list fs-5"></i>
         </button>
 
-        <div class="d-flex align-items-center gap-3">
-            <div>
-                <span class="fw-semibold text-navy d-block" style="font-size:.95rem;">
+        <div class="d-flex align-items-center gap-4" style="min-width:0;">
+            <div style="min-width:0;">
+                <span class="fw-semibold text-navy d-block navbar-page-title" style="font-size:.95rem;">
                     @yield('title', 'Dashboard')
                 </span>
                 <span class="text-muted d-none d-sm-block" style="font-size:.72rem;">
@@ -26,7 +26,7 @@
             @endif
         </div>
 
-        <div class="ms-auto d-flex align-items-center gap-2 gap-md-3">
+        <div class="ms-auto d-flex align-items-center gap-2 gap-md-3 flex-shrink-0">
 
             {{-- Notifikasi navbar - Super Admin & Admin saja --}}
             @if(auth()->user()->hasRole('super_admin', 'admin'))
@@ -63,12 +63,24 @@
     .app-topbar { position: sticky; top: 0; z-index: 1030; }
     .text-navy { color: var(--c-navy); }
 
+    /* Judul halaman di navbar: kalau nama project/barang bikin teks
+       kepanjangan untuk lebar layar yang tersedia, potong dengan "...".
+       Prefiks ("Detail Project - ", dst) tetap dipertahankan selama
+       muat; hanya bagian yang kelebihan yang dipotong. */
+    .navbar-page-title {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+
     #navbarNotifTicker {
         height: 40px;
         padding: 0 8px;
         display: none;
         align-items: center;
         white-space: nowrap;
+        margin-right: 1.5rem; /* jarak tetap ke ikon lonceng, tidak bergantung sisa ruang flex */
     }
     @media (min-width: 1156px) {
         #navbarNotifTicker.has-notif { display: flex; }

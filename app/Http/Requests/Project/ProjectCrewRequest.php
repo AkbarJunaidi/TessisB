@@ -15,7 +15,7 @@ class ProjectCrewRequest extends FormRequest
     {
         return [
             'crew'              => ['nullable', 'array'],
-            'crew.*.name'       => ['required', 'string', 'max:255'],
+            'crew.*.name'       => ['required', 'string', 'max:80'],
             'crew.*.role_label' => ['required', 'string', 'max:100'],
         ];
     }
@@ -24,6 +24,7 @@ class ProjectCrewRequest extends FormRequest
     {
         return [
             'crew.*.name.required'       => 'Nama crew wajib diisi.',
+            'crew.*.name.max'            => 'Nama crew maksimal 80 karakter.',
             'crew.*.role_label.required' => 'Peran (role) crew wajib diisi, contoh: Videographer.',
         ];
     }

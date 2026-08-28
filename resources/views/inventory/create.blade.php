@@ -50,6 +50,7 @@
                                placeholder="Contoh: Laptop ASUS ROG Strix"
                                value="{{ old('name') }}"
                                required
+                               maxlength="100"
                                autofocus>
                         @error('name')
                             <div class="invalid-feedback">

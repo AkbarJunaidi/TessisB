@@ -25,7 +25,7 @@ class InventoryRequest extends FormRequest
         $inventoryId = $this->route('inventory') ? ($this->route('inventory')->id ?? $this->route('inventory')) : null;
 
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:100'],
             'serial_number' => [
                 'required',
                 'string',
@@ -79,7 +79,7 @@ class InventoryRequest extends FormRequest
     {
         return [
             'name.required' => 'Nama barang wajib diisi.',
-            'name.max' => 'Nama barang maksimal 255 karakter.',
+            'name.max' => 'Nama barang maksimal 100 karakter agar rapi ditampilkan di tabel, kartu, dan laporan PDF.',
             'serial_number.required' => 'Serial number wajib diisi.',
             'serial_number.unique' => 'Serial number ini sudah terdaftar di sistem.',
             'status.required' => 'Status barang wajib dipilih.',

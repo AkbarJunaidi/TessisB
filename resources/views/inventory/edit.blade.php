@@ -49,7 +49,8 @@
                                id="name"
                                class="form-control @error('name') is-invalid @enderror"
                                value="{{ old('name', $inventory->name) }}"
-                               required>
+                               required
+                               maxlength="100">
                         @error('name')
                             <div class="invalid-feedback">
                                 <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ $message }}

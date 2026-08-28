@@ -16,7 +16,7 @@ class ProjectRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'        => ['required', 'string', 'max:255'],
+            'name'        => ['required', 'string', 'max:100'],
             'client'      => ['required', 'string', 'max:255'],
             'pic'         => ['required', 'string', 'max:255'],
             'category'    => ['required', 'string', 'max:100'],
@@ -55,6 +55,7 @@ class ProjectRequest extends FormRequest
     {
         return [
             'name.required'     => 'Nama project wajib diisi.',
+            'name.max'          => 'Nama project maksimal 100 karakter agar rapi ditampilkan di tabel, kartu, dan laporan PDF.',
             'client.required'   => 'Nama client wajib diisi.',
             'pic.required'      => 'PIC wajib diisi.',
             'category.required' => 'Kategori project wajib dipilih.',
