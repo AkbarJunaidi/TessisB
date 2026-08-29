@@ -12,9 +12,14 @@ class UserService
 {
     protected ActivityLogService $activityLogService;
 
-    public function __construct(ActivityLogService $activityLogService)
-    {
+    protected PasswordResetRequestService $passwordResetRequestService;
+
+    public function __construct(
+        ActivityLogService $activityLogService,
+        PasswordResetRequestService $passwordResetRequestService
+    ) {
         $this->activityLogService = $activityLogService;
+        $this->passwordResetRequestService = $passwordResetRequestService;
     }
 
     /**
@@ -124,15 +129,32 @@ class UserService
     }
 
     /**
-     * Reset password user.
+     * Reset password user ke password baru yang diinput Super Admin.
+     *
+     * Password baru disimpan di kolom `temp_password_plain` (plaintext)
+     * supaya bisa ditampilkan lagi di halaman Detail User - dipakai Super
+     * Admin untuk memberitahu user, karena project ini tidak mengirim email.
+     * Kolom ini tidak dipakai untuk autentikasi (login tetap memakai kolom
+     * `password` yang sudah di-hash otomatis lewat cast pada model User).
+     *
+     * Juga menandai selesai (resolved) seluruh permintaan "Lupa Password"
+     * yang masih pending milik user ini, supaya badge & notifikasinya
+     * hilang otomatis tanpa langkah manual terpisah.
      */
-    public function resetPassword(User $user): bool
+    public function resetPassword(User $user, string $newPassword): bool
     {
         $updated = $user->update([
-            'password' => 'Password123!',
+            'password' => $newPassword,
+            'temp_password_plain' => $newPassword,
         ]);
 
         if ($updated) {
+
+            $this->passwordResetRequestService->resolveForUser(
+                $user->id,
+                Auth::id()
+            );
+
             $this->activityLogService->log(
                 Auth::id(),
                 'User Management',

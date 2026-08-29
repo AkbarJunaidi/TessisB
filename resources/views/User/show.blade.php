@@ -30,6 +30,111 @@
 
     </div>
 
+    @if($pendingPasswordReset)
+
+        <div class="alert alert-warning d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+
+            <div>
+                <i class="bi bi-key-fill me-2"></i>
+                <strong>User ini mengajukan Lupa Password</strong>
+                <div class="small text-muted mt-1">
+                    Diajukan {{ $pendingPasswordReset->created_at->format('d M Y H:i') }}.
+                    Reset password di bawah ini untuk menandai permintaan selesai.
+                </div>
+            </div>
+
+            @if(auth()->user()->isSuperAdmin())
+                <button
+                    type="button"
+                    class="btn btn-sm btn-warning"
+                    data-bs-toggle="modal"
+                    data-bs-target="#resetPasswordModal"
+                >
+                    <i class="bi bi-arrow-repeat me-1"></i>
+                    Reset Password
+                </button>
+            @endif
+
+        </div>
+
+    @endif
+
+    @if(auth()->user()->isSuperAdmin() && $user->temp_password_plain)
+
+        <div class="alert alert-secondary d-flex align-items-center gap-2 mb-4">
+            <i class="bi bi-shield-lock"></i>
+            <div>
+                Password saat ini (hasil reset terakhir):
+                <code class="ms-1">{{ $user->temp_password_plain }}</code>
+                <div class="small text-muted">
+                    Hanya terlihat oleh Super Admin. Sampaikan ke user secara langsung, lalu minta user menggantinya setelah login.
+                </div>
+            </div>
+        </div>
+
+    @endif
+
+    @if(auth()->user()->isSuperAdmin())
+
+        <div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form action="{{ route('users.reset-password', $user) }}" method="POST">
+                        @csrf
+                        @method('PATCH')
+
+                        <div class="modal-header">
+                            <h6 class="modal-title fw-bold">Reset Password - {{ $user->name }}</h6>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+
+                        <div class="modal-body">
+
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password Baru</label>
+                                <input
+                                    type="password"
+                                    name="password"
+                                    id="password"
+                                    class="form-control @error('password') is-invalid @enderror"
+                                    minlength="8"
+                                    required
+                                >
+                                @error('password')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div class="form-text">Minimal 8 karakter.</div>
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="password_confirmation" class="form-label">Konfirmasi Password Baru</label>
+                                <input
+                                    type="password"
+                                    name="password_confirmation"
+                                    id="password_confirmation"
+                                    class="form-control"
+                                    minlength="8"
+                                    required
+                                >
+                            </div>
+
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-arrow-repeat me-1"></i>
+                                Reset Password
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    @endif
+
     <div class="card shadow-sm border-0">
 
         <div class="card-body">
@@ -175,6 +280,19 @@
     </div>
 
 </div>
+
+@if(auth()->user()->isSuperAdmin() && $errors->has('password'))
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var resetModalEl = document.getElementById('resetPasswordModal');
+                if (resetModalEl) {
+                    new bootstrap.Modal(resetModalEl).show();
+                }
+            });
+        </script>
+    @endpush
+@endif
 
 @endsection
 

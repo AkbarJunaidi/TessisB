@@ -54,6 +54,8 @@
 
                             <th>Last Login</th>
 
+                            <th>Info</th>
+
                             <th width="220" class="text-center">
                                 Action
                             </th>
@@ -140,6 +142,17 @@
 
                                 </td>
 
+                                <td data-label="Info">
+
+                                    @if(in_array($user->id, $pendingPasswordResetUserIds, true))
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="bi bi-key me-1"></i>
+                                            Lupa Password
+                                        </span>
+                                    @endif
+
+                                </td>
+
                                 <td class="text-center cell-block" data-label="Action">
 
                                     <a
@@ -188,7 +201,7 @@
                             <tr>
 
                                 <td
-                                    colspan="7"
+                                    colspan="8"
                                     class="text-center text-muted py-5"
                                 >
 

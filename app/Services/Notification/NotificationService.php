@@ -3,7 +3,9 @@
 namespace App\Services\Notification;
 
 use App\Models\Project;
+use App\Services\PasswordResetRequestService;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Notifikasi ringkas untuk navbar (Super Admin & Admin saja).
@@ -29,16 +31,61 @@ class NotificationService
     private const MAX_PER_TYPE = 10;
 
     /**
+     * Lama cache notifikasi (detik). Endpoint ini di-poll browser tiap 60
+     * detik oleh SETIAP tab Super Admin/Admin yang sedang login - tanpa
+     * cache, setiap poll menjalankan ulang beberapa query (termasuk
+     * whereDoesntHave) untuk semua orang yang online di saat bersamaan.
+     * 30 detik dipilih supaya data tetap terasa "real-time" tapi query berat
+     * di atas hanya benar-benar jalan ke database maksimal 2x per menit,
+     * berapa pun banyaknya admin yang online.
+     */
+    private const CACHE_SECONDS = 30;
+
+    protected PasswordResetRequestService $passwordResetRequestService;
+
+    public function __construct(PasswordResetRequestService $passwordResetRequestService)
+    {
+        $this->passwordResetRequestService = $passwordResetRequestService;
+    }
+
+    /**
      * Seluruh notifikasi aktif saat ini, urut dari yang paling mendesak.
+     *
+     * Hasilnya sama untuk semua Super Admin/Admin (bukan notifikasi
+     * per-user), jadi aman dipakai 1 cache key global.
      *
      * @return array<int, array{id: string, type: string, icon: string, title: string, message: string, url: string}>
      */
     public function getActiveNotifications(): array
     {
-        return [
-            ...$this->getUnpaidNearDeadlineNotifications(),
-            ...$this->getFinanceNotFilledThisMonthNotifications(),
-        ];
+        return Cache::remember(
+            'notifications.active',
+            self::CACHE_SECONDS,
+            fn () => [
+                ...$this->getPendingPasswordResetNotifications(),
+                ...$this->getUnpaidNearDeadlineNotifications(),
+                ...$this->getFinanceNotFilledThisMonthNotifications(),
+            ]
+        );
+    }
+
+    /**
+     * Notifikasi 0: Permintaan "Lupa Password" yang belum ditindaklanjuti.
+     * Diletakkan paling atas karena menyangkut akses akun pengguna lain -
+     * lebih mendesak dibanding notifikasi operasional lainnya.
+     */
+    private function getPendingPasswordResetNotifications(): array
+    {
+        $requests = $this->passwordResetRequestService->pendingWithUser(self::MAX_PER_TYPE);
+
+        return $requests->map(fn ($request) => [
+            'id'      => "password-reset-{$request->id}",
+            'type'    => 'password_reset_request',
+            'icon'    => 'bi-key text-warning',
+            'title'   => 'Permintaan Lupa Password',
+            'message' => "{$request->user->name} ({$request->user->email}) minta reset password",
+            'url'     => route('users.show', $request->user_id),
+        ])->all();
     }
 
     /**

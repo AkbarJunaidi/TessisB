@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\User\ResetPasswordRequest;
 use App\Http\Requests\User\UserRequest;
 use App\Models\User;
+use App\Services\PasswordResetRequestService;
 use App\Services\UserService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
@@ -15,10 +17,15 @@ class UserController extends Controller
 {
     protected UserService $userService;
 
+    protected PasswordResetRequestService $passwordResetRequestService;
+
 // Dependency Injection.
-    public function __construct(UserService $userService)
-    {
+    public function __construct(
+        UserService $userService,
+        PasswordResetRequestService $passwordResetRequestService
+    ) {
         $this->userService = $userService;
+        $this->passwordResetRequestService = $passwordResetRequestService;
     }
 
 // Menampilkan daftar user.
@@ -32,7 +39,10 @@ class UserController extends Controller
 
         $users = $this->userService->getAllPaginated(10);
 
-        return view('user.index', compact('users'));
+        // ID user yang punya permintaan "Lupa Password" pending, untuk badge.
+        $pendingPasswordResetUserIds = $this->passwordResetRequestService->pendingUserIds();
+
+        return view('user.index', compact('users', 'pendingPasswordResetUserIds'));
     }
 
 //  Menampilkan form tambah user.
@@ -72,7 +82,11 @@ class UserController extends Controller
             'Anda tidak memiliki hak akses untuk melihat data user.'
         );
 
-        return view('user.show', compact('user'));
+        // Permintaan "Lupa Password" pending milik user ini (kalau ada),
+        // untuk ditampilkan sebagai alert + tombol aksi di halaman detail.
+        $pendingPasswordReset = $this->passwordResetRequestService->latestPendingFor($user->id);
+
+        return view('user.show', compact('user', 'pendingPasswordReset'));
     }
 
 // Menampilkan form edit user.
@@ -123,11 +137,14 @@ class UserController extends Controller
     }
 
 // Reset password user.
-    public function resetPassword(User $user): RedirectResponse
+    public function resetPassword(ResetPasswordRequest $request, User $user): RedirectResponse
     {
         try {
 
-            $this->userService->resetPassword($user);
+            $this->userService->resetPassword(
+                $user,
+                $request->validated('password')
+            );
 
             return back()->with(
                 'success',

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ActivityLog\ActivityLogController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\PasswordResetRequestController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\DataIntegration\FileController;
 use App\Http\Controllers\DataIntegration\FolderController;
@@ -27,8 +28,21 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
+    // Rate limit tambahan di level route (di luar rate limit per email+IP
+    // yang sudah ada di AuthService::login) sebagai lapisan pertahanan kedua
+    // terhadap brute force dari banyak email berbeda oleh 1 IP yang sama.
     Route::post('/login', [AuthenticatedSessionController::class, 'store'])
+        ->middleware('throttle:10,1')
         ->name('login.store');
+
+    // Modul Lupa Password - permintaan (bukan reset link email), lihat
+    // PasswordResetRequestService untuk alur lengkapnya.
+    Route::get('/forgot-password', [PasswordResetRequestController::class, 'create'])
+        ->name('forgot-password');
+
+    Route::post('/forgot-password', [PasswordResetRequestController::class, 'store'])
+        ->middleware('throttle:5,1')
+        ->name('forgot-password.store');
 
 });
 

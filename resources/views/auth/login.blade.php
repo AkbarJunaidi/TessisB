@@ -118,7 +118,7 @@
                     <div class="input-group">
                         <div class="label-wrapper">
                             <label for="password" class="input-label">Password</label>
-                            <a href="#" class="forgot-link">Lupa password?</a>
+                            <a href="{{ route('forgot-password') }}" class="forgot-link">Lupa password?</a>
                         </div>
                         <div class="input-wrapper">
                             <div class="input-icon-left">
