@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Inventory;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Inventory\InventoryRequest;
 use App\Models\Inventory;
+use App\Models\ReportExport;
 use App\Services\InventoryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class InventoryController extends Controller
@@ -196,11 +198,89 @@ class InventoryController extends Controller
     }
 
     /**
-     * Memicu proses unduhan langsung file PDF Laporan Massal Seluruh Inventaris
-     * menjadi satu file utuh dengan pembatas halaman (page-break).
+     * [AJAX] Memulai proses pembuatan Laporan Massal Seluruh Inventaris.
+     * Dipanggil sekali dari JavaScript saat tombol diklik - hanya mencatat
+     * permintaan (cepat), pemrosesan sesungguhnya terjadi lewat panggilan
+     * berulang ke processAllReportBatch().
      */
-    public function downloadAllPdf()
+    public function startAllReportExport(): \Illuminate\Http\JsonResponse
     {
-        return $this->inventoryService->generateAllReport($stream = false);
+        abort_unless(
+            Auth::user()?->hasPermission('inventory', 'view'),
+            403,
+            'Anda tidak memiliki hak akses untuk melihat data inventory.'
+        );
+
+        $reportExport = $this->inventoryService->startAllReportExport(Auth::id());
+
+        return response()->json([
+            'report_export_id' => $reportExport->id,
+            'total'             => $reportExport->total_items,
+        ]);
+    }
+
+    /**
+     * [AJAX] Memproses 1 batch (potongan kecil) Laporan Massal - dipanggil
+     * berulang oleh JavaScript sampai seluruh data selesai diproses. Setiap
+     * panggilan singkat & ringan, sehingga aman dari timeout di hosting
+     * manapun tanpa perlu proses background/queue worker tambahan.
+     */
+    public function processAllReportBatch(ReportExport $reportExport): \Illuminate\Http\JsonResponse
+    {
+        abort_unless(
+            Auth::user()?->hasPermission('inventory', 'view'),
+            403,
+            'Anda tidak memiliki hak akses untuk melihat data inventory.'
+        );
+
+        $progress = $this->inventoryService->processAllReportBatch($reportExport);
+
+        return response()->json($progress);
+    }
+
+    /**
+     * [AJAX] Membatalkan proses Laporan Massal yang sedang berjalan -
+     * menghentikan progresnya dan menghapus total jejaknya (file sementara,
+     * file PDF kalau kebetulan sempat jadi, dan baris datanya) sama sekali,
+     * tidak ada yang tersimpan.
+     */
+    public function cancelAllReportExport(ReportExport $reportExport): \Illuminate\Http\JsonResponse
+    {
+        abort_unless(
+            Auth::user()?->hasPermission('inventory', 'view'),
+            403,
+            'Anda tidak memiliki hak akses untuk melihat data inventory.'
+        );
+
+        $this->inventoryService->cancelReportExport($reportExport);
+
+        return response()->json(['cancelled' => true]);
+    }
+
+    /**
+     * Mengunduh hasil Laporan Massal yang sudah selesai diproses di
+     * antrean (diakses lewat link di notifikasi navbar).
+     */
+    public function downloadQueuedReport(ReportExport $reportExport)
+    {
+        abort_unless(
+            Auth::user()?->hasPermission('inventory', 'view'),
+            403,
+            'Anda tidak memiliki hak akses untuk melihat data inventory.'
+        );
+
+        abort_unless(
+            $reportExport->isReady(),
+            404,
+            'Laporan belum siap atau gagal diproses.'
+        );
+
+        if (!$reportExport->downloaded_at) {
+            $reportExport->update(['downloaded_at' => now()]);
+        }
+
+        return Storage::disk('public')->download(
+            $reportExport->file_path
+        );
     }
 }

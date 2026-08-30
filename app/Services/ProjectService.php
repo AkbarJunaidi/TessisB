@@ -10,6 +10,7 @@ use App\Services\ActivityLog\ActivityLogService;
 use App\Services\DataIntegration\FolderService;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class ProjectService
@@ -57,14 +58,28 @@ class ProjectService
     }
 
 // Statistik ringkas untuk dashboard Project Management.
+    /**
+     * Lama cache statistik Project List (detik). Kartu statistik ini
+     * (Total, Hari Ini, In Progress, Done) dihitung ulang lewat 4 query
+     * COUNT() terpisah setiap kali halaman Project List dibuka - halaman
+     * yang cukup sering diakses. Sama seperti statistik Dashboard, angka
+     * ringkasan seperti ini tidak perlu 100% real-time detik-ke-detik,
+     * jadi cache pendek dipakai untuk mengurangi beban query.
+     */
+    private const STATS_CACHE_SECONDS = 60;
+
     public function getStats(): array
     {
-        return [
-            'total'      => Project::count(),
-            'today'      => Project::whereDate('event_date', now()->toDateString())->count(),
-            'in_progress' => Project::where('status', 'In Progress')->count(),
-            'done'       => Project::where('status', 'Done')->count(),
-        ];
+        return Cache::remember(
+            'project.stats',
+            self::STATS_CACHE_SECONDS,
+            fn () => [
+                'total'       => Project::count(),
+                'today'       => Project::whereDate('event_date', now()->toDateString())->count(),
+                'in_progress' => Project::where('status', 'In Progress')->count(),
+                'done'        => Project::where('status', 'Done')->count(),
+            ]
+        );
     }
 
 // Data untuk kalender project pada bulan & tahun tertentu (jumlah project per tanggal).

@@ -82,10 +82,19 @@ Route::middleware('auth')->group(function () {
         Route::get('inventory/report/preview-all', [InventoryController::class, 'previewAllPdf'])
             ->name('inventory.preview-all');
 
-        Route::get('inventory/report/download-all', [InventoryController::class, 'downloadAllPdf'])
-            ->name('inventory.download-all');
-        Route::get('inventory/report/download-all-pdf', [InventoryController::class, 'downloadAllPdf'])
-            ->name('inventory.download-all-pdf');
+        // Laporan Massal dibangun bertahap lewat beberapa request AJAX kecil
+        // (lihat InventoryService::processAllReportBatch) - supaya aman dari
+        // timeout dan tidak butuh queue worker tambahan di hosting manapun.
+        Route::post('inventory/report/generate-all/start', [InventoryController::class, 'startAllReportExport'])
+            ->name('inventory.generate-all.start');
+        Route::post('inventory/report/generate-all/{reportExport}/batch', [InventoryController::class, 'processAllReportBatch'])
+            ->name('inventory.generate-all.batch');
+        Route::delete('inventory/report/generate-all/{reportExport}/cancel', [InventoryController::class, 'cancelAllReportExport'])
+            ->name('inventory.generate-all.cancel');
+
+        // Unduh hasil Laporan Massal yang sudah selesai diproses.
+        Route::get('inventory/report/exports/{reportExport}/download', [InventoryController::class, 'downloadQueuedReport'])
+            ->name('inventory.download-queued-report');
 
         // FITUR Kelola Unit Fisik (AJAX per-baris)
         Route::patch('inventory/{inventory}/units/{unit}/status', [InventoryController::class, 'updateUnitStatus'])

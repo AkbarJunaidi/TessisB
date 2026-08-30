@@ -142,7 +142,7 @@
                     </div>
 
                     <div class="checkbox-group">
-                        <input id="remember" name="remember" type="checkbox" class="checkbox-input" {{ old('remember') ? 'checked' : '' }}>
+                        <input id="remember" name="remember" type="checkbox" value="1" class="checkbox-input" {{ old('remember') ? 'checked' : '' }}>
                         <label for="remember" class="checkbox-label">
                             Ingat saya di perangkat ini
                         </label>

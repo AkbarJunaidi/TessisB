@@ -173,14 +173,14 @@
 
                     @forelse($projects->take(5) as $project)
                         <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
-                            <div>
-                                <div class="fw-semibold small">{{ $project->name }}</div>
-                                <div class="text-muted small">
+                            <div class="flex-grow-1" style="min-width: 0;">
+                                <div class="fw-semibold small text-truncate">{{ $project->name }}</div>
+                                <div class="text-muted small text-truncate">
                                     <i class="bi bi-calendar-event"></i> {{ optional($project->event_date)->translatedFormat('d M Y') }}
                                     &middot; <i class="bi bi-geo-alt"></i> {{ $project->location }}
                                 </div>
                             </div>
-                            <a href="{{ route('projects.show', $project) }}" class="btn btn-sm btn-outline-primary">Detail</a>
+                            <a href="{{ route('projects.show', $project) }}" class="btn btn-sm btn-outline-primary flex-shrink-0 ms-2">Detail</a>
                         </div>
                     @empty
                         <p class="text-muted small m-0">Tidak ada project pada rentang ini.</p>
@@ -247,7 +247,11 @@
                         @forelse($projects as $index => $project)
                             <tr>
                                 <td class="ps-3 py-3 fw-semibold text-secondary" data-label="No">{{ $projects->firstItem() + $index }}</td>
-                                <td class="py-3 fw-semibold" data-label="Nama Project">{{ $project->name }}</td>
+                                <td class="py-3 fw-semibold" data-label="Nama Project">
+                                    <div class="text-truncate" style="max-width: 260px;" title="{{ $project->name }}">
+                                        {{ $project->name }}
+                                    </div>
+                                </td>
                                 <td class="py-3" data-label="PIC">{{ $project->pic }}</td>
                                 <td class="py-3" data-label="Tanggal">{{ optional($project->event_date)->translatedFormat('d M Y') }}</td>
                                 <td class="py-3" data-label="Lokasi">{{ $project->location }}</td>

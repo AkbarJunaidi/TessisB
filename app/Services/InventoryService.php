@@ -4,14 +4,17 @@ namespace App\Services;
 
 use App\Models\Inventory;
 use App\Models\InventoryAttribute;
+use App\Models\ReportExport;
 use App\Services\ActivityLog\ActivityLogService;
 use App\Services\QrCodeService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Throwable;
 
 class InventoryService
 {
@@ -324,20 +327,225 @@ class InventoryService
         return $stream ? $pdf->stream($filename) : $pdf->download($filename);
     }
 
-    public function generateAllReport(bool $stream = true)
+    /**
+     * Membuat objek PDF Laporan Massal Seluruh Inventaris - dipakai bersama
+     * oleh preview/download langsung (generateAllReport) yang membaca semua
+     * data sekaligus dalam 1 request. Untuk laporan berukuran besar, lihat
+     * startAllReportExport()/processAllReportBatch() yang membangunnya
+     * bertahap lewat beberapa request kecil.
+     */
+    public function buildAllInventoryReportPdf()
     {
         // Eager load attributes agar tidak terjadi N+1 saat Blade mengakses $inventory->attributes per item
         $inventories = Inventory::with('attributes')->latest()->get();
         $exportDate = now()->translatedFormat('d F Y H:i');
-        // Memuat view bundle massal
-        $pdf = Pdf::loadView('inventory.pdf.all', compact('inventories', 'exportDate'));
 
+        $pdf = Pdf::loadView('inventory.pdf.all', compact('inventories', 'exportDate'));
         $pdf->setPaper('a4', 'portrait');
+
+        return $pdf;
+    }
+
+    public function generateAllReport(bool $stream = true)
+    {
+        $pdf = $this->buildAllInventoryReportPdf();
+
         // Output penamaan berkas massal: all-inventory-report-{timestamp}.pdf
         $filename = 'all-inventory-report-' . now()->format('YmdHis') . '.pdf';
         // Log audit sistem
         $this->activityLogService->log(Auth::id(), 'Inventory', 'Preview/Download All PDF Report');
         return $stream ? $pdf->stream($filename) : $pdf->download($filename);
+    }
+
+    /**
+     * Memulai proses pembuatan Laporan Massal Seluruh Inventaris.
+     *
+     * Alih-alih diproses langsung dalam 1 request (berisiko timeout kalau
+     * data banyak) ATAU lewat queue worker terpisah (butuh proses background
+     * `php artisan queue:work` yang belum tentu tersedia di semua jenis
+     * hosting) - laporan ini dibangun BERTAHAP lewat beberapa request kecil
+     * (lihat processAllReportBatch()) yang dipicu berulang oleh JavaScript
+     * di browser. Pendekatan ini tidak butuh setup tambahan apa pun di
+     * server manapun (shared hosting, VPS, PaaS) karena hanya mengandalkan
+     * request HTTP biasa yang berukuran kecil dan cepat selesai.
+     */
+    public function startAllReportExport(int $requestedBy): ReportExport
+    {
+        $reportExport = ReportExport::create([
+            'type'            => 'inventory_all',
+            'status'          => 'processing',
+            'requested_by'    => $requestedBy,
+            'total_items'     => Inventory::count(),
+            'processed_items' => 0,
+        ]);
+
+        $this->activityLogService->log($requestedBy, 'Inventory', 'Mulai Proses Laporan Massal PDF');
+
+        return $reportExport;
+    }
+
+    /**
+     * Memproses 1 batch (potongan kecil) dari Laporan Massal - dipanggil
+     * berulang kali oleh JavaScript sampai seluruh data selesai diproses.
+     *
+     * Setiap panggilan hanya mengerjakan sebagian kecil data ($batchSize
+     * item), jadi durasinya selalu singkat dan aman dari timeout berapa pun
+     * total jumlah datanya. HTML per item digabung bertahap ke file
+     * sementara; begitu seluruh item selesai, baru dirender jadi 1 file PDF
+     * utuh dan disimpan ke storage publik.
+     *
+     * @return array{finished: bool, status: string, processed: int, total: int, download_url: ?string, error: ?string}
+     */
+    public function processAllReportBatch(ReportExport $reportExport, int $batchSize = 25): array
+    {
+        if ($reportExport->status !== 'processing') {
+            return $this->buildBatchProgress($reportExport);
+        }
+
+        try {
+
+            $items = Inventory::with('attributes')
+                ->orderBy('id')
+                ->skip($reportExport->processed_items)
+                ->take($batchSize)
+                ->get();
+
+            if ($items->isNotEmpty()) {
+
+                // Tanggal generate dikunci ke waktu laporan DIMULAI (bukan
+                // waktu tiap batch diproses), supaya seluruh halaman di PDF
+                // akhir menampilkan tanggal generate yang sama persis.
+                $exportDate = $reportExport->created_at->translatedFormat('d F Y H:i');
+
+                $fragment = $items
+                    ->map(fn (Inventory $inventory) => view('inventory.pdf.partials.all-item', [
+                        'inventory'  => $inventory,
+                        'exportDate' => $exportDate,
+                    ])->render())
+                    ->implode('');
+
+                $this->appendToTempReport($reportExport, $fragment);
+
+                $reportExport->increment('processed_items', $items->count());
+            }
+
+            if ($reportExport->fresh()->processed_items >= $reportExport->total_items) {
+                $this->finalizeAllReportExport($reportExport);
+            }
+
+        } catch (Throwable $e) {
+
+            $reportExport->update([
+                'status'        => 'failed',
+                'error_message' => $e->getMessage(),
+            ]);
+
+        }
+
+        return $this->buildBatchProgress($reportExport->fresh());
+    }
+
+    /**
+     * Menyatukan seluruh fragmen HTML yang sudah terkumpul jadi 1 file PDF
+     * utuh, menyimpannya ke storage publik, lalu membersihkan file sementara.
+     */
+    private function finalizeAllReportExport(ReportExport $reportExport): void
+    {
+        $bodyHtml = Storage::disk('local')->exists($this->tempReportPath($reportExport))
+            ? Storage::disk('local')->get($this->tempReportPath($reportExport))
+            : '';
+
+        $pdf = Pdf::loadView('inventory.pdf.all-shell', compact('bodyHtml'));
+        $pdf->setPaper('a4', 'portrait');
+
+        $filename = 'all-inventory-report-' . now()->format('YmdHis') . '.pdf';
+        $storedPath = 'inventory-reports/' . $filename;
+
+        Storage::disk('public')->put($storedPath, $pdf->output());
+        Storage::disk('local')->delete($this->tempReportPath($reportExport));
+
+        $reportExport->update([
+            'status'    => 'completed',
+            'file_path' => $storedPath,
+        ]);
+
+        // Invalidate cache notifikasi navbar (lihat NotificationService),
+        // supaya notifikasi "Laporan Siap Diunduh" langsung muncul.
+        Cache::forget('notifications.active');
+
+        $this->activityLogService->log($reportExport->requested_by, 'Inventory', 'Laporan Massal PDF Selesai');
+    }
+
+    /**
+     * Membatalkan proses Laporan Massal yang sedang berjalan (atau yang baru
+     * saja selesai/gagal) - menghapus TOTAL jejaknya: file sementara di
+     * disk lokal, file PDF final di storage publik (kalau kebetulan sempat
+     * selesai tepat sebelum dibatalkan), dan baris datanya sendiri di
+     * database. Tidak ada yang tersisa sama sekali setelah ini.
+     */
+    public function cancelReportExport(ReportExport $reportExport): void
+    {
+        $tempPath = $this->tempReportPath($reportExport);
+        if (Storage::disk('local')->exists($tempPath)) {
+            Storage::disk('local')->delete($tempPath);
+        }
+
+        if ($reportExport->file_path && Storage::disk('public')->exists($reportExport->file_path)) {
+            Storage::disk('public')->delete($reportExport->file_path);
+        }
+
+        $requestedBy = $reportExport->requested_by;
+
+        $reportExport->delete();
+
+        // Invalidate cache notifikasi navbar - jaga-jaga kalau laporan ini
+        // sempat selesai tepat sebelum dibatalkan, supaya notifikasi
+        // "Laporan Siap Diunduh" untuk laporan yang sudah dihapus ini tidak
+        // ikut nyangkut di cache lama.
+        Cache::forget('notifications.active');
+
+        $this->activityLogService->log($requestedBy, 'Inventory', 'Batalkan Laporan Massal PDF');
+    }
+
+    /**
+     * Menambahkan fragmen HTML baru ke file penampung sementara milik 1
+     * laporan. Storage lokal tidak menyediakan operasi "append" bawaan,
+     * jadi dilakukan baca-lalu-tulis-ulang - cukup ringan karena isinya
+     * teks HTML per item (bukan gambar/PDF biner), bukan seluruh data
+     * inventory.
+     */
+    private function appendToTempReport(ReportExport $reportExport, string $fragment): void
+    {
+        $path = $this->tempReportPath($reportExport);
+        $existing = Storage::disk('local')->exists($path)
+            ? Storage::disk('local')->get($path)
+            : '';
+
+        Storage::disk('local')->put($path, $existing . $fragment);
+    }
+
+    private function tempReportPath(ReportExport $reportExport): string
+    {
+        return 'tmp/report-exports/' . $reportExport->id . '.html';
+    }
+
+    /**
+     * Bentuk response progres yang dikirim balik ke JavaScript setiap batch.
+     */
+    private function buildBatchProgress(ReportExport $reportExport): array
+    {
+        return [
+            'finished'     => $reportExport->status !== 'processing',
+            'status'       => $reportExport->status,
+            'processed'    => $reportExport->processed_items,
+            'total'        => $reportExport->total_items,
+            'download_url' => $reportExport->status === 'completed'
+                ? route('inventory.download-queued-report', $reportExport)
+                : null,
+            'error'        => $reportExport->status === 'failed'
+                ? $reportExport->error_message
+                : null,
+        ];
     }
 
     /**

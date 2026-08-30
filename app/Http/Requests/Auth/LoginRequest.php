@@ -32,9 +32,14 @@ class LoginRequest extends FormRequest
                 'min:8',
             ],
 
+            // Checkbox HTML tanpa atribut `value` eksplisit mengirim string
+            // "on" saat dicentang (bukan true/1) - jadi field ini sengaja
+            // TIDAK divalidasi ketat sebagai boolean, karena akan menolak
+            // nilai bawaan checkbox itu sendiri. Nilainya cukup dinormalisasi
+            // lewat $request->boolean('remember') di Controller, yang memang
+            // dirancang menangani "on" dan variasi checkbox lainnya.
             'remember' => [
                 'nullable',
-                'boolean',
             ],
         ];
     }
@@ -52,8 +57,6 @@ class LoginRequest extends FormRequest
             'password.required' => 'Password wajib diisi.',
             'password.string' => 'Password tidak valid.',
             'password.min' => 'Password minimal 8 karakter.',
-
-            'remember.boolean' => 'Remember Me tidak valid.',
         ];
     }
 
