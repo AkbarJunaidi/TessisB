@@ -23,9 +23,27 @@ class AuthService
     private const MAX_LOGIN_ATTEMPTS = 5;
 
     /**
-     * Lama penguncian (detik) setelah batas percobaan gagal tercapai.
+     * Lama penguncian (detik) setelah batas percobaan gagal tercapai -
+     * untuk lapisan email + IP.
      */
     private const LOCKOUT_DECAY_SECONDS = 60;
+
+    /**
+     * Batas percobaan login gagal per IP saja (tanpa peduli email yang
+     * dicoba) - lapisan kedua untuk menangkap serangan yang sengaja
+     * berganti-ganti email dari 1 sumber yang sama, yang tidak akan
+     * terjaring oleh limiter email + IP di atas.
+     */
+    private const MAX_IP_ATTEMPTS = 10;
+
+    /**
+     * Lama penguncian (detik) untuk lapisan IP saja - 1 menit, sama seperti
+     * jendela waktu yang sebelumnya dipakai di middleware `throttle:10,1`
+     * pada route (sekarang digantikan sepenuhnya oleh limiter ini, supaya
+     * pesan errornya konsisten dengan lapisan email + IP, bukan halaman
+     * error 429 generik bawaan Laravel).
+     */
+    private const IP_LOCKOUT_DECAY_SECONDS = 60;
 
     /**
      * Constructor.
@@ -38,9 +56,11 @@ class AuthService
     /**
      * Melakukan proses autentikasi login pengguna.
      *
-     * Dilindungi rate limiting per kombinasi email + IP address - mencegah
-     * brute force baik dari 1 IP yang mencoba banyak password untuk 1 email,
-     * maupun percobaan berulang dari IP yang sama untuk email yang sama.
+     * Dilindungi rate limiting 2 lapis:
+     * 1. Per IP saja (lebih longgar) - mencegah serangan yang berganti-ganti
+     *    email dari 1 sumber yang sama.
+     * 2. Per kombinasi email + IP (lebih ketat) - mencegah brute force ke
+     *    1 akun spesifik.
      *
      * @param array $credentials
      * @param bool $remember
@@ -50,22 +70,24 @@ class AuthService
      */
     public function login(array $credentials, bool $remember = false): bool
     {
-        $throttleKey = $this->throttleKey($credentials['email'] ?? '');
+        $ipKey = $this->ipThrottleKey();
+        $emailIpKey = $this->throttleKey($credentials['email'] ?? '');
 
-        if (RateLimiter::tooManyAttempts($throttleKey, self::MAX_LOGIN_ATTEMPTS)) {
-            $seconds = RateLimiter::availableIn($throttleKey);
+        // Lapisan 1: IP saja - dicek lebih dulu karena sifatnya lebih umum.
+        if (RateLimiter::tooManyAttempts($ipKey, self::MAX_IP_ATTEMPTS)) {
+            $this->throwLockoutException($ipKey, 'Terlalu banyak percobaan login dari perangkat ini.');
+        }
 
-            throw ValidationException::withMessages([
-                'email' => [
-                    "Terlalu banyak percobaan login. Silakan coba lagi dalam {$seconds} detik.",
-                ],
-            ]);
+        // Lapisan 2: kombinasi email + IP.
+        if (RateLimiter::tooManyAttempts($emailIpKey, self::MAX_LOGIN_ATTEMPTS)) {
+            $this->throwLockoutException($emailIpKey, 'Terlalu banyak percobaan login.');
         }
 
         // Verifikasi email dan password
         if (!Auth::attempt($credentials, $remember)) {
 
-            RateLimiter::hit($throttleKey, self::LOCKOUT_DECAY_SECONDS);
+            RateLimiter::hit($ipKey, self::IP_LOCKOUT_DECAY_SECONDS);
+            RateLimiter::hit($emailIpKey, self::LOCKOUT_DECAY_SECONDS);
 
             throw ValidationException::withMessages([
                 'email' => [
@@ -74,8 +96,9 @@ class AuthService
             ]);
         }
 
-        // Login berhasil - hapus catatan percobaan gagal sebelumnya.
-        RateLimiter::clear($throttleKey);
+        // Login berhasil - hapus catatan percobaan gagal sebelumnya (kedua lapisan).
+        RateLimiter::clear($ipKey);
+        RateLimiter::clear($emailIpKey);
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
@@ -145,6 +168,37 @@ class AuthService
     private function throttleKey(string $email): string
     {
         return Str::lower($email) . '|' . request()->ip();
+    }
+
+    /**
+     * Membentuk key rate limiter dari IP saja - lapisan kedua yang tidak
+     * peduli email apa yang dicoba.
+     */
+    private function ipThrottleKey(): string
+    {
+        return 'login-ip|' . request()->ip();
+    }
+
+    /**
+     * Melempar error validasi untuk kondisi terkunci, sekaligus menyimpan
+     * sisa detiknya secara terpisah ke session (di luar pesan teks) supaya
+     * halaman login bisa menghitung mundur secara live dan mengunci form
+     * sampai waktunya habis - bukan cuma menampilkan teks statis sementara
+     * form tetap bisa disubmit berulang kali.
+     *
+     * @throws ValidationException
+     */
+    private function throwLockoutException(string $throttleKey, string $prefix): never
+    {
+        $seconds = RateLimiter::availableIn($throttleKey);
+
+        session()->flash('lockout_seconds', $seconds);
+
+        throw ValidationException::withMessages([
+            'email' => [
+                "{$prefix} Silakan coba lagi dalam {$seconds} detik.",
+            ],
+        ]);
     }
 }
 

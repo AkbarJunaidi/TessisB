@@ -111,7 +111,7 @@
                                 placeholder="admin@perusahaan.com">
                         </div>
                         @error('email')
-                            <span class="error-message">{{ $message }}</span>
+                            <span class="error-message" id="emailErrorMessage">{{ $message }}</span>
                         @enderror
                     </div>
 
@@ -149,7 +149,7 @@
                     </div>
 
                     <div>
-                        <button type="submit" class="btn-primary">
+                        <button type="submit" class="btn-primary" id="loginSubmitBtn">
                             Masuk ke Dashboard
                         </button>
                     </div>
@@ -170,6 +170,59 @@
             passwordField.setAttribute('type', type);
             this.style.color = type === 'text' ? '#0d84fc' : '#9ca3af';
         });
+
+        // Saat akun/perangkat sedang terkunci (rate limit login aktif),
+        // form dikunci total dan dihitung mundur otomatis - bukan cuma
+        // menampilkan teks statis sementara form tetap bisa disubmit.
+        @if(session('lockout_seconds'))
+            (function () {
+                let remaining = {{ (int) session('lockout_seconds') }};
+
+                const emailInput = document.getElementById('email');
+                const passwordInput = document.getElementById('password');
+                const rememberInput = document.getElementById('remember');
+                const submitBtn = document.getElementById('loginSubmitBtn');
+                const errorMessageEl = document.getElementById('emailErrorMessage');
+                const originalPrefix = errorMessageEl
+                    ? errorMessageEl.textContent.split('Silakan coba lagi')[0].trim()
+                    : '';
+
+                function lockForm() {
+                    emailInput.disabled = true;
+                    passwordInput.disabled = true;
+                    rememberInput.disabled = true;
+                    submitBtn.disabled = true;
+                    submitBtn.style.opacity = '0.6';
+                    submitBtn.style.cursor = 'not-allowed';
+                }
+
+                function unlockForm() {
+                    emailInput.disabled = false;
+                    passwordInput.disabled = false;
+                    rememberInput.disabled = false;
+                    submitBtn.disabled = false;
+                    submitBtn.style.opacity = '1';
+                    submitBtn.style.cursor = 'pointer';
+                }
+
+                lockForm();
+
+                const interval = setInterval(function () {
+                    remaining--;
+
+                    if (errorMessageEl) {
+                        errorMessageEl.textContent = remaining > 0
+                            ? `${originalPrefix} Silakan coba lagi dalam ${remaining} detik.`
+                            : 'Anda sudah bisa mencoba login lagi.';
+                    }
+
+                    if (remaining <= 0) {
+                        clearInterval(interval);
+                        unlockForm();
+                    }
+                }, 1000);
+            })();
+        @endif
     </script>
 </body>
 </html>

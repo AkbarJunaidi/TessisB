@@ -28,11 +28,12 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
-    // Rate limit tambahan di level route (di luar rate limit per email+IP
-    // yang sudah ada di AuthService::login) sebagai lapisan pertahanan kedua
-    // terhadap brute force dari banyak email berbeda oleh 1 IP yang sama.
+    // Rate limit per IP (lapisan kedua) sekarang ditangani penuh di dalam
+    // AuthService::login() - lihat MAX_IP_ATTEMPTS/IP_LOCKOUT_DECAY_SECONDS -
+    // supaya pesan errornya konsisten & terintegrasi dengan tampilan login
+    // (termasuk hitung mundur otomatis), bukan halaman error 429 generik
+    // bawaan middleware `throttle`.
     Route::post('/login', [AuthenticatedSessionController::class, 'store'])
-        ->middleware('throttle:10,1')
         ->name('login.store');
 
     // Modul Lupa Password - permintaan (bukan reset link email), lihat
