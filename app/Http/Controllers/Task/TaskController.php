@@ -7,7 +7,7 @@ use App\Http\Requests\Task\TaskRequest;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
-use App\Services\TaskService;
+use App\Services\Task\TaskService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;

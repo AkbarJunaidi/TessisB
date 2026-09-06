@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Task;
 
 use App\Models\Comment;
 use Illuminate\Support\Facades\Auth;

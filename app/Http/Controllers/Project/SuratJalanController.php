@@ -9,7 +9,7 @@ use App\Models\Inventory;
 use App\Models\Project;
 use App\Models\SuratJalan;
 use App\Models\SuratJalanItem;
-use App\Services\SuratJalanService;
+use App\Services\Project\SuratJalanService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 

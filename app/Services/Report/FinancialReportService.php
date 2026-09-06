@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Reports;
+namespace App\Services\Report;
 
 use App\Models\Project;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -101,7 +101,7 @@ class FinancialReportService
 
         $summary = $this->getMonthlySummary($month, $year);
 
-        $pdf = Pdf::loadView('reports.finance.monthly', [
+        $pdf = Pdf::loadView('report.finance.monthly', [
             'summary'    => $summary,
             'periodDate' => \Carbon\Carbon::createFromDate($year, $month, 1),
             'exportDate' => now(),

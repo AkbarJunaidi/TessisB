@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Inventory\InventoryRequest;
 use App\Models\Inventory;
 use App\Models\ReportExport;
-use App\Services\InventoryService;
+use App\Services\Inventory\InventoryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -278,7 +278,7 @@ class InventoryController extends Controller
         if (!$reportExport->downloaded_at) {
             $reportExport->update(['downloaded_at' => now()]);
         }
-
+        
         return Storage::disk('public')->download(
             $reportExport->file_path
         );

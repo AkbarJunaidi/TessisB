@@ -36,7 +36,7 @@ class ActivityLogController extends Controller
             ->getActions();
 
         return view(
-            'activity-logs.index',
+            'activity-log.index',
             compact(
                 'logs',
                 'users',

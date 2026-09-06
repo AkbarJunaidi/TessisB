@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Inventory;
 
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Storage;

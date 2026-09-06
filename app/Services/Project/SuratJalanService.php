@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Project;
 
 use App\Models\Inventory;
 use App\Models\Project;

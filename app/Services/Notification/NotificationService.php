@@ -3,7 +3,8 @@
 namespace App\Services\Notification;
 
 use App\Models\Project;
-use App\Services\PasswordResetRequestService;
+use App\Models\ReportExport;
+use App\Services\Auth\PasswordResetRequestService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
@@ -63,6 +64,7 @@ class NotificationService
             self::CACHE_SECONDS,
             fn () => [
                 ...$this->getPendingPasswordResetNotifications(),
+                ...$this->getReadyReportNotifications(),
                 ...$this->getUnpaidNearDeadlineNotifications(),
                 ...$this->getFinanceNotFilledThisMonthNotifications(),
             ]
@@ -85,6 +87,27 @@ class NotificationService
             'title'   => 'Permintaan Lupa Password',
             'message' => "{$request->user->name} ({$request->user->email}) minta reset password",
             'url'     => route('users.show', $request->user_id),
+        ])->all();
+    }
+
+    /**
+     * Notifikasi 0b: Laporan PDF (mis. Laporan Massal Inventory) yang sudah
+     * selesai diproses di background (queue) tapi belum pernah diunduh.
+     */
+    private function getReadyReportNotifications(): array
+    {
+        $reports = ReportExport::readyAndUndownloaded()
+            ->latest()
+            ->limit(self::MAX_PER_TYPE)
+            ->get();
+
+        return $reports->map(fn ($report) => [
+            'id'      => "report-{$report->id}",
+            'type'    => 'report_ready',
+            'icon'    => 'bi-file-earmark-arrow-down text-success',
+            'title'   => 'Laporan Siap Diunduh',
+            'message' => 'Laporan diproses ' . $report->created_at->format('d M Y H:i') . ', siap diunduh',
+            'url'     => route('inventory.download-queued-report', $report),
         ])->all();
     }
 

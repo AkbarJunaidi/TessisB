@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Tracking;
 
 use App\Models\InventoryUnit;
 use App\Models\Project;

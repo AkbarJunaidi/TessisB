@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Project;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Project\ProjectNoteRequest;
 use App\Models\ProjectNote;
-use App\Services\ProjectNoteService;
+use App\Services\Project\ProjectNoteService;
 use Illuminate\Http\RedirectResponse;
 
 class ProjectNoteController extends Controller

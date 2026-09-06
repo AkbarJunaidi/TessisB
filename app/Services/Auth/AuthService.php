@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Auth;
 
 use App\Services\ActivityLog\ActivityLogService;
 use Carbon\Carbon;

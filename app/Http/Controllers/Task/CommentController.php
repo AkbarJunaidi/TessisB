@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Task;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Task\CommentRequest;
-use App\Services\CommentService;
+use App\Services\Task\CommentService;
 use Illuminate\Http\RedirectResponse;
 
 class CommentController extends Controller

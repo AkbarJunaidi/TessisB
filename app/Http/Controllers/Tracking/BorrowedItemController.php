@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Tracking;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tracking\ReturnBorrowedUnitsRequest;
 use App\Models\Project;
-use App\Services\BorrowedItemService;
+use App\Services\Tracking\BorrowedItemService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;

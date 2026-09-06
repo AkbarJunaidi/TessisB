@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Inventory;
 
 use App\Models\Inventory;
 use App\Models\InventoryAttribute;
 use App\Models\ReportExport;
 use App\Services\ActivityLog\ActivityLogService;
-use App\Services\QrCodeService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
