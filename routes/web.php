@@ -220,6 +220,17 @@ Route::middleware('auth')->group(function () {
 
     });
 
+    // Modul Activity Log - hapus rentang tanggal (HANYA Super Admin,
+    // operasi permanen sehingga dipisah dari group role di atas)
+    Route::middleware('role:super_admin')->group(function () {
+
+        Route::delete(
+            'activity-logs/delete-range',
+            [ActivityLogController::class, 'deleteRange']
+        )->name('activity-logs.delete-range');
+
+    });
+
     // Modul Notifikasi Navbar (Super Admin & Admin) - endpoint AJAX, di-poll
     // berkala oleh navbar.blade.php.
     Route::middleware('role:super_admin,admin')->group(function () {

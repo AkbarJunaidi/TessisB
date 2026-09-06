@@ -15,7 +15,15 @@
                 </ol>
             </nav>
         </div>
+
+        @if(auth()->user()->isSuperAdmin())
+            <button type="button" class="btn btn-sm btn-outline-danger fw-medium" data-bs-toggle="modal" data-bs-target="#deleteRangeModal">
+                <i class="bi bi-trash3 me-1"></i>Hapus Rentang Tanggal
+            </button>
+        @endif
     </div>
+
+    <div id="activityLogAlertPlaceholder"></div>
 
     @if($errors->any())
         <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
@@ -172,4 +180,132 @@
     </div>
 
 </div>
+
+@if(auth()->user()->isSuperAdmin())
+    {{-- Modal Konfirmasi Hapus Activity Log Berdasarkan Rentang Tanggal --}}
+    <div class="modal fade" id="deleteRangeModal" tabindex="-1" aria-labelledby="deleteRangeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold" id="deleteRangeModalLabel">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Hapus Activity Log Berdasarkan Rentang Tanggal
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-dark fw-medium mb-3">Pilih rentang tanggal Activity Log yang ingin dihapus secara permanen.</p>
+
+                    <div class="mb-3">
+                        <label for="deleteRangeFrom" class="form-label small fw-semibold text-muted">Dari Tanggal</label>
+                        <input type="date" class="form-control" id="deleteRangeFrom" name="date_from">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="deleteRangeTo" class="form-label small fw-semibold text-muted">Sampai Tanggal</label>
+                        <input type="date" class="form-control" id="deleteRangeTo" name="date_to">
+                    </div>
+
+                    <div id="deleteRangeError" class="text-danger small mb-2 d-none"></div>
+
+                    <small class="text-danger d-block">
+                        <i class="bi bi-info-circle me-1"></i>Seluruh Activity Log pada rentang tanggal ini akan dihapus permanen dan <strong>tidak dapat dipulihkan</strong>.
+                    </small>
+                </div>
+                <div class="modal-footer bg-light border-top p-3">
+                    <button type="button" class="btn btn-secondary px-3 fw-medium" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" id="deleteRangeSubmit" class="btn btn-danger px-4 fw-medium shadow-sm">
+                        <span class="btn-text">Ya, Hapus</span>
+                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        const alertPlaceholder = document.getElementById('activityLogAlertPlaceholder');
+
+        const deleteRangeModalEl = document.getElementById('deleteRangeModal');
+        const deleteRangeModal = new bootstrap.Modal(deleteRangeModalEl);
+        const errorBox = document.getElementById('deleteRangeError');
+
+        function showAlert(type, message) {
+            const alertEl = document.createElement('div');
+            alertEl.className = `alert alert-${type} alert-dismissible fade show mb-4`;
+            alertEl.role = 'alert';
+            alertEl.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
+            alertPlaceholder.innerHTML = '';
+            alertPlaceholder.appendChild(alertEl);
+        }
+
+        function resetModalState() {
+            document.getElementById('deleteRangeFrom').value = '';
+            document.getElementById('deleteRangeTo').value = '';
+            errorBox.classList.add('d-none');
+            errorBox.textContent = '';
+        }
+
+        deleteRangeModalEl.addEventListener('show.bs.modal', resetModalState);
+
+        document.getElementById('deleteRangeSubmit').addEventListener('click', function () {
+            const submitBtn = this;
+            const dateFrom = document.getElementById('deleteRangeFrom').value;
+            const dateTo = document.getElementById('deleteRangeTo').value;
+
+            errorBox.classList.add('d-none');
+            errorBox.textContent = '';
+
+            if (!dateFrom || !dateTo) {
+                errorBox.textContent = 'Tanggal awal dan tanggal akhir wajib diisi.';
+                errorBox.classList.remove('d-none');
+                return;
+            }
+
+            if (dateTo < dateFrom) {
+                errorBox.textContent = 'Tanggal akhir tidak boleh lebih kecil dari tanggal awal.';
+                errorBox.classList.remove('d-none');
+                return;
+            }
+
+            const btnText = submitBtn.querySelector('.btn-text');
+            const spinner = submitBtn.querySelector('.spinner-border');
+
+            submitBtn.disabled = true;
+            btnText.classList.add('d-none');
+            spinner.classList.remove('d-none');
+
+            fetch(`{{ route('activity-logs.delete-range') }}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ date_from: dateFrom, date_to: dateTo }),
+            })
+                .then(async (response) => {
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.message || 'Terjadi kesalahan, silakan coba lagi.');
+                    return data;
+                })
+                .then(function (data) {
+                    deleteRangeModal.hide();
+                    showAlert('success', data.message);
+                    setTimeout(() => window.location.reload(), 1200);
+                })
+                .catch(function (err) {
+                    deleteRangeModal.hide();
+                    showAlert('danger', err.message);
+                })
+                .finally(function () {
+                    submitBtn.disabled = false;
+                    btnText.classList.remove('d-none');
+                    spinner.classList.add('d-none');
+                });
+        });
+    });
+    </script>
+@endif
 @endsection

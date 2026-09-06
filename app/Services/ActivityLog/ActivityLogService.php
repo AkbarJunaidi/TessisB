@@ -6,6 +6,7 @@ use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class ActivityLogService
@@ -97,6 +98,35 @@ class ActivityLogService
             ->latest()
             ->paginate((int) ($filters['per_page'] ?? 10))
             ->withQueryString();
+    }
+
+    /**
+     * Menghapus seluruh Activity Log dalam rentang tanggal tertentu
+     * (inklusif, berdasarkan tanggal `created_at`). Operasi permanen -
+     * tidak melalui Trash. Hanya boleh dipanggil setelah otorisasi Super
+     * Admin diverifikasi di layer Controller.
+     *
+     * Aksi ini sengaja tetap dicatat ke Activity Log (dengan module
+     * "Activity Log") setelah proses hapus selesai, supaya jejak
+     * penghapusan massal ini sendiri tetap ada di audit trail - mengikuti
+     * pola yang sama dengan TrashService::forceDelete().
+     *
+     * @return int Jumlah baris yang berhasil dihapus.
+     */
+    public function deleteByDateRange(string $dateFrom, string $dateTo): int
+    {
+        $deletedCount = ActivityLog::query()
+            ->whereDate('created_at', '>=', $dateFrom)
+            ->whereDate('created_at', '<=', $dateTo)
+            ->delete();
+
+        $this->log(
+            Auth::id(),
+            'Activity Log',
+            "Delete Activity Log Range ({$dateFrom} s/d {$dateTo}) - {$deletedCount} data terhapus"
+        );
+
+        return $deletedCount;
     }
 
     /**
