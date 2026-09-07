@@ -25,6 +25,9 @@ class ProjectFinanceRequest extends FormRequest
         $this->merge([
             'incomes'  => $clean($this->input('incomes')),
             'expenses' => $clean($this->input('expenses')),
+            'estimated_value' => $this->filled('estimated_value')
+                ? str_replace('.', '', (string) $this->input('estimated_value'))
+                : null,
         ]);
     }
 
@@ -49,6 +52,8 @@ class ProjectFinanceRequest extends FormRequest
             'expenses'                => ['nullable', 'array'],
             'expenses.*.amount'       => ['required_with:expenses', 'numeric', 'min:0', 'max:999999999999.99'],
             'expenses.*.description'  => ['nullable', 'string', 'max:255'],
+
+            'estimated_value' => ['nullable', 'numeric', 'min:0', 'max:999999999999.99'],
         ];
     }
 
@@ -59,6 +64,9 @@ class ProjectFinanceRequest extends FormRequest
             'incomes.*.amount.numeric'       => 'Nominal pendapatan harus berupa angka.',
             'expenses.*.amount.required_with' => 'Nominal pengeluaran wajib diisi.',
             'expenses.*.amount.numeric'       => 'Nominal pengeluaran harus berupa angka.',
+
+            'estimated_value.numeric' => 'Estimasi pendapatan harus berupa angka.',
+            'estimated_value.min'     => 'Estimasi pendapatan tidak boleh negatif.',
         ];
     }
 }

@@ -173,6 +173,7 @@ class ActivityLogService
             'Tracking Progress' => 'Tracking Progress',
             'Integrasi Data'    => 'Integrasi Data',
             'User Management'   => 'User Management',
+            'Kontak'            => 'Kontak',
         ];
 
         foreach ($defaultModules as $key => $val) {
@@ -239,6 +240,12 @@ class ActivityLogService
                 'Change Password',
                 'Change Role',
                 'Delete User',
+            ],
+
+            'Kontak' => [
+                'Create Contact',
+                'Update Contact',
+                'Delete Contact',
             ],
         ];
     }

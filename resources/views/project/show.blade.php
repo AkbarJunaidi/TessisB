@@ -29,13 +29,13 @@
                         @csrf
                         @method('PATCH')
                         <select name="status" class="form-select form-select-sm border-0 bg-light fw-semibold" onchange="this.form.submit()" style="width:auto;">
-                            @foreach(['Draft','Scheduled','Confirmed','In Progress','On Review','Done'] as $s)
-                                <option value="{{ $s }}" @selected($project->status === $s)>{{ $s }}</option>
+                            @foreach(\App\Models\Project::STATUS_LABELS as $s => $label)
+                                <option value="{{ $s }}" @selected($project->status === $s)>{{ $label }}</option>
                             @endforeach
                         </select>
                     </form>
                 @else
-                    <span class="badge bg-success-subtle text-success">{{ $project->status }}</span>
+                    <span class="badge bg-success-subtle text-success">{{ \App\Models\Project::STATUS_LABELS[$project->status] ?? $project->status }}</span>
                 @endif
             </div>
             <p class="text-muted small m-0">Kelola informasi project, tim, barang, dan dokumen.</p>
@@ -252,6 +252,34 @@
                         @if(auth()->user()->hasPermission('finance', 'manage'))
                         <form id="financeForm" action="{{ route('projects.finance.update', $project) }}" method="POST">
                             @csrf
+
+                            {{-- ESTIMASI PENDAPATAN - tampilan saja (tidak dihitung di laporan
+                                 bulanan), tapi bisa diedit inline di sini. Input-nya SENGAJA
+                                 dikirim bersama form Data Keuangan (bukan AJAX terpisah) supaya
+                                 tersimpan sekali klik "Simpan Data Keuangan" yang sama. --}}
+                            <div class="p-3 rounded-3 bg-info-subtle d-flex justify-content-between align-items-center mb-3" id="estimatedValueBox">
+                                <span class="fw-bold">Estimasi Pendapatan</span>
+
+                                <div class="d-flex align-items-center gap-2 flex-shrink-0 ms-2">
+                                    <span class="fw-bold fs-5 text-info" id="estimatedValueDisplay">{{ \App\Support\Money::formatRupiah($project->estimated_value) }}</span>
+
+                                    <button type="button" class="btn btn-sm btn-outline-info" id="estimatedValueEditBtn" title="Edit Estimasi Pendapatan">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+
+                                    <input type="text" inputmode="numeric" name="estimated_value" id="estimatedValueInput"
+                                           class="form-control form-control-sm finance-amount-input d-none"
+                                           style="width: 140px;"
+                                           value="{{ $project->estimated_value ? number_format((float) $project->estimated_value, 0, ',', '.') : '' }}">
+
+                                    <button type="button" class="btn btn-sm btn-success d-none" id="estimatedValueConfirmBtn" title="Konfirmasi">
+                                        <i class="bi bi-check-lg"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary d-none" id="estimatedValueCancelBtn" title="Batal">
+                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                    </button>
+                                </div>
+                            </div>
                             @method('PUT')
 
                             {{-- PENDAPATAN --}}
@@ -310,6 +338,11 @@
                         </form>
                         @else
                         {{-- Hanya boleh melihat (hasPermission finance.view tanpa finance.manage) --}}
+                        <div class="p-3 rounded-3 bg-info-subtle d-flex justify-content-between align-items-center mb-3">
+                            <span class="fw-bold">Estimasi Pendapatan</span>
+                            <span class="fw-bold fs-5 text-info flex-shrink-0 ms-2">{{ \App\Support\Money::formatRupiah($project->estimated_value) }}</span>
+                        </div>
+
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="fw-bold m-0">Pendapatan</h6>
                         </div>
@@ -587,6 +620,40 @@ document.addEventListener('DOMContentLoaded', function () {
 
             recalculate();
         }
+    });
+
+    // Toggle edit inline untuk "Estimasi Pendapatan" (Edit -> Konfirmasi/Batal).
+    // Input-nya sudah otomatis dapat format titik ribuan dari listener 'input'
+    // di atas (sama class .finance-amount-input), dan tidak ikut terhitung ke
+    // Total Pendapatan/Pengeluaran karena berada di luar #incomeRows/#expenseRows.
+    const estimatedValueDisplay = document.getElementById('estimatedValueDisplay');
+    const estimatedValueEditBtn = document.getElementById('estimatedValueEditBtn');
+    const estimatedValueInput = document.getElementById('estimatedValueInput');
+    const estimatedValueConfirmBtn = document.getElementById('estimatedValueConfirmBtn');
+    const estimatedValueCancelBtn = document.getElementById('estimatedValueCancelBtn');
+
+    function toggleEstimatedValueEditMode(isEditing) {
+        estimatedValueDisplay.classList.toggle('d-none', isEditing);
+        estimatedValueEditBtn.classList.toggle('d-none', isEditing);
+        estimatedValueInput.classList.toggle('d-none', !isEditing);
+        estimatedValueConfirmBtn.classList.toggle('d-none', !isEditing);
+        estimatedValueCancelBtn.classList.toggle('d-none', !isEditing);
+    }
+
+    estimatedValueEditBtn.addEventListener('click', function () {
+        estimatedValueInput.dataset.lastConfirmed = estimatedValueInput.value;
+        toggleEstimatedValueEditMode(true);
+        estimatedValueInput.focus();
+    });
+
+    estimatedValueConfirmBtn.addEventListener('click', function () {
+        estimatedValueDisplay.textContent = formatRupiah(parseAmount(estimatedValueInput.value));
+        toggleEstimatedValueEditMode(false);
+    });
+
+    estimatedValueCancelBtn.addEventListener('click', function () {
+        estimatedValueInput.value = estimatedValueInput.dataset.lastConfirmed || '';
+        toggleEstimatedValueEditMode(false);
     });
 });
 </script>

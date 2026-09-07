@@ -107,6 +107,15 @@
             </div>
         </li>
 
+        {{-- Kontak (buku alamat client) - level-atas, terbuka utk semua role
+             yang login (sama seperti akses Progress Management) --}}
+        <li class="nav-item">
+            <a href="{{ route('contacts.index') }}"
+                class="nav-link sidebar-link text-white {{ request()->routeIs('contacts.*') ? 'active' : '' }}">
+                <i class="bi bi-person-vcard"></i> <span>Kontak</span>
+            </a>
+        </li>
+
         @if(auth()->user()->isSuperAdmin())
             @php $userActive = request()->routeIs('users.*'); @endphp
             <li class="nav-item">

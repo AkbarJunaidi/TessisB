@@ -11,6 +11,11 @@
             <p class="text-muted small m-0">Kelola seluruh project dan pantau jadwal event dengan mudah.</p>
         </div>
         <div class="d-flex gap-2">
+            @if(auth()->user()->isSuperAdmin() || auth()->user()->isAdmin())
+                <a href="{{ route('projects.pipeline') }}" class="btn btn-outline-primary d-flex align-items-center gap-2 fw-medium">
+                    <i class="bi bi-kanban"></i> Lihat Pipeline
+                </a>
+            @endif
             @if(auth()->user()->hasPermission('tracking_progress', 'create_project'))
                 <a href="{{ route('projects.create') }}" class="btn btn-success d-flex align-items-center gap-2 shadow-sm fw-medium">
                     <i class="bi bi-folder-plus"></i> Tambah Project
@@ -202,8 +207,8 @@
                 <div class="col-md-2">
                     <select name="status" class="form-select form-select-sm">
                         <option value="">Semua Status</option>
-                        @foreach(['Draft','Scheduled','Confirmed','In Progress','On Review','Done'] as $s)
-                            <option value="{{ $s }}" @selected(($filters['status'] ?? '') === $s)>{{ $s }}</option>
+                        @foreach(\App\Models\Project::STATUS_LABELS as $s => $label)
+                            <option value="{{ $s }}" @selected(($filters['status'] ?? '') === $s)>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -256,7 +261,7 @@
                                 <td class="py-3" data-label="Tanggal">{{ optional($project->event_date)->translatedFormat('d M Y') }}</td>
                                 <td class="py-3" data-label="Lokasi">{{ $project->location }}</td>
                                 <td class="py-3" data-label="Status">
-                                    <span class="badge bg-light text-dark border">{{ $project->status }}</span>
+                                    <span class="badge bg-light text-dark border">{{ \App\Models\Project::STATUS_LABELS[$project->status] ?? $project->status }}</span>
                                 </td>
                                 <td class="py-3" data-label="Surat Jalan">
                                     @if($project->suratJalans->isNotEmpty())

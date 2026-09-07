@@ -170,9 +170,13 @@ class ProjectController extends Controller
     }
 
     /**
-     * Mengubah status project (dipakai oleh stepper status di Detail Project).
+     * Mengubah status project. Dipakai oleh 2 tempat: (1) stepper status di
+     * Detail Project - form biasa, mengharapkan redirect; (2) drag & drop
+     * di halaman Pipeline - AJAX, mengharapkan JSON. Dibedakan lewat
+     * wantsJson(), mengikuti pola yang sama dengan TrashController/
+     * ActivityLogController.
      */
-    public function updateStatus(Request $request, Project $project): RedirectResponse
+    public function updateStatus(Request $request, Project $project): RedirectResponse|JsonResponse
     {
         $request->validate([
             'status' => ['required', 'in:Draft,Scheduled,Confirmed,In Progress,On Review,Done'],
@@ -180,9 +184,28 @@ class ProjectController extends Controller
 
         $project->update(['status' => $request->input('status')]);
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Status project berhasil diperbarui.',
+            ]);
+        }
+
         return redirect()
             ->route('projects.show', $project)
             ->with('success', 'Status project berhasil diperbarui.');
+    }
+
+    /**
+     * Menampilkan halaman Pipeline: papan Kanban seluruh project,
+     * dikelompokkan berdasarkan status (Draft s/d Done). HANYA Super Admin
+     * & Admin - gate role di route.
+     */
+    public function pipeline(): View
+    {
+        $board = $this->projectService->getPipelineBoard();
+
+        return view('project.pipeline', compact('board'));
     }
 
     /**
@@ -195,7 +218,8 @@ class ProjectController extends Controller
         $this->projectFinanceService->syncFinanceItems(
             $project,
             $request->validated()['incomes'] ?? [],
-            $request->validated()['expenses'] ?? []
+            $request->validated()['expenses'] ?? [],
+            $request->validated()['estimated_value'] ?? null
         );
 
         return redirect()

@@ -127,6 +127,16 @@
         @error('priority')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
+    <div class="col-md-4">
+        <label for="estimated_value" class="form-label fw-semibold small text-secondary">Estimasi Pendapatan (Rp)</label>
+        <input type="number" min="0" step="1000" name="estimated_value" id="estimated_value"
+               class="form-control @error('estimated_value') is-invalid @enderror"
+               placeholder="Contoh: 15000000"
+               value="{{ $old('estimated_value') }}">
+        <small class="text-muted">Estimasi uang yang akan didapat dari project ini. Tampil di Data Keuangan &amp; Pipeline, tidak dihitung di laporan keuangan bulanan.</small>
+        @error('estimated_value')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+    </div>
+
     <div class="col-12">
         <label for="description" class="form-label fw-semibold small text-secondary">Deskripsi Project</label>
         <textarea name="description" id="description" rows="4"

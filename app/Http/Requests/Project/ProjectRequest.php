@@ -33,6 +33,8 @@ class ProjectRequest extends FormRequest
 
             'priority' => ['required', 'in:Rendah,Normal,Tinggi'],
 
+            'estimated_value' => ['nullable', 'numeric', 'min:0', 'max:999999999999.99'],
+
             'description' => ['nullable', 'string'],
 
             // Deadline internal (dipertahankan untuk kompatibilitas fitur lama)
@@ -76,6 +78,9 @@ class ProjectRequest extends FormRequest
 
             'priority.required' => 'Prioritas wajib dipilih.',
             'priority.in'       => 'Prioritas tidak valid.',
+
+            'estimated_value.numeric' => 'Estimasi pendapatan harus berupa angka.',
+            'estimated_value.min'     => 'Estimasi pendapatan tidak boleh negatif.',
         ];
     }
 }

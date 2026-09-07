@@ -82,6 +82,35 @@ class ProjectService
         );
     }
 
+    /**
+     * Mengambil seluruh project, dikelompokkan berdasarkan kolom `status`
+     * yang sudah ada (Draft, Scheduled, Confirmed, In Progress, On Review,
+     * Done), untuk ditampilkan sebagai papan Kanban Pipeline. Setiap
+     * kolom juga menyertakan total estimasi nilai deal (`estimated_value`).
+     *
+     * @return array<string, array{projects: \Illuminate\Support\Collection, total_value: float}>
+     */
+    public function getPipelineBoard(): array
+    {
+        $projects = Project::with('creator')
+            ->latest()
+            ->get()
+            ->groupBy('status');
+
+        $board = [];
+
+        foreach (array_keys(Project::PIPELINE_STATUS_COLORS) as $status) {
+            $projectsInStatus = $projects->get($status) ?? collect();
+
+            $board[$status] = [
+                'projects'    => $projectsInStatus,
+                'total_value' => (float) $projectsInStatus->sum('estimated_value'),
+            ];
+        }
+
+        return $board;
+    }
+
 // Data untuk kalender project pada bulan & tahun tertentu (jumlah project per tanggal).
     public function getCalendarData(int $month, int $year): array
     {
@@ -117,6 +146,7 @@ class ProjectService
             'address'                     => $data['address'],
             'estimated_duration_minutes'  => $data['estimated_duration_minutes'],
             'priority'                    => $data['priority'],
+            'estimated_value'             => $data['estimated_value'] ?? null,
             'created_by'                  => Auth::id(),
         ]);
 
@@ -149,6 +179,7 @@ class ProjectService
             'address'                     => $data['address'],
             'estimated_duration_minutes'  => $data['estimated_duration_minutes'],
             'priority'                    => $data['priority'],
+            'estimated_value'             => $data['estimated_value'] ?? null,
         ]);
 
         $this->activityLogService->log(

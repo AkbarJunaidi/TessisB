@@ -20,6 +20,7 @@ class Project extends Model
         'event_date'  => 'date',
         'event_end_date' => 'date',
         'board_lists' => 'array',
+        'estimated_value' => 'decimal:2',
     ];
 
     /**
@@ -30,6 +31,36 @@ class Project extends Model
         ['label' => 'In Progress', 'color' => 'primary'],
         ['label' => 'Review', 'color' => 'warning'],
         ['label' => 'Done', 'color' => 'success'],
+    ];
+
+    /**
+     * Warna kolom untuk halaman Pipeline (dikelompokkan berdasarkan kolom
+     * `status` yang sudah ada - lihat ProjectController::updateStatus()).
+     * Urutan array ini juga menentukan urutan kolom pada papan Pipeline.
+     */
+    public const PIPELINE_STATUS_COLORS = [
+        'Draft'        => 'secondary',
+        'Scheduled'    => 'info',
+        'Confirmed'    => 'primary',
+        'In Progress'  => 'warning',
+        'On Review'    => 'dark',
+        'Done'         => 'success',
+    ];
+
+    /**
+     * Label Bahasa Indonesia untuk kolom `status` - HANYA untuk tampilan
+     * (dropdown stepper, filter, papan Pipeline). Nilai asli yang disimpan
+     * di database TETAP dalam Bahasa Inggris (Draft, Scheduled, dst) agar
+     * validasi (ProjectController::updateStatus()) dan query yang sudah
+     * ada (mis. ProjectService::getStats()) tidak perlu diubah.
+     */
+    public const STATUS_LABELS = [
+        'Draft'        => 'Rancangan',
+        'Scheduled'    => 'Negosiasi',
+        'Confirmed'    => 'Deal',
+        'In Progress'  => 'Berjalan',
+        'On Review'    => 'Review',
+        'Done'         => 'Selesai',
     ];
 
     protected $fillable = [
@@ -50,6 +81,7 @@ class Project extends Model
         'estimated_duration_minutes',
         'priority',
         'status',
+        'estimated_value',
         'deleted_by',
     ];
 

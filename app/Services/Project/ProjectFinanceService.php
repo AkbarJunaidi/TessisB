@@ -17,13 +17,17 @@ class ProjectFinanceService
      * Sinkronkan seluruh item Pendapatan & Pengeluaran project (replace all)
      * berdasarkan input form - mengikuti pola yang sama dengan
      * ProjectCrewService::syncCrew() (hapus lama, insert baru dalam 1 transaction).
+     * Sekaligus memperbarui Estimasi Pendapatan (field tampilan saja di card
+     * Data Keuangan & Pipeline, TIDAK ikut dihitung sebagai Pendapatan asli).
      *
      * @param  array<int, array{amount: float, description: ?string}>  $incomes
      * @param  array<int, array{amount: float, description: ?string}>  $expenses
      */
-    public function syncFinanceItems(Project $project, array $incomes, array $expenses): Project
+    public function syncFinanceItems(Project $project, array $incomes, array $expenses, ?float $estimatedValue = null): Project
     {
-        DB::transaction(function () use ($project, $incomes, $expenses) {
+        DB::transaction(function () use ($project, $incomes, $expenses, $estimatedValue) {
+            $project->update(['estimated_value' => $estimatedValue]);
+
             $project->financeItems()->delete();
 
             $rows = collect($incomes)

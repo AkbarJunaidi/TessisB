@@ -3,6 +3,7 @@
 use App\Http\Controllers\ActivityLog\ActivityLogController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\PasswordResetRequestController;
+use App\Http\Controllers\Contact\ContactController;
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\DataIntegration\FileController;
 use App\Http\Controllers\DataIntegration\FolderController;
@@ -104,6 +105,16 @@ Route::middleware('auth')->group(function () {
     });
 
     // Modul Tracking Progress (Project & Task)
+    // Route Pipeline SENGAJA didaftarkan SEBELUM Route::resource('projects', ...)
+    // di bawah - kalau ditaruh setelah, "pipeline" akan ketangkap sebagai
+    // parameter {project} pada route show resource (projects/{project}).
+    Route::middleware('role:super_admin,admin')->group(function () {
+
+        Route::get('projects/pipeline', [ProjectController::class, 'pipeline'])
+            ->name('projects.pipeline');
+
+    });
+
     Route::middleware('role:super_admin,admin,employee')->group(function () {
 
         Route::resource('projects', ProjectController::class);
@@ -307,6 +318,15 @@ Route::middleware('auth')->group(function () {
                 ->name('files.destroy');
 
         });
+
+    });
+
+    // Modul Kontak (buku alamat client yang pernah memakai jasa) - berdiri
+    // sendiri, tidak terhubung ke Project. Akses sama seperti Project:
+    // Super Admin, Admin, Employee.
+    Route::middleware('role:super_admin,admin,employee')->group(function () {
+
+        Route::resource('contacts', ContactController::class);
 
     });
 
