@@ -51,7 +51,7 @@
 
     <div class="col-md-6 mb-3">
         <label for="phone" class="form-label">
-            No. HP/WA <span class="text-danger">*</span>
+            No. HP/WA
         </label>
 
         <input
@@ -61,7 +61,6 @@
             class="form-control @error('phone') is-invalid @enderror"
             value="{{ old('phone', $contact->phone ?? '') }}"
             placeholder="Contoh: 081234567890"
-            required
         >
 
         @error('phone')
@@ -69,6 +68,20 @@
                 {{ $message }}
             </div>
         @enderror
+
+        <div class="form-check form-switch mt-2">
+            <input
+                type="checkbox"
+                name="has_whatsapp"
+                id="has_whatsapp"
+                class="form-check-input"
+                value="1"
+                @checked(old('has_whatsapp', $contact->has_whatsapp ?? false))
+            >
+            <label class="form-check-label small text-muted" for="has_whatsapp">
+                Nomor ini punya WhatsApp
+            </label>
+        </div>
     </div>
 
     <div class="col-md-6 mb-3">
@@ -110,6 +123,50 @@
         >{{ old('address', $contact->address ?? '') }}</textarea>
 
         @error('address')
+            <div class="invalid-feedback">
+                {{ $message }}
+            </div>
+        @enderror
+    </div>
+
+    <div class="col-12 mb-3">
+        <label for="notes" class="form-label">
+            Catatan
+        </label>
+
+        <textarea
+            name="notes"
+            id="notes"
+            rows="3"
+            class="form-control @error('notes') is-invalid @enderror"
+            placeholder="Catatan bebas tentang kontak ini (preferensi, riwayat komunikasi, dsb)"
+        >{{ old('notes', $contact->notes ?? '') }}</textarea>
+
+        @error('notes')
+            <div class="invalid-feedback">
+                {{ $message }}
+            </div>
+        @enderror
+    </div>
+
+</div>
+
+<div class="row">
+
+    <div class="col-12 mb-3">
+        <label for="notes" class="form-label">
+            Catatan
+        </label>
+
+        <textarea
+            name="notes"
+            id="notes"
+            rows="3"
+            class="form-control @error('notes') is-invalid @enderror"
+            placeholder="Catatan bebas tentang kontak ini (preferensi, riwayat komunikasi, dsb)"
+        >{{ old('notes', $contact->notes ?? '') }}</textarea>
+
+        @error('notes')
             <div class="invalid-feedback">
                 {{ $message }}
             </div>

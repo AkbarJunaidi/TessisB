@@ -19,6 +19,9 @@ class ProjectRequest extends FormRequest
             'name'        => ['required', 'string', 'max:100'],
             'client'      => ['required', 'string', 'max:255'],
             'pic'         => ['required', 'string', 'max:255'],
+            'company'     => ['nullable', 'string', 'max:255'],
+            'email'       => ['nullable', 'email', 'max:255'],
+            'phone'       => ['nullable', 'string', 'max:30'],
             'category'    => ['required', 'string', 'max:100'],
 
             'event_date'       => ['required', 'date', 'after_or_equal:today'],
@@ -60,6 +63,7 @@ class ProjectRequest extends FormRequest
             'name.max'          => 'Nama project maksimal 100 karakter agar rapi ditampilkan di tabel, kartu, dan laporan PDF.',
             'client.required'   => 'Nama client wajib diisi.',
             'pic.required'      => 'PIC wajib diisi.',
+            'email.email'       => 'Format email tidak valid.',
             'category.required' => 'Kategori project wajib dipilih.',
 
             'event_date.required'       => 'Tanggal acara mulai wajib diisi.',

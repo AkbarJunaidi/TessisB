@@ -58,6 +58,33 @@
         @error('pic')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
+    <div class="col-md-4">
+        <label for="company" class="form-label fw-semibold small text-secondary">Nama Perusahaan</label>
+        <input type="text" name="company" id="company"
+               class="form-control @error('company') is-invalid @enderror"
+               placeholder="Contoh: PT Matahari Indonesia Jaya Abadi"
+               value="{{ $old('company') }}">
+        @error('company')<div class="invalid-feedback">{{ $message }}</div>@enderror
+    </div>
+
+    <div class="col-md-4">
+        <label for="email" class="form-label fw-semibold small text-secondary">Email</label>
+        <input type="email" name="email" id="email"
+               class="form-control @error('email') is-invalid @enderror"
+               placeholder="Contoh: client@email.com"
+               value="{{ $old('email') }}">
+        @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
+    </div>
+
+    <div class="col-md-4">
+        <label for="phone" class="form-label fw-semibold small text-secondary">No. Telepon</label>
+        <input type="text" name="phone" id="phone"
+               class="form-control @error('phone') is-invalid @enderror"
+               placeholder="Contoh: 081234567890"
+               value="{{ $old('phone') }}">
+        @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
+    </div>
+
     <div class="col-md-6">
         <label for="event_date" class="form-label fw-semibold small text-secondary">Tanggal Acara Mulai <span class="text-danger">*</span></label>
         <input type="date" name="event_date" id="event_date"

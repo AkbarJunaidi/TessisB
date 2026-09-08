@@ -17,15 +17,17 @@ class ContactController extends Controller
     ) {}
 
     /**
-     * Menampilkan daftar Kontak (buku alamat client), dengan pencarian.
+     * Menampilkan daftar Kontak (buku alamat client), dengan kartu
+     * statistik, filter huruf awal nama (A-Z), & pencarian.
      */
     public function index(Request $request): View
     {
-        $filters = $request->only('search');
+        $filters = $request->only('search', 'letter');
 
         $contacts = $this->contactService->getAllPaginated($filters);
+        $stats    = $this->contactService->getStats();
 
-        return view('contact.index', compact('contacts', 'filters'));
+        return view('contact.index', compact('contacts', 'filters', 'stats'));
     }
 
     /**
@@ -46,6 +48,17 @@ class ContactController extends Controller
         return redirect()
             ->route('contacts.index')
             ->with('success', 'Kontak berhasil ditambahkan.');
+    }
+
+    /**
+     * Menampilkan Detail Kontak: info lengkap, catatan, & riwayat Project
+     * yang cocok dengan nama Kontak ini (lihat Contact::matchedProjects()).
+     */
+    public function show(Contact $contact): View
+    {
+        $matchedProjects = $contact->matchedProjects();
+
+        return view('contact.show', compact('contact', 'matchedProjects'));
     }
 
     /**
