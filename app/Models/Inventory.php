@@ -26,6 +26,7 @@ class Inventory extends Model
         'brand',
         'image',
         'qr_code', // Kolom bawaan tetap dipertahankan untuk menyimpan path berkas gambar QR
+        'qr_code_report', // QR kedua khusus Inventory Report - isinya Signed URL ke halaman scan publik
         'quantity_total',
         'deleted_by',
     ];
@@ -156,6 +157,22 @@ class Inventory extends Model
             $predictedFilename = 'qrcodes/' . $this->serial_number . '.svg';
             if ($this->serial_number && Storage::disk('public')->exists($predictedFilename)) {
                 return asset('storage/' . $predictedFilename);
+            }
+
+            return null;
+        });
+    }
+
+    /**
+     * Akses ke URL gambar QR Code kedua (khusus Inventory Report) yang
+     * dapat diakses publik - lihat qr_code_report di migration & 
+     * QrCodeService::generateFromUrl().
+     */
+    protected function qrCodeReportUrl(): Attribute
+    {
+        return Attribute::get(function () {
+            if ($this->qr_code_report && Storage::disk('public')->exists($this->qr_code_report)) {
+                return asset('storage/' . $this->qr_code_report);
             }
 
             return null;

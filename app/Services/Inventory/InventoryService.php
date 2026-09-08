@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Throwable;
 
@@ -81,8 +82,19 @@ class InventoryService
             // Generate file fisik QR Code berdasarkan serial_number
             $qrCodePath = $this->qrCodeService->generate($inventory->serial_number);
 
+            // Generate QR Code kedua (khusus Inventory Report) - isinya
+            // Signed URL permanen ke halaman scan publik. Cukup sekali di
+            // sini karena isinya cuma ID barang yang tidak pernah berubah
+            // (beda dengan QR Label yang isinya serial_number, bisa
+            // berubah kalau serial_number diedit - lihat updateInventory()).
+            $qrReportPath = $this->qrCodeService->generateFromUrl(
+                URL::signedRoute('inventory.scan', ['inventory' => $inventory->id]),
+                (string) $inventory->id
+            );
+
             $inventory->update([
-                'qr_code' => $qrCodePath,
+                'qr_code'        => $qrCodePath,
+                'qr_code_report' => $qrReportPath,
             ]);
 
             // Generate Unit Fisik sejumlah quantity_total (1 serial number/QR untuk seluruh unit)
@@ -169,6 +181,22 @@ class InventoryService
                         'qr_code' => $currentQrPath,
                     ]);
                 }
+            }
+
+            // QR Report (self-healing): isinya cuma ID barang yang tidak
+            // pernah berubah, jadi TIDAK perlu regenerasi tiap kali
+            // Inventory diedit - cukup dipastikan file fisiknya masih ada.
+            // Kalau kolomnya masih kosong (data lama sebelum fitur ini
+            // ada) atau file-nya hilang dari disk, baru di-generate ulang.
+            if (!$inventory->qr_code_report || !Storage::disk('public')->exists($inventory->qr_code_report)) {
+                $qrReportPath = $this->qrCodeService->generateFromUrl(
+                    URL::signedRoute('inventory.scan', ['inventory' => $inventory->id]),
+                    (string) $inventory->id
+                );
+
+                $inventory->update([
+                    'qr_code_report' => $qrReportPath,
+                ]);
             }
 
             // Sinkronisasi Unit Fisik mengikuti perubahan quantity_total

@@ -79,6 +79,20 @@ class InventoryController extends Controller
     }
 
     /**
+     * Halaman publik (TANPA login) yang tampil saat QR Code di Inventory
+     * Report di-scan. Diproteksi middleware 'signed' di route (lihat
+     * routes/web.php) - bukan lewat auth/role seperti halaman admin
+     * lainnya. View-nya SENGAJA halaman berdiri sendiri (bukan
+     * layouts.app) - ringkas, read-only, mobile-first.
+     */
+    public function scanShow(Inventory $inventory): View
+    {
+        $inventory->load('attributes');
+
+        return view('inventory.scan', compact('inventory'));
+    }
+
+    /**
      * Menampilkan halaman edit inventory.
      */
     public function edit(Inventory $inventory): View

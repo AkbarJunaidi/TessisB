@@ -268,7 +268,7 @@ class TrashService
         switch ($type) {
 
             case 'inventory':
-                foreach ([$model->image, $model->qr_code] as $path) {
+                foreach ([$model->image, $model->qr_code, $model->qr_code_report] as $path) {
                     if ($path && Storage::disk('public')->exists($path)) {
                         Storage::disk('public')->delete($path);
                     }

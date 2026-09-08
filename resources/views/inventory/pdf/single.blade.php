@@ -288,8 +288,8 @@
             <td class="qr-cell">
                 <div class="box-section" style="margin-bottom: 0;">
                     <p class="box-title">QR Code</p>
-                    @if($inventory->qr_code && file_exists(storage_path('app/public/' . $inventory->qr_code)))
-                        <img src="{{ storage_path('app/public/' . $inventory->qr_code) }}" class="qr-code-img">
+                    @if($inventory->qr_code_report && file_exists(storage_path('app/public/' . $inventory->qr_code_report)))
+                        <img src="{{ storage_path('app/public/' . $inventory->qr_code_report) }}" class="qr-code-img">
                         <div class="qr-caption" style="font-weight: bold; color: #333333;">{{ $inventory->serial_number }}</div>
                         <div class="qr-caption">Scan QR code di atas<br>untuk melihat detail aset<br>secara lengkap.</div>
                     @else

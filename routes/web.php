@@ -48,6 +48,17 @@ Route::middleware('guest')->group(function () {
 
 });
 
+// Halaman Scan QR Inventory Report - SENGAJA di luar grup 'auth' & 'guest'
+// (bisa diakses siapa saja, login ataupun tidak), karena ini yang dibuka
+// saat QR di Inventory Report yang dicetak fisik di-scan pakai kamera HP.
+// Keamanannya BUKAN dari login, tapi dari middleware 'signed' (URL harus
+// persis yang di-generate sistem, ada tanda tangannya - coba tebak-tebak
+// ID lain di URL tidak akan valid). Lihat QrCodeService::generateFromUrl()
+// & InventoryService (pemanggil URL::signedRoute() saat create Inventory).
+Route::get('scan/inventory/{inventory}', [InventoryController::class, 'scanShow'])
+    ->name('inventory.scan')
+    ->middleware('signed');
+
 // Group rute terproteksi (Auth) - Harus Login Terlebih Dahulu
 Route::middleware('auth')->group(function () {
 

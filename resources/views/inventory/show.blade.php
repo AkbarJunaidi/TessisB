@@ -332,9 +332,10 @@
 
             <!-- SISI KANAN (4 KOLOM): QR Code Aset -->
             <div class="col-12 col-lg-4">
-                <div class="card shadow-sm border-0 rounded-3 bg-white">
+                <div class="card shadow-sm border-0 rounded-3 bg-white mb-3">
                     <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
-                        <h6 class="fw-bold text-dark m-0">QR Code Aset</h6>
+                        <h6 class="fw-bold text-dark m-0">QR Code Label</h6>
+                        <small class="text-muted">Dipakai di QR Label - isinya Serial Number</small>
                     </div>
                     <div class="card-body p-4 text-center">
                         <div class="p-3 bg-white rounded-3 border d-inline-block shadow-sm mb-3">
@@ -348,6 +349,28 @@
                             @endif
                         </div>
                         <div class="font-monospace fw-semibold text-secondary">SN: {{ $inventory->serial_number }}</div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0 rounded-3 bg-white">
+                    <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
+                        <h6 class="fw-bold text-dark m-0">QR Code Report</h6>
+                        <small class="text-muted">Dipakai di Inventory Report - isinya link detail barang</small>
+                    </div>
+                    <div class="card-body p-4 text-center">
+                        <div class="p-3 bg-white rounded-3 border d-inline-block shadow-sm mb-3">
+                            @if($inventory->qr_code_report_url)
+                                <img src="{{ $inventory->qr_code_report_url }}" alt="QR Code Report {{ $inventory->serial_number }}" class="img-fluid" style="width: 180px; height: 180px; object-fit: contain;">
+                            @else
+                                <div class="d-flex flex-column align-items-center justify-content-center text-muted" style="width: 180px; height: 180px;">
+                                    <i class="bi bi-qr-code opacity-25 fs-1 mb-2"></i>
+                                    <span class="small">QR Code belum tersedia</span>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="text-muted small">
+                            <i class="bi bi-info-circle me-1"></i>Scan untuk buka halaman detail (tanpa login)
+                        </div>
                     </div>
                 </div>
             </div>
