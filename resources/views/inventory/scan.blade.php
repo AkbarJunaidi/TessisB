@@ -67,11 +67,29 @@
                     @endif
 
                     <div class="col-6">
-                        <div class="text-muted">Jumlah Unit</div>
+                        <div class="text-muted">Jumlah Barang</div>
                         <div class="fw-semibold">{{ $inventory->quantity_total }}</div>
                     </div>
 
                 </div>
+
+                @php
+                    // Ringkasan status unit fisik, urutan tetap: Tersedia,
+                    // Dipinjam, Perbaikan, Rusak, Hilang - HANYA status yang
+                    // jumlahnya > 0 yang ditampilkan (sesuai permintaan).
+                    $statusOrder = ['Tersedia', 'Dipinjam', 'Perbaikan', 'Rusak', 'Hilang'];
+                    $statusCounts = $inventory->units->countBy(fn ($unit) => $unit->display_status);
+                    $summaryParts = collect($statusOrder)
+                        ->filter(fn ($status) => ($statusCounts[$status] ?? 0) > 0)
+                        ->map(fn ($status) => $statusCounts[$status] . ' ' . $status);
+                @endphp
+
+                @if($summaryParts->isNotEmpty())
+                    <div class="mt-3 pt-3 border-top">
+                        <div class="text-muted small mb-1">Status Unit Fisik</div>
+                        <div class="fw-semibold">{{ $summaryParts->implode(', ') }}</div>
+                    </div>
+                @endif
 
                 @if($inventory->description)
                     <div class="mt-3">

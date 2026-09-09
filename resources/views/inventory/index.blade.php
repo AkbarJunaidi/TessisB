@@ -10,6 +10,19 @@
         <p>Kelola dan pantau seluruh data aset barang fisik perusahaan.</p>
     </div>
     <div class="d-flex flex-wrap gap-2">
+        {{-- FITUR: Scan Barcode - cari barang lewat serial number hasil scan
+             (kamera atau scanner fisik), lalu kembalikan barang yang sedang
+             dipinjam tanpa perlu cari project-nya dulu di halaman Barang
+             Pinjaman. --}}
+        <button
+            type="button"
+            id="btnScanBarcode"
+            class="btn btn-outline-success d-flex align-items-center gap-2"
+            data-bs-toggle="modal"
+            data-bs-target="#scanBarcodeModal"
+        >
+            <i class="bi bi-upc-scan"></i> <span class="d-none d-sm-inline">Scan Barcode</span>
+        </button>
         {{-- FITUR: Proses Laporan Massal (Semua Inventaris) bertahap via AJAX, notifikasi saat siap --}}
         <button
             type="button"
@@ -459,6 +472,262 @@
             cancelBtn.addEventListener('click', cancelActiveReport);
         }
     });
+</script>
+
+{{-- Modal Scan Barcode - cari barang via serial number (scanner fisik atau
+     kamera), lalu kembalikan barang yang sedang dipinjam. Proses
+     pengembalian sungguhan TETAP lewat endpoint borrowed-items.return yang
+     sudah ada (dipanggil lewat fetch di bawah) - modal ini cuma
+     antarmuka pencarian & konfirmasi, tidak ada logic bisnis baru. --}}
+<div class="modal fade" id="scanBarcodeModal" tabindex="-1" aria-labelledby="scanBarcodeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="scanBarcodeModalLabel">
+                    <i class="bi bi-upc-scan me-2"></i>Scan Barcode Barang
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+
+                <label for="scanSerialInput" class="form-label small fw-semibold text-muted">
+                    Serial Number
+                </label>
+                <div class="input-group mb-2">
+                    <input
+                        type="text"
+                        id="scanSerialInput"
+                        class="form-control"
+                        placeholder="Scan pakai alat, atau ketik manual lalu Enter"
+                        autocomplete="off"
+                    >
+                    <button type="button" id="btnScanLookup" class="btn btn-outline-primary">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+                <small class="text-muted d-block mb-3">
+                    Scanner barcode fisik otomatis mengetik ke kolom ini lalu Enter. Atau pakai kamera di bawah.
+                </small>
+
+                <button type="button" id="btnOpenCamera" class="btn btn-sm btn-outline-secondary w-100 mb-3">
+                    <i class="bi bi-camera me-1"></i> Buka Kamera
+                </button>
+
+                <div id="scanCameraWrapper" class="d-none mb-3">
+                    <div id="scanCameraReader" style="width: 100%;"></div>
+                    <button type="button" id="btnCloseCamera" class="btn btn-sm btn-outline-danger w-100 mt-2">
+                        <i class="bi bi-x-circle me-1"></i> Tutup Kamera
+                    </button>
+                </div>
+
+                <div id="scanResultArea"></div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Library kamera QR Code (html5-qrcode v2.3.8, stable, dipakai 135+
+     project - dimuat dari jsDelivr). Catatan: tidak diberi atribut
+     integrity/SRI karena hash-nya tidak bisa diverifikasi dari sandbox
+     tempat kode ini ditulis - kalau mau lebih aman, tambahkan SRI hash
+     resminya setelah diverifikasi sendiri. --}}
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const returnUrlTemplate = @json(route('borrowed-items.return', ['project' => '__PROJECT_ID__']));
+
+    const modalEl = document.getElementById('scanBarcodeModal');
+    const serialInput = document.getElementById('scanSerialInput');
+    const lookupBtn = document.getElementById('btnScanLookup');
+    const resultArea = document.getElementById('scanResultArea');
+
+    const openCameraBtn = document.getElementById('btnOpenCamera');
+    const closeCameraBtn = document.getElementById('btnCloseCamera');
+    const cameraWrapper = document.getElementById('scanCameraWrapper');
+    let html5QrCode = null;
+
+    // Reset modal setiap kali dibuka, supaya scan berikutnya mulai bersih.
+    modalEl.addEventListener('show.bs.modal', function () {
+        serialInput.value = '';
+        resultArea.innerHTML = '';
+        cameraWrapper.classList.add('d-none');
+    });
+
+    modalEl.addEventListener('hidden.bs.modal', stopCamera);
+
+    serialInput.addEventListener('keydown', function (e) {
+        // Scanner barcode fisik berperilaku seperti keyboard: ketik teks
+        // lalu otomatis tekan Enter - ini yang men-trigger lookup.
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            doLookup();
+        }
+    });
+
+    lookupBtn.addEventListener('click', doLookup);
+
+    openCameraBtn.addEventListener('click', function () {
+        cameraWrapper.classList.remove('d-none');
+        startCamera();
+    });
+
+    closeCameraBtn.addEventListener('click', function () {
+        stopCamera();
+        cameraWrapper.classList.add('d-none');
+    });
+
+    function startCamera() {
+        html5QrCode = new Html5Qrcode('scanCameraReader');
+
+        html5QrCode.start(
+            { facingMode: 'environment' },
+            { fps: 10, qrbox: { width: 220, height: 220 } },
+            function (decodedText) {
+                serialInput.value = decodedText;
+                stopCamera();
+                cameraWrapper.classList.add('d-none');
+                doLookup();
+            },
+            function () { /* frame tidak kebaca, biarkan - normal, terus coba tiap frame */ }
+        ).catch(function () {
+            resultArea.innerHTML = '<div class="alert alert-warning mb-0">Tidak bisa mengakses kamera. Pastikan browser diberi izin kamera.</div>';
+            cameraWrapper.classList.add('d-none');
+        });
+    }
+
+    function stopCamera() {
+        if (html5QrCode) {
+            html5QrCode.stop().catch(() => {});
+            html5QrCode = null;
+        }
+    }
+
+    function doLookup() {
+        const serial = serialInput.value.trim();
+
+        if (!serial) {
+            return;
+        }
+
+        resultArea.innerHTML = '<div class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm me-2"></span>Mencari...</div>';
+
+        fetch(`{{ route('inventory.scan-lookup') }}?serial_number=${encodeURIComponent(serial)}`, {
+            headers: { 'Accept': 'application/json' },
+        })
+            .then((res) => res.json())
+            .then(renderResult)
+            .catch(() => {
+                resultArea.innerHTML = '<div class="alert alert-danger mb-0">Terjadi kesalahan, silakan coba lagi.</div>';
+            });
+    }
+
+    function renderResult(data) {
+        if (!data.found) {
+            resultArea.innerHTML = `
+                <div class="alert alert-warning mb-0">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    Barang dengan serial number ini tidak ditemukan.
+                </div>`;
+            return;
+        }
+
+        if (data.borrowed_units.length === 0) {
+            resultArea.innerHTML = `
+                <div class="alert alert-info mb-0">
+                    <strong>${data.inventory.name}</strong> ditemukan, tapi barang ini sedang tidak dipinjam di project manapun.
+                </div>`;
+            return;
+        }
+
+        if (data.borrowed_units.length === 1) {
+            const unit = data.borrowed_units[0];
+            resultArea.innerHTML = renderConfirmCard(data.inventory.name, [unit]);
+            attachConfirmHandler([unit]);
+            return;
+        }
+
+        // Lebih dari 1 unit dipinjam bersamaan - user pilih manual yang mana.
+        const optionsHtml = data.borrowed_units.map((unit, idx) => `
+            <div class="form-check border rounded-3 p-2 mb-2">
+                <input class="form-check-input" type="radio" name="scanUnitChoice" id="scanUnitChoice${idx}" value="${idx}" ${idx === 0 ? 'checked' : ''}>
+                <label class="form-check-label d-block" for="scanUnitChoice${idx}">
+                    <div class="fw-semibold">Unit #${unit.unit_number}</div>
+                    <div class="small text-muted">${unit.project_name} - SJ ${unit.surat_jalan_nomor}</div>
+                </label>
+            </div>
+        `).join('');
+
+        resultArea.innerHTML = `
+            <div class="alert alert-secondary">
+                <strong>${data.inventory.name}</strong> sedang dipinjam di ${data.borrowed_units.length} project sekaligus. Pilih yang mana yang dikembalikan:
+            </div>
+            ${optionsHtml}
+            <button type="button" id="btnConfirmScanReturn" class="btn btn-success w-100 mt-2">
+                <i class="bi bi-check-circle me-1"></i> Konfirmasi Kembalikan
+            </button>
+        `;
+
+        document.getElementById('btnConfirmScanReturn').addEventListener('click', function () {
+            const chosenIdx = document.querySelector('input[name="scanUnitChoice"]:checked').value;
+            submitReturn(data.borrowed_units[chosenIdx]);
+        });
+    }
+
+    function renderConfirmCard(inventoryName, units) {
+        const unit = units[0];
+        return `
+            <div class="alert alert-secondary">
+                <div class="fw-bold mb-1">${inventoryName} - Unit #${unit.unit_number}</div>
+                <div class="small text-muted">Dipinjam untuk project: ${unit.project_name}</div>
+                <div class="small text-muted">No. Surat Jalan: ${unit.surat_jalan_nomor}</div>
+            </div>
+            <button type="button" id="btnConfirmScanReturn" class="btn btn-success w-100">
+                <i class="bi bi-check-circle me-1"></i> Konfirmasi Kembalikan
+            </button>
+        `;
+    }
+
+    function attachConfirmHandler(units) {
+        document.getElementById('btnConfirmScanReturn').addEventListener('click', function () {
+            submitReturn(units[0]);
+        });
+    }
+
+    function submitReturn(unit) {
+        const btn = document.getElementById('btnConfirmScanReturn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Memproses...';
+
+        fetch(returnUrlTemplate.replace('__PROJECT_ID__', unit.project_id), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ unit_ids: [unit.unit_id] }),
+        })
+            .then(async (res) => {
+                const resData = await res.json();
+                if (!res.ok) throw new Error(resData.message || 'Gagal mengembalikan barang.');
+                return resData;
+            })
+            .then(() => {
+                resultArea.innerHTML = `
+                    <div class="alert alert-success mb-0">
+                        <i class="bi bi-check-circle-fill me-1"></i> Barang berhasil dikembalikan. Silakan scan barang berikutnya.
+                    </div>`;
+                serialInput.value = '';
+                serialInput.focus();
+            })
+            .catch((err) => {
+                resultArea.innerHTML = `<div class="alert alert-danger mb-0">${err.message}</div>`;
+            });
+    }
+});
 </script>
 
 @endsection

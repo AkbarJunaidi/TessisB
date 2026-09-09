@@ -7,6 +7,7 @@ use App\Http\Requests\Inventory\InventoryRequest;
 use App\Models\Inventory;
 use App\Models\ReportExport;
 use App\Services\Inventory\InventoryService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -87,9 +88,60 @@ class InventoryController extends Controller
      */
     public function scanShow(Inventory $inventory): View
     {
-        $inventory->load('attributes');
+        $inventory->load('attributes', 'units');
 
         return view('inventory.scan', compact('inventory'));
+    }
+
+    /**
+     * [AJAX] Dipakai fitur Scan Barcode di halaman Inventory List. Mencari
+     * Inventory berdasarkan serial_number hasil scan, lalu kembalikan
+     * daftar unit fisiknya yang SEDANG DIPINJAM (kalau ada) supaya user
+     * bisa pilih mau kembalikan yang mana - proses pengembalian sungguhan
+     * TETAP lewat endpoint borrowed-items.return yang sudah ada (tidak ada
+     * logic pengembalian baru di sini, cuma pencarian/pencocokan).
+     */
+    public function scanLookup(Request $request): JsonResponse
+    {
+        abort_unless(
+            Auth::user()?->hasPermission('inventory', 'view'),
+            403,
+            'Anda tidak memiliki hak akses untuk fitur ini.'
+        );
+
+        $request->validate([
+            'serial_number' => ['required', 'string'],
+        ]);
+
+        $inventory = Inventory::where('serial_number', trim($request->input('serial_number')))->first();
+
+        if (!$inventory) {
+            return response()->json(['found' => false]);
+        }
+
+        $borrowedUnits = $inventory->units()
+            ->whereNotNull('surat_jalan_item_id')
+            ->with('suratJalanItem.suratJalan.project')
+            ->orderBy('unit_number')
+            ->get()
+            ->filter(fn ($unit) => $unit->suratJalanItem?->suratJalan?->project)
+            ->map(fn ($unit) => [
+                'unit_id'          => $unit->id,
+                'unit_number'      => $unit->unit_number,
+                'project_id'       => $unit->suratJalanItem->suratJalan->project->id,
+                'project_name'     => $unit->suratJalanItem->suratJalan->project->name,
+                'surat_jalan_nomor' => $unit->suratJalanItem->suratJalan->nomor,
+            ])
+            ->values();
+
+        return response()->json([
+            'found' => true,
+            'inventory' => [
+                'id'   => $inventory->id,
+                'name' => $inventory->name,
+            ],
+            'borrowed_units' => $borrowedUnits,
+        ]);
     }
 
     /**

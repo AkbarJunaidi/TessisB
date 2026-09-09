@@ -69,7 +69,13 @@ Route::middleware('auth')->group(function () {
         ->name('dashboard');
 
     // Modul Inventory Management
+    // Route scan-lookup SENGAJA didaftarkan SEBELUM Route::resource di bawah
+    // - kalau ditaruh setelah, "scan-lookup" akan ketangkap sebagai parameter
+    // {inventory} pada route show resource (inventory/{inventory}).
     Route::middleware('role:super_admin,admin')->group(function () {
+
+        Route::get('inventory/scan-lookup', [InventoryController::class, 'scanLookup'])
+            ->name('inventory.scan-lookup');
 
         Route::resource('inventory', InventoryController::class);
 
