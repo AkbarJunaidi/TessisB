@@ -22,7 +22,7 @@
 
     <div class="col-md-8">
         <label for="name" class="form-label fw-semibold small text-secondary">Nama Project <span class="text-danger">*</span></label>
-        <input type="text" name="name" id="name"
+        <input type="text" name="name" id="name" autocomplete="off"
                class="form-control @error('name') is-invalid @enderror"
                placeholder="Contoh: Wedding Arnold & Gita"
                value="{{ $old('name') }}" required autofocus maxlength="100">
@@ -40,13 +40,23 @@
         @error('category')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-6 position-relative">
         <label for="client" class="form-label fw-semibold small text-secondary">Client <span class="text-danger">*</span></label>
-        <input type="text" name="client" id="client"
+        <input type="text" name="client" id="client" autocomplete="off"
                class="form-control @error('client') is-invalid @enderror"
                placeholder="Nama client / instansi"
                value="{{ $old('client') }}" required>
+        <input type="hidden" name="contact_id" id="contact_id" value="{{ $old('contact_id') }}">
         @error('client')<div class="invalid-feedback">{{ $message }}</div>@enderror
+
+        {{-- Ditampilkan kalau Client sedang terhubung ke data Kontak (lihat
+             app/Models/Contact.php - projects()/matchedProjects()) --}}
+        <small id="clientLinkStatus" class="text-success d-none">
+            <i class="bi bi-link-45deg"></i> Terhubung ke data Kontak
+        </small>
+
+        {{-- Dropdown saran autocomplete, muncul saat mengetik min. 2 huruf --}}
+        <div id="clientSuggestions" class="list-group position-absolute w-100 shadow-sm d-none" style="z-index: 1050; top: 100%;"></div>
     </div>
 
     <div class="col-md-6">
@@ -200,5 +210,119 @@
 
         syncEndDateMin();
         startInput.addEventListener('change', syncEndDateMin);
+    });
+</script>
+
+<script>
+    // Autocomplete field Client - cari dari daftar Kontak (lihat
+    // ContactController::search()). Kalau user pilih salah satu saran,
+    // field Client/Email/No. Telepon otomatis terisi DAN project ini
+    // benar-benar ter-link ke Kontak itu (contact_id, bukan cuma tebak
+    // nama - lihat Contact::matchedProjects() & ContactService::
+    // attachTotalIncome() yang sekarang mengutamakan link ini).
+    document.addEventListener('DOMContentLoaded', function () {
+        const clientInput   = document.getElementById('client');
+        const contactIdInput = document.getElementById('contact_id');
+        const emailInput    = document.getElementById('email');
+        const phoneInput    = document.getElementById('phone');
+        const suggestionBox = document.getElementById('clientSuggestions');
+        const linkStatus    = document.getElementById('clientLinkStatus');
+
+        if (!clientInput || !suggestionBox) {
+            return;
+        }
+
+        const searchUrl = @json(route('contacts.search'));
+
+        let debounceTimer = null;
+        let lastSelectedName = clientInput.value; // isi awal (mode Edit) dianggap "sudah sesuai"
+
+        // Mode Edit: kalau project ini sudah punya contact_id dari awal,
+        // langsung tampilkan badge terhubung tanpa perlu action apapun.
+        if (contactIdInput.value) {
+            linkStatus.classList.remove('d-none');
+        }
+
+        function hideSuggestions() {
+            suggestionBox.classList.add('d-none');
+            suggestionBox.innerHTML = '';
+        }
+
+        function renderSuggestions(contacts) {
+            if (contacts.length === 0) {
+                hideSuggestions();
+                return;
+            }
+
+            suggestionBox.innerHTML = contacts.map((c) => `
+                <button type="button" class="list-group-item list-group-item-action py-2 client-suggestion-item"
+                        data-id="${c.id}" data-name="${escapeHtml(c.name)}"
+                        data-phone="${escapeHtml(c.phone ?? '')}" data-email="${escapeHtml(c.email ?? '')}">
+                    <div class="fw-semibold">${escapeHtml(c.name)}</div>
+                    <div class="small text-muted">${escapeHtml(c.phone ?? '-')}${c.email ? ' &middot; ' + escapeHtml(c.email) : ''}</div>
+                </button>
+            `).join('');
+
+            suggestionBox.classList.remove('d-none');
+
+            suggestionBox.querySelectorAll('.client-suggestion-item').forEach((btn) => {
+                btn.addEventListener('click', function () {
+                    clientInput.value = this.dataset.name;
+                    contactIdInput.value = this.dataset.id;
+                    lastSelectedName = this.dataset.name;
+
+                    if (emailInput && !emailInput.value) {
+                        emailInput.value = this.dataset.email || '';
+                    }
+                    if (phoneInput && !phoneInput.value) {
+                        phoneInput.value = this.dataset.phone || '';
+                    }
+
+                    linkStatus.classList.remove('d-none');
+                    hideSuggestions();
+                });
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text ?? '';
+            return div.innerHTML;
+        }
+
+        clientInput.addEventListener('input', function () {
+            const keyword = this.value.trim();
+
+            // Nama diketik ulang beda dari yang terakhir dipilih -> link lama
+            // sudah tidak relevan lagi, lepas (biar tidak salah nyambung ke
+            // Kontak yang sebenarnya beda).
+            if (keyword !== lastSelectedName) {
+                contactIdInput.value = '';
+                linkStatus.classList.add('d-none');
+            }
+
+            clearTimeout(debounceTimer);
+
+            if (keyword.length < 2) {
+                hideSuggestions();
+                return;
+            }
+
+            debounceTimer = setTimeout(function () {
+                fetch(`${searchUrl}?q=${encodeURIComponent(keyword)}`, {
+                    headers: { 'Accept': 'application/json' },
+                })
+                    .then((res) => res.json())
+                    .then((data) => renderSuggestions(data.contacts || []))
+                    .catch(() => hideSuggestions());
+            }, 300);
+        });
+
+        // Klik di luar input/dropdown -> tutup saran
+        document.addEventListener('click', function (e) {
+            if (!clientInput.contains(e.target) && !suggestionBox.contains(e.target)) {
+                hideSuggestions();
+            }
+        });
     });
 </script>

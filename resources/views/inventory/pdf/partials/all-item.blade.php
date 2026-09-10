@@ -1,39 +1,5 @@
 <div class="page-bundle">
 
-    <table class="header-table">
-        <tr>
-            <td style="width: 30%;">
-                {{-- foto logo perusahaan --}}
-                @php
-                    $logoPath = public_path('image/logoAP.png');
-                    $logoBase64 = '';
-                    if (file_exists($logoPath)) {
-                        $logoType = mime_content_type($logoPath);
-                        $logoBase64 = 'data:' . $logoType . ';base64,' . base64_encode(file_get_contents($logoPath));
-                    }
-                @endphp
-
-
-                @if($logoBase64)
-                    <img src="{{ $logoBase64 }}" alt="Logo" style="width: 180px; height: auto;">
-                @else
-                    <p class="brand-name">{{ config('app.name', 'TESSIS') }}</p>
-                @endif
-                {{-- <p class="brand-sub">CV. Arindra Production</p> --}}
-
-            </td>
-            <td class="header-title" style="width: 40%;">
-                <p class="report-title">INVENTORY REPORT</p>
-                {{-- <p class="report-subtitle">LAPORAN INFORMASI ASET</p> --}}
-            </td>
-            <td class="header-meta" style="width: 30%;">
-                Generated :<br>
-                {{ $exportDate }}
-            </td>
-        </tr>
-    </table>
-    <hr class="header-rule">
-
     <!-- Bagian 1: Foto Barang & Informasi Identitas -->
     <table class="section-table">
         <tr>
@@ -132,21 +98,5 @@
             </td>
         </tr>
     </table>
-
-    <div class="footer-container">
-        <table class="footer-table">
-            <tr>
-                <td>
-                    {{-- Dicetak oleh<br> --}}
-                    {{ auth()->user()->name ?? 'Admin' }}<br>
-                    {{ $exportDate }}
-                </td>
-                <td class="footer-right">
-                    CV. Arindra Production<br>
-
-                </td>
-            </tr>
-        </table>
-    </div>
 
 </div>

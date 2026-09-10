@@ -49,8 +49,14 @@ class ContactService
 
     /**
      * Menempelkan atribut sementara `total_income` ke setiap Contact
-     * dalam koleksi, lewat 1 query batch (join projects + finance items,
-     * dikelompokkan per nama client yang dinormalisasi).
+     * dalam koleksi, lewat 2 query batch (bukan per-baris, supaya tidak
+     * N+1 walau daftar Kontak-nya banyak):
+     *
+     * 1. Link ASLI (projects.contact_id) - akurat 100%.
+     * 2. Fallback pencocokan nama - HANYA untuk Project yang belum/tidak
+     *    di-link (contact_id masih null), supaya tidak dobel hitung
+     *    dengan sumber #1. Lihat Contact::matchedProjects() untuk logic
+     *    yang sama di halaman Detail Kontak.
      */
     protected function attachTotalIncome(\Illuminate\Support\Collection $contacts): void
     {
@@ -58,11 +64,21 @@ class ContactService
             return;
         }
 
+        $contactIds = $contacts->pluck('id');
         $normalizedNames = $contacts->map(fn (Contact $c) => mb_strtolower(trim($c->name)))->unique()->values();
 
-        $totals = DB::table('projects')
+        $linkedTotals = DB::table('projects')
             ->join('project_finance_items', 'project_finance_items.project_id', '=', 'projects.id')
             ->where('project_finance_items.type', 'income')
+            ->whereIn('projects.contact_id', $contactIds)
+            ->select('projects.contact_id', DB::raw('SUM(project_finance_items.amount) as total'))
+            ->groupBy('projects.contact_id')
+            ->pluck('total', 'contact_id');
+
+        $nameMatchedTotals = DB::table('projects')
+            ->join('project_finance_items', 'project_finance_items.project_id', '=', 'projects.id')
+            ->where('project_finance_items.type', 'income')
+            ->whereNull('projects.contact_id')
             ->whereIn(DB::raw('LOWER(TRIM(projects.client))'), $normalizedNames)
             ->select(
                 DB::raw('LOWER(TRIM(projects.client)) as client_key'),
@@ -72,9 +88,34 @@ class ContactService
             ->pluck('total', 'client_key');
 
         foreach ($contacts as $contact) {
-            $key = mb_strtolower(trim($contact->name));
-            $contact->setAttribute('total_income', (float) ($totals[$key] ?? 0));
+            $linked = (float) ($linkedTotals[$contact->id] ?? 0);
+            $nameMatched = (float) ($nameMatchedTotals[mb_strtolower(trim($contact->name))] ?? 0);
+
+            $contact->setAttribute('total_income', $linked + $nameMatched);
         }
+    }
+
+    /**
+     * Pencarian ringkas untuk autocomplete field Client di form Create/
+     * Edit Project (lihat ContactController::search()). Beda dengan
+     * getAllPaginated(): tidak pakai pagination, tidak menempel
+     * total_income (tidak perlu buat kebutuhan autocomplete), hasil
+     * dibatasi sedikit saja supaya dropdown-nya tetap ringkas & cepat.
+     *
+     * @return \Illuminate\Support\Collection<int, Contact>
+     */
+    public function search(string $keyword, int $limit = 8): \Illuminate\Support\Collection
+    {
+        $keyword = trim($keyword);
+
+        if ($keyword === '') {
+            return collect();
+        }
+
+        return Contact::where('name', 'like', "%{$keyword}%")
+            ->orderBy('name')
+            ->limit($limit)
+            ->get(['id', 'name', 'phone', 'email']);
     }
 
     /**
@@ -87,9 +128,18 @@ class ContactService
             ->unique()
             ->values();
 
-        $totalRevenue = $normalizedNames->isEmpty() ? 0 : DB::table('projects')
+        // Total Pendapatan = link asli (semua project yang sudah ber-
+        // contact_id) + fallback nama (HANYA project yang belum di-link).
+        $linkedRevenue = DB::table('projects')
             ->join('project_finance_items', 'project_finance_items.project_id', '=', 'projects.id')
             ->where('project_finance_items.type', 'income')
+            ->whereNotNull('projects.contact_id')
+            ->sum('project_finance_items.amount');
+
+        $nameMatchedRevenue = $normalizedNames->isEmpty() ? 0 : DB::table('projects')
+            ->join('project_finance_items', 'project_finance_items.project_id', '=', 'projects.id')
+            ->where('project_finance_items.type', 'income')
+            ->whereNull('projects.contact_id')
             ->whereIn(DB::raw('LOWER(TRIM(projects.client))'), $normalizedNames)
             ->sum('project_finance_items.amount');
 
@@ -99,7 +149,7 @@ class ContactService
             'new_this_month'   => Contact::whereMonth('created_at', now()->month)
                 ->whereYear('created_at', now()->year)
                 ->count(),
-            'total_revenue'    => (float) $totalRevenue,
+            'total_revenue'    => (float) $linkedRevenue + (float) $nameMatchedRevenue,
         ];
     }
 

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 
 class Contact extends Model
@@ -49,6 +50,16 @@ class Contact extends Model
     }
 
     /**
+     * Relasi ASLI (foreign key, bukan tebak nama) ke Project - terisi
+     * untuk Project yang field Client-nya dipilih dari saran autocomplete
+     * (lihat ContactController::search() & form Create/Edit Project).
+     */
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class);
+    }
+
+    /**
      * Inisial nama (maks 2 huruf) untuk avatar di card & detail.
      */
     protected function initials(): Attribute
@@ -72,20 +83,31 @@ class Contact extends Model
     }
 
     /**
-     * Mencari Project yang kemungkinan besar adalah Project dari kontak
-     * ini, dengan mencocokkan nama Kontak terhadap kolom `client` bebas-
-     * teks di tabel projects (disamakan huruf kecil & tanpa spasi
-     * berlebih). BUKAN relasi foreign key sungguhan - Kontak sengaja
-     * dibuat berdiri sendiri, jadi pencocokan ini best-effort saja dan
-     * tidak selalu akurat kalau penulisan nama client di Project beda
-     * dengan nama di Kontak.
+     * Mencari Project milik kontak ini. Ada 2 sumber, digabung:
+     *
+     * 1. Link ASLI (contact_id) - Project yang field Client-nya dipilih
+     *    dari saran autocomplete saat dibuat/diedit. Akurat 100%.
+     * 2. Fallback pencocokan nama (best-effort, seperti sebelumnya) -
+     *    HANYA untuk Project LAMA yang belum/tidak di-link (contact_id
+     *    masih null), supaya tidak dobel hitung dengan sumber #1 di atas.
+     *
+     * Sumber #2 ini pelan-pelan akan makin jarang terpakai begitu makin
+     * banyak Project baru dibuat lewat autocomplete (sumber #1).
      */
     public function matchedProjects(): Collection
     {
-        return Project::with('financeItems')
+        $linkedProjects = $this->projects()->with('financeItems')->latest()->get();
+
+        $nameMatchedProjects = Project::with('financeItems')
+            ->whereNull('contact_id')
             ->whereRaw('LOWER(TRIM(client)) = ?', [mb_strtolower(trim($this->name))])
             ->latest()
             ->get();
+
+        return $linkedProjects
+            ->concat($nameMatchedProjects)
+            ->sortByDesc('created_at')
+            ->values();
     }
 
     /**

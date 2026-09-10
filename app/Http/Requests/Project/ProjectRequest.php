@@ -18,6 +18,7 @@ class ProjectRequest extends FormRequest
         return [
             'name'        => ['required', 'string', 'max:100'],
             'client'      => ['required', 'string', 'max:255'],
+            'contact_id'  => ['nullable', 'integer', 'exists:contacts,id'],
             'pic'         => ['required', 'string', 'max:255'],
             'company'     => ['nullable', 'string', 'max:255'],
             'email'       => ['nullable', 'email', 'max:255'],

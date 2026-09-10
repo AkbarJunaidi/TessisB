@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Contact\ContactRequest;
 use App\Models\Contact;
 use App\Services\Contact\ContactService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -15,6 +16,29 @@ class ContactController extends Controller
     public function __construct(
         protected ContactService $contactService
     ) {}
+
+    /**
+     * [AJAX] Pencarian ringkas Kontak berdasarkan nama, dipakai fitur
+     * autocomplete di field Client pada form Create/Edit Project - lihat
+     * project/partials/form.blade.php. Terpisah dari index() karena
+     * kebutuhannya beda: tidak perlu pagination/statistik, hasil
+     * dibatasi & field-nya minimal saja (id, name, phone, email).
+     */
+    public function search(Request $request): JsonResponse
+    {
+        $keyword = (string) $request->query('q', '');
+
+        $contacts = $this->contactService->search($keyword);
+
+        return response()->json([
+            'contacts' => $contacts->map(fn (Contact $c) => [
+                'id'    => $c->id,
+                'name'  => $c->name,
+                'phone' => $c->phone,
+                'email' => $c->email,
+            ]),
+        ]);
+    }
 
     /**
      * Menampilkan daftar Kontak (buku alamat client), dengan kartu

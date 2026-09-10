@@ -135,6 +135,7 @@ class ProjectService
         $project = Project::create([
             'name'                        => $data['name'],
             'client'                      => $data['client'],
+            'contact_id'                  => $data['contact_id'] ?? null,
             'pic'                         => $data['pic'],
             'company'                     => $data['company'] ?? null,
             'email'                       => $data['email'] ?? null,
@@ -171,6 +172,7 @@ class ProjectService
         $project->update([
             'name'                        => $data['name'],
             'client'                      => $data['client'],
+            'contact_id'                  => $data['contact_id'] ?? null,
             'pic'                         => $data['pic'],
             'company'                     => $data['company'] ?? null,
             'email'                       => $data['email'] ?? null,

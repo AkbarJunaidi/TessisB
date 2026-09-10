@@ -70,6 +70,7 @@ class Project extends Model
         'board_lists',
         'created_by',
         'client',
+        'contact_id',
         'pic',
         'company',
         'email',
@@ -160,6 +161,17 @@ class Project extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Relasi BelongsTo: Kontak (client) yang benar-benar terhubung ke
+     * project ini - terisi HANYA kalau field Client dipilih dari saran
+     * autocomplete (bukan diketik bebas). Nullable - project tetap boleh
+     * punya client yang belum/tidak ada di daftar Kontak.
+     */
+    public function contact(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class);
     }
 
     /**

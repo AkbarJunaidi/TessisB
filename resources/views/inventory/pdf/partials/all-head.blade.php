@@ -1,7 +1,7 @@
 <style>
     @page {
         size: a4 portrait;
-        margin: 1.8cm;
+        margin: 0; /* full-bleed: kop atas & bawah 100% lebar halaman, sama seperti single report */
     }
     body {
         font-family: 'Helvetica', 'Arial', sans-serif;
@@ -12,58 +12,34 @@
         font-size: 10.5pt;
     }
 
+    /* KOP ATAS & BAWAH (letterhead) - tampil berulang di tiap halaman DOMPDF,
+       sama persis dengan resources/views/inventory/pdf/single.blade.php */
+    .kop-atas, .kop-bawah {
+        position: fixed;
+        left: 0;
+        right: 0;
+        width: 100%;
+    }
+    .kop-atas {
+        top: 0;
+    }
+    .kop-bawah {
+        bottom: 0;
+    }
+    .kop-atas img, .kop-bawah img {
+        width: 100%;
+        display: block;
+    }
+
     .page-bundle {
+        /* Padding atas/bawah pas tinggi kop (sama seperti single report),
+           kiri/kanan 1.8cm - supaya konten tidak ketiban/kepotong gambar
+           kop-atas & kop-bawah yang position: fixed */
+        padding: 4.8cm 1.8cm;
         page-break-after: always;
     }
     .page-bundle:last-child {
         page-break-after: avoid;
-    }
-
-    /* HEADER */
-    .header-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 12px;
-    }
-    .header-table td {
-        vertical-align: middle;
-    }
-    .brand-name {
-        font-size: 16pt;
-        font-weight: bold;
-        color: #1a3d8f;
-        margin: 0;
-    }
-    .brand-sub {
-        font-size: 8pt;
-        color: #888888;
-        margin: 0;
-    }
-    .header-title {
-        text-align: center;
-    }
-    .report-title {
-        font-size: 15pt;
-        font-weight: bold;
-        color: #1a3d8f;
-        margin: 0;
-        letter-spacing: 0.5px;
-    }
-    .report-subtitle {
-        font-size: 9pt;
-        color: #1a3d8f;
-        letter-spacing: 1px;
-        margin: 2px 0 0 0;
-    }
-    .header-meta {
-        text-align: right;
-        font-size: 8.5pt;
-        color: #444444;
-    }
-    .header-rule {
-        border: none;
-        border-top: 2px solid #1a3d8f;
-        margin: 0 0 18px 0;
     }
 
     /* BAGIAN 1: FOTO + IDENTITAS */
@@ -190,26 +166,5 @@
     .qr-caption {
         font-size: 8pt;
         color: #777777;
-    }
-
-    /* FOOTER */
-    .footer-container {
-        position: fixed;
-        bottom: 0px;
-        left: 0px;
-        right: 0px;
-        border-top: 2px solid #1a3d8f;
-        padding-top: 10px;
-        font-size: 8.5pt;
-        color: #666666;
-    }
-    .footer-table {
-        width: 100%;
-    }
-    .footer-right {
-        text-align: right;
-        font-size: 9pt;
-        font-weight: bold;
-        color: #1a3d8f;
     }
 </style>

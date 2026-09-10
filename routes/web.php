@@ -339,9 +339,17 @@ Route::middleware('auth')->group(function () {
     });
 
     // Modul Kontak (buku alamat client yang pernah memakai jasa) - berdiri
-    // sendiri, tidak terhubung ke Project. Akses sama seperti Project:
-    // Super Admin, Admin, Employee.
+    // sendiri (tidak wajib terhubung ke Project - link ke Project cuma
+    // terisi kalau field Client dipilih dari saran autocomplete). Akses
+    // sama seperti Project: Super Admin, Admin, Employee.
+    //
+    // Route search SENGAJA didaftarkan SEBELUM Route::resource di bawah -
+    // kalau ditaruh setelah, "search" akan ketangkap sebagai parameter
+    // {contact} pada route show resource (contacts/{contact}).
     Route::middleware('role:super_admin,admin,employee')->group(function () {
+
+        Route::get('contacts/search', [ContactController::class, 'search'])
+            ->name('contacts.search');
 
         Route::resource('contacts', ContactController::class);
 
