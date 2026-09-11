@@ -131,10 +131,16 @@ class ActivityLogService
 
     /**
      * Mengambil Activity Log terbaru untuk Dashboard.
+     *
+     * @param  int|null  $userId  Kalau diisi, hasil dibatasi ke aktivitas milik
+     *                            user ini saja (dipakai untuk Employee di Dashboard,
+     *                            supaya tidak melihat aktivitas seluruh sistem).
+     *                            Null (default) = semua aktivitas, seperti semula.
      */
-    public function getLatestActivities(int $limit = 4): Collection
+    public function getLatestActivities(int $limit = 4, ?int $userId = null): Collection
     {
         return ActivityLog::with('user')
+            ->when($userId, fn ($query) => $query->where('user_id', $userId))
             ->latest()
             ->take($limit)
             ->get();

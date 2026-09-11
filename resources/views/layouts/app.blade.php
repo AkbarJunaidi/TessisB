@@ -15,6 +15,18 @@
 </head>
 <body>
 
+    {{-- Terapkan status collapse sidebar SEBELUM sisa halaman digambar,
+         biar tidak ada kedipan "kebuka dulu baru collapse" (FOUC) saat
+         reload/pindah halaman. Cuma berpengaruh ke tampilan >=992px lewat
+         CSS media query di app-sidebar/sidebar.blade.php - di HP/tablet
+         localStorage ini tidak pernah dibaca sama sekali (sidebar di sana
+         selalu pakai mekanisme offcanvas normal). --}}
+    <script>
+        if (localStorage.getItem('sidebarCollapsed') === '1') {
+            document.documentElement.classList.add('sidebar-collapsed');
+        }
+    </script>
+
     {{-- ==========================================================
          APP SHELL: sidebar statis di desktop (>=992px), berubah
          jadi offcanvas asli Bootstrap di layar sempit (aksesibel,
@@ -108,6 +120,18 @@
             width: 272px;
             background: linear-gradient(180deg, var(--c-navy) 0%, var(--c-navy-2) 100%);
             border-right: 1px solid rgba(255,255,255,.06);
+            transition: width .2s ease;
+        }
+        /* Mode collapsed (icon-only) - HANYA desktop (>=992px), diaktifkan
+           lewat class "sidebar-collapsed" di <html> (tombol toggle ada di
+           bagian atas sidebar, lihat layouts/sidebar.blade.php). Mobile/
+           tablet (<992px, offcanvas) tidak pernah kena aturan ini - di sana
+           sudah ada cara tutup sendiri (backdrop + tombol X). Ikon brand
+           (.sidebar-brand-icon di theme.css) SENGAJA satu ukuran konstan di
+           kedua state (tidak tergantung 84px di sini) - supaya logonya
+           tidak kelihatan "membesar-mengecil" tiap kali toggle. */
+        @media (min-width: 992px) {
+            html.sidebar-collapsed .app-sidebar { width: 84px; }
         }
         /* Desktop (>=992px): offcanvas-lg otomatis jadi kolom statis oleh
            Bootstrap, lalu default flexbox (align-items: stretch) membuat
@@ -151,6 +175,40 @@
             document.querySelectorAll('.toast-container .toast').forEach(function (toastEl) {
                 new bootstrap.Toast(toastEl).show();
             });
+
+            // Toggle sidebar collapsed (icon-only) - HANYA berefek di
+            // desktop >=992px lewat CSS (lihat .app-sidebar &
+            // html.sidebar-collapsed di atas + di sidebar.blade.php).
+            // Tombolnya sendiri juga cuma dirender di layar itu
+            // (d-none d-lg-flex), jadi listener ini aman dipasang selalu.
+            var sidebarToggleBtn = document.getElementById('sidebarCollapseToggle');
+            if (sidebarToggleBtn) {
+                var accordionToggles = document.querySelectorAll('#sidebarMenuAccordion [data-bs-toggle="collapse"]');
+
+                sidebarToggleBtn.addEventListener('click', function () {
+                    var collapsed = !document.documentElement.classList.contains('sidebar-collapsed');
+                    document.documentElement.classList.toggle('sidebar-collapsed', collapsed);
+                    localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0');
+                    sidebarToggleBtn.setAttribute('aria-label', collapsed ? 'Buka sidebar' : 'Tutup sidebar');
+
+                    // Submenu (Inventory/Progress Management/dst) sengaja
+                    // tidak bisa di-expand saat rail sedang collapsed (tidak
+                    // ada tempat menampilkan teksnya, sudah disembunyikan
+                    // CSS juga) - data-bs-toggle Bootstrap dilepas sementara
+                    // supaya klik ikon parent tidak diam-diam nge-toggle
+                    // submenu yang toh tersembunyi. Dikembalikan lagi saat
+                    // sidebar di-expand.
+                    accordionToggles.forEach(function (link) {
+                        if (collapsed) {
+                            link.dataset.bsToggleBackup = link.getAttribute('data-bs-toggle');
+                            link.removeAttribute('data-bs-toggle');
+                        } else if (link.dataset.bsToggleBackup) {
+                            link.setAttribute('data-bs-toggle', link.dataset.bsToggleBackup);
+                            delete link.dataset.bsToggleBackup;
+                        }
+                    });
+                });
+            }
         });
     </script>
 

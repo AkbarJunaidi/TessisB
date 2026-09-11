@@ -2,17 +2,30 @@
      Di desktop, offcanvas-lg otomatis jadi sidebar statis tanpa header ini. --}}
 <div class="offcanvas-header d-lg-none px-3 pt-3 pb-2">
     <a href="{{ route('dashboard') }}" class="sidebar-logo-wrap text-decoration-none" id="appSidebarLabel">
-        <img src="{{ asset('image/logo.png') }}" alt="Logo" class="sidebar-logo-mobile">
+        <img src="{{ asset('image/logo1.png') }}" alt="Logo CV Arindra Production" class="sidebar-logo-mobile">
+        <span class="sidebar-brand-text">CV Arindra Production</span>
     </a>
     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#appSidebar" aria-label="Tutup menu"></button>
 </div>
 
 <div class="offcanvas-body d-flex flex-column p-3 text-white h-100 sidebar-body">
 
-    {{-- Brand (hanya tampil di desktop; di mobile sudah ada di offcanvas-header) --}}
-    <a href="{{ route('dashboard') }}" class="d-none d-lg-flex align-items-center text-white text-decoration-none mb-2 px-1">
-        <img src="{{ asset('image/logo.png') }}" alt="Logo" style="height: 64px; width: auto; object-fit: contain;">
-    </a>
+    {{-- Brand (hanya tampil di desktop; di mobile sudah ada di offcanvas-header).
+         Tombol di sebelahnya untuk collapse/expand sidebar jadi mode
+         icon-only - HANYA muncul di desktop (d-none d-lg-inline-flex),
+         karena di mobile "menutup sidebar" sudah difasilitasi tombol X
+         di atas + backdrop offcanvas, tidak perlu mode ini. Logic-nya
+         (baca localStorage, toggle class, dst) ada di layouts/app.blade.php
+         supaya semua kode perilaku shell terkumpul di 1 tempat. --}}
+    <div class="d-none d-lg-flex mb-2 px-1 sidebar-brand-row">
+        <a href="{{ route('dashboard') }}" class="sidebar-brand-link">
+            <img src="{{ asset('image/logo1.png') }}" alt="Logo CV Arindra Production" class="sidebar-brand-icon">
+            <span class="sidebar-brand-text sidebar-link-text">CV Arindra Production</span>
+        </a>
+        <button type="button" class="sidebar-collapse-toggle" id="sidebarCollapseToggle" aria-label="Tutup sidebar" title="Tutup/buka sidebar">
+            <i class="bi bi-chevron-left"></i>
+        </button>
+    </div>
 
     <hr class="border-white opacity-10 sidebar-divider">
 
@@ -21,7 +34,7 @@
         <li class="nav-item">
             <a href="{{ route('dashboard') }}"
                 class="nav-link sidebar-link text-white {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
+                <i class="bi bi-speedometer2"></i> <span class="sidebar-link-text">Dashboard</span>
             </a>
         </li>
 
@@ -30,7 +43,7 @@
             @php $invActive = request()->routeIs('inventory.*'); @endphp
             <li class="nav-item">
                 <a href="#menuInventory" data-bs-toggle="collapse" class="nav-link sidebar-link text-white d-flex align-items-center justify-content-between {{ $invActive ? 'active' : '' }}" aria-expanded="{{ $invActive ? 'true' : 'false' }}">
-                    <span><i class="bi bi-box-seam"></i> <span>Inventory</span></span>
+                    <span><i class="bi bi-box-seam"></i> <span class="sidebar-link-text">Inventory</span></span>
                     <i class="bi bi-chevron-down sidebar-collapse-icon"></i>
                 </a>
                 <div class="collapse {{ $invActive ? 'show' : '' }}" id="menuInventory" data-bs-parent="#sidebarMenuAccordion">
@@ -58,7 +71,7 @@
         @endphp
         <li class="nav-item">
             <a href="#menuTracking" data-bs-toggle="collapse" class="nav-link sidebar-link text-white d-flex align-items-center justify-content-between {{ $trackActive ? 'active' : '' }}" aria-expanded="{{ $trackActive ? 'true' : 'false' }}">
-                <span><i class="bi bi-kanban"></i> <span>Progress Management</span></span>
+                <span><i class="bi bi-kanban"></i> <span class="sidebar-link-text">Progress Management</span></span>
                 <i class="bi bi-chevron-down sidebar-collapse-icon"></i>
             </a>
             <div class="collapse {{ $trackActive ? 'show' : '' }}" id="menuTracking" data-bs-parent="#sidebarMenuAccordion">
@@ -68,6 +81,13 @@
                             <i class="bi bi-kanban"></i> Projects
                         </a>
                     </li>
+                    @if(auth()->user()->hasRole('super_admin', 'admin'))
+                    <li class="nav-item">
+                        <a href="{{ route('projects.pipeline') }}" class="nav-link sidebar-sublink {{ request()->routeIs('projects.pipeline') ? 'active' : '' }}">
+                            <i class="bi bi-diagram-3"></i> Pipeline
+                        </a>
+                    </li>
+                    @endif
                     <li class="nav-item">
                         <a href="{{ route('borrowed-items.index') }}" class="nav-link sidebar-sublink {{ request()->routeIs('borrowed-items.*') ? 'active' : '' }}">
                             <i class="bi bi-box-arrow-in-left"></i> Barang Pinjaman
@@ -88,7 +108,7 @@
         @php $intActive = request()->routeIs('folders.*') || request()->routeIs('files.*'); @endphp
         <li class="nav-item">
             <a href="#menuIntegrasi" data-bs-toggle="collapse" class="nav-link sidebar-link text-white d-flex align-items-center justify-content-between {{ $intActive ? 'active' : '' }}" aria-expanded="{{ $intActive ? 'true' : 'false' }}">
-                <span><i class="bi bi-database"></i> <span>Integrasi Data</span></span>
+                <span><i class="bi bi-database"></i> <span class="sidebar-link-text">Integrasi Data</span></span>
                 <i class="bi bi-chevron-down sidebar-collapse-icon"></i>
             </a>
             <div class="collapse {{ $intActive ? 'show' : '' }}" id="menuIntegrasi" data-bs-parent="#sidebarMenuAccordion">
@@ -112,7 +132,7 @@
         <li class="nav-item">
             <a href="{{ route('contacts.index') }}"
                 class="nav-link sidebar-link text-white {{ request()->routeIs('contacts.*') ? 'active' : '' }}">
-                <i class="bi bi-person-vcard"></i> <span>Kontak</span>
+                <i class="bi bi-person-vcard"></i> <span class="sidebar-link-text">Kontak</span>
             </a>
         </li>
 
@@ -120,7 +140,7 @@
             @php $userActive = request()->routeIs('users.*'); @endphp
             <li class="nav-item">
                 <a href="#menuUser" data-bs-toggle="collapse" class="nav-link sidebar-link text-white d-flex align-items-center justify-content-between {{ $userActive ? 'active' : '' }}" aria-expanded="{{ $userActive ? 'true' : 'false' }}">
-                    <span><i class="bi bi-people"></i> <span>User Management</span></span>
+                    <span><i class="bi bi-people"></i> <span class="sidebar-link-text">User Management</span></span>
                     <i class="bi bi-chevron-down sidebar-collapse-icon"></i>
                 </a>
                 <div class="collapse {{ $userActive ? 'show' : '' }}" id="menuUser" data-bs-parent="#sidebarMenuAccordion">
@@ -145,14 +165,14 @@
             <li class="nav-item">
                 <a href="{{ route('activity-logs.index') }}"
                     class="nav-link sidebar-link text-white {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}">
-                    <i class="bi bi-journal-text"></i> <span>Activity Logs</span>
+                    <i class="bi bi-journal-text"></i> <span class="sidebar-link-text">Activity Logs</span>
                 </a>
             </li>
 
             <li class="nav-item">
                 <a href="{{ route('trash.index') }}"
                     class="nav-link sidebar-link text-white {{ request()->routeIs('trash.*') ? 'active' : '' }}">
-                    <i class="bi bi-trash"></i> <span>Trash</span>
+                    <i class="bi bi-trash"></i> <span class="sidebar-link-text">Trash</span>
                 </a>
             </li>
         @endif
@@ -168,7 +188,7 @@
                 <div class="avatar-initial flex-shrink-0" style="width:40px;height:40px;font-size:1.05rem;background:rgba(255,255,255,.12);color:#fff;">
                     {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                 </div>
-                <div class="ms-3 overflow-hidden">
+                <div class="ms-3 overflow-hidden sidebar-link-text">
                     <div class="text-white fw-semibold text-truncate mb-0 lh-sm" style="font-size:.9rem;">
                         {{ Auth::user()->name }}
                     </div>
@@ -184,7 +204,7 @@
     <form action="{{ route('logout') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin keluar sistem?');">
         @csrf
         <button type="submit" class="btn btn-sm btn-outline-light w-100 d-flex align-items-center justify-content-center py-2 rounded-3">
-            <i class="bi bi-box-arrow-left me-2"></i> Keluar Sistem
+            <i class="bi bi-box-arrow-left me-2"></i> <span class="sidebar-link-text">Keluar Sistem</span>
         </button>
     </form>
 </div>
@@ -245,4 +265,74 @@
     /* Scrollbar tipis untuk sidebar (khusus WebKit, degradasi aman di browser lain) */
     .offcanvas-body::-webkit-scrollbar { width: 6px; }
     .offcanvas-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 10px; }
+
+    /* --- Baris brand desktop (logo + teks + tombol collapse) --- */
+    .sidebar-brand-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .sidebar-collapse-toggle {
+        color: rgba(255,255,255,.7);
+        background: rgba(255,255,255,.08);
+        border: 1px solid rgba(255,255,255,.1);
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: .5rem;
+        flex-shrink: 0;
+        transition: background .2s ease, color .2s ease;
+    }
+    .sidebar-collapse-toggle:hover { background: rgba(255,255,255,.16); color: #fff; }
+    .sidebar-collapse-toggle i { font-size: .8rem; transition: transform .25s ease; }
+
+    /* ==========================================================================
+       MODE COLLAPSED (icon-only) - HANYA aktif di desktop (>=992px), lewat
+       class "sidebar-collapsed" yang dipasang di elemen <html> (toggle
+       button + script ada di layouts/app.blade.php, supaya semua LOGIC
+       shell terkumpul di 1 file; style-nya ditaruh di sini karena semua
+       selector yang disentuh basisnya juga didefinisikan di file ini).
+
+       Mobile/tablet (<992px) TIDAK PERNAH kena aturan blok ini - media
+       query di bawah membatasinya secara eksplisit. Di sana "menutup
+       sidebar" sudah difasilitasi offcanvas + tombol X yang sudah ada
+       sejak awal, tidak perlu mode icon-only ini.
+
+       CARA MAINTAIN: kalau nanti menambah menu/link baru di sidebar,
+       teksnya cukup dibungkus <span class="sidebar-link-text">...</span>
+       (sama seperti menu2 yang sudah ada) - otomatis ikut disembunyikan
+       di sini tanpa perlu menambah aturan CSS baru.
+       ========================================================================== */
+    @media (min-width: 992px) {
+        html.sidebar-collapsed .sidebar-link-text,
+        html.sidebar-collapsed .sidebar-collapse-icon {
+            display: none !important;
+        }
+        /* Submenu (Inventory/Progress Management/dst) tidak ada tempat
+           menampilkan teksnya saat rail sempit - disembunyikan total.
+           JS di app.blade.php juga melepas data-bs-toggle sementara,
+           supaya klik ikon parent tidak diam-diam nge-toggle submenu
+           yang toh disembunyikan ini. */
+        html.sidebar-collapsed #sidebarMenuAccordion .collapse {
+            display: none !important;
+        }
+        html.sidebar-collapsed .sidebar-link {
+            justify-content: center !important;
+            padding: .65rem .5rem;
+        }
+        html.sidebar-collapsed .sidebar-brand-row {
+            flex-direction: column;
+            gap: .6rem;
+        }
+        html.sidebar-collapsed .sidebar-profile {
+            justify-content: center;
+            padding: .5rem !important;
+        }
+        html.sidebar-collapsed .sidebar-collapse-toggle i {
+            transform: rotate(180deg);
+        }
+    }
 </style>

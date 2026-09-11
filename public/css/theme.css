@@ -173,6 +173,36 @@ button:focus-visible,
     flex-shrink: 0;
 }
 
+/* --- Grid statistik Dashboard, auto-reflow (dipakai bersama .stat-card) ---
+   Jumlah kartu yang tampil berbeda-beda per role (permission-aware), jadi
+   grid kolom tetap (row-cols-xl-5 dst) bikin susunan bolong/aneh kalau
+   kartunya cuma 2-3. minmax(200px, 1fr) + auto-fill membiarkan browser
+   menghitung sendiri berapa kolom yang pas di lebar layar manapun, dan
+   kartu yang tersisa tetap mengisi baris secara rapi. */
+.dashboard-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+@media (min-width: 768px) {
+    .dashboard-stat-grid { gap: 1.25rem; }
+}
+
+/* --- Panel list Dashboard - tinggi dibatasi ala ERP (padat, tidak ada
+   card yang membengkak tak terbatas kalau datanya banyak baris). Thead
+   dibuat sticky supaya tetap terbaca saat body-nya di-scroll. Class ini
+   HANYA berlaku di dalam .dashboard-list-panel, tidak menyentuh
+   .table-modern di halaman lain yang memakainya tanpa wrapper ini. */
+.dashboard-list-panel .table-responsive {
+    max-height: 300px;
+    overflow-y: auto;
+}
+.dashboard-list-panel .table-modern thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
 /* --- Judul section halaman (header konsisten tiap modul) --- */
 .page-heading { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
 .page-heading h3 { font-weight: 700; letter-spacing: -.02em; color: var(--c-navy); margin: 0; }
@@ -241,35 +271,94 @@ button:focus-visible,
 .divider-soft { border-color: var(--c-border); opacity: 1; }
 
 /* ==========================================================================
-   SIDEBAR - logo header mobile
+   SIDEBAR - brand (logo + nama perusahaan), dipakai di mobile header
+   maupun desktop. Sejak diubah dari 1 gambar utuh (logo.png, berisi ikon+
+   teks+tagline dibakar jadi 1 file) menjadi ikon polos (logo1.png) + teks
+   HTML asli "CV Arindra Production" di sampingnya - supaya teksnya benar2
+   teks (bisa di-select, aksesibel ke screen reader, dan bisa disembunyikan
+   terpisah dari ikon saat sidebar di-collapse - lihat sidebar.blade.php).
    ========================================================================== */
 .sidebar-logo-mobile {
-    /* PENYEBAB ASLI gambar "kepotong ruang kosong" yang tidak pernah
-       hilang di percobaan-percobaan sebelumnya: file image/logo.png
-       ITU SENDIRI punya padding transparan ~15% di atas & bawah gambar
-       (dicek langsung isi filenya, bukan CSS-nya) - jadi berapa pun
-       margin/padding CSS di sekitarnya diubah, ruang kosong itu tetap
-       ada karena ruangnya ada DI DALAM piksel gambar, bukan di luar.
-       object-fit:cover + aspect-ratio yang cocok dengan rasio KONTEN
-       ASLI (bukan rasio file aslinya) memaksa browser men-scale &
-       memotong pas persis bagian transparan itu - tanpa perlu edit
-       file gambarnya sendiri (logo.png dipakai juga di sidebar desktop
-       & halaman login, jangan sampai perubahan ini kebawa ke sana). */
-    width: 100%;
-    height: auto;
-    aspect-ratio: 862 / 193; /* rasio KONTEN logo setelah padding transparan dibuang */
+    /* logo1.png (dipakai di sini) punya padding transparan di dalam
+       filenya sendiri, sama seperti logo.png dulu (dicek langsung dari
+       piksel file: ukuran file 313x277, tapi konten yang benar2 terisi
+       cuma 304x193 - sisanya transparan). object-fit:cover + aspect-ratio
+       sesuai KONTEN (bukan rasio file aslinya) memaksa browser men-scale &
+       memotong pas di batas konten itu, tanpa perlu edit file gambarnya. */
+    height: 40px;
+    width: auto;
+    aspect-ratio: 304 / 193;
     object-fit: cover;
     object-position: center;
+    flex-shrink: 0;
 }
 
-/* Wadah logo header mobile - ukurannya ikut lebar sidebar (bukan vw
-   viewport lagi), flex supaya logo & (nanti kalau perlu) elemen lain di
-   sampingnya rapi sejajar. Nempel di baris paling atas offcanvas-header. */
+/* Versi desktop dari ikon yang sama (teknik crop identik dengan mobile).
+   SENGAJA disamakan ukurannya dengan mode collapsed (32px) - dulu pernah
+   beda (42px saat expanded, 32px saat collapsed) tapi kelihatan aneh
+   karena logonya "membesar-mengecil" saat toggle. Sekarang SATU ukuran
+   konstan untuk kedua state, jadi tidak ada override terpisah lagi di
+   sidebar.blade.php untuk mode collapsed. */
+.sidebar-brand-icon {
+    height: 32px;
+    width: auto;
+    aspect-ratio: 304 / 193;
+    object-fit: cover;
+    object-position: center;
+    flex-shrink: 0;
+}
+
+/* Teks nama perusahaan - dipakai di mobile (dalam .sidebar-logo-wrap) dan
+   desktop (dalam .sidebar-brand-row). text-transform:uppercase dipakai
+   untuk tampilan SAJA (bukan mengubah teks aslinya jadi huruf besar semua
+   di HTML) - lebih ramah screen reader dibanding menulis literal huruf
+   besar semua.
+
+   white-space:nowrap + overflow:hidden + text-overflow:ellipsis WAJIB
+   supaya "CV Arindra Production" tidak pernah pecah jadi 2 baris di
+   sidebar desktop yang sempit (272px) - sebelumnya tidak ada aturan ini
+   sama sekali, jadi teks bebas wrap normal begitu kehabisan tempat.
+   min-width:0 WAJIB juga - tanpa ini, elemen flex child tidak akan mau
+   menyusut di bawah lebar kontennya sendiri (perilaku default flexbox),
+   jadi ellipsis di atas tidak akan pernah kepakai walau sudah ditulis. */
+.sidebar-brand-text {
+    color: #fff;
+    font-weight: 700;
+    font-size: .74rem;
+    letter-spacing: .01em;
+    text-transform: uppercase;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+/* Wadah <a> brand desktop (logo+teks) - flex:1 supaya dia yang menyusut
+   duluan (bukan tombol collapse di sampingnya) kalau ruang sempit,
+   min-width:0 WAJIB agar span teks di dalamnya bisa ellipsis (lihat
+   komentar .sidebar-brand-text di atas - min-width:0 harus ada di
+   SETIAP level flex container di antara teks & batas terluarnya). */
+.sidebar-brand-link {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    color: #fff;
+    text-decoration: none;
+}
+
+/* Wadah logo+teks header mobile - flex row, boleh menyusut/truncate kalau
+   nama perusahaan kepanjangan buat layar HP sangat kecil, tapi selalu
+   sisakan ruang tetap untuk tombol tutup (X) di sampingnya. */
 .sidebar-logo-wrap {
     display: flex;
     align-items: center;
-    width: 68%; /* porsi dari lebar sidebar - sisanya untuk jarak & tombol tutup (X) */
-    max-width: 320px;
+    gap: .6rem;
+    min-width: 0; /* WAJIB agar text-truncate anaknya benar-benar bekerja di flex child */
+    max-width: calc(100% - 48px);
 }
 
 /* Garis pembatas di bawah header sidebar. PENTING - kenapa dipisah jadi
