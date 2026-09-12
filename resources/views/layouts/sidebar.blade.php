@@ -8,7 +8,7 @@
     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#appSidebar" aria-label="Tutup menu"></button>
 </div>
 
-<div class="offcanvas-body d-flex flex-column p-3 text-white h-100 sidebar-body">
+<div class="offcanvas-body d-flex flex-column p-3 pt-lg-0 text-white h-100 sidebar-body">
 
     {{-- Brand (hanya tampil di desktop; di mobile sudah ada di offcanvas-header).
          Tombol di sebelahnya untuk collapse/expand sidebar jadi mode
@@ -16,8 +16,17 @@
          karena di mobile "menutup sidebar" sudah difasilitasi tombol X
          di atas + backdrop offcanvas, tidak perlu mode ini. Logic-nya
          (baca localStorage, toggle class, dst) ada di layouts/app.blade.php
-         supaya semua kode perilaku shell terkumpul di 1 tempat. --}}
-    <div class="d-none d-lg-flex mb-2 px-1 sidebar-brand-row">
+         supaya semua kode perilaku shell terkumpul di 1 tempat.
+
+         Tinggi 64px (di .sidebar-brand-row, style block di bawah pada
+         file ini) SENGAJA dibuat presisi sama dengan tinggi navbar
+         (.app-topbar, navbar.blade.php) - garis border-bottom di
+         bawahnya jadi menyatu lurus dengan garis navbar. Makanya
+         padding-top offcanvas-body dihapus KHUSUS desktop (pt-lg-0) -
+         brand-row perlu nempel pas di y=0 supaya perhitungan 64px itu
+         akurat dari titik paling atas sidebar, bukan ketambahan padding
+         lain lebih dulu. --}}
+    <div class="d-none d-lg-flex px-1 sidebar-brand-row">
         <a href="{{ route('dashboard') }}" class="sidebar-brand-link">
             <img src="{{ asset('image/logo1.png') }}" alt="Logo CV Arindra Production" class="sidebar-brand-icon">
             <span class="sidebar-brand-text sidebar-link-text">CV Arindra Production</span>
@@ -27,7 +36,11 @@
         </button>
     </div>
 
-    <hr class="border-white opacity-10 sidebar-divider">
+    {{-- Garis pembatas ini HANYA untuk mobile sekarang - di desktop,
+         border-bottom pada .sidebar-brand-row di atas sudah berfungsi
+         sebagai garis yang sama (sekaligus itulah yang membuatnya presisi
+         sejajar dengan garis navbar, lihat komentar di atas). --}}
+    <hr class="border-white opacity-10 sidebar-divider d-lg-none">
 
     <ul class="nav nav-pills flex-column mb-auto gap-1 sidebar-nav" id="sidebarMenuAccordion" role="menu" aria-label="Menu utama">
 
@@ -266,18 +279,26 @@
     .offcanvas-body::-webkit-scrollbar { width: 6px; }
     .offcanvas-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 10px; }
 
-    /* --- Baris brand desktop (logo + teks + tombol collapse) --- */
+    /* --- Baris brand desktop (logo + teks + tombol collapse) ---
+       height:64px SENGAJA presisi sama dengan tinggi navbar (.app-topbar,
+       navbar.blade.php) - lihat komentar panjang di markup-nya. border-
+       bottom di sini MENGGANTIKAN <hr> terpisah (yang sekarang cuma
+       tampil di mobile, d-lg-none) - jadi garis pembatasnya adalah bagian
+       dari box 64px ini sendiri, bukan elemen terpisah dengan margin
+       sendiri yang gampang meleset dari perhitungan tinggi navbar. */
     .sidebar-brand-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
+        height: 64px;
+        border-bottom: 1px solid rgba(255,255,255,.1);
     }
     .sidebar-collapse-toggle {
         color: rgba(255,255,255,.7);
         background: rgba(255,255,255,.08);
         border: 1px solid rgba(255,255,255,.1);
-        width: 28px;
-        height: 28px;
+        width: 24px;
+        height: 24px;
         padding: 0;
         display: flex;
         align-items: center;
@@ -325,6 +346,7 @@
         }
         html.sidebar-collapsed .sidebar-brand-row {
             flex-direction: column;
+            justify-content: center;
             gap: .6rem;
         }
         html.sidebar-collapsed .sidebar-profile {

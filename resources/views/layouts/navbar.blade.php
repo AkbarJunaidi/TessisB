@@ -60,6 +60,20 @@
 </nav>
 
 <style>
+    /* Tinggi navbar dibuat eksplisit (bukan dibiarkan organik dari padding+
+       konten) supaya PERSIS sama dengan tinggi container brand di sidebar
+       desktop (.sidebar-brand-row, lihat sidebar.blade.php) - dua-duanya
+       64px. Efeknya: garis border-bottom navbar & garis pembatas di bawah
+       logo sidebar jadi sejajar dalam satu baris lurus, bukan beda tinggi
+       seperti sebelumnya. min-height (bukan height) supaya tetap aman
+       kalau suatu saat kontennya butuh lebih tinggi (misal judul halaman
+       yang sangat panjang di layar sempit), navbar boleh tumbuh, cuma
+       tidak akan pernah LEBIH PENDEK dari 64px. */
+    .app-topbar {
+        min-height: 64px;
+    }
+
+
     .app-topbar { position: sticky; top: 0; z-index: 1030; }
     .text-navy { color: var(--c-navy); }
 

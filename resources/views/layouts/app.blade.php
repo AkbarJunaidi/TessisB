@@ -117,6 +117,15 @@
         }
 
         .app-sidebar {
+            /* 272px (awal) -> 296px -> 304px -> 320px. Sejak permintaan
+               "kelipatan 8" untuk seluruh header sidebar (logo, tombol,
+               tinggi container, dst - lihat sidebar.blade.php &
+               theme.css), semua angka terkait dibuat kelipatan 8 termasuk
+               ini. Tiap kenaikan lebar di sini dipasangkan dengan
+               font-size di .sidebar-brand-text (theme.css) - kalau nanti
+               nama perusahaan berubah jadi lebih panjang/pendek atau
+               font-nya diubah lagi, 2 angka ini yang perlu disesuaikan
+               bareng. */
             width: 272px;
             background: linear-gradient(180deg, var(--c-navy) 0%, var(--c-navy-2) 100%);
             border-right: 1px solid rgba(255,255,255,.06);
@@ -128,12 +137,15 @@
            tablet (<992px, offcanvas) tidak pernah kena aturan ini - di sana
            sudah ada cara tutup sendiri (backdrop + tombol X). Ikon brand
            (.sidebar-brand-icon di theme.css) SENGAJA satu ukuran konstan di
-           kedua state (tidak tergantung 84px di sini) - supaya logonya
-           tidak kelihatan "membesar-mengecil" tiap kali toggle. */
+           kedua state (tidak tergantung angka di sini) - supaya logonya
+           tidak kelihatan "membesar-mengecil" tiap kali toggle. 80px
+           (kelipatan 8, sebelumnya 84px) tetap nyaman menampung logo 24px
+           + tombol toggle 24px yang ditumpuk vertikal. */
         @media (min-width: 992px) {
-            html.sidebar-collapsed .app-sidebar { width: 84px; }
+            html.sidebar-collapsed .app-sidebar { width: 88px; }
         }
         /* Desktop (>=992px): offcanvas-lg otomatis jadi kolom statis oleh
+
            Bootstrap, lalu default flexbox (align-items: stretch) membuat
            sidebar ikut tinggi baris. Sengaja TIDAK diberi max-height atau
            overflow-nya sendiri - kalau isinya (menu + 1 dropdown + Activity
@@ -176,37 +188,100 @@
                 new bootstrap.Toast(toastEl).show();
             });
 
-            // Toggle sidebar collapsed (icon-only) - HANYA berefek di
-            // desktop >=992px lewat CSS (lihat .app-sidebar &
-            // html.sidebar-collapsed di atas + di sidebar.blade.php).
-            // Tombolnya sendiri juga cuma dirender di layar itu
-            // (d-none d-lg-flex), jadi listener ini aman dipasang selalu.
+            // ==================================================================
+            // Sidebar collapse (icon-only) - HANYA berefek di desktop >=992px
+            // lewat CSS (lihat .app-sidebar & html.sidebar-collapsed di atas +
+            // di sidebar.blade.php). Ada 2 cara sidebar bisa expand:
+            //   1. Manual - klik tombol chevron, PERMANEN (disimpan ke
+            //      localStorage, tetap expand setelah reload/pindah halaman).
+            //   2. Peek - klik salah satu ikon dropdown (Inventory/Progress
+            //      Management/dst) SAAT sedang collapsed, SEMENTARA saja
+            //      (tidak disimpan ke localStorage) - begitu klik di luar
+            //      sidebar atau kursor keluar dari area sidebar, otomatis
+            //      balik collapsed lagi seperti semula.
+            // ==================================================================
+            var sidebarEl = document.querySelector('.app-sidebar');
             var sidebarToggleBtn = document.getElementById('sidebarCollapseToggle');
-            if (sidebarToggleBtn) {
-                var accordionToggles = document.querySelectorAll('#sidebarMenuAccordion [data-bs-toggle="collapse"]');
 
+            if (sidebarEl && sidebarToggleBtn) {
+                var accordionToggles = document.querySelectorAll('#sidebarMenuAccordion [data-bs-toggle="collapse"]');
+                var peekExpanded = false; // true = sidebar kebuka gara-gara peek, bukan preferensi permanen
+
+                // Submenu tidak ada tempat menampilkan teksnya saat rail
+                // collapsed - data-bs-toggle Bootstrap dilepas sementara
+                // supaya klik ikon parent tidak diam-diam nge-toggle submenu
+                // yang toh disembunyikan CSS. Dipasang lagi begitu interaktif
+                // (baik lewat toggle manual maupun peek).
+                function setAccordionInteractive(interactive) {
+                    accordionToggles.forEach(function (link) {
+                        if (interactive && link.dataset.bsToggleBackup) {
+                            link.setAttribute('data-bs-toggle', link.dataset.bsToggleBackup);
+                            delete link.dataset.bsToggleBackup;
+                        } else if (!interactive && link.getAttribute('data-bs-toggle')) {
+                            link.dataset.bsToggleBackup = link.getAttribute('data-bs-toggle');
+                            link.removeAttribute('data-bs-toggle');
+                        }
+                    });
+                }
+
+                // Status collapsed dibaca dari <html> yang sudah diset lebih
+                // dulu di FOUC-prevention script (paling atas <body>) - kalau
+                // memang mulai dalam kondisi collapsed, non-aktifkan accordion
+                // dari awal juga (bukan cuma setelah toggle manual pertama).
+                if (document.documentElement.classList.contains('sidebar-collapsed')) {
+                    setAccordionInteractive(false);
+                }
+
+                function collapseBackFromPeek() {
+                    if (!peekExpanded) {
+                        return;
+                    }
+                    peekExpanded = false;
+                    document.documentElement.classList.add('sidebar-collapsed');
+                    setAccordionInteractive(false);
+                }
+
+                // 1. Toggle manual - selalu menang atas peek, dan disimpan permanen.
                 sidebarToggleBtn.addEventListener('click', function () {
+                    peekExpanded = false;
                     var collapsed = !document.documentElement.classList.contains('sidebar-collapsed');
                     document.documentElement.classList.toggle('sidebar-collapsed', collapsed);
                     localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0');
                     sidebarToggleBtn.setAttribute('aria-label', collapsed ? 'Buka sidebar' : 'Tutup sidebar');
+                    setAccordionInteractive(!collapsed);
+                });
 
-                    // Submenu (Inventory/Progress Management/dst) sengaja
-                    // tidak bisa di-expand saat rail sedang collapsed (tidak
-                    // ada tempat menampilkan teksnya, sudah disembunyikan
-                    // CSS juga) - data-bs-toggle Bootstrap dilepas sementara
-                    // supaya klik ikon parent tidak diam-diam nge-toggle
-                    // submenu yang toh tersembunyi. Dikembalikan lagi saat
-                    // sidebar di-expand.
-                    accordionToggles.forEach(function (link) {
-                        if (collapsed) {
-                            link.dataset.bsToggleBackup = link.getAttribute('data-bs-toggle');
-                            link.removeAttribute('data-bs-toggle');
-                        } else if (link.dataset.bsToggleBackup) {
-                            link.setAttribute('data-bs-toggle', link.dataset.bsToggleBackup);
-                            delete link.dataset.bsToggleBackup;
+                // 2. Peek - klik ikon dropdown SAAT collapsed & desktop, buka
+                //    sementara + langsung tampilkan submenu yang diklik (biar
+                //    tidak perlu klik 2x: sekali buka rail, sekali lagi buka submenu).
+                accordionToggles.forEach(function (link) {
+                    link.addEventListener('click', function (e) {
+                        var isCollapsed = document.documentElement.classList.contains('sidebar-collapsed');
+                        if (!isCollapsed || window.innerWidth < 992) {
+                            return; // sudah expand (permanen/peek), atau di mobile/tablet - biarkan Bootstrap jalan normal
+                        }
+                        e.preventDefault();
+                        peekExpanded = true;
+                        document.documentElement.classList.remove('sidebar-collapsed');
+                        setAccordionInteractive(true);
+
+                        var submenu = document.querySelector(link.getAttribute('href'));
+                        if (submenu) {
+                            bootstrap.Collapse.getOrCreateInstance(submenu, { toggle: false }).show();
                         }
                     });
+                });
+
+                // 3. Tutup lagi otomatis kalau sedang peek: klik di luar sidebar...
+                document.addEventListener('click', function (e) {
+                    if (peekExpanded && !sidebarEl.contains(e.target)) {
+                        collapseBackFromPeek();
+                    }
+                });
+
+                // ...atau kursor keluar dari area sidebar (hover keluar).
+                sidebarEl.addEventListener('mouseleave', function () {
+                    collapseBackFromPeek();
                 });
             }
         });

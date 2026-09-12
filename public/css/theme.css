@@ -298,7 +298,11 @@ button:focus-visible,
    beda (42px saat expanded, 32px saat collapsed) tapi kelihatan aneh
    karena logonya "membesar-mengecil" saat toggle. Sekarang SATU ukuran
    konstan untuk kedua state, jadi tidak ada override terpisah lagi di
-   sidebar.blade.php untuk mode collapsed. */
+   sidebar.blade.php untuk mode collapsed. Nilai 24px (kelipatan 8)
+   dipilih supaya seragam dengan tombol toggle di sampingnya (juga 24px)
+   dan dengan sistem ukuran kelipatan 8 yang dipakai di seluruh header
+   sidebar ini (lebar sidebar, tinggi container, dst - lihat komentar di
+   app.blade.php). */
 .sidebar-brand-icon {
     height: 32px;
     width: auto;
@@ -316,16 +320,25 @@ button:focus-visible,
 
    white-space:nowrap + overflow:hidden + text-overflow:ellipsis WAJIB
    supaya "CV Arindra Production" tidak pernah pecah jadi 2 baris di
-   sidebar desktop yang sempit (272px) - sebelumnya tidak ada aturan ini
-   sama sekali, jadi teks bebas wrap normal begitu kehabisan tempat.
+   sidebar desktop - sebelumnya tidak ada aturan ini sama sekali, jadi
+   teks bebas wrap normal begitu kehabisan tempat.
    min-width:0 WAJIB juga - tanpa ini, elemen flex child tidak akan mau
    menyusut di bawah lebar kontennya sendiri (perilaku default flexbox),
-   jadi ellipsis di atas tidak akan pernah kepakai walau sudah ditulis. */
+   jadi ellipsis di atas tidak akan pernah kepakai walau sudah ditulis.
+
+   font-size di bawah ini SENGAJA angka presisi 14px (bukan .8rem seperti
+   sempat disebut user - itu sebenarnya 12.8px, beda dari 14px - dipakai
+   14px/.875rem karena itu yang paling akurat sesuai permintaan), dan
+   dipasangkan dengan lebar sidebar 320px di app.blade.php supaya
+   "CV Arindra Production" muat penuh 1 baris tanpa ellipsis di kondisi
+   normal. Kalau nanti nama perusahaan berubah jadi lebih panjang, 2
+   angka ini (font-size di sini + lebar sidebar di app.blade.php) yang
+   perlu disesuaikan bareng. */
 .sidebar-brand-text {
     color: #fff;
     font-weight: 700;
-    font-size: .74rem;
-    letter-spacing: .01em;
+    font-size: .68rem; /* = 14px (asumsi root 16px) */
+    letter-spacing: 0;
     text-transform: uppercase;
     line-height: 1.15;
     white-space: nowrap;
