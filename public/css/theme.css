@@ -365,7 +365,7 @@ button:focus-visible,
 
 /* Wadah logo+teks header mobile - flex row, boleh menyusut/truncate kalau
    nama perusahaan kepanjangan buat layar HP sangat kecil, tapi selalu
-   sisakan ruang tetap untuk tombol tutup (X) di sampingnya. */
+   sisakan ruang tetap untuk tombol tutup (X) di sampingnya., test commit */
 .sidebar-logo-wrap {
     display: flex;
     align-items: center;
