@@ -63,6 +63,8 @@ class SuratJalanService
                 'status'                 => 'Aktif',
             ]);
 
+            $itemSummaries = [];
+
             foreach ($data['items'] as $row) {
                 // Row lock: kunci baris inventory selama transaksi agar qty_available
                 // yang dibaca benar-benar akurat, aman dari request bersamaan (double booking).
@@ -102,12 +104,18 @@ class SuratJalanService
 
                 \App\Models\InventoryUnit::whereIn('id', $unitsToAssign->pluck('id'))
                     ->update(['surat_jalan_item_id' => $suratJalanItem->id]);
+
+                // Dikumpulkan di sini (bukan query ulang setelah transaksi) supaya
+                // log aktivitas di bawah bisa menyebutkan barang & jumlahnya
+                // masing-masing ("barang apa yang dipinjam dan berapa"), bukan
+                // cuma nomor Surat Jalan generik.
+                $itemSummaries[] = "{$inventory->name} x{$row['qty']}";
             }
 
             $this->activityLogService->log(
                 Auth::id(),
                 'Tracking Progress',
-                "Membuat Surat Jalan {$suratJalan->nomor} untuk project \"{$project->name}\""
+                "Membuat Surat Jalan {$suratJalan->nomor} untuk project \"{$project->name}\" - " . implode(', ', $itemSummaries)
             );
 
             return $suratJalan->load('items.inventory', 'project.crews');
@@ -200,7 +208,7 @@ class SuratJalanService
             $this->activityLogService->log(
                 Auth::id(),
                 'Tracking Progress',
-                "Mengembalikan {$qty} unit barang pada Surat Jalan {$suratJalan->nomor}"
+                "Mengembalikan {$qty} unit \"{$item->inventory->name}\" pada Surat Jalan {$suratJalan->nomor}"
             );
 
             return $updatedItem;
@@ -224,6 +232,7 @@ class SuratJalanService
         return DB::transaction(function () use ($project, $units) {
             $groupedByItem = $units->groupBy('surat_jalan_item_id');
             $updatedCount = 0;
+            $itemSummaries = [];
 
             foreach ($groupedByItem as $itemId => $unitsGroup) {
                 $item = SuratJalanItem::where('id', $itemId)->lockForUpdate()->first();
@@ -241,12 +250,17 @@ class SuratJalanService
 
                 $this->applyReturn($item, $unitsGroup);
                 $updatedCount++;
+
+                // Dikumpulkan per barang (bukan cuma total gabungan semua barang)
+                // supaya log aktivitas menyebutkan "barang apa yang dikembalikan
+                // dan berapa", bukan cuma angka unit generik.
+                $itemSummaries[] = "{$item->inventory->name} x{$unitsGroup->count()}";
             }
 
             $this->activityLogService->log(
                 Auth::id(),
                 'Tracking Progress',
-                "Mengembalikan {$units->count()} unit barang pinjaman project \"{$project->name}\""
+                "Mengembalikan barang pinjaman project \"{$project->name}\" - " . implode(', ', $itemSummaries)
             );
 
             $stillHasBorrowed = SuratJalanItem::whereHas('suratJalan', fn ($q) => $q->where('project_id', $project->id))

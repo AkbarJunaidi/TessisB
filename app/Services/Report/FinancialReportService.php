@@ -3,6 +3,7 @@
 namespace App\Services\Report;
 
 use App\Models\Project;
+use App\Services\ActivityLog\ActivityLogService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -11,6 +12,9 @@ use Exception;
 
 class FinancialReportService
 {
+    public function __construct(
+        protected ActivityLogService $activityLogService
+    ) {}
     /**
      * Query dasar: seluruh Project pada bulan & tahun tertentu, berdasarkan
      * Tanggal Acara (event_date) - mengikuti periode yang sama dengan
@@ -109,6 +113,12 @@ class FinancialReportService
         ]);
 
         $pdf->setPaper('a4', 'portrait');
+
+        $this->activityLogService->log(
+            Auth::id(),
+            'Data Keuangan',
+            'Generate Laporan Keuangan Bulanan - ' . \Carbon\Carbon::createFromDate($year, $month, 1)->translatedFormat('F Y')
+        );
 
         return $pdf;
     }

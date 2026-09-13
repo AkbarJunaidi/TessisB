@@ -53,7 +53,17 @@ class ProjectNoteService
             throw new Exception('Anda tidak memiliki izin untuk menghapus catatan ini.');
         }
 
-        return $note->delete();
+        $deleted = $note->delete();
+
+        if ($deleted) {
+            $this->activityLogService->log(
+                Auth::id(),
+                'Tracking Progress',
+                'Menghapus catatan pada project #' . $note->project_id
+            );
+        }
+
+        return $deleted;
     }
 
     /**

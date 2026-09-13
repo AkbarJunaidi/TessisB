@@ -139,11 +139,13 @@ class InventoryService
                 $this->saveAttributes($inventory, $data['attributes']);
             }
 
-            // Logging aktivitas
+            // Logging aktivitas - nama barang & jumlah unit awal disertakan
+            // (bukan cuma "Create Inventory" generik) supaya Activity Log
+            // benar-benar informatif tanpa harus buka detail barangnya.
             $this->activityLogService->log(
                 Auth::id(),
                 'Inventory',
-                'Create Inventory'
+                "Menambahkan barang baru \"{$inventory->name}\" ({$inventory->quantity_total} unit)"
             );
 
             return $inventory;
@@ -179,6 +181,11 @@ class InventoryService
             // Catat nomor seri lama untuk mendeteksi perubahan lifecycle file
             $oldSerialNumber = $inventory->serial_number;
             $oldQrPath = $inventory->qr_code;
+
+            // Catat quantity_total lama juga - dipakai di log aktivitas di
+            // bawah supaya perubahan stok ("ditambah dari X ke Y unit")
+            // tercatat jelas, bukan cuma "Update Inventory" generik.
+            $oldQuantityTotal = $inventory->quantity_total;
 
             // Jalankan update database data tekstual
             $inventory->update([
@@ -244,11 +251,20 @@ class InventoryService
                 $inventory->attributes()->delete();
             }
 
-            // Logging aktivitas
+            // Logging aktivitas - nama barang selalu disertakan, dan kalau
+            // quantity_total-nya berubah (ditambah/dikurangi), disebutkan
+            // eksplisit ("stok ditambah dari X ke Y unit") - ini yang
+            // paling sering ditanyakan "barang apa yang totalnya ditambah".
+            $logMessage = "Mengubah data barang \"{$inventory->name}\"";
+            if ((int) $oldQuantityTotal !== (int) $inventory->quantity_total) {
+                $arah = (int) $inventory->quantity_total > (int) $oldQuantityTotal ? 'ditambah' : 'dikurangi';
+                $logMessage .= " (stok {$arah} dari {$oldQuantityTotal} ke {$inventory->quantity_total} unit)";
+            }
+
             $this->activityLogService->log(
                 Auth::id(),
                 'Inventory',
-                'Update Inventory'
+                $logMessage
             );
 
             return $inventory->fresh(['attributes']);
@@ -328,6 +344,11 @@ class InventoryService
      */
     public function deleteInventory(Inventory $inventory): bool
     {
+        // Nama barang dicatat dulu sebelum soft delete, dipakai di log di
+        // bawah - $inventory masih bisa diakses normal setelah soft delete
+        // (bukan hard delete), tapi diambil di awal supaya jelas maksudnya.
+        $inventoryName = $inventory->name;
+
         // Catat siapa yang menghapus (dibaca oleh fitur Trash) sebelum soft delete,
         // karena SoftDeletes::delete() hanya menyimpan kolom deleted_at/updated_at.
         $inventory->update(['deleted_by' => Auth::id()]);
@@ -338,7 +359,7 @@ class InventoryService
             $this->activityLogService->log(
                 Auth::id(),
                 'Inventory',
-                'Delete Inventory'
+                "Menghapus barang \"{$inventoryName}\""
             );
         }
         return $deleted;

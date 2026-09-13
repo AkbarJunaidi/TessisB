@@ -180,6 +180,7 @@ class ActivityLogService
             'Integrasi Data'    => 'Integrasi Data',
             'User Management'   => 'User Management',
             'Kontak'            => 'Kontak',
+            'Data Keuangan'     => 'Data Keuangan',
         ];
 
         foreach ($defaultModules as $key => $val) {
@@ -252,6 +253,10 @@ class ActivityLogService
                 'Create Contact',
                 'Update Contact',
                 'Delete Contact',
+            ],
+
+            'Data Keuangan' => [
+                'Generate Laporan Keuangan Bulanan',
             ],
         ];
     }
