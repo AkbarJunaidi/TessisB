@@ -139,8 +139,10 @@
            (.sidebar-brand-icon di theme.css) SENGAJA satu ukuran konstan di
            kedua state (tidak tergantung angka di sini) - supaya logonya
            tidak kelihatan "membesar-mengecil" tiap kali toggle. 80px
-           (kelipatan 8, sebelumnya 84px) tetap nyaman menampung logo 24px
-           + tombol toggle 24px yang ditumpuk vertikal. */
+           (kelipatan 8, sebelumnya 84px) tetap nyaman menampung logo 24px -
+           tombol toggle terpisah sendiri sudah tidak ditampilkan lagi saat
+           collapsed (fungsinya diambil alih logo, lihat sidebar.blade.php),
+           jadi tidak perlu lagi berbagi ruang dengan logo di rail ini. */
         @media (min-width: 992px) {
             html.sidebar-collapsed .app-sidebar { width: 88px; }
         }
@@ -192,8 +194,16 @@
             // Sidebar collapse (icon-only) - HANYA berefek di desktop >=992px
             // lewat CSS (lihat .app-sidebar & html.sidebar-collapsed di atas +
             // di sidebar.blade.php). Ada 2 cara sidebar bisa expand:
-            //   1. Manual - klik tombol chevron, PERMANEN (disimpan ke
-            //      localStorage, tetap expand setelah reload/pindah halaman).
+            //   1. Manual (PERMANEN, disimpan ke localStorage, tetap expand
+            //      setelah reload/pindah halaman) - lewat 2 pemicu:
+            //      a. Tombol chevron - HANYA muncul saat sudah expanded,
+            //         untuk menutup.
+            //      b. Klik logo - HANYA aktif saat collapsed (tombol
+            //         terpisah sengaja tidak ada lagi di kondisi ini,
+            //         logo yang ambil alih fungsinya - hover/fokus logo
+            //         menampilkan ikon panah, lihat CSS di sidebar.blade.php).
+            //         Saat sudah expanded, logo balik jadi link biasa ke
+            //         Dashboard.
             //   2. Peek - klik salah satu ikon dropdown (Inventory/Progress
             //      Management/dst) SAAT sedang collapsed, SEMENTARA saja
             //      (tidak disimpan ke localStorage) - begitu klik di luar
@@ -202,6 +212,7 @@
             // ==================================================================
             var sidebarEl = document.querySelector('.app-sidebar');
             var sidebarToggleBtn = document.getElementById('sidebarCollapseToggle');
+            var sidebarBrandLink = document.getElementById('sidebarBrandLink');
 
             if (sidebarEl && sidebarToggleBtn) {
                 var accordionToggles = document.querySelectorAll('#sidebarMenuAccordion [data-bs-toggle="collapse"]');
@@ -232,6 +243,18 @@
                     setAccordionInteractive(false);
                 }
 
+                // Satu fungsi bersama untuk perubahan PERMANEN (disimpan ke
+                // localStorage) - dipakai baik oleh tombol chevron maupun
+                // klik logo, supaya logic-nya (class, localStorage,
+                // aria-label, accordion) tidak dobel ditulis di 2 tempat.
+                function setSidebarCollapsed(collapsed) {
+                    peekExpanded = false;
+                    document.documentElement.classList.toggle('sidebar-collapsed', collapsed);
+                    localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0');
+                    sidebarToggleBtn.setAttribute('aria-label', collapsed ? 'Buka sidebar' : 'Tutup sidebar');
+                    setAccordionInteractive(!collapsed);
+                }
+
                 function collapseBackFromPeek() {
                     if (!peekExpanded) {
                         return;
@@ -241,15 +264,26 @@
                     setAccordionInteractive(false);
                 }
 
-                // 1. Toggle manual - selalu menang atas peek, dan disimpan permanen.
+                // 1a. Tombol chevron - selalu menang atas peek, disimpan permanen.
                 sidebarToggleBtn.addEventListener('click', function () {
-                    peekExpanded = false;
-                    var collapsed = !document.documentElement.classList.contains('sidebar-collapsed');
-                    document.documentElement.classList.toggle('sidebar-collapsed', collapsed);
-                    localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0');
-                    sidebarToggleBtn.setAttribute('aria-label', collapsed ? 'Buka sidebar' : 'Tutup sidebar');
-                    setAccordionInteractive(!collapsed);
+                    setSidebarCollapsed(!document.documentElement.classList.contains('sidebar-collapsed'));
                 });
+
+                // 1b. Klik logo SAAT collapsed & desktop -> expand permanen
+                //     (BUKAN peek - ini menggantikan tombol chevron yang
+                //     sengaja disembunyikan di kondisi ini). Saat sudah
+                //     expanded, klik logo dibiarkan jalan normal (navigasi
+                //     ke Dashboard via href aslinya, tidak di-preventDefault).
+                if (sidebarBrandLink) {
+                    sidebarBrandLink.addEventListener('click', function (e) {
+                        var isCollapsed = document.documentElement.classList.contains('sidebar-collapsed');
+                        if (!isCollapsed || window.innerWidth < 992) {
+                            return; // sudah expanded, atau mobile/tablet - biarkan navigasi ke Dashboard normal
+                        }
+                        e.preventDefault();
+                        setSidebarCollapsed(false);
+                    });
+                }
 
                 // 2. Peek - klik ikon dropdown SAAT collapsed & desktop, buka
                 //    sementara + langsung tampilkan submenu yang diklik (biar

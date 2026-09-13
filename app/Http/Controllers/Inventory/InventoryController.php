@@ -76,7 +76,9 @@ class InventoryController extends Controller
     {
         $inventory->load('attributes', 'units.suratJalanItem.suratJalan');
 
-        return view('inventory.show', compact('inventory'));
+        $borrowHistory = $this->inventoryService->getBorrowHistory($inventory);
+
+        return view('inventory.show', compact('inventory', 'borrowHistory'));
     }
 
     /**

@@ -5,9 +5,11 @@ namespace App\Services\Inventory;
 use App\Models\Inventory;
 use App\Models\InventoryAttribute;
 use App\Models\ReportExport;
+use App\Models\SuratJalanItem;
 use App\Services\ActivityLog\ActivityLogService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -53,6 +55,37 @@ class InventoryService
         }
 
         return $query->latest()->paginate($perPage)->withQueryString();
+    }
+
+    /**
+     * Riwayat peminjaman barang ini lintas semua Project - untuk kartu
+     * "Riwayat Peminjaman" di halaman Detail Inventory. Sumbernya
+     * SuratJalanItem (baris per-Inventory di tiap Surat Jalan) - baris
+     * ini TIDAK dihapus saat barang dikembalikan (cuma kolom
+     * qty_dikembalikan yang bertambah), jadi otomatis jadi riwayat
+     * permanen tanpa perlu bikin tabel/log baru.
+     *
+     * Diurutkan dari yang paling baru berdasarkan tanggal_terbit - satu-
+     * satunya kolom tanggal di Surat Jalan yang wajib diisi (kolom
+     * tanggal lain seperti tanggal_keberangkatan/tanggal_acara nullable,
+     * jadi kurang bisa diandalkan untuk urutan). Pakai join manual (bukan
+     * whereHas+orderBy relasi, yang tidak didukung langsung oleh Eloquent)
+     * supaya bisa sort berdasarkan kolom tabel lain dalam 1 query, dan
+     * whereNull('surat_jalans.deleted_at') WAJIB ditulis manual di sini -
+     * join mentah tidak otomatis menghormati global scope SoftDeletes
+     * milik model SuratJalan seperti kalau query lewat Eloquent biasa.
+     */
+    public function getBorrowHistory(Inventory $inventory, int $limit = 20): Collection
+    {
+        return SuratJalanItem::query()
+            ->join('surat_jalans', 'surat_jalans.id', '=', 'surat_jalan_items.surat_jalan_id')
+            ->where('surat_jalan_items.inventory_id', $inventory->id)
+            ->whereNull('surat_jalans.deleted_at')
+            ->with('suratJalan.project:id,name')
+            ->orderByDesc('surat_jalans.tanggal_terbit')
+            ->select('surat_jalan_items.*')
+            ->limit($limit)
+            ->get();
     }
 
     /**

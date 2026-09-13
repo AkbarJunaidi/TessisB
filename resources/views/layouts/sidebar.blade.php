@@ -27,11 +27,14 @@
          akurat dari titik paling atas sidebar, bukan ketambahan padding
          lain lebih dulu. --}}
     <div class="d-none d-lg-flex px-1 sidebar-brand-row">
-        <a href="{{ route('dashboard') }}" class="sidebar-brand-link">
-            <img src="{{ asset('image/logo1.png') }}" alt="Logo CV Arindra Production" class="sidebar-brand-icon">
+        <a href="{{ route('dashboard') }}" class="sidebar-brand-link" id="sidebarBrandLink">
+            <span class="sidebar-brand-icon-wrap">
+                <img src="{{ asset('image/logo1.png') }}" alt="Logo CV Arindra Production" class="sidebar-brand-icon">
+                <i class="bi bi-chevron-right sidebar-brand-expand-icon" aria-hidden="true"></i>
+            </span>
             <span class="sidebar-brand-text sidebar-link-text">CV Arindra Production</span>
         </a>
-        <button type="button" class="sidebar-collapse-toggle" id="sidebarCollapseToggle" aria-label="Tutup sidebar" title="Tutup/buka sidebar">
+        <button type="button" class="sidebar-collapse-toggle" id="sidebarCollapseToggle" aria-label="Tutup sidebar" title="Tutup sidebar">
             <i class="bi bi-chevron-left"></i>
         </button>
     </div>
@@ -308,7 +311,21 @@
         transition: background .2s ease, color .2s ease;
     }
     .sidebar-collapse-toggle:hover { background: rgba(255,255,255,.16); color: #fff; }
-    .sidebar-collapse-toggle i { font-size: .8rem; transition: transform .25s ease; }
+    .sidebar-collapse-toggle i { font-size: .8rem; }
+
+    /* Wrapper logo - relative supaya ikon panah (.sidebar-brand-expand-icon)
+       bisa ditumpuk pas di atasnya lewat position:absolute. Ikon panahnya
+       sendiri baru benar-benar aktif/kelihatan di mode collapsed (lihat
+       blok media query di bawah) - saat expanded, elemen ini selalu
+       disembunyikan total, logo klik = ke Dashboard seperti biasa. */
+    .sidebar-brand-icon-wrap {
+        position: relative;
+        display: inline-flex;
+        flex-shrink: 0;
+    }
+    .sidebar-brand-expand-icon {
+        display: none;
+    }
 
     /* ==========================================================================
        MODE COLLAPSED (icon-only) - HANYA aktif di desktop (>=992px), lewat
@@ -345,16 +362,54 @@
             padding: .65rem .5rem;
         }
         html.sidebar-collapsed .sidebar-brand-row {
-            flex-direction: column;
+            /* Cuma tersisa 1 anak (logo) sejak tombol toggle terpisah
+               dihilangkan di collapsed mode (di bawah) - cukup di-center,
+               tidak perlu lagi flex-direction:column/gap seperti waktu
+               masih ada 2 elemen yang ditumpuk. */
             justify-content: center;
-            gap: .6rem;
         }
         html.sidebar-collapsed .sidebar-profile {
             justify-content: center;
             padding: .5rem !important;
         }
-        html.sidebar-collapsed .sidebar-collapse-toggle i {
-            transform: rotate(180deg);
+
+        /* Tombol toggle terpisah TIDAK ditampilkan lagi saat collapsed -
+           fungsinya diambil alih logo (elemen id sidebarBrandLink di
+           markup + JS di app.blade.php). Tombol ini cuma relevan saat
+           expanded, untuk MENUTUP - makanya title/aria-label-nya juga
+           cuma pernah bilang "Tutup sidebar", tidak pernah "Buka". */
+        html.sidebar-collapsed .sidebar-collapse-toggle {
+            display: none;
+        }
+
+        /* Logo jadi tombol buka saat collapsed: hover/focus -> logo asli
+           memudar, ikon panah nongol menimpanya di posisi yang sama
+           (position:absolute, lihat .sidebar-brand-icon-wrap di atas).
+           :focus-visible disertakan supaya pengguna keyboard (Tab) dapat
+           sinyal yang sama, bukan cuma yang pakai mouse. */
+        html.sidebar-collapsed .sidebar-brand-link {
+            cursor: pointer;
+        }
+        html.sidebar-collapsed .sidebar-brand-expand-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            color: #fff;
+            font-size: 1rem;
+            background: var(--c-navy-2);
+            border-radius: .35rem;
+            transition: opacity .15s ease;
+        }
+        html.sidebar-collapsed .sidebar-brand-link:hover .sidebar-brand-icon,
+        html.sidebar-collapsed .sidebar-brand-link:focus-visible .sidebar-brand-icon {
+            opacity: 0;
+        }
+        html.sidebar-collapsed .sidebar-brand-link:hover .sidebar-brand-expand-icon,
+        html.sidebar-collapsed .sidebar-brand-link:focus-visible .sidebar-brand-expand-icon {
+            opacity: 1;
         }
     }
 </style>

@@ -411,6 +411,62 @@
             </div>
         </div>
     </div>
+    <!-- CARD BARU: Riwayat Peminjaman (lintas semua Project, sumber: SuratJalanItem -
+         baris ini tidak pernah dihapus saat barang dikembalikan, jadi otomatis
+         jadi riwayat permanen). Dibatasi 20 terbaru - lihat InventoryService::getBorrowHistory(). -->
+    <div class="card shadow-sm border-0 rounded-3 bg-white mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold m-0">Riwayat Peminjaman</h6>
+                @if($borrowHistory->isNotEmpty())
+                    <span class="text-muted small">{{ $borrowHistory->count() }} Surat Jalan terakhir</span>
+                @endif
+            </div>
+
+            @if($borrowHistory->isEmpty())
+                <p class="text-muted small m-0">Barang ini belum pernah dipinjam lewat Surat Jalan manapun.</p>
+            @else
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr class="text-muted small text-uppercase">
+                                <th>Project</th>
+                                <th>No. Surat Jalan</th>
+                                <th class="text-center">Jumlah</th>
+                                <th>Tanggal Pinjam</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($borrowHistory as $item)
+                                @php
+                                    $sisaBelumKembali = $item->qty_dipakai - $item->qty_dikembalikan;
+                                    $statusBadge = match(true) {
+                                        $sisaBelumKembali <= 0 => ['Sudah Kembali', 'bg-success-subtle text-success border-success-subtle'],
+                                        $item->qty_dikembalikan > 0 => ['Sebagian Kembali', 'bg-warning-subtle text-warning border-warning-subtle'],
+                                        default => ['Belum Kembali', 'bg-primary-subtle text-primary border-primary-subtle'],
+                                    };
+                                @endphp
+                                <tr>
+                                    <td class="fw-semibold text-dark">{{ $item->suratJalan->project->name ?? '-' }}</td>
+                                    <td>
+                                        <a href="{{ route('surat-jalan.show', $item->suratJalan->id) }}" class="text-decoration-none">
+                                            {{ $item->suratJalan->nomor }}
+                                        </a>
+                                    </td>
+                                    <td class="text-center">{{ $item->qty_dipakai }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($item->suratJalan->tanggal_terbit)->format('d/m/Y') }}</td>
+                                    <td>
+                                        <span class="badge {{ $statusBadge[1] }} border px-2 py-1 rounded-pill fw-semibold" style="font-size:.7rem;">{{ $statusBadge[0] }}</span>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
+    </div>
 
 </div>
 
