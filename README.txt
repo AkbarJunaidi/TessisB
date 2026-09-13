@@ -7,9 +7,9 @@ RINGKASAN
 ---------
 Terinspirasi dari referensi gambar yang dikirim, TANPA badge status
 (Prospek/Hot Lead/dst - fitur ini tidak punya konsep status kontak).
-
+owoiwoiw
 1. KARTU STATISTIK (atas halaman)
-   - Total Kontak
+   - Total Kontakwoi
    - Punya WhatsApp (hitung yang toggle has_whatsapp aktif)
    - Kontak Baru Bulan Ini
    - Total Pendapatan (diganti dari referensi "Belum Dihubungi 30 Hari"
