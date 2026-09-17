@@ -321,6 +321,25 @@
         });
     </script>
 
+    {{-- Registrasi Service Worker untuk Web Push - PASIF, tidak meminta izin
+         apa pun ke user (browser mengizinkan register tanpa gesture user).
+         Permintaan izin notifikasi yang sungguhan (Notification.
+         requestPermission(), butuh klik user) ada di halaman Notifikasi
+         (resources/views/notification/index.blade.php), bukan di sini -
+         supaya tidak muncul popup izin browser tiba-tiba di halaman
+         manapun tanpa user memintanya. --}}
+    @auth
+        <script>
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js').catch(function () {
+                    // Diamkan saja kalau gagal (misal browser lama yang tidak
+                    // support, atau diakses lewat http:// bukan https://) -
+                    // seluruh aplikasi tetap harus jalan normal tanpa fitur ini.
+                });
+            }
+        </script>
+    @endauth
+
     @stack('scripts')
 </body>
 </html>

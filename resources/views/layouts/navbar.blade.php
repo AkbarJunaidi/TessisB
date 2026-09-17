@@ -18,18 +18,22 @@
                 </span>
             </div>
 
-            {{-- Ticker notifikasi, sumber data sama dengan dropdown lonceng --}}
-            @if(auth()->user()->hasRole('super_admin', 'admin'))
+            {{-- Ticker notifikasi, sumber data sama dengan dropdown lonceng.
+                 Dibuka untuk SEMUA role (sebelumnya cuma super_admin/admin) -
+                 Employee sekarang juga bisa menerima pengumuman lewat sini,
+                 walau 4 jenis notifikasi otomatis lain tetap cuma dihitung
+                 untuk super_admin/admin (lihat NotificationService). --}}
                 <div class="rounded-pill" id="navbarNotifTicker">
                     <div class="d-flex align-items-center gap-2" id="navbarNotifTickerContent"></div>
                 </div>
-            @endif
         </div>
 
         <div class="ms-auto d-flex align-items-center gap-2 gap-md-3 flex-shrink-0">
 
-            {{-- Notifikasi navbar - Super Admin & Admin saja --}}
-            @if(auth()->user()->hasRole('super_admin', 'admin'))
+            {{-- Notifikasi navbar - SEMUA role (sebelumnya cuma Super Admin
+                 & Admin). Employee cuma akan lihat jenis "announcement" di
+                 sini (4 jenis lain tetap difilter Super Admin/Admin saja
+                 di NotificationService, tidak pantas dilihat Employee). --}}
                 <div class="dropdown">
                     <button type="button" class="btn btn-light border rounded-circle position-relative d-flex align-items-center justify-content-center navbar-notif-btn"
                             style="width: 38px; height: 38px;"
@@ -45,7 +49,6 @@
                         </div>
                     </div>
                 </div>
-            @endif
 
             {{-- Komponen waktu real-time --}}
             <div class="d-none d-sm-flex align-items-center bg-light border rounded-pill px-3 py-1 gap-2">
@@ -144,7 +147,8 @@
     setInterval(updateDateTime, 1000);
 </script>
 
-@if(auth()->user()->hasRole('super_admin', 'admin'))
+{{-- Script lonceng notifikasi - dijalankan untuk SEMUA role yang login
+     (sebelumnya cuma super_admin/admin). --}}
 <script>
     // Notifikasi navbar, poll berkala dari endpoint notifications.active
     (function () {
@@ -180,7 +184,8 @@
 
             listEl.innerHTML = notifications.map(function (n) {
                 return `
-                    <a href="${n.url}" class="dropdown-item d-flex align-items-start gap-2 py-2 px-3 border-bottom text-wrap">
+                    <a href="${n.url}" class="dropdown-item d-flex align-items-start gap-2 py-2 px-3 border-bottom text-wrap"
+                       data-notif-id="${escapeHtml(n.id)}" data-notif-type="${escapeHtml(n.type)}">
                         <i class="bi ${n.icon} mt-1"></i>
                         <div class="small">
                             <div class="fw-semibold text-dark">${escapeHtml(n.title)}</div>
@@ -190,6 +195,24 @@
                 `;
             }).join('');
         }
+
+        // Notifikasi jenis "announcement" (pengumuman Super Admin) SUNGGUH
+        // tersimpan di database (beda dari 4 jenis lain yang dihitung ulang
+        // dari data tiap saat) - begitu diklik, tandai dibaca dulu (fire-
+        // and-forget, TIDAK menghalangi link-nya membuka halaman
+        // /announcements seperti biasa).
+        listEl.addEventListener('click', function (e) {
+            const link = e.target.closest('[data-notif-type="announcement"]');
+            if (!link) return;
+
+            fetch(`/announcements/${link.dataset.notifId}/read`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                },
+            });
+        });
 
         function paintTickerItem(n) {
             tickerContentEl.innerHTML = `<i class="bi ${n.icon}"></i><span>${escapeHtml(n.title)}: ${escapeHtml(n.message)}</span>`;
@@ -262,4 +285,3 @@
         setInterval(loadNotifications, 60000);
     })();
 </script>
-@endif

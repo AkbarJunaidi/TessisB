@@ -29,7 +29,7 @@ class NotificationController extends Controller
         );
 
         return response()->json([
-            'notifications' => $this->notificationService->getActiveNotifications(),
+            'notifications' => $this->notificationService->getActiveNotifications(Auth::id()),
         ]);
     }
 }

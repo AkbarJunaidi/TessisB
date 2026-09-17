@@ -193,6 +193,17 @@
             </li>
         @endif
 
+        {{-- Notifikasi - SEMUA role bisa akses halamannya (isi di dalam
+             menyesuaikan role: form kirim pengumuman & panel kelola jenis
+             notifikasi otomatis cuma tampil untuk Super Admin, lihat
+             notification/index.blade.php). --}}
+        <li class="nav-item">
+            <a href="{{ route('announcements.index') }}"
+                class="nav-link sidebar-link text-white {{ request()->routeIs('announcements.*') ? 'active' : '' }}">
+                <i class="bi bi-megaphone"></i> <span class="sidebar-link-text">Notifikasi</span>
+            </a>
+        </li>
+
     </ul>
 
     <hr class="border-white opacity-10 my-3">

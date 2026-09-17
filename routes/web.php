@@ -8,7 +8,9 @@ use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\DataIntegration\FileController;
 use App\Http\Controllers\DataIntegration\FolderController;
 use App\Http\Controllers\Inventory\InventoryController;
+use App\Http\Controllers\Notification\AnnouncementController;
 use App\Http\Controllers\Notification\NotificationController;
+use App\Http\Controllers\Notification\NotificationSettingController;
 use App\Http\Controllers\Project\ProjectController;
 use App\Http\Controllers\Project\ProjectNoteController;
 use App\Http\Controllers\Report\FinancialReportController;
@@ -259,14 +261,58 @@ Route::middleware('auth')->group(function () {
 
     });
 
-    // Modul Notifikasi Navbar (Super Admin & Admin) - endpoint AJAX, di-poll
-    // berkala oleh navbar.blade.php.
-    Route::middleware('role:super_admin,admin')->group(function () {
+    // Modul Notifikasi Navbar - endpoint AJAX, di-poll berkala oleh
+    // navbar.blade.php. DIBUKA UNTUK SEMUA role (sebelumnya cuma Super
+    // Admin/Admin) - isi datanya sendiri sudah otomatis menyesuaikan role
+    // di dalam NotificationService (Employee cuma dapat jenis "announcement").
+    Route::get('notifications/active', [NotificationController::class, 'active'])
+        ->name('notifications.active');
 
-        Route::get('notifications/active', [NotificationController::class, 'active'])
-            ->name('notifications.active');
+    // Halaman Notifikasi - DIBUKA UNTUK SEMUA role (sebelumnya cuma Super
+    // Admin). Isinya menyesuaikan role di dalam AnnouncementController/
+    // view-nya sendiri: semua role lihat & bisa kelola (sematkan/hapus)
+    // Pengumuman miliknya sendiri; kirim pengumuman baru & kelola jenis
+    // notifikasi otomatis tetap HANYA Super Admin (masih di grup terpisah
+    // di bawah).
+    Route::get('announcements', [AnnouncementController::class, 'index'])
+        ->name('announcements.index');
+
+    Route::post('announcements/read-all', [AnnouncementController::class, 'markAllAsRead'])
+        ->name('announcements.read-all');
+
+    Route::post('announcements/{id}/read', [AnnouncementController::class, 'markAsRead'])
+        ->name('announcements.read');
+
+    Route::post('announcements/{id}/pin', [AnnouncementController::class, 'pin'])
+        ->name('announcements.pin');
+
+    Route::post('announcements/{id}/unpin', [AnnouncementController::class, 'unpin'])
+        ->name('announcements.unpin');
+
+    Route::delete('announcements/{id}', [AnnouncementController::class, 'destroy'])
+        ->name('announcements.destroy');
+
+    // Kirim pengumuman baru & kelola jenis notifikasi otomatis - TETAP
+    // HANYA Super Admin (beda dari daftar/kelola-punya-sendiri di atas).
+    Route::middleware('role:super_admin')->group(function () {
+
+        Route::post('announcements', [AnnouncementController::class, 'store'])
+            ->name('announcements.store');
+
+        Route::post('notification-settings', [NotificationSettingController::class, 'update'])
+            ->name('notification-settings.update');
 
     });
+
+    // Push subscription (Web Push browser) - SEMUA role yang login boleh
+    // mendaftarkan browsernya sendiri untuk menerima pengumuman, bukan
+    // cuma Super Admin (Super Admin yang MENGIRIM, siapa saja yang login
+    // bisa jadi PENERIMA).
+    Route::post('push-subscription', [AnnouncementController::class, 'subscribe'])
+        ->name('push-subscription.store');
+
+    Route::delete('push-subscription', [AnnouncementController::class, 'unsubscribe'])
+        ->name('push-subscription.destroy');
 
     // Modul Trash - lihat & pulihkan (Super Admin & Admin)
     Route::middleware('role:super_admin,admin')->group(function () {
