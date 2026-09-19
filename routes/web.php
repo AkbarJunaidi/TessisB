@@ -11,6 +11,7 @@ use App\Http\Controllers\Inventory\InventoryController;
 use App\Http\Controllers\Notification\AnnouncementController;
 use App\Http\Controllers\Notification\NotificationController;
 use App\Http\Controllers\Notification\NotificationSettingController;
+use App\Http\Controllers\Notification\SystemNotificationController;
 use App\Http\Controllers\Project\ProjectController;
 use App\Http\Controllers\Project\ProjectNoteController;
 use App\Http\Controllers\Report\FinancialReportController;
@@ -291,6 +292,28 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('announcements/{id}', [AnnouncementController::class, 'destroy'])
         ->name('announcements.destroy');
+
+    // Sematkan/lepas-sematan/hapus 1 notifikasi OTOMATIS (bukan
+    // Pengumuman - beda dari 6 route di atas, lihat SystemNotificationController).
+    // Digate role:super_admin,admin - SENGAJA disamakan persis dengan
+    // siapa saja yang bisa LIHAT 4 jenis notifikasi ini (lihat
+    // NotificationService::getActiveNotifications(), Employee tidak
+    // pernah menerima jenis ini apa pun settingnya) - visibilitas UI &
+    // akses route dibuat 1:1 supaya mudah ditelusuri: "siapa bisa lihat"
+    // dan "siapa bisa kelola" selalu sama, tidak perlu dicek 2 tempat
+    // berbeda kalau nanti ada yang tanya "role apa yang boleh apa di sini".
+    Route::middleware('role:super_admin,admin')->group(function () {
+
+        Route::post('system-notifications/{key}/pin', [SystemNotificationController::class, 'pin'])
+            ->name('system-notifications.pin');
+
+        Route::post('system-notifications/{key}/unpin', [SystemNotificationController::class, 'unpin'])
+            ->name('system-notifications.unpin');
+
+        Route::delete('system-notifications/{key}', [SystemNotificationController::class, 'dismiss'])
+            ->name('system-notifications.dismiss');
+
+    });
 
     // Kirim pengumuman baru & kelola jenis notifikasi otomatis - TETAP
     // HANYA Super Admin (beda dari daftar/kelola-punya-sendiri di atas).

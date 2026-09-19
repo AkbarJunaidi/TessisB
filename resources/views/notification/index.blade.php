@@ -159,11 +159,15 @@
     {{-- NOTIFIKASI SISTEM (read-only) - HANYA Super Admin/Admin. Ini 4
          jenis notifikasi otomatis yang sama persis dengan yang tampil di
          lonceng navbar mereka - ditampilkan lengkap di sini karena
-         lonceng navbar sempit/kurang jelas. TIDAK ADA tombol
-         sematkan/hapus di sini - 4 jenis ini bukan baris tersimpan
-         (dihitung ulang dari data tiap saat), jadi tidak ada yang bisa
-         "dihapus" - begitu kondisi datanya berubah (misal client sudah
-         bayar), notifikasinya otomatis hilang sendiri. --}}
+         lonceng navbar sempit/kurang jelas.
+
+         BEDA dari daftar Pengumuman di atas: 4 jenis ini bukan baris
+         tersimpan (dihitung ulang dari data tiap saat), jadi "hapus" di
+         sini artinya "sembunyikan dari tampilanku" (disimpan di tabel
+         notification_states, lihat NotificationService), BUKAN
+         menghapus fakta yang mendasarinya - begitu kondisi datanya
+         berubah (misal client sudah bayar), notifikasinya toh hilang
+         sendiri juga tanpa perlu dihapus manual. --}}
     @if($isAdminOrSuperAdmin)
         <div class="row g-4 mt-1">
             <div class="col-12">
@@ -172,7 +176,8 @@
                         <h6 class="fw-bold m-0"><i class="bi bi-gear me-2 text-primary"></i>Notifikasi Sistem (Otomatis)</h6>
                         <p class="text-muted small mb-0 mt-1">
                             Dihitung otomatis dari data saat ini - sama seperti yang tampil di lonceng navbar.
-                            Tidak bisa dihapus/disematkan (bukan pesan tersimpan, hilang sendiri begitu kondisinya berubah).
+                            Bisa disematkan/disembunyikan, tapi itu cuma preferensi tampilanmu sendiri -
+                            fakta yang mendasarinya (misal project belum lunas) tidak berubah.
                         </p>
                     </div>
 
@@ -182,15 +187,35 @@
                             <p class="mt-2 mb-0">Tidak ada notifikasi sistem saat ini.</p>
                         </div>
                     @else
-                        <div class="list-group list-group-flush">
+                        <div class="list-group list-group-flush" id="systemNotifList">
                             @foreach($systemNotifications as $item)
-                                <a href="{{ $item['url'] }}" class="list-group-item list-group-item-action d-flex align-items-start gap-3 p-3">
-                                    <i class="bi {{ $item['icon'] }} mt-1"></i>
-                                    <div>
-                                        <div class="fw-semibold">{{ $item['title'] }}</div>
-                                        <div class="text-secondary small">{{ $item['message'] }}</div>
+                                <div class="list-group-item p-3 system-notif-item" data-notif-key="{{ $item['id'] }}">
+                                    <div class="d-flex justify-content-between align-items-start gap-3">
+                                        <a href="{{ $item['url'] }}" class="d-flex align-items-start gap-3 text-decoration-none text-reset flex-grow-1">
+                                            <i class="bi {{ $item['icon'] }} mt-1"></i>
+                                            <div>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    @if($item['pinned'] ?? false)
+                                                        <i class="bi bi-pin-angle-fill text-warning" title="Disematkan"></i>
+                                                    @endif
+                                                    <span class="fw-semibold">{{ $item['title'] }}</span>
+                                                </div>
+                                                <div class="text-secondary small">{{ $item['message'] }}</div>
+                                            </div>
+                                        </a>
+                                        <div class="btn-group btn-group-sm flex-shrink-0">
+                                            <button type="button"
+                                                    class="btn btn-outline-secondary btn-toggle-system-pin"
+                                                    data-pinned="{{ ($item['pinned'] ?? false) ? '1' : '0' }}"
+                                                    title="{{ ($item['pinned'] ?? false) ? 'Lepas sematan' : 'Sematkan' }}">
+                                                <i class="bi {{ ($item['pinned'] ?? false) ? 'bi-pin-angle-fill' : 'bi-pin-angle' }}"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-danger btn-delete-system-notif" title="Sembunyikan">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
                                     </div>
-                                </a>
+                                </div>
                             @endforeach
                         </div>
                     @endif
@@ -332,6 +357,54 @@
                 const id = item.dataset.notifId;
 
                 fetch(`/announcements/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json' },
+                }).then(function (res) { return res.json(); }).then(function (data) {
+                    if (data.success) {
+                        item.remove();
+                    }
+                });
+            });
+        });
+
+        // --- Notifikasi Sistem (otomatis) - pola sama persis dengan 2
+        // handler Pengumuman di atas, cuma endpoint & data attribute-nya
+        // beda (data-notif-key, bukan data-notif-id, dan URL-nya
+        // /system-notifications/... bukan /announcements/...). Sengaja
+        // ditulis sejajar (bukan digabung jadi 1 fungsi generik) supaya
+        // gampang dibandingkan baris-per-baris kalau salah satunya nanti
+        // perlu diubah - dua sumber data ini memang beda mekanisme
+        // (lihat komentar di NotificationService/AnnouncementService).
+        document.querySelectorAll('.btn-toggle-system-pin').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const item = btn.closest('.system-notif-item');
+                const key = encodeURIComponent(item.dataset.notifKey);
+                const currentlyPinned = btn.dataset.pinned === '1';
+                const action = currentlyPinned ? 'unpin' : 'pin';
+
+                fetch(`/system-notifications/${key}/${action}`, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json' },
+                }).then(function (res) { return res.json(); }).then(function (data) {
+                    if (!data.success) return;
+
+                    btn.dataset.pinned = currentlyPinned ? '0' : '1';
+                    btn.title = currentlyPinned ? 'Sematkan' : 'Lepas sematan';
+                    btn.querySelector('i').className = currentlyPinned ? 'bi bi-pin-angle' : 'bi bi-pin-angle-fill';
+                });
+            });
+        });
+
+        document.querySelectorAll('.btn-delete-system-notif').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                if (!confirm('Sembunyikan notifikasi ini dari tampilanmu? Notifikasi ini akan muncul lagi kalau kondisinya berubah lalu terjadi lagi di masa depan.')) {
+                    return;
+                }
+
+                const item = btn.closest('.system-notif-item');
+                const key = encodeURIComponent(item.dataset.notifKey);
+
+                fetch(`/system-notifications/${key}`, {
                     method: 'DELETE',
                     headers: { 'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json' },
                 }).then(function (res) { return res.json(); }).then(function (data) {

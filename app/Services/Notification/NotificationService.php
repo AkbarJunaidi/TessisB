@@ -2,6 +2,7 @@
 
 namespace App\Services\Notification;
 
+use App\Models\NotificationState;
 use App\Models\NotificationTypeSetting;
 use App\Models\Project;
 use App\Models\ReportExport;
@@ -137,7 +138,62 @@ class NotificationService
         // pengaturan Super Admin, lalu gabungkan jadi 1 array flat.
         uksort($grouped, fn ($a, $b) => ($typeConfig[$a]['sort_order'] ?? 999) <=> ($typeConfig[$b]['sort_order'] ?? 999));
 
-        return $grouped ? array_merge(...array_values($grouped)) : [];
+        $items = $grouped ? array_merge(...array_values($grouped)) : [];
+
+        // Terapkan preferensi sematkan/hapus milik user ini terhadap 4
+        // jenis notifikasi OTOMATIS (lihat class doc notification_states
+        // & applyUserNotificationStates()) - jenis "announcement" sengaja
+        // dilewati di sini, itu sudah punya mekanisme sematkan/hapus
+        // sendiri (kolom pinned_at pada tabel notifications, ditangani
+        // AnnouncementService, bukan lewat sini).
+        return $this->applyUserNotificationStates($userId, $items);
+    }
+
+    /**
+     * Buang item yang sudah di-"hapus" user ini (dismissed_at terisi),
+     * dan angkat yang disematkan (pinned_at terisi) ke paling atas -
+     * lintas semua jenis, bukan cuma di dalam grupnya sendiri. Jenis
+     * "announcement" dilewati (lihat komentar di getActiveNotifications()).
+     *
+     * @param  array<int, array<string, mixed>>  $items
+     * @return array<int, array<string, mixed>>
+     */
+    private function applyUserNotificationStates(int $userId, array $items): array
+    {
+        $keys = array_column(
+            array_filter($items, fn ($item) => $item['type'] !== 'announcement'),
+            'id'
+        );
+
+        if (empty($keys)) {
+            return $items;
+        }
+
+        $states = NotificationState::where('user_id', $userId)
+            ->whereIn('notification_key', $keys)
+            ->get()
+            ->keyBy('notification_key');
+
+        $items = array_values(array_filter($items, function ($item) use ($states) {
+            if ($item['type'] === 'announcement') {
+                return true;
+            }
+
+            return !($states->get($item['id'])?->dismissed_at);
+        }));
+
+        foreach ($items as &$item) {
+            $item['pinned'] = $item['type'] !== 'announcement'
+                && (bool) ($states->get($item['id'])?->pinned_at);
+        }
+        unset($item);
+
+        // Stable sort (dijamin PHP 8+) - yang disematkan naik ke atas,
+        // urutan relatif lainnya (hasil sort_order jenis di atas) tetap
+        // dipertahankan seperti semula.
+        usort($items, fn ($a, $b) => ($b['pinned'] ?? false) <=> ($a['pinned'] ?? false));
+
+        return $items;
     }
 
     /**
@@ -348,5 +404,42 @@ class NotificationService
                 ]
             );
         }
+    }
+
+    /**
+     * Sematkan/lepas-sematan/hapus 1 notifikasi OTOMATIS (bukan
+     * Pengumuman - itu punya mekanisme sendiri di AnnouncementService)
+     * untuk 1 user. $key adalah string stabil yang sudah dihasilkan
+     * tiap builder di atas (contoh: "unpaid-42") - lihat komentar di
+     * migration create_notification_states_table untuk keterbatasan
+     * yang disengaja soal kunci ini.
+     */
+    public function pinSystemNotification(int $userId, string $key): void
+    {
+        NotificationState::updateOrCreate(
+            ['user_id' => $userId, 'notification_key' => $key],
+            ['pinned_at' => now()]
+        );
+    }
+
+    public function unpinSystemNotification(int $userId, string $key): void
+    {
+        NotificationState::updateOrCreate(
+            ['user_id' => $userId, 'notification_key' => $key],
+            ['pinned_at' => null]
+        );
+    }
+
+    /**
+     * "Hapus" di sini artinya disembunyikan dari tampilan user ini -
+     * notifikasi otomatis tidak punya baris asli untuk benar-benar
+     * dihapus (lihat class doc migration-nya).
+     */
+    public function dismissSystemNotification(int $userId, string $key): void
+    {
+        NotificationState::updateOrCreate(
+            ['user_id' => $userId, 'notification_key' => $key],
+            ['dismissed_at' => now()]
+        );
     }
 }
