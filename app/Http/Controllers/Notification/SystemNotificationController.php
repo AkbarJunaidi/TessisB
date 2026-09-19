@@ -11,13 +11,13 @@ use Illuminate\Support\Facades\Auth;
  * Sematkan/lepas-sematan/hapus 1 notifikasi OTOMATIS (password reset,
  * report ready, unpaid deadline, finance missing) - BEDA dari
  * AnnouncementController (itu untuk Pengumuman, punya baris tersimpan
- * sungguhan). Notifikasi otomatis dihitung ulang dari data setiap saat,
- * jadi "hapus" di sini artinya disembunyikan dari tampilan user yang
- * login (lihat NotificationService::dismissSystemNotification()).
+ * sungguhan). Notifikasi otomatis dihitung ulang dari data setiap saat.
  *
- * Semua aksi di sini otomatis scoped ke user yang login sendiri
- * (Auth::id() dikirim ke Service, disimpan di kolom user_id) - tidak
- * ada input ID user dari luar yang bisa dimanipulasi.
+ * Sematkan/lepas-sematan = preferensi PRIBADI (scoped ke Auth::id()).
+ * Hapus = benar-benar hilang untuk SEMUA user (lihat
+ * NotificationService::deleteSystemNotification()), jadi digate
+ * permission 'notifikasi_sistem.delete' (default hanya Super Admin,
+ * Admin bisa diberi akses lewat Permission Override).
  */
 class SystemNotificationController extends Controller
 {
@@ -39,9 +39,15 @@ class SystemNotificationController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function dismiss(string $key): JsonResponse
+    public function delete(string $key): JsonResponse
     {
-        $this->notificationService->dismissSystemNotification(Auth::id(), $key);
+        abort_unless(
+            Auth::user()?->hasPermission('notifikasi_sistem', 'delete'),
+            403,
+            'Anda tidak memiliki hak akses untuk menghapus notifikasi sistem.'
+        );
+
+        $this->notificationService->deleteSystemNotification(Auth::id(), $key);
 
         return response()->json(['success' => true]);
     }

@@ -140,20 +140,18 @@ class NotificationService
 
         $items = $grouped ? array_merge(...array_values($grouped)) : [];
 
-        // Terapkan preferensi sematkan/hapus milik user ini terhadap 4
-        // jenis notifikasi OTOMATIS (lihat class doc notification_states
-        // & applyUserNotificationStates()) - jenis "announcement" sengaja
-        // dilewati di sini, itu sudah punya mekanisme sematkan/hapus
-        // sendiri (kolom pinned_at pada tabel notifications, ditangani
-        // AnnouncementService, bukan lewat sini).
+        // Terapkan sematan (pribadi per user) & penghapusan (GLOBAL, lihat
+        // applyUserNotificationStates()) terhadap 4 jenis notifikasi
+        // OTOMATIS - jenis "announcement" dilewati, itu sudah punya
+        // mekanisme sematkan/hapus sendiri di AnnouncementService.
         return $this->applyUserNotificationStates($userId, $items);
     }
 
     /**
-     * Buang item yang sudah di-"hapus" user ini (dismissed_at terisi),
-     * dan angkat yang disematkan (pinned_at terisi) ke paling atas -
-     * lintas semua jenis, bukan cuma di dalam grupnya sendiri. Jenis
-     * "announcement" dilewati (lihat komentar di getActiveNotifications()).
+     * Buang item yang sudah DIHAPUS - GLOBAL untuk semua user, bukan cuma
+     * yang menghapus (lihat deleteSystemNotification()) - dan angkat yang
+     * disematkan (preferensi PRIBADI, tetap per user) ke paling atas.
+     * Jenis "announcement" dilewati (lihat komentar di getActiveNotifications()).
      *
      * @param  array<int, array<string, mixed>>  $items
      * @return array<int, array<string, mixed>>
@@ -169,22 +167,27 @@ class NotificationService
             return $items;
         }
 
-        $states = NotificationState::where('user_id', $userId)
+        // Dicek TANPA filter user_id - sekali dihapus oleh siapa pun yang
+        // berhak, notifikasinya hilang untuk semua orang yang melihatnya.
+        $deletedKeys = NotificationState::whereIn('notification_key', $keys)
+            ->whereNotNull('dismissed_at')
+            ->pluck('notification_key')
+            ->all();
+
+        // Sematan tetap preferensi pribadi, jadi tetap discoped ke user ini.
+        $pinnedKeys = NotificationState::where('user_id', $userId)
             ->whereIn('notification_key', $keys)
-            ->get()
-            ->keyBy('notification_key');
+            ->whereNotNull('pinned_at')
+            ->pluck('notification_key')
+            ->all();
 
-        $items = array_values(array_filter($items, function ($item) use ($states) {
-            if ($item['type'] === 'announcement') {
-                return true;
-            }
-
-            return !($states->get($item['id'])?->dismissed_at);
+        $items = array_values(array_filter($items, function ($item) use ($deletedKeys) {
+            return $item['type'] === 'announcement' || !in_array($item['id'], $deletedKeys, true);
         }));
 
         foreach ($items as &$item) {
             $item['pinned'] = $item['type'] !== 'announcement'
-                && (bool) ($states->get($item['id'])?->pinned_at);
+                && in_array($item['id'], $pinnedKeys, true);
         }
         unset($item);
 
@@ -407,12 +410,11 @@ class NotificationService
     }
 
     /**
-     * Sematkan/lepas-sematan/hapus 1 notifikasi OTOMATIS (bukan
-     * Pengumuman - itu punya mekanisme sendiri di AnnouncementService)
-     * untuk 1 user. $key adalah string stabil yang sudah dihasilkan
-     * tiap builder di atas (contoh: "unpaid-42") - lihat komentar di
-     * migration create_notification_states_table untuk keterbatasan
-     * yang disengaja soal kunci ini.
+     * Sematkan/lepas-sematan (preferensi PRIBADI per user) 1 notifikasi
+     * OTOMATIS (bukan Pengumuman - itu punya mekanisme sendiri di
+     * AnnouncementService). $key adalah string stabil dari builder di
+     * atas (contoh: "unpaid-42") - lihat migration create_notification_states_table
+     * untuk keterbatasan yang disengaja soal kunci ini.
      */
     public function pinSystemNotification(int $userId, string $key): void
     {
@@ -431,11 +433,12 @@ class NotificationService
     }
 
     /**
-     * "Hapus" di sini artinya disembunyikan dari tampilan user ini -
-     * notifikasi otomatis tidak punya baris asli untuk benar-benar
-     * dihapus (lihat class doc migration-nya).
+     * Hapus 1 notifikasi OTOMATIS untuk SEMUA user (bukan cuma yang
+     * menghapus) - lihat applyUserNotificationStates() untuk pengecekan
+     * globalnya. $userId tetap dicatat (siapa yang menghapus), bukan
+     * berarti hapusnya cuma berlaku untuk user itu.
      */
-    public function dismissSystemNotification(int $userId, string $key): void
+    public function deleteSystemNotification(int $userId, string $key): void
     {
         NotificationState::updateOrCreate(
             ['user_id' => $userId, 'notification_key' => $key],

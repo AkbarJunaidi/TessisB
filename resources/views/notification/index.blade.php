@@ -79,13 +79,24 @@
             </div>
         @endif
 
-        {{-- SEMUA NOTIFIKASI (dulu bernama "Kotak Masuk" - diganti karena
-             kurang tepat, ini bukan cuma pesan masuk tapi juga tempat
-             kelola/sematkan/hapus). SEMUA role lihat punyanya sendiri. --}}
+        {{-- SEMUA NOTIFIKASI - gabungan Pengumuman (dulu bernama "Kotak
+             Masuk", punya baris tersimpan, SEMUA role lihat punyanya
+             sendiri) DAN Notifikasi Sistem otomatis (4 jenis dihitung
+             dari data saat ini, HANYA tampil untuk Admin/Super Admin,
+             ditaruh duluan di daftar - lihat NotificationService).
+             Sematkan Notifikasi Sistem = preferensi pribadi, siapa saja
+             boleh. Hapus Notifikasi Sistem = GLOBAL untuk semua user,
+             tombol cuma muncul kalau $canDeleteSystemNotification
+             (default hanya Super Admin, Admin lewat Permission Override). --}}
         <div class="{{ $isSuperAdmin ? 'col-lg-8' : 'col-12' }}">
             <div class="card shadow-sm border-0 rounded-3 bg-white">
                 <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-                    <h6 class="fw-bold m-0"><i class="bi bi-bell me-2 text-primary"></i>Semua Notifikasi <span class="text-muted fw-normal small">(24 jam terakhir, atau yang disematkan)</span></h6>
+                    <h6 class="fw-bold m-0">
+                        <i class="bi bi-bell me-2 text-primary"></i>Semua Notifikasi
+                        <span class="text-muted fw-normal small">
+                            (pengumuman 24 jam terakhir@if($isAdminOrSuperAdmin) + notifikasi sistem@endif, atau yang disematkan)
+                        </span>
+                    </h6>
                     @if($inbox->isNotEmpty())
                         <form method="POST" action="{{ route('announcements.read-all') }}">
                             @csrf
@@ -96,13 +107,51 @@
                     @endif
                 </div>
 
-                @if($inbox->isEmpty())
+                @if($inbox->isEmpty() && empty($systemNotifications))
                     <div class="card-body p-5 text-center text-muted">
                         <i class="bi bi-inbox" style="font-size: 2.5rem;"></i>
                         <p class="mt-2 mb-0">Belum ada notifikasi.</p>
                     </div>
                 @else
                     <div class="list-group list-group-flush" id="notificationInboxList">
+                        {{-- Notifikasi Sistem dulu (butuh tindakan admin -
+                             reset password, deadline, dst), baru Pengumuman
+                             di bawahnya. --}}
+                        @if($isAdminOrSuperAdmin)
+                            @foreach($systemNotifications as $item)
+                                <div class="list-group-item p-3 system-notif-item" data-notif-key="{{ $item['id'] }}">
+                                    <div class="d-flex justify-content-between align-items-start gap-3">
+                                        <a href="{{ $item['url'] }}" class="d-flex align-items-start gap-3 text-decoration-none text-reset flex-grow-1">
+                                            <i class="bi {{ $item['icon'] }} mt-1"></i>
+                                            <div>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    @if($item['pinned'] ?? false)
+                                                        <i class="bi bi-pin-angle-fill text-warning" title="Disematkan"></i>
+                                                    @endif
+                                                    <span class="fw-semibold">{{ $item['title'] }}</span>
+                                                </div>
+                                                <div class="text-secondary small">{{ $item['message'] }}</div>
+                                                <div class="text-muted small mt-1">Notifikasi sistem (otomatis)</div>
+                                            </div>
+                                        </a>
+                                        <div class="btn-group btn-group-sm flex-shrink-0">
+                                            <button type="button"
+                                                    class="btn btn-outline-secondary btn-toggle-system-pin"
+                                                    data-pinned="{{ ($item['pinned'] ?? false) ? '1' : '0' }}"
+                                                    title="{{ ($item['pinned'] ?? false) ? 'Lepas sematan' : 'Sematkan' }}">
+                                                <i class="bi {{ ($item['pinned'] ?? false) ? 'bi-pin-angle-fill' : 'bi-pin-angle' }}"></i>
+                                            </button>
+                                            @if($canDeleteSystemNotification)
+                                                <button type="button" class="btn btn-outline-danger btn-delete-system-notif" title="Hapus untuk semua user">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @endif
+
                         @foreach($inbox as $item)
                             @php $isPinned = !is_null($item->pinned_at); @endphp
                             <div class="list-group-item p-3 notif-item {{ $item->read_at ? '' : 'bg-primary-subtle bg-opacity-10' }}"
@@ -147,82 +196,16 @@
                         @endforeach
                     </div>
 
-                    <div class="card-body border-top">
-                        {{ $inbox->links() }}
-                    </div>
+                    @if($inbox->isNotEmpty())
+                        <div class="card-body border-top">
+                            {{ $inbox->links() }}
+                        </div>
+                    @endif
                 @endif
             </div>
         </div>
 
     </div>
-
-    {{-- NOTIFIKASI SISTEM (read-only) - HANYA Super Admin/Admin. Ini 4
-         jenis notifikasi otomatis yang sama persis dengan yang tampil di
-         lonceng navbar mereka - ditampilkan lengkap di sini karena
-         lonceng navbar sempit/kurang jelas.
-
-         BEDA dari daftar Pengumuman di atas: 4 jenis ini bukan baris
-         tersimpan (dihitung ulang dari data tiap saat), jadi "hapus" di
-         sini artinya "sembunyikan dari tampilanku" (disimpan di tabel
-         notification_states, lihat NotificationService), BUKAN
-         menghapus fakta yang mendasarinya - begitu kondisi datanya
-         berubah (misal client sudah bayar), notifikasinya toh hilang
-         sendiri juga tanpa perlu dihapus manual. --}}
-    @if($isAdminOrSuperAdmin)
-        <div class="row g-4 mt-1">
-            <div class="col-12">
-                <div class="card shadow-sm border-0 rounded-3 bg-white">
-                    <div class="card-header bg-white py-3 border-bottom">
-                        <h6 class="fw-bold m-0"><i class="bi bi-gear me-2 text-primary"></i>Notifikasi Sistem (Otomatis)</h6>
-                        <p class="text-muted small mb-0 mt-1">
-                            Dihitung otomatis dari data saat ini - sama seperti yang tampil di lonceng navbar.
-                            Bisa disematkan/disembunyikan, tapi itu cuma preferensi tampilanmu sendiri -
-                            fakta yang mendasarinya (misal project belum lunas) tidak berubah.
-                        </p>
-                    </div>
-
-                    @if(empty($systemNotifications))
-                        <div class="card-body p-5 text-center text-muted">
-                            <i class="bi bi-check2-circle" style="font-size: 2.5rem;"></i>
-                            <p class="mt-2 mb-0">Tidak ada notifikasi sistem saat ini.</p>
-                        </div>
-                    @else
-                        <div class="list-group list-group-flush" id="systemNotifList">
-                            @foreach($systemNotifications as $item)
-                                <div class="list-group-item p-3 system-notif-item" data-notif-key="{{ $item['id'] }}">
-                                    <div class="d-flex justify-content-between align-items-start gap-3">
-                                        <a href="{{ $item['url'] }}" class="d-flex align-items-start gap-3 text-decoration-none text-reset flex-grow-1">
-                                            <i class="bi {{ $item['icon'] }} mt-1"></i>
-                                            <div>
-                                                <div class="d-flex align-items-center gap-2">
-                                                    @if($item['pinned'] ?? false)
-                                                        <i class="bi bi-pin-angle-fill text-warning" title="Disematkan"></i>
-                                                    @endif
-                                                    <span class="fw-semibold">{{ $item['title'] }}</span>
-                                                </div>
-                                                <div class="text-secondary small">{{ $item['message'] }}</div>
-                                            </div>
-                                        </a>
-                                        <div class="btn-group btn-group-sm flex-shrink-0">
-                                            <button type="button"
-                                                    class="btn btn-outline-secondary btn-toggle-system-pin"
-                                                    data-pinned="{{ ($item['pinned'] ?? false) ? '1' : '0' }}"
-                                                    title="{{ ($item['pinned'] ?? false) ? 'Lepas sematan' : 'Sematkan' }}">
-                                                <i class="bi {{ ($item['pinned'] ?? false) ? 'bi-pin-angle-fill' : 'bi-pin-angle' }}"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-outline-danger btn-delete-system-notif" title="Sembunyikan">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
-            </div>
-        </div>
-    @endif
 
     {{-- PANEL KELOLA NOTIFIKASI OTOMATIS - HANYA Super Admin --}}
     @if($isSuperAdmin)
@@ -397,7 +380,7 @@
 
         document.querySelectorAll('.btn-delete-system-notif').forEach(function (btn) {
             btn.addEventListener('click', function () {
-                if (!confirm('Sembunyikan notifikasi ini dari tampilanmu? Notifikasi ini akan muncul lagi kalau kondisinya berubah lalu terjadi lagi di masa depan.')) {
+                if (!confirm('Hapus notifikasi ini untuk SEMUA user? Bisa muncul lagi kalau kondisinya terjadi lagi di masa depan.')) {
                     return;
                 }
 

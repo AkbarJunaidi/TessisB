@@ -11,14 +11,18 @@ use Illuminate\Support\Facades\Schema;
  * request. Jadi tidak ada baris asli yang bisa "disematkan"/"dihapus"
  * seperti Pengumuman (tabel `notifications`).
  *
- * Tabel ini menyimpan PREFERENSI user terhadap 1 kemunculan notifikasi
+ * Tabel ini menyimpan preferensi terhadap 1 kemunculan notifikasi
  * otomatis tertentu, dikunci lewat `notification_key` - string stabil
  * yang SUDAH dihasilkan tiap builder di NotificationService (contoh:
  * "unpaid-42" untuk notifikasi Project id 42 yang belum lunas,
  * "report-15" untuk ReportExport id 15). Bukan tabel baru untuk
- * notifikasi itu sendiri - notifikasi tetap dihitung fresh seperti
- * biasa, tabel ini cuma menjawab "apa preferensi user ini terhadap
- * notifikasi berkunci X".
+ * notifikasi itu sendiri - notifikasi tetap dihitung fresh seperti biasa.
+ *
+ * `pinned_at` = preferensi PRIBADI (dicek scoped ke user_id). `dismissed_at`
+ * = penghapusan GLOBAL (dicek TANPA filter user_id, lihat
+ * NotificationService::applyUserNotificationStates()) - user_id di baris
+ * dismissed_at cuma mencatat SIAPA yang menghapus, bukan pembatas siapa
+ * yang tidak lagi melihatnya.
  *
  * KETERBATASAN YANG DISENGAJA (bukan bug, dokumentasikan supaya jelas):
  * karena notification_key terpasang ke SATU record (misal Project #42),

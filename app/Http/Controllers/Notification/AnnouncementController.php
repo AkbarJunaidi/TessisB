@@ -25,11 +25,12 @@ class AnnouncementController extends Controller
      * - SEMUA role: daftar Pengumuman miliknya sendiri (bisa disematkan/
      *   dihapus - lihat AnnouncementService), ini yang menjawab "notifikasi
      *   tidak terlihat jelas di navbar" karena di sini ruangnya lega.
-     * - HANYA Super Admin/Admin: TAMBAHAN daftar read-only 4 jenis
-     *   notifikasi otomatis (password reset, dst) - sama persis dengan
-     *   yang tampil di lonceng navbar mereka, ditampilkan lengkap di sini.
-     *   Read-only karena 4 jenis ini bukan baris tersimpan (dihitung ulang
-     *   dari data tiap saat) - tidak ada yang bisa "dihapus/disematkan".
+     * - HANYA Super Admin/Admin: item 4 jenis notifikasi otomatis
+     *   (password reset, dst) ikut tampil DI DALAM daftar Pengumuman yang
+     *   sama (1 card "Semua Notifikasi", bukan card terpisah lagi - lihat
+     *   view). Bisa disematkan (pribadi) oleh siapa saja; tombol hapus
+     *   (GLOBAL, semua user) cuma muncul kalau punya permission
+     *   'notifikasi_sistem.delete' (lihat $canDeleteSystemNotification).
      * - HANYA Super Admin: form kirim pengumuman baru + panel kelola
      *   jenis notifikasi otomatis (lihat kondisi role di view-nya sendiri).
      */
@@ -39,9 +40,9 @@ class AnnouncementController extends Controller
         $inbox = $this->announcementService->getInbox();
         $manageableTypes = $this->notificationService->getManageableTypes();
 
-        // 4 jenis otomatis (bukan pengumuman) untuk ditampilkan read-only -
-        // cuma relevan buat Super Admin/Admin, employee tidak pernah lihat
-        // 4 jenis ini di lonceng navbar-nya juga (lihat NotificationService).
+        // 4 jenis otomatis (bukan pengumuman), digabung ke daftar Pengumuman
+        // di view - cuma relevan buat Super Admin/Admin, employee tidak
+        // pernah lihat 4 jenis ini di lonceng navbar-nya juga.
         $systemNotifications = [];
         if ($user->hasRole('super_admin', 'admin')) {
             $systemNotifications = array_values(array_filter(
@@ -49,6 +50,11 @@ class AnnouncementController extends Controller
                 fn ($item) => $item['type'] !== 'announcement'
             ));
         }
+
+        // Tombol hapus notifikasi sistem cuma dimunculkan kalau user ini
+        // punya izinnya (default Super Admin, Admin lewat Permission
+        // Override) - otorisasi sungguhan tetap dicek ulang di controller.
+        $canDeleteSystemNotification = (bool) $user->hasPermission('notifikasi_sistem', 'delete');
 
         // Dikirim juga ke view supaya bisa dipasang di JS registrasi Web
         // Push (lihat resources/views/layouts/app.blade.php) - null kalau
@@ -61,7 +67,8 @@ class AnnouncementController extends Controller
             'inbox',
             'vapidPublicKey',
             'manageableTypes',
-            'systemNotifications'
+            'systemNotifications',
+            'canDeleteSystemNotification'
         ));
     }
 

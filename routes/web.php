@@ -295,13 +295,11 @@ Route::middleware('auth')->group(function () {
 
     // Sematkan/lepas-sematan/hapus 1 notifikasi OTOMATIS (bukan
     // Pengumuman - beda dari 6 route di atas, lihat SystemNotificationController).
-    // Digate role:super_admin,admin - SENGAJA disamakan persis dengan
-    // siapa saja yang bisa LIHAT 4 jenis notifikasi ini (lihat
-    // NotificationService::getActiveNotifications(), Employee tidak
-    // pernah menerima jenis ini apa pun settingnya) - visibilitas UI &
-    // akses route dibuat 1:1 supaya mudah ditelusuri: "siapa bisa lihat"
-    // dan "siapa bisa kelola" selalu sama, tidak perlu dicek 2 tempat
-    // berbeda kalau nanti ada yang tanya "role apa yang boleh apa di sini".
+    // Digate role:super_admin,admin dulu di sini (siapa saja yang boleh
+    // LIHAT 4 jenis notifikasi ini) - untuk aksi hapus, otorisasi lebih
+    // ketat lewat hasPermission('notifikasi_sistem','delete') dicek di
+    // dalam controller (default hanya Super Admin, Admin butuh Permission
+    // Override), jadi 2 lapis: role dulu baru permission.
     Route::middleware('role:super_admin,admin')->group(function () {
 
         Route::post('system-notifications/{key}/pin', [SystemNotificationController::class, 'pin'])
@@ -310,8 +308,8 @@ Route::middleware('auth')->group(function () {
         Route::post('system-notifications/{key}/unpin', [SystemNotificationController::class, 'unpin'])
             ->name('system-notifications.unpin');
 
-        Route::delete('system-notifications/{key}', [SystemNotificationController::class, 'dismiss'])
-            ->name('system-notifications.dismiss');
+        Route::delete('system-notifications/{key}', [SystemNotificationController::class, 'delete'])
+            ->name('system-notifications.destroy');
 
     });
 

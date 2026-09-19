@@ -99,6 +99,16 @@ return [
             ],
         ],
 
+        // Default hanya Super Admin (lihat role_defaults di bawah) - Admin
+        // bisa diberi akses ini per-user lewat Permission Override.
+        'notifikasi_sistem' => [
+            'label' => 'Notifikasi Sistem',
+            'icon'  => 'bi-bell',
+            'actions' => [
+                'delete' => 'Hapus notifikasi sistem (berlaku untuk semua user)',
+            ],
+        ],
+
     ],
 
     /*
@@ -145,6 +155,9 @@ return [
                 'view_user' => true, 'create_user' => true, 'edit_user' => true, 'delete_user' => true,
                 'reset_password' => true, 'change_role' => true,
             ],
+            'notifikasi_sistem' => [
+                'delete' => true,
+            ],
         ],
 
         'admin' => [
@@ -175,6 +188,11 @@ return [
                 'view_user' => false, 'create_user' => false, 'edit_user' => false, 'delete_user' => false,
                 'reset_password' => false, 'change_role' => false,
             ],
+            // Default nonaktif - Super Admin bisa aktifkan lewat Permission
+            // Override di Edit User kalau admin tertentu perlu akses ini.
+            'notifikasi_sistem' => [
+                'delete' => false,
+            ],
         ],
 
         'employee' => [
@@ -202,6 +220,9 @@ return [
             'user_management' => [
                 'view_user' => false, 'create_user' => false, 'edit_user' => false, 'delete_user' => false,
                 'reset_password' => false, 'change_role' => false,
+            ],
+            'notifikasi_sistem' => [
+                'delete' => false,
             ],
         ],
 
