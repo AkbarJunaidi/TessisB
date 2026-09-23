@@ -17,6 +17,7 @@ class SuratJalan extends Model
     protected $fillable = [
         'nomor',
         'project_id',
+        'dipinjam_oleh_user_id',
         'created_by',
         'kepada',
         'keperluan',
@@ -40,6 +41,11 @@ class SuratJalan extends Model
         return $this->belongsTo(Project::class);
     }
 
+    public function dipinjamOleh(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'dipinjam_oleh_user_id');
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -48,5 +54,26 @@ class SuratJalan extends Model
     public function items(): HasMany
     {
         return $this->hasMany(SuratJalanItem::class);
+    }
+
+    /**
+     * true = "Surat Jalan mini" (peminjaman langsung lewat Scan, tanpa
+     * Project) - lihat SuratJalanService::createDirectLoan().
+     */
+    public function isPeminjamanLangsung(): bool
+    {
+        return is_null($this->project_id);
+    }
+
+    /**
+     * Label referensi buat ditampilkan (Riwayat Peminjaman, Mutasi Aset,
+     * Barang Pinjaman) - pakai ini daripada akses ->project->name langsung
+     * supaya otomatis benar untuk peminjaman langsung juga.
+     */
+    public function referensiLabel(): string
+    {
+        return $this->isPeminjamanLangsung()
+            ? 'Dipinjam oleh: ' . ($this->dipinjamOleh->name ?? '(user dihapus)')
+            : ($this->project->name ?? '(project dihapus)');
     }
 }

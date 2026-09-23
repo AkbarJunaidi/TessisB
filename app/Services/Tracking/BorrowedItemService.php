@@ -4,6 +4,8 @@ namespace App\Services\Tracking;
 
 use App\Models\InventoryUnit;
 use App\Models\Project;
+use App\Models\SuratJalan;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use App\Services\Project\SuratJalanService;
 use Exception;
@@ -118,5 +120,65 @@ class BorrowedItemService
         }
 
         return $this->suratJalanService->returnUnitsForProject($project, $units);
+    }
+
+    /**
+     * Sama seperti getProjectsWithBorrowedItems(), tapi untuk peminjaman
+     * LANGSUNG lewat Scan (tanpa Project, dikelompokkan per akun peminjam)
+     * - dipakai grup "Dipinjam oleh: [akun]" di accordion Barang Pinjaman.
+     */
+    public function getUsersWithDirectLoans(): Collection
+    {
+        $userIds = SuratJalan::whereNull('project_id')
+            ->whereNotNull('dipinjam_oleh_user_id')
+            ->whereHas('items', fn ($q) => $q->whereColumn('qty_dipakai', '>', 'qty_dikembalikan'))
+            ->distinct()
+            ->pluck('dipinjam_oleh_user_id');
+
+        return User::whereIn('id', $userIds)->get();
+    }
+
+    /**
+     * Padanan getBorrowedUnitsGroupedByProject() untuk peminjaman langsung -
+     * dikelompokkan per dipinjam_oleh_user_id, bukan project_id.
+     */
+    public function getBorrowedUnitsGroupedByUser(Collection $users): Collection
+    {
+        $userIds = $users->pluck('id');
+
+        return InventoryUnit::whereNotNull('surat_jalan_item_id')
+            ->whereHas(
+                'suratJalanItem.suratJalan',
+                fn ($q) => $q->whereNull('project_id')->whereIn('dipinjam_oleh_user_id', $userIds)
+            )
+            ->with(['inventory', 'suratJalanItem.suratJalan'])
+            ->orderBy('inventory_id')
+            ->orderBy('unit_number')
+            ->get()
+            ->groupBy(fn ($unit) => $unit->suratJalanItem->suratJalan->dipinjam_oleh_user_id);
+    }
+
+    /**
+     * Tombol Konfirmasi di halaman Barang Pinjaman - dipakai buat unit
+     * yang di-cycle sampai "Dikembalikan" (bisa campur Project & langsung).
+     *
+     * @param  array<int>  $unitIds
+     * @throws Exception
+     */
+    public function returnByIds(array $unitIds): void
+    {
+        $this->suratJalanService->returnUnitsByIds($unitIds);
+    }
+
+    /**
+     * Sama seperti di atas, tapi untuk unit yang di-cycle sampai
+     * "Rusak"/"Hilang" - lihat SuratJalanService::returnAndMarkStatus().
+     *
+     * @param  array<int>  $unitIds
+     * @throws Exception
+     */
+    public function markStatus(array $unitIds, string $status): void
+    {
+        $this->suratJalanService->returnAndMarkStatus($unitIds, $status);
     }
 }

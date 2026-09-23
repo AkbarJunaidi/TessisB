@@ -10,10 +10,9 @@
         <p>Kelola dan pantau seluruh data aset barang fisik perusahaan.</p>
     </div>
     <div class="d-flex flex-wrap gap-2">
-        {{-- FITUR: Scan Barcode - cari barang lewat serial number hasil scan
-             (kamera atau scanner fisik), lalu kembalikan barang yang sedang
-             dipinjam tanpa perlu cari project-nya dulu di halaman Barang
-             Pinjaman. --}}
+        {{-- FITUR: Scan Barcode - izin SENDIRI (scan_barang.view), tidak
+             ikut permission 'inventory' - lihat InventoryController::scanLookup(). --}}
+        @if(auth()->user()->hasPermission('scan_barang', 'view'))
         <button
             type="button"
             id="btnScanBarcode"
@@ -23,6 +22,7 @@
         >
             <i class="bi bi-upc-scan"></i> <span class="d-none d-sm-inline">Scan Barcode</span>
         </button>
+        @endif
         {{-- FITUR: Proses Laporan Massal (Semua Inventaris) bertahap via AJAX, notifikasi saat siap --}}
         <button
             type="button"
@@ -474,11 +474,10 @@
     });
 </script>
 
-{{-- Modal Scan Barcode - cari barang via serial number (scanner fisik atau
-     kamera), lalu kembalikan barang yang sedang dipinjam. Proses
-     pengembalian sungguhan TETAP lewat endpoint borrowed-items.return yang
-     sudah ada (dipanggil lewat fetch di bawah) - modal ini cuma
-     antarmuka pencarian & konfirmasi, tidak ada logic bisnis baru. --}}
+{{-- Modal Scan Barcode - 4 mode (Pinjam/Kembalikan/Rusak/Hilang), pilih
+     mode dulu baru scan. Semua submit AJAX lewat endpoint inventory.scan.*
+     (lihat InventoryController) - modal ini cuma antarmuka, logic bisnis
+     ada di SuratJalanService. --}}
 <div class="modal fade" id="scanBarcodeModal" tabindex="-1" aria-labelledby="scanBarcodeModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
@@ -490,37 +489,64 @@
             </div>
             <div class="modal-body p-4">
 
-                <label for="scanSerialInput" class="form-label small fw-semibold text-muted">
-                    Serial Number
-                </label>
-                <div class="input-group mb-2">
-                    <input
-                        type="text"
-                        id="scanSerialInput"
-                        class="form-control"
-                        placeholder="Scan pakai alat, atau ketik manual lalu Enter"
-                        autocomplete="off"
-                    >
-                    <button type="button" id="btnScanLookup" class="btn btn-outline-primary">
-                        <i class="bi bi-search"></i>
-                    </button>
-                </div>
-                <small class="text-muted d-block mb-3">
-                    Scanner barcode fisik otomatis mengetik ke kolom ini lalu Enter. Atau pakai kamera di bawah.
-                </small>
-
-                <button type="button" id="btnOpenCamera" class="btn btn-sm btn-outline-secondary w-100 mb-3">
-                    <i class="bi bi-camera me-1"></i> Buka Kamera
-                </button>
-
-                <div id="scanCameraWrapper" class="d-none mb-3">
-                    <div id="scanCameraReader" style="width: 100%;"></div>
-                    <button type="button" id="btnCloseCamera" class="btn btn-sm btn-outline-danger w-100 mt-2">
-                        <i class="bi bi-x-circle me-1"></i> Tutup Kamera
-                    </button>
+                {{-- LANGKAH 1: pilih mode dulu, baru scan-nya kebuka. --}}
+                <div id="scanModePicker">
+                    <p class="text-muted small mb-3">Mau ngapain?</p>
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-outline-primary text-start scan-mode-btn" data-mode="pinjam">
+                            <i class="bi bi-box-arrow-right me-2"></i> Pinjam
+                        </button>
+                        <button type="button" class="btn btn-outline-success text-start scan-mode-btn" data-mode="kembalikan">
+                            <i class="bi bi-box-arrow-in-left me-2"></i> Kembalikan
+                        </button>
+                        <button type="button" class="btn btn-outline-danger text-start scan-mode-btn" data-mode="rusak">
+                            <i class="bi bi-exclamation-triangle me-2"></i> Rusak
+                        </button>
+                        <button type="button" class="btn btn-outline-dark text-start scan-mode-btn" data-mode="hilang">
+                            <i class="bi bi-question-circle me-2"></i> Hilang
+                        </button>
+                    </div>
                 </div>
 
-                <div id="scanResultArea"></div>
+                {{-- LANGKAH 2: scan input + hasil - sama persis buat 4 mode,
+                     bedanya cuma di renderResult() (lihat script). --}}
+                <div id="scanInputArea" class="d-none">
+                    <button type="button" id="btnBackToModePicker" class="btn btn-sm btn-link text-decoration-none ps-0 mb-2">
+                        <i class="bi bi-arrow-left"></i> Ganti mode
+                    </button>
+
+                    <label for="scanSerialInput" class="form-label small fw-semibold text-muted">
+                        Serial Number
+                    </label>
+                    <div class="input-group mb-2">
+                        <input
+                            type="text"
+                            id="scanSerialInput"
+                            class="form-control"
+                            placeholder="Scan pakai alat, atau ketik manual lalu Enter"
+                            autocomplete="off"
+                        >
+                        <button type="button" id="btnScanLookup" class="btn btn-outline-primary">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                    <small class="text-muted d-block mb-3">
+                        Scanner barcode fisik otomatis mengetik ke kolom ini lalu Enter. Atau pakai kamera di bawah.
+                    </small>
+
+                    <button type="button" id="btnOpenCamera" class="btn btn-sm btn-outline-secondary w-100 mb-3">
+                        <i class="bi bi-camera me-1"></i> Buka Kamera
+                    </button>
+
+                    <div id="scanCameraWrapper" class="d-none mb-3">
+                        <div id="scanCameraReader" style="width: 100%;"></div>
+                        <button type="button" id="btnCloseCamera" class="btn btn-sm btn-outline-danger w-100 mt-2">
+                            <i class="bi bi-x-circle me-1"></i> Tutup Kamera
+                        </button>
+                    </div>
+
+                    <div id="scanResultArea"></div>
+                </div>
 
             </div>
         </div>
@@ -537,9 +563,11 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    const returnUrlTemplate = @json(route('borrowed-items.return', ['project' => '__PROJECT_ID__']));
 
     const modalEl = document.getElementById('scanBarcodeModal');
+    const modePicker = document.getElementById('scanModePicker');
+    const inputArea = document.getElementById('scanInputArea');
+    const backBtn = document.getElementById('btnBackToModePicker');
     const serialInput = document.getElementById('scanSerialInput');
     const lookupBtn = document.getElementById('btnScanLookup');
     const resultArea = document.getElementById('scanResultArea');
@@ -548,15 +576,32 @@ document.addEventListener('DOMContentLoaded', function () {
     const closeCameraBtn = document.getElementById('btnCloseCamera');
     const cameraWrapper = document.getElementById('scanCameraWrapper');
     let html5QrCode = null;
+    let currentMode = null;
 
-    // Reset modal setiap kali dibuka, supaya scan berikutnya mulai bersih.
-    modalEl.addEventListener('show.bs.modal', function () {
+    // Reset ke pemilihan mode setiap kali modal dibuka.
+    modalEl.addEventListener('show.bs.modal', resetToModePicker);
+    modalEl.addEventListener('hidden.bs.modal', stopCamera);
+
+    function resetToModePicker() {
+        currentMode = null;
+        modePicker.classList.remove('d-none');
+        inputArea.classList.add('d-none');
         serialInput.value = '';
         resultArea.innerHTML = '';
         cameraWrapper.classList.add('d-none');
+        stopCamera();
+    }
+
+    document.querySelectorAll('.scan-mode-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            currentMode = this.dataset.mode;
+            modePicker.classList.add('d-none');
+            inputArea.classList.remove('d-none');
+            serialInput.focus();
+        });
     });
 
-    modalEl.addEventListener('hidden.bs.modal', stopCamera);
+    backBtn.addEventListener('click', resetToModePicker);
 
     serialInput.addEventListener('keydown', function (e) {
         // Scanner barcode fisik berperilaku seperti keyboard: ketik teks
@@ -614,9 +659,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         resultArea.innerHTML = '<div class="text-center text-muted py-2"><span class="spinner-border spinner-border-sm me-2"></span>Mencari...</div>';
 
-        fetch(`{{ route('inventory.scan-lookup') }}?serial_number=${encodeURIComponent(serial)}`, {
-            headers: { 'Accept': 'application/json' },
-        })
+        const url = `{{ route('inventory.scan-lookup') }}?serial_number=${encodeURIComponent(serial)}&mode=${currentMode}`;
+
+        fetch(url, { headers: { 'Accept': 'application/json' } })
             .then((res) => res.json())
             .then(renderResult)
             .catch(() => {
@@ -634,91 +679,202 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        if (data.borrowed_units.length === 0) {
+        if (data.mode === 'pinjam') {
+            renderPinjamForm(data);
+            return;
+        }
+
+        renderUnitPicker(data.inventory.name, data.borrowed_units, data.mode);
+    }
+
+    /**
+     * Mode Pinjam - qty maksimal dibatasi ke stok tersedia. Stok 0 -
+     * tampilkan info siapa yang pinjam sekarang (read-only, bukan mode
+     * kembalikan, jadi tidak ada aksi apa pun di sini).
+     */
+    function renderPinjamForm(data) {
+        if (data.available_qty === 0) {
+            const daftarPeminjam = data.borrowed_units.length
+                ? data.borrowed_units.map((u) => `<li>Unit #${u.unit_number} - ${u.referensi}</li>`).join('')
+                : '<li class="text-muted">Tidak ada info peminjam.</li>';
+
             resultArea.innerHTML = `
-                <div class="alert alert-info mb-0">
-                    <strong>${data.inventory.name}</strong> ditemukan, tapi barang ini sedang tidak dipinjam di project manapun.
-                </div>`;
+                <div class="alert alert-warning mb-2">
+                    <strong>${data.inventory.name}</strong> - stok tersedia 0, sedang dipinjam semua.
+                </div>
+                <div class="small text-muted mb-1">Sedang dipinjam oleh:</div>
+                <ul class="small ps-3 mb-0">${daftarPeminjam}</ul>
+            `;
             return;
         }
-
-        if (data.borrowed_units.length === 1) {
-            const unit = data.borrowed_units[0];
-            resultArea.innerHTML = renderConfirmCard(data.inventory.name, [unit]);
-            attachConfirmHandler([unit]);
-            return;
-        }
-
-        // Lebih dari 1 unit dipinjam bersamaan - user pilih manual yang mana.
-        const optionsHtml = data.borrowed_units.map((unit, idx) => `
-            <div class="form-check border rounded-3 p-2 mb-2">
-                <input class="form-check-input" type="radio" name="scanUnitChoice" id="scanUnitChoice${idx}" value="${idx}" ${idx === 0 ? 'checked' : ''}>
-                <label class="form-check-label d-block" for="scanUnitChoice${idx}">
-                    <div class="fw-semibold">Unit #${unit.unit_number}</div>
-                    <div class="small text-muted">${unit.project_name} - SJ ${unit.surat_jalan_nomor}</div>
-                </label>
-            </div>
-        `).join('');
 
         resultArea.innerHTML = `
             <div class="alert alert-secondary">
-                <strong>${data.inventory.name}</strong> sedang dipinjam di ${data.borrowed_units.length} project sekaligus. Pilih yang mana yang dikembalikan:
+                <strong>${data.inventory.name}</strong> - stok tersedia: <strong>${data.available_qty}</strong> unit.
             </div>
-            ${optionsHtml}
-            <button type="button" id="btnConfirmScanReturn" class="btn btn-success w-100 mt-2">
-                <i class="bi bi-check-circle me-1"></i> Konfirmasi Kembalikan
+            <label for="scanPinjamQty" class="form-label small fw-semibold text-muted">Jumlah mau dipinjam</label>
+            <input type="number" id="scanPinjamQty" class="form-control mb-2" min="1" max="${data.available_qty}" value="1">
+            <button type="button" id="btnConfirmScanPinjam" class="btn btn-success w-100">
+                <i class="bi bi-check-circle me-1"></i> Pinjam Sekarang
             </button>
         `;
 
-        document.getElementById('btnConfirmScanReturn').addEventListener('click', function () {
-            const chosenIdx = document.querySelector('input[name="scanUnitChoice"]:checked').value;
-            submitReturn(data.borrowed_units[chosenIdx]);
+        document.getElementById('btnConfirmScanPinjam').addEventListener('click', function () {
+            const qtyInput = document.getElementById('scanPinjamQty');
+            const qty = parseInt(qtyInput.value, 10);
+
+            if (!qty || qty < 1 || qty > data.available_qty) {
+                resultArea.insertAdjacentHTML('afterbegin', '<div class="alert alert-warning">Jumlah tidak valid.</div>');
+                return;
+            }
+
+            submitPinjam(data.inventory.id, qty, this);
         });
     }
 
-    function renderConfirmCard(inventoryName, units) {
-        const unit = units[0];
-        return `
-            <div class="alert alert-secondary">
-                <div class="fw-bold mb-1">${inventoryName} - Unit #${unit.unit_number}</div>
-                <div class="small text-muted">Dipinjam untuk project: ${unit.project_name}</div>
-                <div class="small text-muted">No. Surat Jalan: ${unit.surat_jalan_nomor}</div>
-            </div>
-            <button type="button" id="btnConfirmScanReturn" class="btn btn-success w-100">
-                <i class="bi bi-check-circle me-1"></i> Konfirmasi Kembalikan
-            </button>
-        `;
-    }
-
-    function attachConfirmHandler(units) {
-        document.getElementById('btnConfirmScanReturn').addEventListener('click', function () {
-            submitReturn(units[0]);
-        });
-    }
-
-    function submitReturn(unit) {
-        const btn = document.getElementById('btnConfirmScanReturn');
+    function submitPinjam(inventoryId, qty, btn) {
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Memproses...';
 
-        fetch(returnUrlTemplate.replace('__PROJECT_ID__', unit.project_id), {
+        fetch('{{ route('inventory.scan.pinjam') }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': csrfToken,
                 'Accept': 'application/json',
             },
-            body: JSON.stringify({ unit_ids: [unit.unit_id] }),
+            body: JSON.stringify({ inventory_id: inventoryId, qty: qty }),
         })
             .then(async (res) => {
                 const resData = await res.json();
-                if (!res.ok) throw new Error(resData.message || 'Gagal mengembalikan barang.');
+                if (!res.ok) throw new Error(resData.message || 'Gagal memproses peminjaman.');
+                return resData;
+            })
+            .then((resData) => {
+                resultArea.innerHTML = `
+                    <div class="alert alert-success mb-0">
+                        <i class="bi bi-check-circle-fill me-1"></i> Berhasil dipinjam (${resData.nomor}).
+                    </div>`;
+                serialInput.value = '';
+                serialInput.focus();
+            })
+            .catch((err) => {
+                resultArea.innerHTML = `<div class="alert alert-danger mb-0">${err.message}</div>`;
+            });
+    }
+
+    /**
+     * Dipakai bareng untuk mode kembalikan/rusak/hilang - checkbox per
+     * unit (semua KOSONG default), beda cuma di teks & endpoint submit-nya
+     * (lihat submitBatchAction). "referensi" dari server sudah jadi teks
+     * siap-tampil (Project ATAU nama akun - lihat SuratJalan::referensiLabel()).
+     */
+    function renderUnitPicker(inventoryName, units, mode) {
+        if (units.length === 0) {
+            resultArea.innerHTML = `
+                <div class="alert alert-info mb-0">
+                    <strong>${inventoryName}</strong> ditemukan, tapi barang ini sedang tidak dipinjam di manapun.
+                </div>`;
+            return;
+        }
+
+        const modeText = {
+            kembalikan: { info: 'dikembalikan', btn: 'Kembalikan Unit Terpilih' },
+            rusak: { info: 'ditandai Rusak', btn: 'Tandai Rusak (Sekaligus Dikembalikan)' },
+            hilang: { info: 'ditandai Hilang', btn: 'Tandai Hilang (Sekaligus Dikembalikan)' },
+        }[mode];
+
+        const optionsHtml = units.map((unit, idx) => `
+            <div class="form-check border rounded-3 p-2 mb-2">
+                <input class="form-check-input scan-unit-checkbox" type="checkbox" id="scanUnitChoice${idx}" value="${idx}">
+                <label class="form-check-label d-block" for="scanUnitChoice${idx}">
+                    <div class="fw-semibold">Unit #${unit.unit_number}</div>
+                    <div class="small text-muted">${unit.referensi} - SJ ${unit.surat_jalan_nomor}</div>
+                </label>
+            </div>
+        `).join('');
+
+        // Toggle "Pilih Semua" cuma relevan kalau lebih dari 1 unit.
+        const selectAllHtml = units.length > 1 ? `
+            <div class="form-check mb-2 pb-2 border-bottom">
+                <input class="form-check-input" type="checkbox" id="scanUnitSelectAll">
+                <label class="form-check-label small fw-semibold" for="scanUnitSelectAll">Pilih Semua</label>
+            </div>
+        ` : '';
+
+        resultArea.innerHTML = `
+            <div class="alert alert-secondary">
+                <strong>${inventoryName}</strong> sedang dipinjam di ${units.length} unit. Pilih yang mau ${modeText.info}:
+            </div>
+            ${selectAllHtml}
+            ${optionsHtml}
+            <button type="button" id="btnConfirmScanReturn" class="btn btn-success w-100 mt-2">
+                <i class="bi bi-check-circle me-1"></i> ${modeText.btn}
+            </button>
+        `;
+
+        const selectAllCheckbox = document.getElementById('scanUnitSelectAll');
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function () {
+                document.querySelectorAll('.scan-unit-checkbox').forEach((cb) => { cb.checked = this.checked; });
+            });
+        }
+
+        document.getElementById('btnConfirmScanReturn').addEventListener('click', function () {
+            const chosen = Array.from(document.querySelectorAll('.scan-unit-checkbox:checked'))
+                .map((cb) => units[Number(cb.value)]);
+
+            if (chosen.length === 0) {
+                resultArea.insertAdjacentHTML(
+                    'afterbegin',
+                    '<div class="alert alert-warning">Pilih minimal 1 unit.</div>'
+                );
+                return;
+            }
+
+            submitBatchAction(chosen, mode);
+        });
+    }
+
+    /**
+     * Endpoint-nya beda per mode (lihat routes/web.php inventory.scan.*),
+     * tapi 1x POST saja - TIDAK perlu dikelompokkan per project seperti
+     * fitur Kembalikan di halaman Barang Pinjaman, karena
+     * SuratJalanService::returnUnitsByIds()/returnAndMarkStatus() generik,
+     * langsung terima campuran project apa saja dalam 1 array unit_ids.
+     */
+    function submitBatchAction(units, mode) {
+        const btn = document.getElementById('btnConfirmScanReturn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Memproses...';
+
+        const unitIds = units.map((u) => u.unit_id);
+        const isStatusMode = mode === 'rusak' || mode === 'hilang';
+        const url = isStatusMode
+            ? '{{ route('inventory.scan.status') }}'
+            : '{{ route('inventory.scan.kembalikan') }}';
+        const body = isStatusMode
+            ? { unit_ids: unitIds, status: mode === 'rusak' ? 'Rusak' : 'Hilang' }
+            : { unit_ids: unitIds };
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify(body),
+        })
+            .then(async (res) => {
+                const resData = await res.json();
+                if (!res.ok) throw new Error(resData.message || 'Gagal memproses.');
                 return resData;
             })
             .then(() => {
                 resultArea.innerHTML = `
                     <div class="alert alert-success mb-0">
-                        <i class="bi bi-check-circle-fill me-1"></i> Barang berhasil dikembalikan. Silakan scan barang berikutnya.
+                        <i class="bi bi-check-circle-fill me-1"></i> ${unitIds.length} unit berhasil diproses.
                     </div>`;
                 serialInput.value = '';
                 serialInput.focus();

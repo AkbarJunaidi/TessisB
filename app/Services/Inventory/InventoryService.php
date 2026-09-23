@@ -22,14 +22,17 @@ class InventoryService
 {
     protected ActivityLogService $activityLogService;
     protected QrCodeService $qrCodeService;
+    protected InventoryMutationService $mutationService;
 
-    // Dependency Injection untuk ActivityLogService dan QrCodeService
+    // Dependency Injection untuk ActivityLogService, QrCodeService, dan InventoryMutationService
     public function __construct(
         ActivityLogService $activityLogService,
-        QrCodeService $qrCodeService
+        QrCodeService $qrCodeService,
+        InventoryMutationService $mutationService
     ) {
         $this->activityLogService = $activityLogService;
         $this->qrCodeService = $qrCodeService;
+        $this->mutationService = $mutationService;
     }
 
     /**
@@ -81,7 +84,7 @@ class InventoryService
             ->join('surat_jalans', 'surat_jalans.id', '=', 'surat_jalan_items.surat_jalan_id')
             ->where('surat_jalan_items.inventory_id', $inventory->id)
             ->whereNull('surat_jalans.deleted_at')
-            ->with('suratJalan.project:id,name')
+            ->with('suratJalan.project:id,name', 'suratJalan.dipinjamOleh:id,name')
             ->orderByDesc('surat_jalans.tanggal_terbit')
             ->select('surat_jalan_items.*')
             ->limit($limit)
@@ -298,6 +301,10 @@ class InventoryService
                 ];
             }
             \App\Models\InventoryUnit::insert($newUnits);
+
+            // Dicatat SEBAGAI JUMLAH saja (bukan per nomor unit) - lihat
+            // InventoryMutationService untuk alasannya.
+            $this->mutationService->record($inventory->id, 'ditambahkan', $targetQuantity - $currentCount);
         } elseif ($targetQuantity < $currentCount) {
             $unitsToRemove = $currentUnits->sortByDesc('unit_number')->take($currentCount - $targetQuantity);
 
@@ -316,6 +323,8 @@ class InventoryService
             }
 
             \App\Models\InventoryUnit::whereIn('id', $unitsToRemove->pluck('id'))->delete();
+
+            $this->mutationService->record($inventory->id, 'dihapus', $currentCount - $targetQuantity);
         }
     }
 
@@ -328,7 +337,14 @@ class InventoryService
             throw new \Exception("Unit #{$unit->unit_number} sedang dipinjam - status tidak bisa diubah manual sampai dikembalikan.");
         }
 
+        $statusLama = $unit->status;
         $unit->update(['status' => $status]);
+
+        // Kalau statusnya sebenarnya tidak berubah (klik ulang status yang
+        // sama), jangan catat mutasi kosong.
+        if ($statusLama !== $status) {
+            $this->mutationService->recordStatusChange($unit->inventory_id, $statusLama, $status);
+        }
 
         $this->activityLogService->log(
             Auth::id(),

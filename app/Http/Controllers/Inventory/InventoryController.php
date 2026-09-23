@@ -17,10 +17,12 @@ use Illuminate\View\View;
 class InventoryController extends Controller
 {
     /**
-     * Service Inventory.
+     * Service Inventory & Surat Jalan (yang terakhir dipakai khusus untuk
+     * endpoint fitur Scan mode Pinjam/Kembalikan/Rusak/Hilang di bawah).
      */
     public function __construct(
-        protected InventoryService $inventoryService
+        protected InventoryService $inventoryService,
+        protected \App\Services\Project\SuratJalanService $suratJalanService
     ) {}
 
     /**
@@ -96,54 +98,161 @@ class InventoryController extends Controller
     }
 
     /**
-     * [AJAX] Dipakai fitur Scan Barcode di halaman Inventory List. Mencari
-     * Inventory berdasarkan serial_number hasil scan, lalu kembalikan
-     * daftar unit fisiknya yang SEDANG DIPINJAM (kalau ada) supaya user
-     * bisa pilih mau kembalikan yang mana - proses pengembalian sungguhan
-     * TETAP lewat endpoint borrowed-items.return yang sudah ada (tidak ada
-     * logic pengembalian baru di sini, cuma pencarian/pencocokan).
+     * [AJAX] Fitur Scan Barcode di halaman Inventory List - izin SENDIRI
+     * (scan_barang.view), SENGAJA TIDAK ikut permission modul 'inventory'
+     * sama sekali. $mode menentukan bentuk responnya:
+     * - pinjam: jumlah tersedia (+ daftar peminjam saat ini kalau 0)
+     * - kembalikan/rusak/hilang: daftar unit yang SEDANG DIPINJAM (sumber
+     *   sama, 3 mode ini beda di endpoint submit-nya saja - lihat di bawah)
      */
     public function scanLookup(Request $request): JsonResponse
     {
         abort_unless(
-            Auth::user()?->hasPermission('inventory', 'view'),
+            Auth::user()?->hasPermission('scan_barang', 'view'),
             403,
-            'Anda tidak memiliki hak akses untuk fitur ini.'
+            'Anda tidak memiliki hak akses untuk fitur Scan.'
         );
 
         $request->validate([
             'serial_number' => ['required', 'string'],
+            'mode'          => ['required', 'in:pinjam,kembalikan,rusak,hilang'],
         ]);
 
-        $inventory = Inventory::where('serial_number', trim($request->input('serial_number')))->first();
+        $inventory = Inventory::withAvailability()
+            ->where('serial_number', trim($request->input('serial_number')))
+            ->first();
 
         if (!$inventory) {
             return response()->json(['found' => false]);
         }
 
-        $borrowedUnits = $inventory->units()
+        $mode = $request->input('mode');
+        $response = [
+            'found' => true,
+            'mode' => $mode,
+            'inventory' => ['id' => $inventory->id, 'name' => $inventory->name],
+        ];
+
+        if ($mode === 'pinjam') {
+            $response['available_qty'] = $inventory->qty_available;
+            // Stok 0 - tampilkan siapa yang pinjam sekarang (info saja,
+            // bukan berarti mode ini jadi bisa dipakai buat mengembalikan).
+            $response['borrowed_units'] = $inventory->qty_available > 0
+                ? []
+                : $this->getBorrowedUnitsPayload($inventory);
+
+            return response()->json($response);
+        }
+
+        $response['borrowed_units'] = $this->getBorrowedUnitsPayload($inventory);
+
+        return response()->json($response);
+    }
+
+    /**
+     * Daftar unit fisik barang ini yang SEDANG DIPINJAM, dipakai scanLookup()
+     * di atas untuk mode kembalikan/rusak/hilang, dan mode pinjam saat stok
+     * 0. Referensinya bisa Project (Surat Jalan biasa) ATAU nama akun
+     * (peminjaman langsung) - lihat SuratJalan::referensiLabel().
+     */
+    private function getBorrowedUnitsPayload(Inventory $inventory): array
+    {
+        return $inventory->units()
             ->whereNotNull('surat_jalan_item_id')
-            ->with('suratJalanItem.suratJalan.project')
+            ->with('suratJalanItem.suratJalan')
             ->orderBy('unit_number')
             ->get()
-            ->filter(fn ($unit) => $unit->suratJalanItem?->suratJalan?->project)
+            ->filter(fn ($unit) => $unit->suratJalanItem?->suratJalan)
             ->map(fn ($unit) => [
-                'unit_id'          => $unit->id,
-                'unit_number'      => $unit->unit_number,
-                'project_id'       => $unit->suratJalanItem->suratJalan->project->id,
-                'project_name'     => $unit->suratJalanItem->suratJalan->project->name,
+                'unit_id'           => $unit->id,
+                'unit_number'       => $unit->unit_number,
+                'referensi'         => $unit->suratJalanItem->suratJalan->referensiLabel(),
                 'surat_jalan_nomor' => $unit->suratJalanItem->suratJalan->nomor,
             ])
-            ->values();
+            ->values()
+            ->all();
+    }
 
-        return response()->json([
-            'found' => true,
-            'inventory' => [
-                'id'   => $inventory->id,
-                'name' => $inventory->name,
-            ],
-            'borrowed_units' => $borrowedUnits,
+    /**
+     * [AJAX] Submit fitur Scan mode "Pinjam" - bikin peminjaman langsung
+     * (tanpa Project, referensi akun yang scan). Lihat
+     * SuratJalanService::createDirectLoan().
+     */
+    public function scanPinjam(Request $request): JsonResponse
+    {
+        abort_unless(
+            Auth::user()?->hasPermission('scan_barang', 'view'),
+            403,
+            'Anda tidak memiliki hak akses untuk fitur Scan.'
+        );
+
+        $data = $request->validate([
+            'inventory_id' => ['required', 'integer', 'exists:inventories,id'],
+            'qty'          => ['required', 'integer', 'min:1'],
         ]);
+
+        try {
+            $suratJalan = $this->suratJalanService->createDirectLoan($data['inventory_id'], $data['qty']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['success' => true, 'nomor' => $suratJalan->nomor]);
+    }
+
+    /**
+     * [AJAX] Submit fitur Scan mode "Kembalikan" - lihat
+     * SuratJalanService::returnUnitsByIds() (generik, bisa campur Surat
+     * Jalan biasa & peminjaman langsung dalam 1x submit).
+     */
+    public function scanKembalikan(Request $request): JsonResponse
+    {
+        abort_unless(
+            Auth::user()?->hasPermission('scan_barang', 'view'),
+            403,
+            'Anda tidak memiliki hak akses untuk fitur Scan.'
+        );
+
+        $data = $request->validate([
+            'unit_ids'   => ['required', 'array', 'min:1'],
+            'unit_ids.*' => ['integer', 'distinct', 'exists:inventory_units,id'],
+        ]);
+
+        try {
+            $this->suratJalanService->returnUnitsByIds($data['unit_ids']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * [AJAX] Submit fitur Scan mode "Rusak"/"Hilang" - lepas dari
+     * peminjaman SEKALIGUS ubah status dalam 1 aksi, lihat
+     * SuratJalanService::returnAndMarkStatus() (Opsi B).
+     */
+    public function scanStatus(Request $request): JsonResponse
+    {
+        abort_unless(
+            Auth::user()?->hasPermission('scan_barang', 'view'),
+            403,
+            'Anda tidak memiliki hak akses untuk fitur Scan.'
+        );
+
+        $data = $request->validate([
+            'unit_ids'   => ['required', 'array', 'min:1'],
+            'unit_ids.*' => ['integer', 'distinct', 'exists:inventory_units,id'],
+            'status'     => ['required', 'in:Rusak,Hilang'],
+        ]);
+
+        try {
+            $this->suratJalanService->returnAndMarkStatus($data['unit_ids'], $data['status']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['success' => true]);
     }
 
     /**

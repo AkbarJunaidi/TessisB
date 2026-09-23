@@ -109,6 +109,17 @@ return [
             ],
         ],
 
+        // 1 aksi saja ('view') - siapa yang punya ini bisa pakai SEMUA mode
+        // di dalam fitur Scan (Pinjam/Kembalikan/Rusak/Hilang), sengaja
+        // TIDAK ikut/turunan dari permission modul 'inventory'.
+        'scan_barang' => [
+            'label' => 'Scan Barang',
+            'icon'  => 'bi-upc-scan',
+            'actions' => [
+                'view' => 'Akses fitur Scan Barcode (Pinjam/Kembalikan/Rusak/Hilang)',
+            ],
+        ],
+
     ],
 
     /*
@@ -158,6 +169,9 @@ return [
             'notifikasi_sistem' => [
                 'delete' => true,
             ],
+            'scan_barang' => [
+                'view' => true,
+            ],
         ],
 
         'admin' => [
@@ -193,6 +207,9 @@ return [
             'notifikasi_sistem' => [
                 'delete' => false,
             ],
+            'scan_barang' => [
+                'view' => false,
+            ],
         ],
 
         'employee' => [
@@ -223,6 +240,9 @@ return [
             ],
             'notifikasi_sistem' => [
                 'delete' => false,
+            ],
+            'scan_barang' => [
+                'view' => false,
             ],
         ],
 

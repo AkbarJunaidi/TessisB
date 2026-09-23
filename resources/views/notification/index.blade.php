@@ -69,9 +69,7 @@
                                 <i class="bi bi-send me-1"></i>Kirim ke Semua User Aktif
                             </button>
                             <p class="text-muted small mt-2 mb-0">
-                                Terkirim ke semua user berstatus aktif (Super Admin, Admin, Employee) -
-                                baik lewat halaman ini maupun notifikasi browser (kalau
-                                sudah mengaktifkannya).
+                                Terkirim ke semua user aktif.
                             </p>
                         </form>
                     </div>
@@ -93,9 +91,6 @@
                 <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                     <h6 class="fw-bold m-0">
                         <i class="bi bi-bell me-2 text-primary"></i>Semua Notifikasi
-                        <span class="text-muted fw-normal small">
-                            (pengumuman 24 jam terakhir@if($isAdminOrSuperAdmin) + notifikasi sistem@endif, atau yang disematkan)
-                        </span>
                     </h6>
                     @if($inbox->isNotEmpty())
                         <form method="POST" action="{{ route('announcements.read-all') }}">
@@ -215,8 +210,7 @@
                     <div class="card-header bg-white py-3 border-bottom">
                         <h6 class="fw-bold m-0"><i class="bi bi-sliders me-2 text-primary"></i>Kelola Notifikasi Otomatis</h6>
                         <p class="text-muted small mb-0 mt-1">
-                            Aktif/nonaktifkan jenis notifikasi yang muncul di lonceng navbar, dan atur urutannya.
-                            Notifikasi yang dinonaktifkan tidak akan dihitung sama sekali (bukan cuma disembunyikan).
+                            Aktif/nonaktifkan & atur urutan jenis notifikasi otomatis.
                         </p>
                     </div>
                     <div class="card-body p-4">

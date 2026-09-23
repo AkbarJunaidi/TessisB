@@ -76,6 +76,11 @@
                             </a>
                             @endif
                         </li>
+                        <li class="nav-item">
+                            <a href="{{ route('inventory.mutasi') }}" class="nav-link sidebar-sublink {{ request()->routeIs('inventory.mutasi') ? 'active' : '' }}">
+                                <i class="bi bi-arrow-left-right"></i> Mutasi Aset
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </li>

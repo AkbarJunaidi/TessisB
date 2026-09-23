@@ -9,6 +9,8 @@ use App\Models\SuratJalanItem;
 use App\Services\ActivityLog\ActivityLogService;
 use App\Services\DataIntegration\FileService;
 use App\Services\DataIntegration\FolderService;
+use App\Services\Inventory\InventoryMutationService;
+use App\Services\Inventory\InventoryService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -20,15 +22,21 @@ class SuratJalanService
     protected ActivityLogService $activityLogService;
     protected FolderService $folderService;
     protected FileService $fileService;
+    protected InventoryMutationService $mutationService;
+    protected InventoryService $inventoryService;
 
     public function __construct(
         ActivityLogService $activityLogService,
         FolderService $folderService,
-        FileService $fileService
+        FileService $fileService,
+        InventoryMutationService $mutationService,
+        InventoryService $inventoryService
     ) {
         $this->activityLogService = $activityLogService;
         $this->folderService = $folderService;
         $this->fileService = $fileService;
+        $this->mutationService = $mutationService;
+        $this->inventoryService = $inventoryService;
     }
 
     /**
@@ -104,6 +112,14 @@ class SuratJalanService
 
                 \App\Models\InventoryUnit::whereIn('id', $unitsToAssign->pluck('id'))
                     ->update(['surat_jalan_item_id' => $suratJalanItem->id]);
+
+                $this->mutationService->record(
+                    $inventory->id,
+                    'dipinjam',
+                    $row['qty'],
+                    $suratJalan->id,
+                    $project->name
+                );
 
                 // Dikumpulkan di sini (bukan query ulang setelah transaksi) supaya
                 // log aktivitas di bawah bisa menyebutkan barang & jumlahnya
@@ -298,6 +314,16 @@ class SuratJalanService
         \App\Models\InventoryUnit::whereIn('id', $unitsToRelease->pluck('id'))
             ->update(['surat_jalan_item_id' => null]);
 
+        if ($qty > 0) {
+            $this->mutationService->record(
+                $item->inventory_id,
+                'dikembalikan',
+                $qty,
+                $item->surat_jalan_id,
+                $item->suratJalan?->referensiLabel()
+            );
+        }
+
         $suratJalan = $item->suratJalan()->with('items')->first();
         $allReturned = $suratJalan->items->every(fn ($i) => $i->qty_dikembalikan >= $i->qty_dipakai);
 
@@ -306,5 +332,145 @@ class SuratJalanService
         }
 
         return ['item' => $item->fresh(), 'suratJalan' => $suratJalan];
+    }
+
+    /**
+     * Peminjaman langsung lewat Scan (mode "Pinjam") - TANPA Project,
+     * referensinya akun yang scan (`dipinjam_oleh_user_id`). Reuse alur
+     * pemilihan unit fisik yang sama seperti createSuratJalan(), cuma 1
+     * barang per panggilan (Scan cuma proses 1 barang per scan).
+     *
+     * @throws Exception
+     */
+    public function createDirectLoan(int $inventoryId, int $qty): SuratJalan
+    {
+        return DB::transaction(function () use ($inventoryId, $qty) {
+            $inventory = Inventory::where('id', $inventoryId)->lockForUpdate()->first();
+
+            if (!$inventory) {
+                throw new Exception('Barang tidak ditemukan.');
+            }
+
+            if ($qty > $inventory->qty_available) {
+                throw new Exception("Stok \"{$inventory->name}\" tidak mencukupi.");
+            }
+
+            $suratJalan = SuratJalan::create([
+                'nomor'                 => $this->generateNomor(),
+                'project_id'            => null,
+                'dipinjam_oleh_user_id' => Auth::id(),
+                'created_by'            => Auth::id(),
+                'tanggal_terbit'        => now()->toDateString(),
+                'keperluan'             => 'Peminjaman langsung lewat Scan',
+                'status'                => 'Aktif',
+            ]);
+
+            $suratJalanItem = SuratJalanItem::create([
+                'surat_jalan_id'   => $suratJalan->id,
+                'inventory_id'     => $inventory->id,
+                'qty_dipakai'      => $qty,
+                'qty_dikembalikan' => 0,
+            ]);
+
+            $unitsToAssign = $inventory->units()
+                ->where('status', 'Tersedia')
+                ->whereNull('surat_jalan_item_id')
+                ->orderBy('unit_number')
+                ->limit($qty)
+                ->get();
+
+            if ($unitsToAssign->count() < $qty) {
+                throw new Exception("Unit fisik \"{$inventory->name}\" yang benar-benar tersedia tidak mencukupi.");
+            }
+
+            \App\Models\InventoryUnit::whereIn('id', $unitsToAssign->pluck('id'))
+                ->update(['surat_jalan_item_id' => $suratJalanItem->id]);
+
+            $this->mutationService->record(
+                $inventory->id,
+                'dipinjam',
+                $qty,
+                $suratJalan->id,
+                $suratJalan->referensiLabel()
+            );
+
+            $this->activityLogService->log(
+                Auth::id(),
+                'Inventory',
+                "Pinjam langsung {$qty} unit \"{$inventory->name}\" lewat Scan"
+            );
+
+            return $suratJalan;
+        });
+    }
+
+    /**
+     * Sama seperti returnUnitsForProject(), tapi TANPA syarat harus 1
+     * Project - dipakai fitur Scan mode "Kembalikan", yang unit-nya bisa
+     * campur dari Surat Jalan biasa & peminjaman langsung sekaligus.
+     * Dikelompokkan per surat_jalan_item_id (applyReturn butuh 1 item per
+     * panggilan), 1 unit cuma boleh muncul 1x di $unitIds (dijamin oleh
+     * whereIn + validasi request, bukan di sini).
+     *
+     * @param  array<int>  $unitIds
+     * @throws Exception
+     */
+    public function returnUnitsByIds(array $unitIds): array
+    {
+        return DB::transaction(function () use ($unitIds) {
+            $units = \App\Models\InventoryUnit::whereIn('id', $unitIds)
+                ->whereNotNull('surat_jalan_item_id')
+                ->with('suratJalanItem.inventory')
+                ->get();
+
+            if ($units->isEmpty()) {
+                throw new Exception('Tidak ada unit valid yang dipilih untuk dikembalikan.');
+            }
+
+            $itemSummaries = [];
+
+            foreach ($units->groupBy('surat_jalan_item_id') as $unitsForItem) {
+                $item = $unitsForItem->first()->suratJalanItem;
+                $this->applyReturn($item, $unitsForItem);
+                $itemSummaries[] = "{$item->inventory->name} x{$unitsForItem->count()}";
+            }
+
+            $this->activityLogService->log(
+                Auth::id(),
+                'Inventory',
+                'Kembalikan barang lewat Scan - ' . implode(', ', $itemSummaries)
+            );
+
+            return ['returned_count' => $units->count()];
+        });
+    }
+
+    /**
+     * Fitur Scan mode "Rusak"/"Hilang" (Opsi B - digabung, TIDAK wajib
+     * dikembalikan manual dulu): lepas unit dari peminjamannya SEKALIGUS
+     * ditandai Rusak/Hilang dalam 1 aksi - lewat returnUnitsByIds() dulu
+     * (lepas), baru InventoryService::updateUnitStatus() per unit (ubah
+     * status) - jadi tercatat 2 jenis baris di Mutasi Aset, sama seperti
+     * kalau dikerjakan manual 2 langkah terpisah.
+     *
+     * @param  array<int>  $unitIds
+     * @throws Exception
+     */
+    public function returnAndMarkStatus(array $unitIds, string $status): void
+    {
+        if (!in_array($status, ['Rusak', 'Hilang'], true)) {
+            throw new Exception('Status tidak valid untuk aksi ini.');
+        }
+
+        DB::transaction(function () use ($unitIds, $status) {
+            $this->returnUnitsByIds($unitIds);
+
+            // Query ULANG di sini (bukan reuse dari atas) - unit-unit ini
+            // sudah lepas dari peminjaman barusan, updateUnitStatus() akan
+            // menolak kalau datanya masih yang versi "sedang dipinjam".
+            foreach (\App\Models\InventoryUnit::whereIn('id', $unitIds)->get() as $unit) {
+                $this->inventoryService->updateUnitStatus($unit, $status);
+            }
+        });
     }
 }

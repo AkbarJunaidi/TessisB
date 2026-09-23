@@ -8,6 +8,7 @@ use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\DataIntegration\FileController;
 use App\Http\Controllers\DataIntegration\FolderController;
 use App\Http\Controllers\Inventory\InventoryController;
+use App\Http\Controllers\Inventory\InventoryMutationController;
 use App\Http\Controllers\Notification\AnnouncementController;
 use App\Http\Controllers\Notification\NotificationController;
 use App\Http\Controllers\Notification\NotificationSettingController;
@@ -79,6 +80,21 @@ Route::middleware('auth')->group(function () {
 
         Route::get('inventory/scan-lookup', [InventoryController::class, 'scanLookup'])
             ->name('inventory.scan-lookup');
+
+        // 3 endpoint submit fitur Scan (mode Pinjam/Kembalikan/Rusak+Hilang)
+        // - tidak perlu didaftarkan sebelum Route::resource (method POST,
+        // tidak ada risiko ketangkap {inventory} yang scope-nya GET).
+        Route::post('inventory/scan/pinjam', [InventoryController::class, 'scanPinjam'])
+            ->name('inventory.scan.pinjam');
+        Route::post('inventory/scan/kembalikan', [InventoryController::class, 'scanKembalikan'])
+            ->name('inventory.scan.kembalikan');
+        Route::post('inventory/scan/status', [InventoryController::class, 'scanStatus'])
+            ->name('inventory.scan.status');
+
+        // Sama seperti scan-lookup di atas - didaftarkan SEBELUM Route::resource
+        // supaya "mutasi" tidak ketangkap sebagai {inventory} pada route show.
+        Route::get('inventory/mutasi', [InventoryMutationController::class, 'index'])
+            ->name('inventory.mutasi');
 
         Route::resource('inventory', InventoryController::class);
 
@@ -229,6 +245,14 @@ Route::middleware('auth')->group(function () {
 
         Route::post('barang-pinjaman/{project}/return', [BorrowedItemController::class, 'returnUnits'])
             ->name('borrowed-items.return');
+
+        // Generik (bukan scoped 1 Project) - dipakai tombol Konfirmasi utk
+        // grup "Dipinjam oleh: [akun]" di halaman Barang Pinjaman, dan bisa
+        // dipakai ulang bebas kalau nanti ada entry point lain yang serupa.
+        Route::post('barang-pinjaman/kembalikan', [BorrowedItemController::class, 'returnByIds'])
+            ->name('borrowed-items.return-by-ids');
+        Route::post('barang-pinjaman/status', [BorrowedItemController::class, 'markStatus'])
+            ->name('borrowed-items.mark-status');
 
     });
 

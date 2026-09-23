@@ -430,7 +430,7 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead>
                             <tr class="text-muted small text-uppercase">
-                                <th>Project</th>
+                                <th>Project / Peminjam</th>
                                 <th>No. Surat Jalan</th>
                                 <th class="text-center">Jumlah</th>
                                 <th>Tanggal Pinjam</th>
@@ -448,11 +448,17 @@
                                     };
                                 @endphp
                                 <tr>
-                                    <td class="fw-semibold text-dark">{{ $item->suratJalan->project->name ?? '-' }}</td>
+                                    <td class="fw-semibold text-dark">{{ $item->suratJalan->referensiLabel() }}</td>
                                     <td>
-                                        <a href="{{ route('surat-jalan.show', $item->suratJalan->id) }}" class="text-decoration-none">
+                                        {{-- Peminjaman langsung (tanpa Project) tidak punya halaman
+                                             detail Surat Jalan yang valid - tampilkan teks saja. --}}
+                                        @if($item->suratJalan->isPeminjamanLangsung())
                                             {{ $item->suratJalan->nomor }}
-                                        </a>
+                                        @else
+                                            <a href="{{ route('surat-jalan.show', $item->suratJalan->id) }}" class="text-decoration-none">
+                                                {{ $item->suratJalan->nomor }}
+                                            </a>
+                                        @endif
                                     </td>
                                     <td class="text-center">{{ $item->qty_dipakai }}</td>
                                     <td>{{ \Carbon\Carbon::parse($item->suratJalan->tanggal_terbit)->format('d/m/Y') }}</td>
