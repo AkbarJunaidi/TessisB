@@ -79,8 +79,8 @@ class AnnouncementController extends Controller
      */
     public function store(AnnouncementStoreRequest $request): RedirectResponse
     {
-        if (!Auth::user()?->isSuperAdmin()) {
-            return back()->with('error', 'Hanya Super Admin yang dapat mengirim pengumuman.');
+        if (!Auth::user()?->hasPermission('notifikasi_sistem', 'kirim')) {
+            return back()->with('error', 'Anda tidak memiliki hak akses untuk mengirim pengumuman.');
         }
 
         $validated = $request->validated();

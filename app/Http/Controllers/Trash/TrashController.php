@@ -24,6 +24,12 @@ class TrashController extends Controller
      */
     public function index(TrashFilterRequest $request): View
     {
+        abort_unless(
+            Auth::user()?->hasPermission('trash', 'view'),
+            403,
+            'Anda tidak memiliki hak akses untuk melihat Trash.'
+        );
+
         $filters = $request->validated();
 
         $trashItems = $this->trashService->getFilteredTrash($filters);
@@ -40,10 +46,13 @@ class TrashController extends Controller
 
     /**
      * Memulihkan 1 data dari Trash (restore()).
-     * Dapat diakses Super Admin & Admin, sesuai gate role pada route.
      */
     public function restore(Request $request, string $type, int $id): JsonResponse|RedirectResponse
     {
+        if (!Auth::user()?->hasPermission('trash', 'restore')) {
+            return $this->fail($request, 'Anda tidak memiliki hak akses untuk memulihkan data dari Trash.', 403);
+        }
+
         try {
             $result = $this->trashService->restore($type, $id);
 
@@ -69,13 +78,14 @@ class TrashController extends Controller
     }
 
     /**
-     * Menghapus 1 data secara permanen (forceDelete()).
-     * HANYA Super Admin — otorisasi ganda: role gate di route + pengecekan di sini.
+     * Menghapus 1 data secara permanen (forceDelete()) - HANYA yang punya
+     * permission trash.force_delete (default cuma Super Admin, sama
+     * seperti Reset Password User - lihat config/permissions.php).
      */
     public function forceDelete(Request $request, string $type, int $id): JsonResponse|RedirectResponse
     {
-        if (!Auth::user()?->isSuperAdmin()) {
-            return $this->fail($request, 'Hanya Super Admin yang dapat menghapus data secara permanen.', 403);
+        if (!Auth::user()?->hasPermission('trash', 'force_delete')) {
+            return $this->fail($request, 'Anda tidak memiliki hak akses untuk menghapus data secara permanen.', 403);
         }
 
         try {

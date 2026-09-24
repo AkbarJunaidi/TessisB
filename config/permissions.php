@@ -48,9 +48,8 @@ return [
             'label' => 'Surat Jalan',
             'icon'  => 'bi-file-earmark-text',
             'actions' => [
-                'view'   => 'Melihat surat jalan',
-                'create' => 'Membuat surat jalan',
-                'print'  => 'Cetak / download surat jalan',
+                'view'  => 'Melihat surat jalan',
+                'print' => 'Cetak / download surat jalan',
             ],
         ],
 
@@ -106,6 +105,7 @@ return [
             'icon'  => 'bi-bell',
             'actions' => [
                 'delete' => 'Hapus notifikasi sistem (berlaku untuk semua user)',
+                'kirim'  => 'Kirim pengumuman baru',
             ],
         ],
 
@@ -117,6 +117,34 @@ return [
             'icon'  => 'bi-upc-scan',
             'actions' => [
                 'view' => 'Akses fitur Scan Barcode (Pinjam/Kembalikan/Rusak/Hilang)',
+            ],
+        ],
+
+        // Default TERBUKA untuk 3 role (lihat role_defaults) - menyamakan
+        // akses yang SUDAH berlaku sebelum modul ini didaftarkan (CRUD
+        // Kontak sebelumnya tidak dibatasi sama sekali), supaya tidak ada
+        // yang tiba-tiba kehilangan akses begitu modul ini aktif.
+        'kontak' => [
+            'label' => 'Kontak',
+            'icon'  => 'bi-person-lines-fill',
+            'actions' => [
+                'view'   => 'Melihat data kontak',
+                'create' => 'Tambah kontak baru',
+                'edit'   => 'Ubah data kontak',
+                'delete' => 'Hapus kontak',
+            ],
+        ],
+
+        // force_delete beda dari view/restore - bukan berarti "hapus" biasa,
+        // ini permanen & tidak bisa dibatalkan (lihat role_defaults, default
+        // HANYA Super Admin, sama seperti Reset Password User).
+        'trash' => [
+            'label' => 'Trash',
+            'icon'  => 'bi-trash3',
+            'actions' => [
+                'view'         => 'Melihat isi Trash',
+                'restore'      => 'Memulihkan data dari Trash',
+                'force_delete' => 'Menghapus data secara permanen',
             ],
         ],
 
@@ -150,7 +178,7 @@ return [
                 'create_task' => true, 'edit_task' => true, 'delete_task' => true, 'update_status' => true,
             ],
             'surat_jalan' => [
-                'view' => true, 'create' => true, 'print' => true,
+                'view' => true, 'print' => true,
             ],
             'data_integration' => [
                 'view' => true, 'upload' => true, 'download' => true, 'delete' => true,
@@ -167,10 +195,16 @@ return [
                 'reset_password' => true, 'change_role' => true,
             ],
             'notifikasi_sistem' => [
-                'delete' => true,
+                'delete' => true, 'kirim' => true,
             ],
             'scan_barang' => [
                 'view' => true,
+            ],
+            'kontak' => [
+                'view' => true, 'create' => true, 'edit' => true, 'delete' => true,
+            ],
+            'trash' => [
+                'view' => true, 'restore' => true, 'force_delete' => true,
             ],
         ],
 
@@ -184,7 +218,7 @@ return [
                 'create_task' => true, 'edit_task' => true, 'delete_task' => true, 'update_status' => true,
             ],
             'surat_jalan' => [
-                'view' => true, 'create' => false, 'print' => true,
+                'view' => true, 'print' => true,
             ],
             'data_integration' => [
                 'view' => true, 'upload' => true, 'download' => true, 'delete' => true,
@@ -205,10 +239,21 @@ return [
             // Default nonaktif - Super Admin bisa aktifkan lewat Permission
             // Override di Edit User kalau admin tertentu perlu akses ini.
             'notifikasi_sistem' => [
-                'delete' => false,
+                'delete' => false, 'kirim' => false,
             ],
             'scan_barang' => [
                 'view' => false,
+            ],
+            // Default TERBUKA (view/edit/dst) - sama seperti akses yang
+            // sudah berlaku sebelum modul ini didaftarkan, tidak ada
+            // pengurangan akses untuk Admin yang sudah ada.
+            'kontak' => [
+                'view' => true, 'create' => true, 'edit' => true, 'delete' => true,
+            ],
+            // force_delete default nonaktif - sama seperti sebelum modul
+            // ini didaftarkan (dulu hardcode HANYA Super Admin).
+            'trash' => [
+                'view' => true, 'restore' => true, 'force_delete' => false,
             ],
         ],
 
@@ -222,7 +267,7 @@ return [
                 'create_task' => true, 'edit_task' => true, 'delete_task' => false, 'update_status' => true,
             ],
             'surat_jalan' => [
-                'view' => true, 'create' => false, 'print' => false,
+                'view' => true, 'print' => false,
             ],
             'data_integration' => [
                 'view' => true, 'upload' => true, 'download' => true, 'delete' => false,
@@ -239,10 +284,20 @@ return [
                 'reset_password' => false, 'change_role' => false,
             ],
             'notifikasi_sistem' => [
-                'delete' => false,
+                'delete' => false, 'kirim' => false,
             ],
             'scan_barang' => [
                 'view' => false,
+            ],
+            // Default TERBUKA - sama seperti akses yang sudah berlaku
+            // sebelum modul ini didaftarkan (Employee juga sudah bisa
+            // kelola Kontak dari dulu).
+            'kontak' => [
+                'view' => true, 'create' => true, 'edit' => true, 'delete' => true,
+            ],
+            // Trash memang tidak pernah dibuka untuk Employee.
+            'trash' => [
+                'view' => false, 'restore' => false, 'force_delete' => false,
             ],
         ],
 

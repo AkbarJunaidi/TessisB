@@ -337,12 +337,21 @@ Route::middleware('auth')->group(function () {
 
     });
 
-    // Kirim pengumuman baru & kelola jenis notifikasi otomatis - TETAP
-    // HANYA Super Admin (beda dari daftar/kelola-punya-sendiri di atas).
-    Route::middleware('role:super_admin')->group(function () {
+    // Kirim pengumuman - route dibuka role:super_admin,admin, otorisasi
+    // sebenarnya lewat hasPermission('notifikasi_sistem','kirim') di
+    // controller (default cuma Super Admin, bisa didelegasikan lewat
+    // Permission Override - lihat config/permissions.php).
+    Route::middleware('role:super_admin,admin')->group(function () {
 
         Route::post('announcements', [AnnouncementController::class, 'store'])
             ->name('announcements.store');
+
+    });
+
+    // Kelola jenis notifikasi otomatis - TETAP HANYA Super Admin (belum
+    // diminta untuk didaftarkan ke Permission Override, beda dari Kirim
+    // Pengumuman di atas).
+    Route::middleware('role:super_admin')->group(function () {
 
         Route::post('notification-settings', [NotificationSettingController::class, 'update'])
             ->name('notification-settings.update');
@@ -359,7 +368,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('push-subscription', [AnnouncementController::class, 'unsubscribe'])
         ->name('push-subscription.destroy');
 
-    // Modul Trash - lihat & pulihkan (Super Admin & Admin)
+    // Modul Trash - route dibuka role:super_admin,admin untuk SEMUA aksi
+    // (termasuk hapus permanen) - otorisasi sebenarnya sekarang lewat
+    // hasPermission('trash', ...) di controller (lihat config/permissions.php),
+    // bukan lagi di-hardcode di sini, supaya toggle Permission Override
+    // beneran ngaruh (dulu forceDelete tetap terkunci Super Admin di sini
+    // walau ada toggle-nya, jadi toggle-nya percuma).
     Route::middleware('role:super_admin,admin')->group(function () {
 
         Route::get('/trash', [TrashController::class, 'index'])
@@ -369,11 +383,6 @@ Route::middleware('auth')->group(function () {
             ->whereIn('type', ['project', 'task', 'inventory', 'folder', 'file'])
             ->whereNumber('id')
             ->name('trash.restore');
-
-    });
-
-    // Modul Trash - hapus permanen (HANYA Super Admin)
-    Route::middleware('role:super_admin')->group(function () {
 
         Route::delete('/trash/{type}/{id}', [TrashController::class, 'forceDelete'])
             ->whereIn('type', ['project', 'task', 'inventory', 'folder', 'file'])

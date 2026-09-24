@@ -9,6 +9,7 @@ use App\Services\Contact\ContactService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class ContactController extends Controller
@@ -46,6 +47,12 @@ class ContactController extends Controller
      */
     public function index(Request $request): View
     {
+        abort_unless(
+            Auth::user()?->hasPermission('kontak', 'view'),
+            403,
+            'Anda tidak memiliki hak akses untuk melihat data kontak.'
+        );
+
         $filters = $request->only('search', 'letter');
 
         $contacts = $this->contactService->getAllPaginated($filters);
@@ -59,6 +66,12 @@ class ContactController extends Controller
      */
     public function create(): View
     {
+        abort_unless(
+            Auth::user()?->hasPermission('kontak', 'create'),
+            403,
+            'Anda tidak memiliki hak akses untuk menambah kontak.'
+        );
+
         return view('contact.create');
     }
 
@@ -67,6 +80,12 @@ class ContactController extends Controller
      */
     public function store(ContactRequest $request): RedirectResponse
     {
+        abort_unless(
+            Auth::user()?->hasPermission('kontak', 'create'),
+            403,
+            'Anda tidak memiliki hak akses untuk menambah kontak.'
+        );
+
         $this->contactService->createContact($request->validated());
 
         return redirect()
@@ -80,6 +99,12 @@ class ContactController extends Controller
      */
     public function show(Contact $contact): View
     {
+        abort_unless(
+            Auth::user()?->hasPermission('kontak', 'view'),
+            403,
+            'Anda tidak memiliki hak akses untuk melihat data kontak.'
+        );
+
         $matchedProjects = $contact->matchedProjects();
 
         return view('contact.show', compact('contact', 'matchedProjects'));
@@ -90,6 +115,12 @@ class ContactController extends Controller
      */
     public function edit(Contact $contact): View
     {
+        abort_unless(
+            Auth::user()?->hasPermission('kontak', 'edit'),
+            403,
+            'Anda tidak memiliki hak akses untuk mengubah data kontak.'
+        );
+
         return view('contact.edit', compact('contact'));
     }
 
@@ -98,6 +129,12 @@ class ContactController extends Controller
      */
     public function update(ContactRequest $request, Contact $contact): RedirectResponse
     {
+        abort_unless(
+            Auth::user()?->hasPermission('kontak', 'edit'),
+            403,
+            'Anda tidak memiliki hak akses untuk mengubah data kontak.'
+        );
+
         $this->contactService->updateContact($contact, $request->validated());
 
         return redirect()
@@ -110,6 +147,12 @@ class ContactController extends Controller
      */
     public function destroy(Contact $contact): RedirectResponse
     {
+        abort_unless(
+            Auth::user()?->hasPermission('kontak', 'delete'),
+            403,
+            'Anda tidak memiliki hak akses untuk menghapus kontak.'
+        );
+
         $this->contactService->deleteContact($contact);
 
         return redirect()

@@ -8,6 +8,10 @@
     @php
         $isSuperAdmin = auth()->user()->hasRole('super_admin');
         $isAdminOrSuperAdmin = auth()->user()->hasRole('super_admin', 'admin');
+        // Sekarang delegable ke Admin lewat Permission Override (lihat
+        // config/permissions.php notifikasi_sistem.kirim) - TIDAK lagi
+        // 1:1 sama $isSuperAdmin seperti sebelumnya.
+        $canKirimPengumuman = auth()->user()->hasPermission('notifikasi_sistem', 'kirim');
     @endphp
 
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -35,12 +39,12 @@
 
     <div class="row g-4">
 
-        {{-- FORM KIRIM PENGUMUMAN - HANYA Super Admin. Siapa boleh
-             kirim/hapus pengumuman untuk semua orang masih pengaturan
-             sederhana (cuma Super Admin) - matriks izin yang lebih detail
-             ("user A boleh kirim, user B tidak") masih perlu didesain &
-             dibangun terpisah nanti, belum ada di versi ini. --}}
-        @if($isSuperAdmin)
+        {{-- FORM KIRIM PENGUMUMAN - tampil kalau punya permission
+             notifikasi_sistem.kirim (default cuma Super Admin, bisa
+             didelegasikan ke Admin lewat Permission Override). Matriks
+             izin per-user lain ("user A boleh X, user B tidak") di luar
+             kirim/hapus masih belum didesain, belum ada di versi ini. --}}
+        @if($canKirimPengumuman)
             <div class="col-lg-4">
                 <div class="card shadow-sm border-0 rounded-3 bg-white">
                     <div class="card-body p-4">
@@ -86,7 +90,7 @@
              boleh. Hapus Notifikasi Sistem = GLOBAL untuk semua user,
              tombol cuma muncul kalau $canDeleteSystemNotification
              (default hanya Super Admin, Admin lewat Permission Override). --}}
-        <div class="{{ $isSuperAdmin ? 'col-lg-8' : 'col-12' }}">
+        <div class="{{ $canKirimPengumuman ? 'col-lg-8' : 'col-12' }}">
             <div class="card shadow-sm border-0 rounded-3 bg-white">
                 <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
                     <h6 class="fw-bold m-0">

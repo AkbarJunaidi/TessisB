@@ -148,14 +148,17 @@
             </div>
         </li>
 
-        {{-- Kontak (buku alamat client) - level-atas, terbuka utk semua role
-             yang login (sama seperti akses Progress Management) --}}
+        {{-- Kontak (buku alamat client) - sekarang pakai permission
+             'kontak.view' (default aktif semua role, sama seperti akses
+             yang sudah berlaku sebelumnya - lihat config/permissions.php). --}}
+        @if(auth()->user()->hasPermission('kontak', 'view'))
         <li class="nav-item">
             <a href="{{ route('contacts.index') }}"
                 class="nav-link sidebar-link text-white {{ request()->routeIs('contacts.*') ? 'active' : '' }}">
                 <i class="bi bi-person-vcard"></i> <span class="sidebar-link-text">Kontak</span>
             </a>
         </li>
+        @endif
 
         @if(auth()->user()->isSuperAdmin())
             @php $userActive = request()->routeIs('users.*'); @endphp
@@ -181,7 +184,8 @@
             </li>
         @endif
 
-        {{-- Activity Logs & Trash - level-atas, sejajar modul lain (bukan submenu) --}}
+        {{-- Activity Logs - level-atas, tetap role-only (sengaja tidak
+             ikut sistem Permission Override, lihat config/permissions.php). --}}
         @if(auth()->user()->hasRole('super_admin', 'admin'))
             <li class="nav-item">
                 <a href="{{ route('activity-logs.index') }}"
@@ -189,7 +193,12 @@
                     <i class="bi bi-journal-text"></i> <span class="sidebar-link-text">Activity Logs</span>
                 </a>
             </li>
+        @endif
 
+        {{-- Trash - sekarang pakai permission 'trash.view' (default Super
+             Admin & Admin aktif, sama seperti akses yang sudah berlaku
+             sebelumnya). --}}
+        @if(auth()->user()->hasPermission('trash', 'view'))
             <li class="nav-item">
                 <a href="{{ route('trash.index') }}"
                     class="nav-link sidebar-link text-white {{ request()->routeIs('trash.*') ? 'active' : '' }}">

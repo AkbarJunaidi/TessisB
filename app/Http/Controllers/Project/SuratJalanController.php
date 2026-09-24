@@ -11,6 +11,7 @@ use App\Models\SuratJalan;
 use App\Models\SuratJalanItem;
 use App\Services\Project\SuratJalanService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class SuratJalanController extends Controller
@@ -56,6 +57,12 @@ class SuratJalanController extends Controller
      */
     public function show(SuratJalan $suratJalan): View
     {
+        abort_unless(
+            Auth::user()?->hasPermission('surat_jalan', 'view'),
+            403,
+            'Anda tidak memiliki hak akses untuk melihat Surat Jalan.'
+        );
+
         $suratJalan->load('items.inventory', 'project');
 
         return view('surat-jalan.show', compact('suratJalan'));
@@ -66,6 +73,12 @@ class SuratJalanController extends Controller
      */
     public function preview(SuratJalan $suratJalan)
     {
+        abort_unless(
+            Auth::user()?->hasPermission('surat_jalan', 'print'),
+            403,
+            'Anda tidak memiliki hak akses untuk mencetak/mengunduh Surat Jalan.'
+        );
+
         return $this->suratJalanService->generatePdf($suratJalan, stream: true);
     }
 
@@ -74,6 +87,12 @@ class SuratJalanController extends Controller
      */
     public function download(SuratJalan $suratJalan)
     {
+        abort_unless(
+            Auth::user()?->hasPermission('surat_jalan', 'print'),
+            403,
+            'Anda tidak memiliki hak akses untuk mencetak/mengunduh Surat Jalan.'
+        );
+
         return $this->suratJalanService->generatePdf($suratJalan, stream: false);
     }
 

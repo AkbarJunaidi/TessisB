@@ -48,12 +48,14 @@
                     </div>
 
                     <div class="d-flex gap-2">
-                        <a href="{{ route('surat-jalan.preview', $sj) }}" target="_blank" class="btn btn-sm btn-outline-primary flex-fill">
-                            <i class="bi bi-eye"></i> Preview
-                        </a>
-                        <a href="{{ route('surat-jalan.download', $sj) }}" class="btn btn-sm btn-primary flex-fill">
-                            <i class="bi bi-download"></i> Download
-                        </a>
+                        @if(auth()->user()->hasPermission('surat_jalan', 'print'))
+                            <a href="{{ route('surat-jalan.preview', $sj) }}" target="_blank" class="btn btn-sm btn-outline-primary flex-fill">
+                                <i class="bi bi-eye"></i> Preview
+                            </a>
+                            <a href="{{ route('surat-jalan.download', $sj) }}" class="btn btn-sm btn-primary flex-fill">
+                                <i class="bi bi-download"></i> Download
+                            </a>
+                        @endif
                     </div>
                 </div>
             @empty
@@ -89,12 +91,14 @@
                                 <span class="badge {{ $sj->status === 'Selesai' ? 'bg-secondary' : 'bg-success' }}">{{ $sj->status }}</span>
                             </td>
                             <td class="text-end">
-                                <a href="{{ route('surat-jalan.preview', $sj) }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-eye"></i> Preview
-                                </a>
-                                <a href="{{ route('surat-jalan.download', $sj) }}" class="btn btn-sm btn-primary">
-                                    <i class="bi bi-download"></i> Download
-                                </a>
+                                @if(auth()->user()->hasPermission('surat_jalan', 'print'))
+                                    <a href="{{ route('surat-jalan.preview', $sj) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i> Preview
+                                    </a>
+                                    <a href="{{ route('surat-jalan.download', $sj) }}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-download"></i> Download
+                                    </a>
+                                @endif
                             </td>
                         </tr>
                         <tr>

@@ -27,21 +27,25 @@
     </td>
     <td class="pe-4 text-center cell-block" data-label="Aksi">
         <div class="d-flex justify-content-center gap-2">
-            {{-- Pulihkan --}}
-            <button type="button"
-                    class="btn btn-sm btn-outline-primary px-2 fw-medium rounded-2 d-flex align-items-center gap-1"
-                    data-bs-toggle="modal"
-                    data-bs-target="#restoreTrashModal"
-                    data-id="{{ $item->id }}"
-                    data-type="{{ $item->type }}"
-                    data-type-label="{{ $item->type_label }}"
-                    data-name="{{ $item->name }}"
-                    title="Pulihkan Data">
-                <i class="bi bi-arrow-counterclockwise"></i> Pulihkan
-            </button>
+            {{-- Pulihkan - permission 'trash.restore'. --}}
+            @if(auth()->user()->hasPermission('trash', 'restore'))
+                <button type="button"
+                        class="btn btn-sm btn-outline-primary px-2 fw-medium rounded-2 d-flex align-items-center gap-1"
+                        data-bs-toggle="modal"
+                        data-bs-target="#restoreTrashModal"
+                        data-id="{{ $item->id }}"
+                        data-type="{{ $item->type }}"
+                        data-type-label="{{ $item->type_label }}"
+                        data-name="{{ $item->name }}"
+                        title="Pulihkan Data">
+                    <i class="bi bi-arrow-counterclockwise"></i> Pulihkan
+                </button>
+            @endif
 
-            {{-- Hapus Permanen: HANYA Super Admin --}}
-            @if(auth()->user()->isSuperAdmin())
+            {{-- Hapus Permanen - permission 'trash.force_delete' (default
+                 cuma Super Admin, bisa didelegasikan lewat Permission
+                 Override - lihat config/permissions.php). --}}
+            @if(auth()->user()->hasPermission('trash', 'force_delete'))
                 <button type="button"
                         class="btn btn-sm btn-outline-danger px-2 fw-medium rounded-2 d-flex align-items-center gap-1"
                         data-bs-toggle="modal"
