@@ -17,6 +17,7 @@ use App\Http\Controllers\Project\ProjectController;
 use App\Http\Controllers\Project\ProjectNoteController;
 use App\Http\Controllers\Report\FinancialReportController;
 use App\Http\Controllers\Project\SuratJalanController;
+use App\Http\Controllers\Search\SearchController;
 use App\Http\Controllers\Task\CommentController;
 use App\Http\Controllers\Task\TaskController;
 use App\Http\Controllers\Tracking\BorrowedItemController;
@@ -71,6 +72,19 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
+
+    // Pencarian global dari ikon search di navbar. Tidak digating role
+    // tertentu di sini - tiap kategori hasil sudah digating permission
+    // modulnya masing-masing di dalam GlobalSearchService, jadi user
+    // tanpa permission apa pun tetap boleh membuka halaman ini (cuma akan
+    // melihat "tidak ada hasil").
+    Route::get('/search', [SearchController::class, 'index'])
+        ->name('search.index');
+
+    // Endpoint JSON untuk dropdown saran (typeahead) ikon search navbar -
+    // dipanggil lewat fetch() saat user mengetik (lihat navbar.blade.php).
+    Route::get('/search/suggest', [SearchController::class, 'suggest'])
+        ->name('search.suggest');
 
     // Modul Inventory Management
     // Route scan-lookup SENGAJA didaftarkan SEBELUM Route::resource di bawah

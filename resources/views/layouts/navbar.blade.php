@@ -30,6 +30,19 @@
 
         <div class="ms-auto d-flex align-items-center gap-2 gap-md-3 flex-shrink-0">
 
+            {{-- Ikon pencarian global - klik untuk buka/tutup kolom
+                 pencarian yang muncul di baris baru TEPAT DI BAWAH navbar
+                 (bukan dropdown/menyatu di dalam baris navbar ini), lihat
+                 <div id="navbarSearchBar"> setelah tag </nav> di bawah. --}}
+                <button type="button" class="btn btn-light border rounded-circle d-flex align-items-center justify-content-center navbar-search-btn"
+                        style="width: 38px; height: 38px;"
+                        id="navbarSearchToggle"
+                        data-bs-toggle="collapse" data-bs-target="#navbarSearchBar"
+                        aria-expanded="false" aria-controls="navbarSearchBar"
+                        aria-label="Buka pencarian">
+                    <i class="bi bi-search fs-6"></i>
+                </button>
+
             {{-- Notifikasi navbar - SEMUA role (sebelumnya cuma Super Admin
                  & Admin). Employee cuma akan lihat jenis "announcement" di
                  sini (4 jenis lain tetap difilter Super Admin/Admin saja
@@ -61,6 +74,42 @@
         </div>
     </div>
 </nav>
+
+{{-- Baris pencarian global - collapse Bootstrap biasa (bukan dropdown),
+     jadi posisinya selalu di bawah navbar & full-width. Perilaku mirip
+     autocomplete Client di form Project (lihat
+     project/partials/form.blade.php): user mengetik -> fetch saran
+     module/halaman terkait (Project/Inventory/Kontak/Surat Jalan) lewat
+     search.suggest -> klik saran langsung ke halaman detailnya.
+     TIDAK ada navigasi ke halaman hasil manapun kalau tidak ada saran
+     yang cocok - Enter/klik tombol Cari saat itu cuma menandai kolom
+     "invalid" (sesuai permintaan), bukan pindah halaman. --}}
+<div class="collapse" id="navbarSearchBar">
+    <div class="border-bottom bg-white px-3 px-md-4 py-2">
+        <div class="position-relative" style="max-width: 480px;">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-search text-muted"></i>
+                <input
+                    type="search"
+                    id="navbarSearchInput"
+                    class="form-control form-control-sm border-0 shadow-none"
+                    placeholder="Cari project, inventory, kontak, surat jalan..."
+                    autocomplete="off"
+                >
+                <button type="button" id="navbarSearchGoBtn" class="btn btn-sm btn-primary flex-shrink-0">
+                    Cari
+                </button>
+            </div>
+
+            <div id="navbarSearchInvalid" class="text-danger small mt-1 d-none">
+                <i class="bi bi-exclamation-circle"></i>
+                Tidak ada modul/halaman yang cocok dengan "<span id="navbarSearchInvalidKeyword"></span>".
+            </div>
+
+            <div id="navbarSearchSuggestions" class="list-group position-absolute w-100 shadow-sm d-none" style="z-index: 1050; top: 100%;"></div>
+        </div>
+    </div>
+</div>
 
 <style>
     /* Tinggi navbar dibuat eksplisit (bukan dibiarkan organik dari padding+
@@ -122,6 +171,10 @@
         color: #dc3545;
     }
 
+    #navbarSearchBar #navbarSearchInput:focus {
+        box-shadow: none;
+    }
+
     .navbar-notif-btn.has-notif {
         background-color: #fff1f0 !important;
         border-color: #ffb3ae !important;
@@ -133,6 +186,154 @@
         50% { box-shadow: 0 0 0 5px rgba(220, 53, 69, 0); }
     }
 </style>
+
+{{-- Ikon search navbar: typeahead saran modul/halaman terkait, dan
+     penanda "invalid" kalau Enter/klik Cari ditekan tanpa ada saran yang
+     cocok - pola & endpoint dijelaskan di komentar <div id="navbarSearchBar">
+     di atas. --}}
+<script>
+    (function () {
+        const searchBar        = document.getElementById('navbarSearchBar');
+        const input            = document.getElementById('navbarSearchInput');
+        const suggestionBox    = document.getElementById('navbarSearchSuggestions');
+        const invalidBox       = document.getElementById('navbarSearchInvalid');
+        const invalidKeywordEl = document.getElementById('navbarSearchInvalidKeyword');
+        const goBtn            = document.getElementById('navbarSearchGoBtn');
+
+        if (!searchBar || !input || !suggestionBox) return;
+
+        const suggestUrl = @json(route('search.suggest'));
+
+        let debounceTimer = null;
+        let currentSuggestions = [];
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text ?? '';
+            return div.innerHTML;
+        }
+
+        function hideSuggestions() {
+            suggestionBox.classList.add('d-none');
+            suggestionBox.innerHTML = '';
+            currentSuggestions = [];
+        }
+
+        function clearInvalid() {
+            input.classList.remove('is-invalid');
+            invalidBox.classList.add('d-none');
+        }
+
+        function showInvalid(keyword) {
+            input.classList.add('is-invalid');
+            invalidKeywordEl.textContent = keyword;
+            invalidBox.classList.remove('d-none');
+        }
+
+        function goTo(url) {
+            window.location.href = url;
+        }
+
+        function renderSuggestions(items) {
+            currentSuggestions = items;
+
+            if (!items.length) {
+                suggestionBox.classList.add('d-none');
+                suggestionBox.innerHTML = '';
+                return;
+            }
+
+            suggestionBox.innerHTML = items.map((item) => `
+                <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 navbar-search-item" data-url="${escapeHtml(item.url)}">
+                    <span class="text-truncate">
+                        <i class="bi ${item.icon} text-primary me-2"></i>
+                        <span class="fw-semibold">${escapeHtml(item.label)}</span>
+                        <span class="text-muted small ms-1">${escapeHtml(item.subtitle)}</span>
+                    </span>
+                    <span class="badge bg-light text-muted border flex-shrink-0 ms-2">${escapeHtml(item.category)}</span>
+                </button>
+            `).join('');
+
+            suggestionBox.classList.remove('d-none');
+
+            suggestionBox.querySelectorAll('.navbar-search-item').forEach((btn) => {
+                btn.addEventListener('click', function () {
+                    goTo(this.dataset.url);
+                });
+            });
+        }
+
+        // Dipanggil saat Enter ditekan atau tombol "Cari" diklik. Kalau
+        // sedang ada saran tampil, anggap saran teratas itu yang dimaksud
+        // (langsung diarahkan ke sana). Kalau tidak ada saran sama sekali
+        // untuk keyword ini, tandai kolom invalid - TIDAK pindah ke
+        // halaman apa pun.
+        function attemptSearch() {
+            const keyword = input.value.trim();
+
+            if (keyword === '') {
+                return;
+            }
+
+            if (currentSuggestions.length > 0) {
+                goTo(currentSuggestions[0].url);
+                return;
+            }
+
+            showInvalid(keyword);
+        }
+
+        input.addEventListener('input', function () {
+            const keyword = this.value.trim();
+
+            clearInvalid();
+            clearTimeout(debounceTimer);
+
+            if (keyword.length < 2) {
+                hideSuggestions();
+                return;
+            }
+
+            debounceTimer = setTimeout(function () {
+                fetch(`${suggestUrl}?q=${encodeURIComponent(keyword)}`, {
+                    headers: { 'Accept': 'application/json' },
+                })
+                    .then((res) => res.json())
+                    .then((data) => renderSuggestions(data.results || []))
+                    .catch(() => renderSuggestions([]));
+            }, 300);
+        });
+
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                attemptSearch();
+            }
+        });
+
+        if (goBtn) {
+            goBtn.addEventListener('click', attemptSearch);
+        }
+
+        document.addEventListener('click', function (e) {
+            if (!input.contains(e.target) && !suggestionBox.contains(e.target)) {
+                suggestionBox.classList.add('d-none');
+            }
+        });
+
+        searchBar.addEventListener('shown.bs.collapse', function () {
+            input.focus();
+        });
+
+        // Setiap kali baris pencarian ditutup, reset total - biar pas
+        // dibuka lagi tidak menampilkan sisa keyword/saran/invalid yang lama.
+        searchBar.addEventListener('hidden.bs.collapse', function () {
+            input.value = '';
+            clearInvalid();
+            hideSuggestions();
+        });
+    })();
+</script>
 
 {{-- Waktu nyata --}}
 <script>
