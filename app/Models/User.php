@@ -94,6 +94,15 @@ class User extends Authenticatable
     }
 
     /**
+     * Relasi ke Signature (tanda tangan digital) milik user - dipakai
+     * saat mengisi tanda tangan otomatis di dokumen seperti Kwitansi.
+     */
+    public function signatures(): HasMany
+    {
+        return $this->hasMany(Signature::class);
+    }
+
+    /**
      * Memeriksa apakah user memiliki salah satu role yang diberikan.
      */
     public function hasRole(string ...$roles): bool

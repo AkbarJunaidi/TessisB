@@ -67,6 +67,7 @@ class NotificationService
         'report_ready'           => 'Laporan Siap Diunduh',
         'unpaid_deadline'        => 'Client Belum Lunas (H-3 Deadline)',
         'finance_missing'        => 'Pendapatan Belum Diisi (H-5 Akhir Bulan)',
+        'approval_pending'       => 'Permintaan Approval Menunggu',
         'announcement'           => 'Pengumuman dari Super Admin',
     ];
 
@@ -108,6 +109,7 @@ class NotificationService
                 'report_ready'           => $this->getReadyReportNotifications(),
                 'unpaid_deadline'        => $this->getUnpaidNearDeadlineNotifications(),
                 'finance_missing'        => $this->getFinanceNotFilledThisMonthNotifications(),
+                'approval_pending'       => $this->getPendingApprovalNotifications(),
             ]
         );
 
@@ -123,6 +125,13 @@ class NotificationService
         $user = \App\Models\User::find($userId);
         if (!$user?->hasRole('super_admin', 'admin')) {
             $grouped = array_intersect_key($grouped, ['announcement' => true]);
+        }
+
+        // "approval_pending" digating PERMISSION (bukan cuma role) - beda
+        // dari 4 jenis lain, karena Permission Override bisa memberi
+        // seorang Admin akses approval.decide walau default-nya nonaktif.
+        if (!$user?->hasPermission('approval', 'decide')) {
+            unset($grouped['approval_pending']);
         }
 
         // Buang jenis yang Super Admin nonaktifkan - dicek di sini
@@ -254,6 +263,27 @@ class NotificationService
             'title'   => 'Laporan Siap Diunduh',
             'message' => 'Laporan diproses ' . $report->created_at->format('d M Y H:i') . ', siap diunduh',
             'url'     => route('inventory.download-queued-report', $report),
+        ])->all();
+    }
+
+    /**
+     * Notifikasi baru: permintaan Approval (lihat ApprovalService) yang
+     * masih pending - lintas jenis (saat ini baru "kwitansi_void").
+     */
+    private function getPendingApprovalNotifications(): array
+    {
+        $requests = \App\Models\ApprovalRequest::where('status', 'pending')
+            ->latest()
+            ->limit(self::MAX_PER_TYPE)
+            ->get();
+
+        return $requests->map(fn ($request) => [
+            'id'      => "approval-{$request->id}",
+            'type'    => 'approval_pending',
+            'icon'    => 'bi-check2-square text-warning',
+            'title'   => 'Permintaan Approval Menunggu',
+            'message' => $request->display_title,
+            'url'     => route('approval.index'),
         ])->all();
     }
 

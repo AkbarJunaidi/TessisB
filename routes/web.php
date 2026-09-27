@@ -18,6 +18,9 @@ use App\Http\Controllers\Project\ProjectNoteController;
 use App\Http\Controllers\Report\FinancialReportController;
 use App\Http\Controllers\Project\SuratJalanController;
 use App\Http\Controllers\Search\SearchController;
+use App\Http\Controllers\Project\KwitansiController;
+use App\Http\Controllers\Approval\ApprovalController;
+use App\Http\Controllers\Signature\SignatureController;
 use App\Http\Controllers\Task\CommentController;
 use App\Http\Controllers\Task\TaskController;
 use App\Http\Controllers\Tracking\BorrowedItemController;
@@ -72,6 +75,17 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
+
+    // Tanda Tangan Saya - personal, semua role login boleh akses (bukan
+    // modul bisnis, tidak perlu permission khusus).
+    Route::get('/tanda-tangan', [SignatureController::class, 'index'])
+        ->name('signature.index');
+    Route::post('/tanda-tangan', [SignatureController::class, 'store'])
+        ->name('signature.store');
+    Route::post('/tanda-tangan/{signature}/default', [SignatureController::class, 'setDefault'])
+        ->name('signature.set-default');
+    Route::delete('/tanda-tangan/{signature}', [SignatureController::class, 'destroy'])
+        ->name('signature.destroy');
 
     // Pencarian global dari ikon search di navbar. Tidak digating role
     // tertentu di sini - tiap kategori hasil sudah digating permission
@@ -231,6 +245,50 @@ Route::middleware('auth')->group(function () {
 
         Route::get('reports/finance/monthly', [FinancialReportController::class, 'exportMonthly'])
             ->name('reports.finance.monthly');
+
+    });
+
+    // Modul Kwitansi - halaman "Keuangan" (berdiri sendiri) + aksi per-kwitansi.
+    // Gate role di sini luas, otorisasi sesungguhnya lewat hasPermission('finance', ...)
+    // di controller/Request (lihat KwitansiController, KwitansiRequest, KwitansiVoidRequest).
+    Route::middleware('role:super_admin,admin,employee')->group(function () {
+
+        Route::get('keuangan', [KwitansiController::class, 'index'])
+            ->name('kwitansi.index');
+
+        // Halaman "Detail Keuangan" 1 project (dari tombol "Detail" di
+        // halaman Keuangan) - path 'keuangan/{project}' SENGAJA didaftarkan
+        // SETELAH 'keuangan' di atas supaya tidak ada ambiguitas segmen.
+        Route::get('keuangan/{project}', [KwitansiController::class, 'showProject'])
+            ->name('kwitansi.show-project');
+
+        Route::post('projects/{project}/kwitansi', [KwitansiController::class, 'store'])
+            ->name('kwitansi.store');
+
+        Route::get('kwitansi/{kwitansi}/preview', [KwitansiController::class, 'preview'])
+            ->name('kwitansi.preview');
+
+        Route::get('kwitansi/{kwitansi}/download', [KwitansiController::class, 'download'])
+            ->name('kwitansi.download');
+
+        Route::post('kwitansi/{kwitansi}/request-void', [KwitansiController::class, 'requestVoid'])
+            ->name('kwitansi.request-void');
+
+    });
+
+    // Modul Approval - kotak masuk approval generik lintas modul. Gate role
+    // luas, otorisasi sesungguhnya lewat hasPermission('approval', ...) di
+    // controller/Request (lihat ApprovalController, ApprovalDecisionRequest).
+    Route::middleware('role:super_admin,admin,employee')->group(function () {
+
+        Route::get('approval', [ApprovalController::class, 'index'])
+            ->name('approval.index');
+
+        Route::post('approval/{approvalRequest}/approve', [ApprovalController::class, 'approve'])
+            ->name('approval.approve');
+
+        Route::post('approval/{approvalRequest}/reject', [ApprovalController::class, 'reject'])
+            ->name('approval.reject');
 
     });
 

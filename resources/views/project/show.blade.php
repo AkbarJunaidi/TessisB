@@ -407,6 +407,9 @@
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-barang" type="button">Barang</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-suratjalan" type="button">Surat Jalan</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-dokumen" type="button">Dokumen</button></li>
+        @if(auth()->user()->hasPermission('finance', 'view'))
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-kwitansi" type="button">Kwitansi</button></li>
+        @endif
     </ul>
 
     <div class="tab-content" id="projectTabContent">
@@ -425,6 +428,12 @@
         <div class="tab-pane fade" id="tab-dokumen">
             @include('project.partials.documents-tab', ['project' => $project, 'allFolders' => $allFolders])
         </div>
+
+        @if(auth()->user()->hasPermission('finance', 'view'))
+            <div class="tab-pane fade" id="tab-kwitansi">
+                @include('project.partials.kwitansi-tab', ['project' => $project])
+            </div>
+        @endif
     </div>
 
     {{-- Catatan: card penuh di bagian paling bawah (bukan tab lagi) --}}
@@ -449,6 +458,11 @@
         <a href="#tab-dokumen" class="text-center text-decoration-none text-secondary small mobile-tab-link">
             <i class="bi bi-folder d-block fs-5"></i>Dokumen
         </a>
+        @if(auth()->user()->hasPermission('finance', 'view'))
+            <a href="#tab-kwitansi" class="text-center text-decoration-none text-secondary small mobile-tab-link">
+                <i class="bi bi-cash-coin d-block fs-5"></i>Kwitansi
+            </a>
+        @endif
     </div>
 </nav>
 

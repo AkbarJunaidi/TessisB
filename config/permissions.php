@@ -70,9 +70,11 @@ return [
             'label' => 'Data Keuangan',
             'icon'  => 'bi-cash-coin',
             'actions' => [
-                'view'          => 'Melihat data keuangan project',
-                'manage'        => 'Mengisi / mengubah data keuangan project',
-                'export_report' => 'Export laporan keuangan bulanan (PDF)',
+                'view'            => 'Melihat data keuangan project',
+                'manage'          => 'Mengisi / mengubah data keuangan project',
+                'export_report'   => 'Export laporan keuangan bulanan (PDF)',
+                'create_kwitansi' => 'Membuat kwitansi',
+                'void_kwitansi'   => 'Mengajukan pembatalan kwitansi',
             ],
         ],
 
@@ -148,6 +150,17 @@ return [
             ],
         ],
 
+        // Kotak masuk approval GENERIK lintas modul (lihat ApprovalService) -
+        // default hanya Super Admin, sama seperti Data Keuangan.
+        'approval' => [
+            'label' => 'Approval',
+            'icon'  => 'bi-check2-square',
+            'actions' => [
+                'view'   => 'Melihat kotak masuk Approval',
+                'decide' => 'Menyetujui / menolak permintaan Approval',
+            ],
+        ],
+
     ],
 
     /*
@@ -186,6 +199,7 @@ return [
             ],
             'finance' => [
                 'view' => true, 'manage' => true, 'export_report' => true,
+                'create_kwitansi' => true, 'void_kwitansi' => true,
             ],
             'borrowed_items' => [
                 'view' => true, 'process_return' => true,
@@ -205,6 +219,9 @@ return [
             ],
             'trash' => [
                 'view' => true, 'restore' => true, 'force_delete' => true,
+            ],
+            'approval' => [
+                'view' => true, 'decide' => true,
             ],
         ],
 
@@ -228,6 +245,7 @@ return [
                 // Default: HANYA Super Admin yang bisa akses data keuangan.
                 // Bisa diaktifkan per-user lewat Permission Override di Edit User.
                 'view' => false, 'manage' => false, 'export_report' => false,
+                'create_kwitansi' => false, 'void_kwitansi' => false,
             ],
             'borrowed_items' => [
                 'view' => true, 'process_return' => true,
@@ -255,6 +273,11 @@ return [
             'trash' => [
                 'view' => true, 'restore' => true, 'force_delete' => false,
             ],
+            // Default nonaktif - sama seperti Data Keuangan, bisa diaktifkan
+            // per-user lewat Permission Override.
+            'approval' => [
+                'view' => false, 'decide' => false,
+            ],
         ],
 
         'employee' => [
@@ -275,6 +298,7 @@ return [
             ],
             'finance' => [
                 'view' => false, 'manage' => false, 'export_report' => false,
+                'create_kwitansi' => false, 'void_kwitansi' => false,
             ],
             'borrowed_items' => [
                 'view' => true, 'process_return' => false,
@@ -298,6 +322,10 @@ return [
             // Trash memang tidak pernah dibuka untuk Employee.
             'trash' => [
                 'view' => false, 'restore' => false, 'force_delete' => false,
+            ],
+            // Approval memang tidak pernah dibuka untuk Employee.
+            'approval' => [
+                'view' => false, 'decide' => false,
             ],
         ],
 

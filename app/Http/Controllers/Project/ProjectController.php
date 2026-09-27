@@ -101,6 +101,7 @@ class ProjectController extends Controller
             'suratJalans.items.inventory',
             'folder.files.user',
             'financeItems',
+            'kwitansis',
         ]);
 
         $allFolders = \App\Models\Folder::orderBy('name')->get();

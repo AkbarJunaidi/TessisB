@@ -208,6 +208,63 @@ class Project extends Model
     }
 
     /**
+     * Relasi One-to-Many: Kwitansi (bukti pembayaran) project ini.
+     */
+    public function kwitansis(): HasMany
+    {
+        return $this->hasMany(Kwitansi::class);
+    }
+
+    /**
+     * Total Kwitansi berstatus Aktif saja (BEDA dari totalDiterima di
+     * bawah, yang juga menghitung Pendapatan dari tab Data Keuangan).
+     */
+    protected function totalDibayar(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::get(
+            fn () => (float) $this->kwitansis->where('status', 'Aktif')->sum('jumlah')
+        );
+    }
+
+    /**
+     * Total uang yang benar-benar diterima dari 2 sumber sekaligus:
+     * Pendapatan manual di tab Data Keuangan (totalIncome, sudah ada
+     * sebelumnya) + Kwitansi Aktif - dipakai untuk Sisa/Status Pembayaran
+     * supaya kedua sumber itu "terlihat" sebagai satu angka gabungan.
+     */
+    protected function totalDiterima(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::get(
+            fn () => $this->total_income + $this->total_dibayar
+        );
+    }
+
+    /**
+     * Sisa yang belum dibayar (Estimasi Pendapatan - Total Diterima, tidak
+     * pernah negatif).
+     */
+    protected function sisaPembayaran(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::get(
+            fn () => max(0, (float) $this->estimated_value - $this->total_diterima)
+        );
+    }
+
+    /**
+     * Label status pembayaran project ini untuk halaman Keuangan & tab Kwitansi.
+     */
+    protected function statusPembayaran(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::get(function () {
+            if ((float) $this->estimated_value <= 0) {
+                return 'Belum Ada Tagihan';
+            }
+
+            return $this->total_diterima >= (float) $this->estimated_value ? 'Lunas' : 'Belum Lunas';
+        });
+    }
+
+    /**
      * Relasi BelongsTo: User yang melakukan penghapusan (untuk fitur Trash).
      */
     public function deletedBy(): BelongsTo

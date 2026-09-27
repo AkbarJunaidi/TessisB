@@ -181,6 +181,7 @@ class ActivityLogService
             'User Management'   => 'User Management',
             'Kontak'            => 'Kontak',
             'Data Keuangan'     => 'Data Keuangan',
+            'Approval'          => 'Approval',
         ];
 
         foreach ($defaultModules as $key => $val) {
@@ -257,6 +258,16 @@ class ActivityLogService
 
             'Data Keuangan' => [
                 'Generate Laporan Keuangan Bulanan',
+                'Membuat Kwitansi',
+                'Mengajukan Pembatalan Kwitansi',
+                'Kwitansi Dibatalkan',
+                'Preview/Download Kwitansi',
+            ],
+
+            'Approval' => [
+                'Mengajukan Approval',
+                'Menyetujui Approval',
+                'Menolak Approval',
             ],
         ];
     }

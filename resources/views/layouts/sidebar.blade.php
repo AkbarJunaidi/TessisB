@@ -160,6 +160,18 @@
         </li>
         @endif
 
+        {{-- Keuangan (halaman "Keuangan" - ringkasan Kwitansi semua project) -
+             pakai permission 'finance.view', sama dengan gate Data Keuangan
+             di tab Project Detail. --}}
+        @if(auth()->user()->hasPermission('finance', 'view'))
+        <li class="nav-item">
+            <a href="{{ route('kwitansi.index') }}"
+                class="nav-link sidebar-link text-white {{ request()->routeIs('kwitansi.*') ? 'active' : '' }}">
+                <i class="bi bi-cash-coin"></i> <span class="sidebar-link-text">Keuangan</span>
+            </a>
+        </li>
+        @endif
+
         @if(auth()->user()->isSuperAdmin())
             @php $userActive = request()->routeIs('users.*'); @endphp
             <li class="nav-item">
@@ -207,6 +219,17 @@
             </li>
         @endif
 
+        {{-- Approval - kotak masuk approval generik lintas modul, pakai
+             permission 'approval.view' (default hanya Super Admin). --}}
+        @if(auth()->user()->hasPermission('approval', 'view'))
+            <li class="nav-item">
+                <a href="{{ route('approval.index') }}"
+                    class="nav-link sidebar-link text-white {{ request()->routeIs('approval.*') ? 'active' : '' }}">
+                    <i class="bi bi-check2-square"></i> <span class="sidebar-link-text">Approval</span>
+                </a>
+            </li>
+        @endif
+
         {{-- Notifikasi - SEMUA role bisa akses halamannya (isi di dalam
              menyesuaikan role: form kirim pengumuman & panel kelola jenis
              notifikasi otomatis cuma tampil untuk Super Admin, lihat
@@ -215,6 +238,15 @@
             <a href="{{ route('announcements.index') }}"
                 class="nav-link sidebar-link text-white {{ request()->routeIs('announcements.*') ? 'active' : '' }}">
                 <i class="bi bi-megaphone"></i> <span class="sidebar-link-text">Notifikasi</span>
+            </a>
+        </li>
+
+        {{-- Tanda Tangan Saya - personal (bukan modul bisnis), semua role
+             login boleh akses, tidak digating permission khusus. --}}
+        <li class="nav-item">
+            <a href="{{ route('signature.index') }}"
+                class="nav-link sidebar-link text-white {{ request()->routeIs('signature.*') ? 'active' : '' }}">
+                <i class="bi bi-pen"></i> <span class="sidebar-link-text">Tanda Tangan Saya</span>
             </a>
         </li>
 

@@ -141,7 +141,7 @@ class GlobalSearchService
      *
      * @return array<int, array{label:string, subtitle:string, icon:string, category:string, url:string}>
      */
-    public function suggestions(string $keyword, User $user, int $limit = 8, int $perCategory = 4): array
+    public function suggestions(string $keyword, User $user, int $limit = 8, int $perCategory = 3): array
     {
         $keyword = trim($keyword);
 
@@ -149,7 +149,11 @@ class GlobalSearchService
             return [];
         }
 
-        $suggestions = [];
+        // Halaman/menu (Dashboard, Inventory List, Kontak, dst) dicek
+        // duluan - ini yang menjawab kasus ketik "inventory" atau
+        // "kontak" (nama MENU-nya sendiri, bukan nama data di
+        // dalamnya) supaya tetap dapat saran, bukan langsung invalid.
+        $suggestions = $this->matchStaticPages($keyword, $user);
 
         if ($user->hasPermission('tracking_progress', 'view')) {
             foreach ($this->searchProjects($keyword, $perCategory) as $item) {
@@ -200,5 +204,164 @@ class GlobalSearchService
         }
 
         return array_slice($suggestions, 0, $limit);
+    }
+
+    /**
+     * Daftar statis semua menu/halaman di sidebar (lihat
+     * resources/views/layouts/sidebar.blade.php - daftar & gate-nya
+     * SENGAJA dicontek 1:1 dari sana, bukan ditebak, supaya saran yang
+     * muncul konsisten dengan menu yang benar-benar bisa dibuka user
+     * yang sedang login). `keywords` berisi kata-kata yang wajar diketik
+     * orang untuk menuju halaman itu (nama menu, sinonim, istilah
+     * modulnya) - keyword pengetikan dicocokkan ke label ATAU salah satu
+     * `keywords` ini, bukan cuma ke label persis.
+     *
+     * @return array<int, array{label:string, icon:string, keywords:string[], url:string}>
+     */
+    protected function staticPages(User $user): array
+    {
+        $pages = [
+            [
+                'label' => 'Dashboard',
+                'icon' => 'bi-speedometer2',
+                'keywords' => ['dashboard', 'utama', 'home', 'beranda'],
+                'url' => route('dashboard'),
+                'visible' => true,
+            ],
+            [
+                'label' => 'Inventory List',
+                'icon' => 'bi-box-seam',
+                'keywords' => ['inventory', 'barang', 'aset', 'stok'],
+                'url' => route('inventory.index'),
+                'visible' => $user->hasPermission('inventory', 'view'),
+            ],
+            [
+                'label' => 'Add Inventory',
+                'icon' => 'bi-plus-circle',
+                'keywords' => ['tambah inventory', 'add inventory', 'barang baru', 'inventory'],
+                'url' => route('inventory.create'),
+                'visible' => $user->hasPermission('inventory', 'create'),
+            ],
+            [
+                'label' => 'Mutasi Aset',
+                'icon' => 'bi-arrow-left-right',
+                'keywords' => ['mutasi', 'mutasi aset', 'riwayat barang', 'inventory'],
+                'url' => route('inventory.mutasi'),
+                'visible' => $user->hasPermission('inventory', 'view'),
+            ],
+            [
+                'label' => 'Projects',
+                'icon' => 'bi-kanban',
+                'keywords' => ['project', 'projects', 'daftar project'],
+                'url' => route('projects.index'),
+                'visible' => $user->hasPermission('tracking_progress', 'view'),
+            ],
+            [
+                'label' => 'Pipeline',
+                'icon' => 'bi-diagram-3',
+                'keywords' => ['pipeline', 'papan kanban', 'kanban', 'project'],
+                'url' => route('projects.pipeline'),
+                'visible' => $user->hasRole('super_admin', 'admin'),
+            ],
+            [
+                'label' => 'Barang Pinjaman',
+                'icon' => 'bi-box-arrow-in-left',
+                'keywords' => ['barang pinjaman', 'pinjaman', 'borrowed items', 'peminjaman'],
+                'url' => route('borrowed-items.index'),
+                'visible' => $user->hasPermission('borrowed_items', 'view'),
+            ],
+            [
+                'label' => 'Add Project',
+                'icon' => 'bi-folder-plus',
+                'keywords' => ['tambah project', 'add project', 'project baru'],
+                'url' => route('projects.create'),
+                'visible' => $user->hasPermission('tracking_progress', 'create_project'),
+            ],
+            [
+                'label' => 'Folder Management',
+                'icon' => 'bi-folder2-open',
+                'keywords' => ['folder', 'folder management', 'integrasi data'],
+                'url' => route('folders.index'),
+                'visible' => $user->hasPermission('data_integration', 'view'),
+            ],
+            [
+                'label' => 'My Files',
+                'icon' => 'bi-file-earmark-arrow-up',
+                'keywords' => ['my files', 'file saya', 'files', 'berkas'],
+                'url' => route('files.my-files'),
+                'visible' => $user->hasPermission('data_integration', 'view'),
+            ],
+            [
+                'label' => 'Kontak',
+                'icon' => 'bi-person-vcard',
+                'keywords' => ['kontak', 'contact', 'buku alamat', 'client'],
+                'url' => route('contacts.index'),
+                'visible' => $user->hasPermission('kontak', 'view'),
+            ],
+            [
+                'label' => 'Data User',
+                'icon' => 'bi-person-lines-fill',
+                'keywords' => ['user', 'data user', 'pengguna', 'user management'],
+                'url' => route('users.index'),
+                'visible' => $user->isSuperAdmin(),
+            ],
+            [
+                'label' => 'Add User',
+                'icon' => 'bi-person-plus',
+                'keywords' => ['tambah user', 'add user', 'user baru'],
+                'url' => route('users.create'),
+                'visible' => $user->isSuperAdmin(),
+            ],
+            [
+                'label' => 'Activity Logs',
+                'icon' => 'bi-journal-text',
+                'keywords' => ['activity log', 'log aktivitas', 'riwayat aktivitas'],
+                'url' => route('activity-logs.index'),
+                'visible' => $user->hasRole('super_admin', 'admin'),
+            ],
+            [
+                'label' => 'Trash',
+                'icon' => 'bi-trash',
+                'keywords' => ['trash', 'sampah', 'recycle bin', 'data terhapus'],
+                'url' => route('trash.index'),
+                'visible' => $user->hasPermission('trash', 'view'),
+            ],
+            [
+                'label' => 'Notifikasi',
+                'icon' => 'bi-megaphone',
+                'keywords' => ['notifikasi', 'pengumuman', 'announcement'],
+                'url' => route('announcements.index'),
+                'visible' => true,
+            ],
+        ];
+
+        return array_values(array_filter($pages, fn (array $page) => $page['visible']));
+    }
+
+    /**
+     * @return array<int, array{label:string, subtitle:string, icon:string, category:string, url:string}>
+     */
+    protected function matchStaticPages(string $keyword, User $user): array
+    {
+        $needle = mb_strtolower($keyword);
+        $matches = [];
+
+        foreach ($this->staticPages($user) as $page) {
+            $haystack = mb_strtolower($page['label'] . ' ' . implode(' ', $page['keywords']));
+
+            if (mb_strpos($haystack, $needle) === false) {
+                continue;
+            }
+
+            $matches[] = [
+                'label'    => $page['label'],
+                'subtitle' => 'Buka halaman ini',
+                'icon'     => $page['icon'],
+                'category' => 'Halaman',
+                'url'      => $page['url'],
+            ];
+        }
+
+        return $matches;
     }
 }
