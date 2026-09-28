@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Approval\ApprovalDecisionRequest;
 use App\Models\ApprovalRequest;
 use App\Services\Approval\ApprovalService;
+use App\Services\Auth\PasswordResetRequestService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -13,10 +14,22 @@ use Exception;
 
 class ApprovalController extends Controller
 {
-    public function __construct(protected ApprovalService $approvalService)
-    {
+    public function __construct(
+        protected ApprovalService $approvalService,
+        protected PasswordResetRequestService $passwordResetRequestService
+    ) {
     }
 
+    /**
+     * "Lupa Password" adalah alur LAMA (beda tabel/service, sudah ada
+     * sebelum Approval dibuat) yang penyelesaiannya bukan approve/reject
+     * biasa - Super Admin harus benar-benar SET password baru user itu
+     * lewat halaman User Management, bukan sekadar klik setuju. Jadi
+     * TIDAK dipindah ke tabel approval_requests (biar tidak mengubah alur
+     * yang sudah berjalan), cukup DITAMPILKAN bersama di halaman ini
+     * dengan tombol yang mengarah ke halaman Edit User yang sudah ada,
+     * supaya "kotak masuk lintas modul" ini benar-benar lengkap.
+     */
     public function index(): View
     {
         abort_unless(
@@ -27,8 +40,15 @@ class ApprovalController extends Controller
 
         $pending = $this->approvalService->listPending();
         $history = $this->approvalService->listHistory();
+        $pendingPasswordResets = $this->passwordResetRequestService->pendingWithUser();
 
-        return view('approval.index', compact('pending', 'history'));
+        // Password hasil reset terakhir (plaintext) HANYA dimuat untuk
+        // Super Admin - sama seperti aturan di halaman Detail User.
+        if (Auth::user()->isSuperAdmin()) {
+            $pendingPasswordResets->load('user:id,name,email,temp_password_plain');
+        }
+
+        return view('approval.index', compact('pending', 'history', 'pendingPasswordResets'));
     }
 
     public function approve(ApprovalDecisionRequest $request, ApprovalRequest $approvalRequest): RedirectResponse

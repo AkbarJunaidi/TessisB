@@ -59,21 +59,6 @@
 
     @endif
 
-    @if(auth()->user()->isSuperAdmin() && $user->temp_password_plain)
-
-        <div class="alert alert-secondary d-flex align-items-center gap-2 mb-4">
-            <i class="bi bi-shield-lock"></i>
-            <div>
-                Password saat ini (hasil reset terakhir):
-                <code class="ms-1">{{ $user->temp_password_plain }}</code>
-                <div class="small text-muted">
-                    Hanya terlihat oleh Super Admin. Sampaikan ke user secara langsung, lalu minta user menggantinya setelah login.
-                </div>
-            </div>
-        </div>
-
-    @endif
-
     @if(auth()->user()->isSuperAdmin())
 
         <div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-hidden="true">
@@ -229,6 +214,31 @@
 
                     @endif
 
+                </div>
+
+            </div>
+
+            <hr>
+
+            <div class="row mb-3">
+
+                <div class="col-md-3 fw-semibold">
+                    Password Saat Ini
+                </div>
+
+                <div class="col-md-9">
+                    @if(auth()->user()->isSuperAdmin())
+                        @if($user->temp_password_plain)
+                            <code>{{ $user->temp_password_plain }}</code>
+                            <div class="small text-muted">
+                                Hasil reset terakhir - hanya terlihat oleh Super Admin. Sampaikan ke user secara langsung, lalu minta user menggantinya setelah login.
+                            </div>
+                        @else
+                            <span class="text-muted">Belum pernah di-reset lewat sistem ini.</span>
+                        @endif
+                    @else
+                        <span class="text-muted">Hanya terlihat oleh Super Admin.</span>
+                    @endif
                 </div>
 
             </div>

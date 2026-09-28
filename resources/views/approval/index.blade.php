@@ -17,6 +17,11 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
+    @if($errors->any())
+        <div class="alert alert-danger border-0 shadow-sm mb-3" role="alert">
+            {{ $errors->first() }}
+        </div>
+    @endif
 
     <div class="mb-4">
         <h3 class="fw-bold mb-1">Approval</h3>
@@ -24,12 +29,41 @@
     </div>
 
     <ul class="nav nav-tabs mb-3">
-        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-pending" type="button">Menunggu ({{ $pending->count() }})</button></li>
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-pending" type="button">Menunggu ({{ $pending->count() + $pendingPasswordResets->count() }})</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-riwayat" type="button">Riwayat</button></li>
     </ul>
 
     <div class="tab-content">
         <div class="tab-pane fade show active" id="tab-pending">
+
+            {{-- "Lupa Password" adalah alur LAMA yang terpisah dari tabel
+                 approval_requests (lihat komentar di ApprovalController) -
+                 ditampilkan di sini, dan bisa langsung direset lewat modal
+                 (memakai endpoint users.reset-password yang sama dengan
+                 halaman Detail User) - khusus Super Admin. --}}
+            @if($pendingPasswordResets->isNotEmpty())
+                <div class="card border-0 shadow-sm rounded-3 mb-3">
+                    <div class="card-header bg-white fw-semibold small text-muted">Permintaan Lupa Password</div>
+                    <div class="list-group list-group-flush">
+                        @foreach($pendingPasswordResets as $pr)
+                            <div class="list-group-item p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <div>
+                                    <div class="fw-semibold">{{ $pr->user->name ?? '-' }}</div>
+                                    <div class="text-muted small">{{ $pr->email }} - {{ $pr->created_at->translatedFormat('d M Y H:i') }}</div>
+                                </div>
+                                @if($pr->user && auth()->user()->isSuperAdmin())
+                                    <button type="button" class="btn btn-sm btn-primary flex-shrink-0" data-bs-toggle="modal" data-bs-target="#resetPwModal{{ $pr->user->id }}">
+                                        <i class="bi bi-key"></i> Reset Password
+                                    </button>
+                                @else
+                                    <span class="small text-muted">Hanya Super Admin yang dapat reset password.</span>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
             <div class="card border-0 shadow-sm rounded-3">
                 <div class="list-group list-group-flush">
                     @forelse($pending as $req)
@@ -56,7 +90,9 @@
                             </div>
                         </div>
                     @empty
-                        <p class="text-center text-muted py-5 mb-0">Tidak ada permintaan approval yang menunggu.</p>
+                        @if($pendingPasswordResets->isEmpty())
+                            <p class="text-center text-muted py-5 mb-0">Tidak ada permintaan approval yang menunggu.</p>
+                        @endif
                     @endforelse
                 </div>
             </div>
@@ -146,6 +182,63 @@
             </div>
         </div>
     @endforeach
+    {{-- Modal Reset Password per user (khusus Super Admin). reset_user_id
+         ikut ter-flash saat validasi gagal, dipakai script di bawah untuk
+         membuka ulang modal yang sama. --}}
+    @if(auth()->user()->isSuperAdmin())
+        @foreach($pendingPasswordResets as $pr)
+            @if($pr->user)
+                <div class="modal fade" id="resetPwModal{{ $pr->user->id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form action="{{ route('users.reset-password', $pr->user) }}" method="POST">
+                                @csrf
+                                @method('PATCH')
+                                <input type="hidden" name="reset_user_id" value="{{ $pr->user->id }}">
+                                <div class="modal-header">
+                                    <h6 class="modal-title fw-bold">Reset Password - {{ $pr->user->name }}</h6>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="alert alert-secondary py-2 small mb-3">
+                                        <div class="text-muted">Password saat ini (hasil reset terakhir):</div>
+                                        @if($pr->user->temp_password_plain)
+                                            <code>{{ $pr->user->temp_password_plain }}</code>
+                                        @else
+                                            <span class="text-muted">Belum pernah di-reset lewat sistem ini.</span>
+                                        @endif
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label">Password Baru</label>
+                                        <input type="password" name="password" class="form-control" minlength="8" required>
+                                        <div class="form-text">Minimal 8 karakter.</div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Konfirmasi Password Baru</label>
+                                        <input type="password" name="password_confirmation" class="form-control" minlength="8" required>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                                    <button type="submit" class="btn btn-warning"><i class="bi bi-arrow-repeat"></i> Reset Password</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            @endif
+        @endforeach
+
+        @if(old('reset_user_id'))
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const el = document.getElementById('resetPwModal{{ (int) old('reset_user_id') }}');
+                    if (el) new bootstrap.Modal(el).show();
+                });
+            </script>
+        @endif
+    @endif
 
 </div>
 @endsection
