@@ -405,6 +405,9 @@
     <ul class="nav nav-tabs mb-3 d-none d-md-flex" id="projectTabs" role="tablist">
         <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-kanban" type="button">Kanban</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-barang" type="button">Barang</button></li>
+        @if(auth()->user()->hasPermission('inventory', 'booking'))
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-booking" type="button">Booking Alat</button></li>
+        @endif
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-suratjalan" type="button">Surat Jalan</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-dokumen" type="button">Dokumen</button></li>
         @if(auth()->user()->hasPermission('finance', 'view'))
@@ -420,6 +423,12 @@
         <div class="tab-pane fade" id="tab-barang">
             @include('project.partials.barang-tab', ['project' => $project])
         </div>
+
+        @if(auth()->user()->hasPermission('inventory', 'booking'))
+            <div class="tab-pane fade" id="tab-booking">
+                @include('project.partials.booking-tab', ['project' => $project, 'bookableInventories' => $bookableInventories])
+            </div>
+        @endif
 
         <div class="tab-pane fade" id="tab-suratjalan">
             @include('project.partials.surat-jalan-tab', ['project' => $project])

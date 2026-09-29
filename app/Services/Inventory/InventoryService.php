@@ -2,6 +2,7 @@
 
 namespace App\Services\Inventory;
 
+use App\Models\EquipmentBooking;
 use App\Models\Inventory;
 use App\Models\InventoryAttribute;
 use App\Models\ReportExport;
@@ -347,6 +348,50 @@ class InventoryService
 
             return $locked;
         });
+    }
+
+    /**
+     * Sisa stok untuk rentang tanggal tertentu - beda dari accessor
+     * Inventory::qty_available yang cuma lihat kondisi HARI INI. Dipakai
+     * saat menyimpan Booking Alat (soft warning), BUKAN saat membuat Surat
+     * Jalan (Surat Jalan tetap pakai qty_available biasa - lihat catatan di
+     * SuratJalanService, Surat Jalan punya otoritas lebih tinggi dari booking).
+     *
+     * "Terpakai" di rentang [$start,$end] = SUM Surat Jalan aktif yang
+     * project-nya overlap rentang itu (booking fisik nyata) + SUM Booking
+     * berstatus Dipesan yang project-nya overlap rentang itu (rencana),
+     * TIDAK termasuk booking milik $excludeProjectId sendiri.
+     */
+    public function qtyAvailableForRange(
+        Inventory $inventory,
+        ?string $start,
+        ?string $end,
+        ?int $excludeProjectId = null
+    ): int {
+        $start = $start ?? now()->toDateString();
+        $end = $end ?? $start;
+
+        $overlap = fn ($q) => $q->where('projects.event_date', '<=', $end)
+            ->where(DB::raw('COALESCE(projects.event_end_date, projects.event_date)'), '>=', $start);
+
+        $usedBySuratJalan = (int) SuratJalanItem::query()
+            ->join('surat_jalans', 'surat_jalans.id', '=', 'surat_jalan_items.surat_jalan_id')
+            ->join('projects', 'projects.id', '=', 'surat_jalans.project_id')
+            ->where('surat_jalan_items.inventory_id', $inventory->id)
+            ->where('surat_jalans.status', 'Aktif')
+            ->tap($overlap)
+            ->selectRaw('SUM(qty_dipakai - qty_dikembalikan) as total')
+            ->value('total') ?? 0;
+
+        $usedByBooking = (int) EquipmentBooking::query()
+            ->join('projects', 'projects.id', '=', 'equipment_bookings.project_id')
+            ->where('equipment_bookings.inventory_id', $inventory->id)
+            ->where('equipment_bookings.status', EquipmentBooking::STATUS_BOOKED)
+            ->when($excludeProjectId, fn ($q) => $q->where('equipment_bookings.project_id', '!=', $excludeProjectId))
+            ->tap($overlap)
+            ->sum('qty');
+
+        return max(0, $inventory->quantity_total - $usedBySuratJalan - $usedByBooking);
     }
 
     /**

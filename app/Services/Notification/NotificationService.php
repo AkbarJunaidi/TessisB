@@ -68,6 +68,7 @@ class NotificationService
         'unpaid_deadline'        => 'Client Belum Lunas (H-3 Deadline)',
         'finance_missing'        => 'Pendapatan Belum Diisi (H-5 Akhir Bulan)',
         'approval_pending'       => 'Permintaan Approval Menunggu',
+        'schedule_conflict'      => 'Bentrok Jadwal Alat Antar Project',
         'announcement'           => 'Pengumuman dari Super Admin',
     ];
 
@@ -110,6 +111,7 @@ class NotificationService
                 'unpaid_deadline'        => $this->getUnpaidNearDeadlineNotifications(),
                 'finance_missing'        => $this->getFinanceNotFilledThisMonthNotifications(),
                 'approval_pending'       => $this->getPendingApprovalNotifications(),
+                'schedule_conflict'      => $this->getScheduleConflictNotifications(),
             ]
         );
 
@@ -285,6 +287,68 @@ class NotificationService
             'message' => $request->display_title,
             'url'     => route('approval.index'),
         ])->all();
+    }
+
+    /**
+     * Notifikasi: 2 project yang tanggal event-nya (event_date s.d.
+     * event_end_date) saling overlap - pengingat "cek dulu alat sebelum
+     * H-1", BUKAN cek alat spesifik (lihat pembahasan Level 1 vs Level 2).
+     *
+     * Auto-selesai TANPA perlu di-dismiss manual: begitu salah satu dari 2
+     * project yang bentrok sudah punya minimal 1 baris Booking Alat (apa
+     * pun statusnya - artinya sudah ada yang "menengok" dan memutuskan),
+     * pasangan itu dianggap sudah ditangani dan tidak dihitung lagi di
+     * poll berikutnya. ID deterministik (urut ID kecil dulu) supaya kalau
+     * ada yang men-dismiss manual, dismiss itu tetap konsisten menempel ke
+     * pasangan yang sama di poll-poll selanjutnya.
+     */
+    private function getScheduleConflictNotifications(): array
+    {
+        $projects = Project::query()
+            ->select(['id', 'name', 'event_date', 'event_end_date', 'priority'])
+            ->whereNotNull('event_date')
+            ->where('status', '!=', 'Done')
+            ->withCount('bookings')
+            ->orderBy('event_date')
+            ->get();
+
+        $priorityRank = ['Tinggi' => 1, 'Normal' => 2, 'Rendah' => 3];
+        $conflicts = [];
+
+        foreach ($projects as $i => $a) {
+            $aEnd = $a->event_end_date ?? $a->event_date;
+
+            foreach ($projects->slice($i + 1) as $b) {
+                if ($b->event_date->gt($aEnd)) {
+                    break;
+                }
+
+                if ($a->bookings_count > 0 || $b->bookings_count > 0) {
+                    continue;
+                }
+
+                $pair = $a->id < $b->id ? [$a, $b] : [$b, $a];
+                $rankA = $priorityRank[$a->priority] ?? 2;
+                $rankB = $priorityRank[$b->priority] ?? 2;
+                // Prioritas lebih tinggi (angka rank lebih kecil) yang dituju link-nya -
+                // dia yang paling perlu diamankan alatnya duluan.
+                $priorityProject = $rankA <= $rankB ? $a : $b;
+
+                $conflicts[] = [
+                    'id'      => "schedule_conflict-{$pair[0]->id}-{$pair[1]->id}",
+                    'type'    => 'schedule_conflict',
+                    'icon'    => 'bi-calendar-x text-danger',
+                    'title'   => 'Bentrok Jadwal Alat',
+                    'message' => "\"{$pair[0]->name}\" & \"{$pair[1]->name}\" event di tanggal yang sama - cek Booking Alat.",
+                    'url'     => route('projects.show', $priorityProject),
+                    '_rank'   => min($rankA, $rankB),
+                ];
+            }
+        }
+
+        usort($conflicts, fn ($x, $y) => $x['_rank'] <=> $y['_rank']);
+
+        return collect($conflicts)->take(self::MAX_PER_TYPE)->map(fn ($c) => collect($c)->except('_rank')->all())->all();
     }
 
     /**

@@ -26,6 +26,7 @@ return [
                 'upload_image' => 'Upload gambar barang',
                 'download_pdf' => 'Download PDF inventory',
                 'print_qr'     => 'Cetak / QR Code',
+                'booking'      => 'Booking alat di halaman detail Project',
             ],
         ],
 
@@ -200,6 +201,7 @@ return [
             'inventory' => [
                 'view' => true, 'create' => true, 'edit' => true, 'delete' => true,
                 'upload_image' => true, 'download_pdf' => true, 'print_qr' => true,
+                'booking' => true,
             ],
             'tracking_progress' => [
                 'view' => true, 'create_project' => true, 'edit_project' => true, 'delete_project' => true,
@@ -248,6 +250,7 @@ return [
             'inventory' => [
                 'view' => true, 'create' => true, 'edit' => true, 'delete' => true,
                 'upload_image' => true, 'download_pdf' => true, 'print_qr' => true,
+                'booking' => true,
             ],
             'tracking_progress' => [
                 'view' => true, 'create_project' => true, 'edit_project' => true, 'delete_project' => true,
@@ -307,6 +310,7 @@ return [
             'inventory' => [
                 'view' => false, 'create' => false, 'edit' => false, 'delete' => false,
                 'upload_image' => false, 'download_pdf' => false, 'print_qr' => false,
+                'booking' => false,
             ],
             'tracking_progress' => [
                 'view' => true, 'create_project' => false, 'edit_project' => false, 'delete_project' => false,

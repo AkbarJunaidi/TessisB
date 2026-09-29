@@ -216,6 +216,15 @@ class Project extends Model
     }
 
     /**
+     * Relasi One-to-Many: Booking alat (rencana pemakaian, belum tentu
+     * jadi Surat Jalan) untuk project ini - lihat EquipmentBooking.
+     */
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(EquipmentBooking::class);
+    }
+
+    /**
      * Total Kwitansi berstatus Aktif saja (BEDA dari totalDiterima di
      * bawah, yang juga menghitung Pendapatan dari tab Data Keuangan).
      */

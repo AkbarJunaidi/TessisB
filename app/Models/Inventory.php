@@ -49,6 +49,12 @@ class Inventory extends Model
         return $this->hasMany(InventoryUnit::class)->orderBy('unit_number');
     }
 
+// Relasi ke booking alat (rencana pemakaian per project) untuk barang ini.
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(EquipmentBooking::class);
+    }
+
     /**
      * Scope: hitung qty terpakai (Surat Jalan) DAN jumlah unit berstatus "Tersedia"
      * untuk SELURUH baris inventory dalam satu-dua query (withSum/withCount),

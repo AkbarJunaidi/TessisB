@@ -11,6 +11,7 @@ use App\Services\DataIntegration\FileService;
 use App\Services\DataIntegration\FolderService;
 use App\Services\Inventory\InventoryMutationService;
 use App\Services\Inventory\InventoryService;
+use App\Services\Project\EquipmentBookingService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -24,19 +25,22 @@ class SuratJalanService
     protected FileService $fileService;
     protected InventoryMutationService $mutationService;
     protected InventoryService $inventoryService;
+    protected EquipmentBookingService $bookingService;
 
     public function __construct(
         ActivityLogService $activityLogService,
         FolderService $folderService,
         FileService $fileService,
         InventoryMutationService $mutationService,
-        InventoryService $inventoryService
+        InventoryService $inventoryService,
+        EquipmentBookingService $bookingService
     ) {
         $this->activityLogService = $activityLogService;
         $this->folderService = $folderService;
         $this->fileService = $fileService;
         $this->mutationService = $mutationService;
         $this->inventoryService = $inventoryService;
+        $this->bookingService = $bookingService;
     }
 
     /**
@@ -127,6 +131,14 @@ class SuratJalanService
                 // cuma nomor Surat Jalan generik.
                 $itemSummaries[] = "{$inventory->name} x{$row['qty']}";
             }
+
+            // Surat Jalan = commitment fisik sungguhan, otoritasnya lebih tinggi
+            // dari Booking Alat (yang cuma rencana) - begitu Surat Jalan jadi,
+            // booking project ini untuk barang yang sama otomatis "Terpenuhi".
+            $this->bookingService->fulfillForProject(
+                $project->id,
+                collect($data['items'])->pluck('inventory_id')->all()
+            );
 
             $this->activityLogService->log(
                 Auth::id(),

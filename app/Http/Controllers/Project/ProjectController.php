@@ -102,13 +102,15 @@ class ProjectController extends Controller
             'folder.files.user',
             'financeItems',
             'kwitansis',
+            'bookings.inventory',
         ]);
 
         $allFolders = \App\Models\Folder::orderBy('name')->get();
+        $bookableInventories = \App\Models\Inventory::orderBy('name')->get(['id', 'name', 'serial_number']);
 
         return view(
             'project.show',
-            compact('project', 'groupedTasks', 'allFolders')
+            compact('project', 'groupedTasks', 'allFolders', 'bookableInventories')
         );
     }
 

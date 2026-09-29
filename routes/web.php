@@ -18,6 +18,7 @@ use App\Http\Controllers\Project\ProjectNoteController;
 use App\Http\Controllers\Report\FinancialReportController;
 use App\Http\Controllers\Project\SuratJalanController;
 use App\Http\Controllers\Search\SearchController;
+use App\Http\Controllers\Project\EquipmentBookingController;
 use App\Http\Controllers\Project\KwitansiController;
 use App\Http\Controllers\Purchase\PurchaseController;
 use App\Http\Controllers\Approval\ApprovalController;
@@ -228,6 +229,12 @@ Route::middleware('auth')->group(function () {
 
         Route::get('projects/{project}/surat-jalan/create', [SuratJalanController::class, 'create'])
             ->name('surat-jalan.create');
+
+        Route::post('projects/{project}/bookings', [EquipmentBookingController::class, 'store'])
+            ->name('projects.bookings.store');
+
+        Route::delete('projects/{project}/bookings/{booking}', [EquipmentBookingController::class, 'destroy'])
+            ->name('projects.bookings.destroy');
 
         Route::post('projects/{project}/surat-jalan', [SuratJalanController::class, 'store'])
             ->name('surat-jalan.store');
