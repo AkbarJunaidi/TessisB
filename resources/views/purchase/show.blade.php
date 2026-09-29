@@ -8,6 +8,10 @@
     $canEdit = $user->hasPermission('purchase', 'edit');
     $newItems = $purchase->items->where('stock_mode', \App\Models\PurchaseItem::STOCK_NEW);
     $latestApproval = $purchase->approvalRequests->first();
+    $pendingApproval = $purchase->approvalRequests->firstWhere('status', 'pending');
+    $canDecide = $purchase->status === \App\Models\Purchase::STATUS_SUBMITTED
+        && $pendingApproval
+        && $user->hasPermission('approval', 'decide');
     $canOpenInventory = $user->hasRole('super_admin', 'admin') && $user->hasPermission('inventory', 'view');
 @endphp
 
@@ -42,6 +46,15 @@
             <a href="{{ route('purchases.index') }}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-1"></i> Kembali
             </a>
+
+            @if($canDecide)
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal">
+                    <i class="bi bi-check2-circle me-1"></i> Setujui
+                </button>
+                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                    <i class="bi bi-x-circle me-1"></i> Tolak
+                </button>
+            @endif
 
             @if($purchase->isEditable() && $canEdit)
                 <a href="{{ route('purchases.edit', $purchase) }}" class="btn btn-warning">
@@ -141,6 +154,43 @@
                     </div>
                 </div>
             </div>
+
+            @if($purchase->vendor)
+                <div class="card border-0 shadow-sm rounded-3 mb-3">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3">Hubungi Vendor</h6>
+
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-telephone text-secondary"></i>
+                            @if($purchase->vendor->phone)
+                                <a href="tel:{{ $purchase->vendor->phone }}" class="text-decoration-none">{{ $purchase->vendor->phone }}</a>
+                            @else
+                                <span class="text-muted">Belum diisi</span>
+                            @endif
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-whatsapp text-secondary"></i>
+                            @if($purchase->vendor->phone && $purchase->vendor->has_whatsapp)
+                                <a href="https://wa.me/{{ preg_replace('/^0/', '62', preg_replace('/\D/', '', $purchase->vendor->phone)) }}" target="_blank" rel="noopener" class="text-decoration-none">
+                                    Chat WhatsApp
+                                </a>
+                            @else
+                                <span class="text-muted">Tidak tersedia</span>
+                            @endif
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-envelope text-secondary"></i>
+                            @if($purchase->vendor->email)
+                                <a href="mailto:{{ $purchase->vendor->email }}" class="text-decoration-none">{{ $purchase->vendor->email }}</a>
+                            @else
+                                <span class="text-muted">Belum diisi</span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @endif
 
             <div class="card border-0 shadow-sm rounded-3">
                 <div class="card-body">
@@ -295,6 +345,52 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
                             <button type="submit" class="btn btn-success">Simpan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if($canDecide)
+        <div class="modal fade" id="approveModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form action="{{ route('approval.approve', $pendingApproval) }}" method="POST">
+                        @csrf
+                        <div class="modal-header">
+                            <h6 class="modal-title">Setujui Pembelian {{ $purchase->code }}</h6>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <label class="form-label small">Catatan (opsional)</label>
+                            <textarea name="note" class="form-control" rows="2" maxlength="255"></textarea>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-success">Setujui</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="rejectModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form action="{{ route('approval.reject', $pendingApproval) }}" method="POST">
+                        @csrf
+                        <div class="modal-header">
+                            <h6 class="modal-title">Tolak Pembelian {{ $purchase->code }}</h6>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <label class="form-label small">Catatan (opsional)</label>
+                            <textarea name="note" class="form-control" rows="2" maxlength="255"></textarea>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-danger">Tolak</button>
                         </div>
                     </form>
                 </div>
