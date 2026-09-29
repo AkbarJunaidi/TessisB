@@ -161,6 +161,21 @@ return [
             ],
         ],
 
+        // Berisi harga & nominal - default tertutup untuk Employee, dan
+        // pembayaran hanya Super Admin (sama seperti Data Keuangan).
+        'purchase' => [
+            'label' => 'Pembelian',
+            'icon'  => 'bi-bag-check',
+            'actions' => [
+                'view'    => 'Melihat data pembelian',
+                'create'  => 'Membuat pembelian baru',
+                'edit'    => 'Ubah, ajukan, dan batalkan pembelian',
+                'delete'  => 'Hapus draft pembelian',
+                'receive' => 'Menandai pembelian diterima (stok masuk Inventory)',
+                'pay'     => 'Mencatat pembayaran pembelian',
+            ],
+        ],
+
     ],
 
     /*
@@ -223,6 +238,10 @@ return [
             'approval' => [
                 'view' => true, 'decide' => true,
             ],
+            'purchase' => [
+                'view' => true, 'create' => true, 'edit' => true, 'delete' => true,
+                'receive' => true, 'pay' => true,
+            ],
         ],
 
         'admin' => [
@@ -278,6 +297,10 @@ return [
             'approval' => [
                 'view' => false, 'decide' => false,
             ],
+            'purchase' => [
+                'view' => true, 'create' => true, 'edit' => true, 'delete' => false,
+                'receive' => true, 'pay' => false,
+            ],
         ],
 
         'employee' => [
@@ -326,6 +349,10 @@ return [
             // Approval memang tidak pernah dibuka untuk Employee.
             'approval' => [
                 'view' => false, 'decide' => false,
+            ],
+            'purchase' => [
+                'view' => false, 'create' => false, 'edit' => false, 'delete' => false,
+                'receive' => false, 'pay' => false,
             ],
         ],
 

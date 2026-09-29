@@ -172,6 +172,15 @@
         </li>
         @endif
 
+        @if(auth()->user()->hasPermission('purchase', 'view'))
+        <li class="nav-item">
+            <a href="{{ route('purchases.index') }}"
+                class="nav-link sidebar-link text-white {{ request()->routeIs('purchases.*') ? 'active' : '' }}">
+                <i class="bi bi-bag-check"></i> <span class="sidebar-link-text">Pembelian</span>
+            </a>
+        </li>
+        @endif
+
         @if(auth()->user()->isSuperAdmin())
             @php $userActive = request()->routeIs('users.*'); @endphp
             <li class="nav-item">

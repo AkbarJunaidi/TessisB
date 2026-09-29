@@ -134,7 +134,7 @@ class InventoryService
             ]);
 
             // Generate Unit Fisik sejumlah quantity_total (1 serial number/QR untuk seluruh unit)
-            $this->syncUnits($inventory, $inventory->quantity_total);
+            $this->syncUnits($inventory, $inventory->quantity_total, $data['mutation_note'] ?? null);
 
             // Simpan Informasi Tambahan (Dynamic Attributes) jika opsi dipilih
             $useAttributes = filter_var($data['use_attributes'] ?? false, FILTER_VALIDATE_BOOLEAN);
@@ -284,7 +284,7 @@ class InventoryService
      *
      * @throws \Exception
      */
-    private function syncUnits(Inventory $inventory, int $targetQuantity): void
+    private function syncUnits(Inventory $inventory, int $targetQuantity, ?string $keterangan = null): void
     {
         $currentUnits = $inventory->units()->orderBy('unit_number')->get();
         $currentCount = $currentUnits->count();
@@ -304,7 +304,7 @@ class InventoryService
 
             // Dicatat SEBAGAI JUMLAH saja (bukan per nomor unit) - lihat
             // InventoryMutationService untuk alasannya.
-            $this->mutationService->record($inventory->id, 'ditambahkan', $targetQuantity - $currentCount);
+            $this->mutationService->record($inventory->id, 'ditambahkan', $targetQuantity - $currentCount, null, $keterangan);
         } elseif ($targetQuantity < $currentCount) {
             $unitsToRemove = $currentUnits->sortByDesc('unit_number')->take($currentCount - $targetQuantity);
 
@@ -326,6 +326,27 @@ class InventoryService
 
             $this->mutationService->record($inventory->id, 'dihapus', $currentCount - $targetQuantity);
         }
+    }
+
+    /**
+     * Menambah stok barang yang sudah ada (mis. dari Pembelian) - unit baru dibuat dan mutasi tercatat.
+     */
+    public function addStock(Inventory $inventory, int $qty, string $keterangan): Inventory
+    {
+        return DB::transaction(function () use ($inventory, $qty, $keterangan) {
+            $locked = Inventory::lockForUpdate()->findOrFail($inventory->id);
+            $locked->update(['quantity_total' => $locked->quantity_total + $qty]);
+
+            $this->syncUnits($locked, $locked->quantity_total, $keterangan);
+
+            $this->activityLogService->log(
+                Auth::id(),
+                'Inventory',
+                "Menambah stok barang \"{$locked->name}\" +{$qty} unit ({$keterangan})"
+            );
+
+            return $locked;
+        });
     }
 
     /**

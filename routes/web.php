@@ -19,6 +19,7 @@ use App\Http\Controllers\Report\FinancialReportController;
 use App\Http\Controllers\Project\SuratJalanController;
 use App\Http\Controllers\Search\SearchController;
 use App\Http\Controllers\Project\KwitansiController;
+use App\Http\Controllers\Purchase\PurchaseController;
 use App\Http\Controllers\Approval\ApprovalController;
 use App\Http\Controllers\Signature\SignatureController;
 use App\Http\Controllers\Task\CommentController;
@@ -273,6 +274,29 @@ Route::middleware('auth')->group(function () {
 
         Route::post('kwitansi/{kwitansi}/request-void', [KwitansiController::class, 'requestVoid'])
             ->name('kwitansi.request-void');
+
+    });
+
+    // Modul Pembelian - gate role luas, otorisasi sesungguhnya lewat
+    // hasPermission('purchase', ...) di controller/Request (lihat PurchaseController).
+    Route::middleware('role:super_admin,admin,employee')->group(function () {
+
+        Route::resource('purchases', PurchaseController::class);
+
+        Route::post('purchases/{purchase}/submit', [PurchaseController::class, 'submit'])
+            ->name('purchases.submit');
+
+        Route::post('purchases/{purchase}/receive', [PurchaseController::class, 'receive'])
+            ->name('purchases.receive');
+
+        Route::post('purchases/{purchase}/pay', [PurchaseController::class, 'pay'])
+            ->name('purchases.pay');
+
+        Route::post('purchases/{purchase}/cancel', [PurchaseController::class, 'cancel'])
+            ->name('purchases.cancel');
+
+        Route::get('purchases/{purchase}/attachment', [PurchaseController::class, 'attachment'])
+            ->name('purchases.attachment');
 
     });
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,11 +27,15 @@ class Contact extends Model
         'email',
         'address',
         'notes',
+        'is_client',
+        'is_vendor',
         'created_by',
     ];
 
     protected $casts = [
         'has_whatsapp' => 'boolean',
+        'is_client'    => 'boolean',
+        'is_vendor'    => 'boolean',
     ];
 
     /**
@@ -57,6 +62,21 @@ class Contact extends Model
     public function projects(): HasMany
     {
         return $this->hasMany(Project::class);
+    }
+
+    public function scopeVendors(Builder $query): Builder
+    {
+        return $query->where('is_vendor', true);
+    }
+
+    public function scopeClients(Builder $query): Builder
+    {
+        return $query->where('is_client', true);
+    }
+
+    public function purchases(): HasMany
+    {
+        return $this->hasMany(Purchase::class, 'vendor_id');
     }
 
     /**

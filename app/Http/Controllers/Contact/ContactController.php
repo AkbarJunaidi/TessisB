@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Contact;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Contact\ContactRequest;
 use App\Models\Contact;
+use App\Models\Purchase;
 use App\Services\Contact\ContactService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -53,7 +54,7 @@ class ContactController extends Controller
             'Anda tidak memiliki hak akses untuk melihat data kontak.'
         );
 
-        $filters = $request->only('search', 'letter');
+        $filters = $request->only('search', 'letter', 'type');
 
         $contacts = $this->contactService->getAllPaginated($filters);
         $stats    = $this->contactService->getStats();
@@ -107,7 +108,18 @@ class ContactController extends Controller
 
         $matchedProjects = $contact->matchedProjects();
 
-        return view('contact.show', compact('contact', 'matchedProjects'));
+        $canSeePurchases = $contact->is_vendor && Auth::user()->hasPermission('purchase', 'view');
+        $purchases = collect();
+        $purchaseTotal = 0.0;
+
+        if ($canSeePurchases) {
+            $purchases = $contact->purchases()->latest('purchase_date')->latest('id')->limit(10)->get();
+            $purchaseTotal = (float) $contact->purchases()
+                ->whereIn('status', [Purchase::STATUS_APPROVED, Purchase::STATUS_RECEIVED])
+                ->sum('total');
+        }
+
+        return view('contact.show', compact('contact', 'matchedProjects', 'canSeePurchases', 'purchases', 'purchaseTotal'));
     }
 
     /**

@@ -14,12 +14,12 @@
             </h3>
 
             <p class="text-muted mb-0">
-                Buku alamat client yang pernah memakai jasa.
+                Buku alamat client &amp; vendor.
             </p>
         </div>
 
         <a
-            href="{{ route('contacts.create') }}"
+            href="{{ route('contacts.create', array_filter(['type' => $filters['type'] ?? null])) }}"
             class="btn btn-primary"
         >
             <i class="bi bi-person-plus me-2"></i>
@@ -92,6 +92,27 @@
 
         <div class="card-body">
 
+            @php
+                $typeTabs = [
+                    ''       => ['Semua', $stats['total']],
+                    'client' => ['Client', $stats['clients']],
+                    'vendor' => ['Vendor', $stats['vendors']],
+                ];
+            @endphp
+            <ul class="nav nav-pills mb-3">
+                @foreach($typeTabs as $typeKey => $typeTab)
+                    <li class="nav-item">
+                        <a
+                            class="nav-link py-1 {{ ($filters['type'] ?? '') === (string) $typeKey ? 'active' : '' }}"
+                            href="{{ route('contacts.index', array_merge($filters, ['type' => $typeKey ?: null])) }}"
+                        >
+                            {{ $typeTab[0] }}
+                            <span class="badge bg-light text-dark border ms-1">{{ number_format($typeTab[1]) }}</span>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                 <h6 class="fw-bold mb-0">Kontak Terbaru</h6>
 
@@ -114,6 +135,9 @@
                 @if(!empty($filters['letter']))
                     <input type="hidden" name="letter" value="{{ $filters['letter'] }}">
                 @endif
+                @if(!empty($filters['type']))
+                    <input type="hidden" name="type" value="{{ $filters['type'] }}">
+                @endif
                 <div class="col-md-4">
                     <input
                         type="text"
@@ -130,7 +154,7 @@
                 </div>
                 @if(!empty($filters['search']))
                     <div class="col-md-2">
-                        <a href="{{ route('contacts.index', array_filter(['letter' => $filters['letter'] ?? null])) }}" class="btn btn-sm btn-outline-secondary w-100">
+                        <a href="{{ route('contacts.index', array_filter(['letter' => $filters['letter'] ?? null, 'type' => $filters['type'] ?? null])) }}" class="btn btn-sm btn-outline-secondary w-100">
                             Reset Pencarian
                         </a>
                     </div>
@@ -160,6 +184,14 @@
                                         <div class="text-muted small text-truncate">
                                             {{ $contact->company ?? 'Perorangan' }}
                                         </div>
+                                        <div class="mt-1">
+                                            @if($contact->is_client)
+                                                <span class="badge bg-primary-subtle text-primary-emphasis">Client</span>
+                                            @endif
+                                            @if($contact->is_vendor)
+                                                <span class="badge bg-warning-subtle text-warning-emphasis">Vendor</span>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
 
@@ -178,9 +210,14 @@
                                 @endif
 
                                 <div class="d-flex justify-content-between align-items-center pt-2 mt-2 border-top">
-                                    <span class="fw-bold text-success small">
-                                        {{ \App\Support\Money::formatRupiah($contact->total_income) }}
-                                    </span>
+                                    <div class="small">
+                                        @if($contact->is_client)
+                                            <div class="fw-bold text-success">{{ \App\Support\Money::formatRupiah($contact->total_income) }}</div>
+                                        @endif
+                                        @if($contact->is_vendor && auth()->user()->hasPermission('purchase', 'view'))
+                                            <div class="fw-bold text-warning-emphasis">Beli: {{ \App\Support\Money::formatRupiah($contact->purchase_total ?? 0) }}</div>
+                                        @endif
+                                    </div>
 
                                     <div class="d-flex gap-1" onclick="event.stopPropagation();">
                                         @if($contact->phone)

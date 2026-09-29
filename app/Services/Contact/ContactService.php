@@ -3,6 +3,7 @@
 namespace App\Services\Contact;
 
 use App\Models\Contact;
+use App\Models\Purchase;
 use App\Services\ActivityLog\ActivityLogService;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
@@ -40,9 +41,16 @@ class ContactService
             $query->where('name', 'like', $filters['letter'] . '%');
         }
 
+        if (($filters['type'] ?? null) === 'vendor') {
+            $query->vendors();
+        } elseif (($filters['type'] ?? null) === 'client') {
+            $query->clients();
+        }
+
         $contacts = $query->paginate($perPage)->withQueryString();
 
         $this->attachTotalIncome($contacts->getCollection());
+        $this->attachPurchaseTotal($contacts->getCollection());
 
         return $contacts;
     }
@@ -96,6 +104,25 @@ class ContactService
     }
 
     /**
+     * Total pembelian (Disetujui/Diterima) per vendor lewat 1 query batch, bukan per-baris.
+     */
+    protected function attachPurchaseTotal(\Illuminate\Support\Collection $contacts): void
+    {
+        $vendorIds = $contacts->where('is_vendor', true)->pluck('id');
+
+        $totals = $vendorIds->isEmpty() ? collect() : DB::table('purchases')
+            ->whereIn('vendor_id', $vendorIds)
+            ->whereIn('status', [Purchase::STATUS_APPROVED, Purchase::STATUS_RECEIVED])
+            ->select('vendor_id', DB::raw('SUM(total) as total'))
+            ->groupBy('vendor_id')
+            ->pluck('total', 'vendor_id');
+
+        foreach ($contacts as $contact) {
+            $contact->setAttribute('purchase_total', (float) ($totals[$contact->id] ?? 0));
+        }
+    }
+
+    /**
      * Pencarian ringkas untuk autocomplete field Client di form Create/
      * Edit Project (lihat ContactController::search()). Beda dengan
      * getAllPaginated(): tidak pakai pagination, tidak menempel
@@ -112,7 +139,8 @@ class ContactService
             return collect();
         }
 
-        return Contact::where('name', 'like', "%{$keyword}%")
+        return Contact::clients()
+            ->where('name', 'like', "%{$keyword}%")
             ->orderBy('name')
             ->limit($limit)
             ->get(['id', 'name', 'phone', 'email']);
@@ -145,6 +173,8 @@ class ContactService
 
         return [
             'total'            => Contact::count(),
+            'clients'          => Contact::clients()->count(),
+            'vendors'          => Contact::vendors()->count(),
             'with_whatsapp'    => Contact::where('has_whatsapp', true)->count(),
             'new_this_month'   => Contact::whereMonth('created_at', now()->month)
                 ->whereYear('created_at', now()->year)
@@ -166,6 +196,8 @@ class ContactService
             'email'        => $data['email'] ?? null,
             'address'      => $data['address'] ?? null,
             'notes'        => $data['notes'] ?? null,
+            'is_client'    => $data['is_client'] ?? true,
+            'is_vendor'    => $data['is_vendor'] ?? false,
             'created_by'   => Auth::id(),
         ]);
 
@@ -191,6 +223,8 @@ class ContactService
             'email'        => $data['email'] ?? null,
             'address'      => $data['address'] ?? null,
             'notes'        => $data['notes'] ?? null,
+            'is_client'    => $data['is_client'] ?? true,
+            'is_vendor'    => $data['is_vendor'] ?? false,
         ]);
 
         $this->activityLogService->log(

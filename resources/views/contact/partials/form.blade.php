@@ -4,7 +4,7 @@
 
     <div class="col-md-6 mb-3">
         <label for="name" class="form-label">
-            Nama Client <span class="text-danger">*</span>
+            Nama Kontak <span class="text-danger">*</span>
         </label>
 
         <input
@@ -42,6 +42,40 @@
             <div class="invalid-feedback">
                 {{ $message }}
             </div>
+        @enderror
+    </div>
+
+</div>
+
+@php
+    $defaultVendor = request('type') === 'vendor';
+    $isClient = old('is_client', $contact->is_client ?? ! $defaultVendor);
+    $isVendor = old('is_vendor', $contact->is_vendor ?? $defaultVendor);
+@endphp
+
+<div class="row">
+
+    <div class="col-12 mb-3">
+        <label class="form-label d-block">
+            Tag Kontak <span class="text-danger">*</span>
+        </label>
+
+        <input type="hidden" name="is_client" value="0">
+        <input type="hidden" name="is_vendor" value="0">
+
+        <div class="d-flex gap-4 flex-wrap">
+            <div class="form-check">
+                <input type="checkbox" name="is_client" id="is_client" class="form-check-input @error('is_client') is-invalid @enderror" value="1" @checked($isClient)>
+                <label class="form-check-label" for="is_client">Client</label>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" name="is_vendor" id="is_vendor" class="form-check-input" value="1" @checked($isVendor)>
+                <label class="form-check-label" for="is_vendor">Vendor / Supplier</label>
+            </div>
+        </div>
+
+        @error('is_client')
+            <div class="text-danger small mt-1">{{ $message }}</div>
         @enderror
     </div>
 
@@ -128,30 +162,6 @@
             </div>
         @enderror
     </div>
-
-    <div class="col-12 mb-3">
-        <label for="notes" class="form-label">
-            Catatan
-        </label>
-
-        <textarea
-            name="notes"
-            id="notes"
-            rows="3"
-            class="form-control @error('notes') is-invalid @enderror"
-            placeholder="Catatan bebas tentang kontak ini (preferensi, riwayat komunikasi, dsb)"
-        >{{ old('notes', $contact->notes ?? '') }}</textarea>
-
-        @error('notes')
-            <div class="invalid-feedback">
-                {{ $message }}
-            </div>
-        @enderror
-    </div>
-
-</div>
-
-<div class="row">
 
     <div class="col-12 mb-3">
         <label for="notes" class="form-label">

@@ -4,6 +4,7 @@ namespace App\Http\Requests\Contact;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Validator;
 
 class ContactRequest extends FormRequest
 {
@@ -25,7 +26,18 @@ class ContactRequest extends FormRequest
     {
         $this->merge([
             'has_whatsapp' => $this->boolean('has_whatsapp'),
+            'is_client'    => $this->boolean('is_client'),
+            'is_vendor'    => $this->boolean('is_vendor'),
         ]);
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $v) {
+            if (!$this->boolean('is_client') && !$this->boolean('is_vendor')) {
+                $v->errors()->add('is_client', 'Pilih minimal satu tag: Client atau Vendor.');
+            }
+        });
     }
 
     /**
@@ -43,6 +55,10 @@ class ContactRequest extends FormRequest
 
             'has_whatsapp' => ['boolean'],
 
+            'is_client' => ['boolean'],
+
+            'is_vendor' => ['boolean'],
+
             'email' => ['nullable', 'email', 'max:255'],
 
             'address' => ['nullable', 'string', 'max:1000'],
@@ -58,7 +74,7 @@ class ContactRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Nama client wajib diisi.',
+            'name.required' => 'Nama kontak wajib diisi.',
             'email.email'   => 'Format email tidak valid.',
         ];
     }
@@ -69,7 +85,7 @@ class ContactRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'name'    => 'Nama Client',
+            'name'    => 'Nama Kontak',
             'company' => 'Nama Perusahaan',
             'phone'   => 'No. HP/WA',
             'email'   => 'Email',

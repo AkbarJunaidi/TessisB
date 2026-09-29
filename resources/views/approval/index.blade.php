@@ -78,6 +78,11 @@
                                     @if($req->reason)
                                         <div class="small mt-1"><span class="text-muted">Alasan:</span> {{ $req->reason }}</div>
                                     @endif
+                                    @if($req->type === 'purchase_approve' && auth()->user()->hasPermission('purchase', 'view'))
+                                        <a href="{{ route('purchases.show', $req->requestable_id) }}" class="small text-decoration-none">
+                                            <i class="bi bi-box-arrow-up-right"></i> Lihat detail pembelian
+                                        </a>
+                                    @endif
                                 </div>
                                 <div class="d-flex gap-2 flex-shrink-0">
                                     <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#approveModal{{ $req->id }}">

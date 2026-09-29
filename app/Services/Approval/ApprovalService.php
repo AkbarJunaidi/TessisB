@@ -5,6 +5,7 @@ namespace App\Services\Approval;
 use App\Models\ApprovalRequest;
 use App\Services\ActivityLog\ActivityLogService;
 use App\Services\Project\KwitansiService;
+use App\Services\Purchase\PurchaseService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -21,7 +22,16 @@ class ApprovalService
      * contoh cara submit().
      */
     private const HANDLERS = [
-        'kwitansi_void' => [KwitansiService::class, 'markVoided'],
+        'kwitansi_void'    => [KwitansiService::class, 'markVoided'],
+        'purchase_approve' => [PurchaseService::class, 'markApproved'],
+    ];
+
+    /**
+     * Opsional: jenis approval yang perlu bereaksi saat DITOLAK. Jenis yang
+     * tidak terdaftar di sini cukup berubah status permintaannya saja.
+     */
+    private const REJECT_HANDLERS = [
+        'purchase_approve' => [PurchaseService::class, 'markRejected'],
     ];
 
     public function __construct(protected ActivityLogService $activityLogService)
@@ -95,12 +105,20 @@ class ApprovalService
             throw new Exception('Permintaan ini sudah diproses.');
         }
 
-        $request->update([
-            'status'        => 'rejected',
-            'decided_by'    => Auth::id(),
-            'decided_at'    => now(),
-            'decision_note' => $note,
-        ]);
+        DB::transaction(function () use ($request, $note) {
+            $handler = self::REJECT_HANDLERS[$request->type] ?? null;
+
+            if ($handler && $request->requestable) {
+                app($handler[0])->{$handler[1]}($request->requestable);
+            }
+
+            $request->update([
+                'status'        => 'rejected',
+                'decided_by'    => Auth::id(),
+                'decided_at'    => now(),
+                'decision_note' => $note,
+            ]);
+        });
 
         $this->activityLogService->log(Auth::id(), 'Approval', "Menolak: {$request->display_title}");
 

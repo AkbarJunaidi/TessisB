@@ -15,6 +15,14 @@
             <div>
                 <h3 class="fw-bold mb-0">{{ $contact->name }}</h3>
                 <p class="text-muted mb-0">{{ $contact->company ?? 'Perorangan' }}</p>
+                <div class="mt-1">
+                    @if($contact->is_client)
+                        <span class="badge bg-primary-subtle text-primary-emphasis">Client</span>
+                    @endif
+                    @if($contact->is_vendor)
+                        <span class="badge bg-warning-subtle text-warning-emphasis">Vendor</span>
+                    @endif
+                </div>
             </div>
         </div>
 
@@ -117,6 +125,37 @@
                     <i class="bi bi-cash-coin fs-1 text-success opacity-25"></i>
                 </div>
             </div>
+
+            @if($canSeePurchases)
+                <div class="card border-0 shadow-sm rounded-3 mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0">Riwayat Pembelian</h6>
+                            <div class="text-end">
+                                <div class="text-muted small">Total Pembelian (Disetujui/Diterima)</div>
+                                <div class="fw-bold text-warning-emphasis">{{ \App\Support\Money::formatRupiah($purchaseTotal) }}</div>
+                            </div>
+                        </div>
+
+                        @forelse($purchases as $purchase)
+                            <a href="{{ route('purchases.show', $purchase) }}" class="text-decoration-none text-dark">
+                                <div class="d-flex justify-content-between align-items-center p-3 rounded-3 border mb-2">
+                                    <div>
+                                        <div class="fw-semibold">{{ $purchase->code }}</div>
+                                        <div class="text-muted small">
+                                            <span class="badge {{ \App\Models\Purchase::STATUS_BADGES[$purchase->status] ?? 'bg-secondary' }}">{{ $purchase->status }}</span>
+                                            <i class="bi bi-calendar-event ms-2 me-1"></i>{{ $purchase->purchase_date->format('d/m/Y') }}
+                                        </div>
+                                    </div>
+                                    <div class="fw-bold">{{ \App\Support\Money::formatRupiah($purchase->total) }}</div>
+                                </div>
+                            </a>
+                        @empty
+                            <div class="text-center text-muted py-3">Belum ada pembelian dari vendor ini.</div>
+                        @endforelse
+                    </div>
+                </div>
+            @endif
 
             <div class="card border-0 shadow-sm rounded-3">
                 <div class="card-body">
