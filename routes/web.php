@@ -528,6 +528,10 @@ Route::middleware('auth')->group(function () {
             Route::get('/files/{file}/download', [FileController::class, 'download'])
                 ->name('files.download');
 
+            // Preview inline (PDF, gambar, teks) - dibuka di tab baru, seperti preview di modul Inventory.
+            Route::get('/files/{file}/preview', [FileController::class, 'preview'])
+                ->name('files.preview');
+
             Route::patch('/files/{file}/rename', [FileController::class, 'rename'])
                 ->name('files.rename');
 

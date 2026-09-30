@@ -112,6 +112,9 @@
                                             <i class="bi bi-three-dots-vertical fs-5"></i>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                            @if($file->preview_type && auth()->user()->hasPermission('data_integration', 'download'))
+                                                <li><a class="dropdown-item small py-2" href="{{ route('files.preview', $file) }}" target="_blank" rel="noopener"><i class="bi bi-eye me-2 text-muted"></i> Preview</a></li>
+                                            @endif
                                             <li><a class="dropdown-item small py-2" href="{{ route('files.download', $file->id) }}"><i class="bi bi-download me-2 text-muted"></i> Download</a></li>
                                             <li><a class="dropdown-item small py-2" href="#"><i class="bi bi-pencil me-2 text-muted"></i> Rename</a></li>
                                             <li><a class="dropdown-item small py-2" href="#"><i class="bi bi-file-symlink me-2 text-muted"></i> Move</a></li>

@@ -30,8 +30,14 @@
                                 <td>{{ $file->readable_size }}</td>
                                 <td>{{ $file->user->name ?? '-' }}</td>
                                 <td>{{ $file->created_at->translatedFormat('d M Y') }}</td>
-                                <td class="text-end">
-                                    <a href="{{ route('files.download', $file) }}" class="btn btn-sm btn-outline-secondary">
+                                <td class="text-end text-nowrap">
+                                    @if($file->preview_type && auth()->user()->hasPermission('data_integration', 'download'))
+                                        <a href="{{ route('files.preview', $file) }}" target="_blank" rel="noopener"
+                                           class="btn btn-sm btn-outline-secondary" title="Preview" aria-label="Preview">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    @endif
+                                    <a href="{{ route('files.download', $file) }}" class="btn btn-sm btn-outline-secondary" title="Download" aria-label="Download">
                                         <i class="bi bi-download"></i>
                                     </a>
                                 </td>
