@@ -23,11 +23,19 @@ class FileService
     protected ActivityLogService $activityLogService;
 
     /**
+     * Service Folder (peta path & aturan folder pribadi/bersama).
+     */
+    protected FolderService $folderService;
+
+    /**
      * Constructor.
      */
-    public function __construct(ActivityLogService $activityLogService)
-    {
+    public function __construct(
+        ActivityLogService $activityLogService,
+        FolderService $folderService
+    ) {
         $this->activityLogService = $activityLogService;
+        $this->folderService      = $folderService;
     }
 
     /**
@@ -36,13 +44,18 @@ class FileService
     private const PREVIEW_TEXT_MAX_BYTES = 1048576; // 1 MB
 
     /**
-     * Tab "File saya": file PRIBADI user yang sedang login (tidak berada di folder mana pun).
+     * Tab "File saya": file PRIBADI user yang sedang login di dalam satu folder pribadi
+     * ($folderId) atau di akar My Files ($folderId = null).
      */
-    public function getPrivateFiles(): Collection
+    public function getPrivateFiles(?int $folderId = null): Collection
     {
         return File::where('user_id', Auth::id())
-            ->whereNull('folder_id')
-            ->latest()
+            ->when(
+                $folderId,
+                fn ($q) => $q->where('folder_id', $folderId),
+                fn ($q) => $q->whereNull('folder_id')
+            )
+            ->orderBy('file_name')
             ->get();
     }
 
@@ -60,7 +73,7 @@ class FileService
     public function getSharedActivity(?string $type = null, ?string $source = null): \Illuminate\Support\Collection
     {
         $userId = Auth::id();
-        $paths  = $this->folderPaths();
+        $paths  = $this->folderService->pathMap(false);
         $items  = collect();
 
         // Filter "Sumber" hanya berlaku untuk file; folder tidak punya asal upload/generate.
@@ -70,6 +83,8 @@ class FileService
         if ($includeFiles) {
             $files = File::where('user_id', $userId)
                 ->whereNotNull('folder_id')
+                // Buang file di dalam folder pribadi (termasuk yang folder-nya sudah dihapus).
+                ->whereDoesntHave('folder', fn ($q) => $q->withTrashed()->where('is_private', true))
                 ->when($source === 'upload', fn ($q) => $q->where('file_path', 'like', File::UPLOAD_DIR . '/%'))
                 ->when($source === 'generate', fn ($q) => $q->where('file_path', 'not like', File::UPLOAD_DIR . '/%'))
                 ->get();
@@ -90,7 +105,7 @@ class FileService
         }
 
         if ($includeFolders) {
-            $folders = Folder::where('created_by', $userId)->get();
+            $folders = Folder::where('created_by', $userId)->where('is_private', false)->get();
 
             foreach ($folders as $folder) {
                 $parentKnown = $folder->parent_id && isset($paths[$folder->parent_id]);
@@ -117,31 +132,6 @@ class FileService
                 return $item;
             })
             ->values();
-    }
-
-    /**
-     * Peta id folder -> path lengkap ("Projects / Nama Project"). Satu query untuk
-     * semua folder aktif, lalu path dirakit di memori (hindari N+1).
-     */
-    private function folderPaths(): array
-    {
-        $folders = Folder::select('id', 'name', 'parent_id')->get()->keyBy('id');
-        $paths   = [];
-
-        foreach ($folders as $folder) {
-            $parts  = [$folder->name];
-            $parent = $folder->parent_id;
-            $guard  = 0; // pengaman kalau ada data induk yang berputar
-
-            while ($parent && isset($folders[$parent]) && $guard++ < 20) {
-                array_unshift($parts, $folders[$parent]->name);
-                $parent = $folders[$parent]->parent_id;
-            }
-
-            $paths[$folder->id] = implode(' / ', $parts);
-        }
-
-        return $paths;
     }
 
     /**
@@ -200,6 +190,8 @@ class FileService
     ): File {
 
         try {
+
+            $this->assertUploadTargetAllowed($folderId);
 
             $originalName = $uploadedFile->getClientOriginalName();
 
@@ -358,6 +350,8 @@ class FileService
 
         try {
 
+            $this->assertMoveAllowed($file, $targetFolderId);
+
             return $file->update([
                 'folder_id' => $targetFolderId
             ]);
@@ -366,6 +360,58 @@ class FileService
             throw new Exception(
                 'Gagal memindahkan file: ' . $e->getMessage()
             );
+        }
+    }
+
+    /**
+     * Aturan pindah file:
+     * - File pribadi : boleh ke akar My Files (target kosong), ke folder pribadi milik sendiri,
+     *                  atau ke folder bersama (file menjadi terlihat oleh yang punya akses).
+     * - File bersama : hanya ke folder bersama lain. Tidak boleh ke akar (file bersama wajib
+     *                  berada di sebuah folder) dan tidak boleh kembali ke ruang pribadi.
+     *
+     * @throws Exception
+     */
+    private function assertMoveAllowed(File $file, ?int $targetFolderId): void
+    {
+        $target = null;
+
+        if ($targetFolderId !== null) {
+            $target = Folder::find($targetFolderId);
+
+            if (!$target) {
+                throw new Exception('Folder tujuan tidak ditemukan.');
+            }
+
+            if ($target->is_private && (int) $target->created_by !== (int) Auth::id()) {
+                throw new Exception('Folder tujuan bersifat pribadi milik pengguna lain.');
+            }
+        }
+
+        if (!$file->isPrivate() && (!$target || $target->is_private)) {
+            throw new Exception('File di ruang bersama hanya dapat dipindahkan ke folder bersama lain.');
+        }
+    }
+
+    /**
+     * Folder tujuan upload harus ada dan, bila pribadi, milik user yang login.
+     *
+     * @throws Exception
+     */
+    private function assertUploadTargetAllowed(?int $folderId): void
+    {
+        if ($folderId === null) {
+            return;
+        }
+
+        $folder = Folder::find($folderId);
+
+        if (!$folder) {
+            throw new Exception('Folder tujuan tidak ditemukan.');
+        }
+
+        if ($folder->is_private && (int) $folder->created_by !== (int) Auth::id()) {
+            throw new Exception('Folder tujuan bersifat pribadi milik pengguna lain.');
         }
     }
 

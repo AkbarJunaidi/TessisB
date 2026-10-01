@@ -159,7 +159,58 @@ class TrashService
             $query->whereDate('deleted_at', '<=', $filters['date_to']);
         }
 
+        $this->applyPrivacyScope($query, $key);
+
         return $query;
+    }
+
+    /**
+     * Folder & file PRIBADI (My Files) hanya tampil di Trash milik pemiliknya. Data bersama
+     * tampil untuk semua yang berhak membuka Trash. Diterapkan di level database agar
+     * jumlah baris dan paginasi tetap benar.
+     */
+    private function applyPrivacyScope(QueryBuilder $query, string $key): void
+    {
+        $me = Auth::id();
+
+        if ($key === 'folder') {
+            $query->where(function ($q) use ($me) {
+                $q->where('is_private', false)->orWhere('created_by', $me);
+            });
+        }
+
+        if ($key === 'file') {
+            $query->where(function ($q) use ($me) {
+                $q->where('user_id', $me)
+                    ->orWhere(function ($shared) {
+                        // File bersama = berada di folder yang bukan folder pribadi
+                        // (subquery memakai DB::table sehingga folder yang sudah dihapus ikut terhitung).
+                        $shared->whereNotNull('folder_id')
+                            ->whereNotIn(
+                                'folder_id',
+                                DB::table('folders')->where('is_private', true)->select('id')
+                            );
+                    });
+            });
+        }
+    }
+
+    /**
+     * Tolak pemulihan / hapus permanen data pribadi milik user lain (akses langsung lewat URL).
+     */
+    private function assertNotForeignPrivate(Model $model, string $type): void
+    {
+        $me = (int) Auth::id();
+
+        $foreign = match ($type) {
+            'folder' => $model->is_private && (int) $model->created_by !== $me,
+            'file'   => (int) $model->user_id !== $me && $model->isPrivate(),
+            default  => false,
+        };
+
+        if ($foreign) {
+            throw new RuntimeException('Data ini bersifat pribadi milik pengguna lain.');
+        }
     }
 
     /**
@@ -201,6 +252,8 @@ class TrashService
             $model = $modelClass::withTrashed()->lockForUpdate()->findOrFail($id);
             $name = (string) $model->{$config['name_column']};
 
+            $this->assertNotForeignPrivate($model, $type);
+
             if (is_null($model->deleted_at)) {
                 throw new RuntimeException(
                     "Data \"{$name}\" sudah tidak berada di Trash (kemungkinan sudah dipulihkan sebelumnya)."
@@ -238,6 +291,8 @@ class TrashService
         return DB::transaction(function () use ($modelClass, $id, $type, $config) {
             $model = $modelClass::withTrashed()->lockForUpdate()->findOrFail($id);
             $name = (string) $model->{$config['name_column']};
+
+            $this->assertNotForeignPrivate($model, $type);
 
             if (is_null($model->deleted_at)) {
                 throw new RuntimeException(

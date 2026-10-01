@@ -105,7 +105,7 @@ class ProjectController extends Controller
             'bookings.inventory',
         ]);
 
-        $allFolders = \App\Models\Folder::orderBy('name')->get();
+        $allFolders = \App\Models\Folder::where('is_private', false)->orderBy('name')->get();
         $bookableInventories = \App\Models\Inventory::orderBy('name')->get(['id', 'name', 'serial_number']);
 
         return view(

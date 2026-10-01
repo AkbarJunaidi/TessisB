@@ -159,12 +159,20 @@ class File extends Model
     ];
 
     /**
-     * File "pribadi" = tidak berada di folder mana pun (diunggah lewat My Files).
-     * Begitu dipindah ke folder, file menjadi ruang bersama.
+     * File "pribadi" = berada di akar My Files (tanpa folder) atau di dalam folder pribadi.
+     * Begitu dipindah ke folder bersama, file menjadi ruang bersama.
+     * withTrashed(): file di dalam folder pribadi yang sudah dihapus tetap dianggap pribadi.
      */
     public function isPrivate(): bool
     {
-        return is_null($this->folder_id);
+        if (is_null($this->folder_id)) {
+            return true;
+        }
+
+        return Folder::withTrashed()
+            ->whereKey($this->folder_id)
+            ->where('is_private', true)
+            ->exists();
     }
 
     /**

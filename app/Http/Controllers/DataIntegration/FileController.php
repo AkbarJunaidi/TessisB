@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\DataIntegration\FileRequest;
 use App\Models\File;
 use App\Services\DataIntegration\FileService;
+use App\Services\DataIntegration\FolderService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -22,17 +23,24 @@ class FileController extends Controller
     protected FileService $fileService;
 
     /**
+     * Service Folder (folder pribadi My Files, breadcrumb, daftar tujuan pindah).
+     */
+    protected FolderService $folderService;
+
+    /**
      * Constructor.
      */
-    public function __construct(FileService $fileService)
+    public function __construct(FileService $fileService, FolderService $folderService)
     {
-        $this->fileService = $fileService;
+        $this->fileService   = $fileService;
+        $this->folderService = $folderService;
     }
 
     /**
      * Menampilkan halaman My Files.
      *
-     * tab=saya (default) : file PRIBADI user ini (tanpa folder).
+     * tab=saya (default) : isi ruang PRIBADI user ini - folder pribadi dan file pribadi.
+     *                      folder=ID membuka satu folder pribadi (kosong = akar My Files).
      * tab=dibagikan      : ringkasan file yang diunggah/digenerate dan folder yang dibuat
      *                      user ini di ruang bersama. Filter opsional:
      *                      jenis=folder|file, sumber=upload|generate.
@@ -49,18 +57,46 @@ class FileController extends Controller
         $jenis  = in_array($request->query('jenis'), ['folder', 'file'], true) ? $request->query('jenis') : null;
         $sumber = in_array($request->query('sumber'), ['upload', 'generate'], true) ? $request->query('sumber') : null;
 
-        $files = collect();
-        $items = collect();
+        $files         = collect();
+        $folders       = collect();
+        $items         = collect();
+        $currentFolder = null;
+        $breadcrumb    = collect();
+        $moveGroups    = [];
 
         if ($tab === 'dibagikan') {
+
             $items = $this->fileService->getSharedActivity($jenis, $sumber);
+
         } else {
-            $files = $this->fileService->getPrivateFiles();
+
+            // folder=ID harus folder pribadi milik user ini; selain itu 404 (tidak membocorkan keberadaannya).
+            if ($request->filled('folder')) {
+                $currentFolder = $this->folderService->findOwnPrivateFolder($request->integer('folder'));
+                abort_if($currentFolder === null, 404);
+                $breadcrumb = $this->folderService->breadcrumb($currentFolder);
+            }
+
+            $folders = $this->folderService->getPrivateFolders($currentFolder?->id);
+            $files   = $this->fileService->getPrivateFiles($currentFolder?->id);
+
+            $moveGroups = [
+                [
+                    'label'   => 'My Files (pribadi)',
+                    'warn'    => false,
+                    'options' => $this->folderService->pathMap(true),
+                ],
+                [
+                    'label'   => 'Ruang bersama',
+                    'warn'    => true,
+                    'options' => $this->folderService->pathMap(false),
+                ],
+            ];
         }
 
         return view(
             'data-integration.my-files',
-            compact('tab', 'files', 'items', 'jenis', 'sumber')
+            compact('tab', 'files', 'folders', 'items', 'jenis', 'sumber', 'currentFolder', 'breadcrumb', 'moveGroups')
         );
     }
 

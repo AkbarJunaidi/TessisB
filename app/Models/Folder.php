@@ -23,8 +23,16 @@ class Folder extends Model
         'name',
         'parent_id',
         'project_id',
+        'is_private',
         'created_by',
         'deleted_by',
+    ];
+
+    /**
+     * Folder pribadi (My Files) atau bersama (Folder Management).
+     */
+    protected $casts = [
+        'is_private' => 'boolean',
     ];
 
     /**

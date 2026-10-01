@@ -8,6 +8,11 @@ use Illuminate\Support\Facades\Auth;
 class FolderRequest extends FormRequest
 {
     /**
+     * Karakter yang tidak diperbolehkan pada nama folder (dipakai juga oleh rename folder).
+     */
+    public const NAME_REGEX = '/^[^\\\\\/\?%\*:|"<>]+$/';
+
+    /**
      * Menentukan apakah user diizinkan melakukan request ini.
      */
     public function authorize(): bool
@@ -26,12 +31,18 @@ class FolderRequest extends FormRequest
                 'string',
                 'max:255',
                 // Mencegah karakter yang tidak diperbolehkan pada nama folder.
-                'regex:/^[^\\\\\/\?%\*:|"<>]+$/',
+                'regex:' . self::NAME_REGEX,
             ],
 
             'parent_id' => [
                 'nullable',
                 'exists:folders,id',
+            ],
+
+            // "private" = dibuat dari My Files (folder pribadi); kosong = folder bersama.
+            'space' => [
+                'nullable',
+                'in:private',
             ],
         ];
     }

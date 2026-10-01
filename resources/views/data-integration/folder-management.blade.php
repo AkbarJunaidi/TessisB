@@ -1,7 +1,17 @@
 @extends('layouts.app') {{-- Sesuai layout dashboard yang sudah Anda buat --}}
 
 @section('content')
+@php
+    // Permission dihitung sekali, dipakai di tiap baris.
+    $canRename = auth()->user()->hasPermission('data_integration', 'rename');
+    $canDelete = auth()->user()->hasPermission('data_integration', 'delete');
+@endphp
 <div class="container-fluid px-4 py-3">
+    {{-- Kesalahan validasi (mis. nama mengandung karakter terlarang); pesan session tampil dari layout. --}}
+    @if($errors->any() && old('space') !== 'private')
+        <div class="alert alert-danger small py-2">{{ $errors->first() }}</div>
+    @endif
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
@@ -73,6 +83,9 @@
                                     <a href="{{ route('folders.show', $folder->id) }}" class="text-decoration-none text-dark fw-medium d-flex align-items-center">
                                         <i class="bi bi-folder-fill text-warning fs-4 me-3"></i>
                                         <span class="text-truncate">{{ $folder->name }}</span>
+                                        @if(in_array($folder->id, $systemFolderIds, true))
+                                            <span class="badge bg-light text-secondary border ms-2 fw-normal">Sistem</span>
+                                        @endif
                                     </a>
                                 </td>
                                 <td><span class="text-muted small">Folder</span></td>
@@ -80,14 +93,37 @@
                                 <td><span class="text-secondary small">{{ $folder->created_at->format('Y-m-d H:i') }}</span></td>
                                 <td class="pe-4 text-end">
                                     <div class="dropdown">
-                                        <button class="btn btn-link text-secondary p-1 m-0 border-0 shadow-none" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <button class="btn btn-link text-secondary p-1 m-0 border-0 shadow-none" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Aksi folder">
                                             <i class="bi bi-three-dots-vertical fs-5"></i>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                            <li><a class="dropdown-item small py-2" href="#"><i class="bi bi-pencil me-2 text-muted"></i> Rename</a></li>
-                                            <li><a class="dropdown-item small py-2" href="#"><i class="bi bi-folder-symlink me-2 text-muted"></i> Move</a></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item small py-2 text-danger" href="#"><i class="bi bi-trash me-2"></i> Delete</a></li>
+                                            <li><a class="dropdown-item small py-2" href="{{ route('folders.show', $folder->id) }}"><i class="bi bi-folder2-open me-2 text-muted"></i> Buka</a></li>
+                                            {{-- Folder sistem (Document Center project dan induknya) tidak dapat diubah/dipindah/dihapus --}}
+                                            @unless(in_array($folder->id, $systemFolderIds, true))
+                                                @if($canRename)
+                                                    <li>
+                                                        <a class="dropdown-item small py-2" href="#"
+                                                           onclick="openRenameModal({{ \Illuminate\Support\Js::from(route('folders.rename', $folder->id)) }}, {{ \Illuminate\Support\Js::from($folder->name) }}, 'name', '', 'folder'); return false;">
+                                                            <i class="bi bi-pencil me-2 text-muted"></i> Rename
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item small py-2" href="#"
+                                                           onclick="openMoveModal({{ \Illuminate\Support\Js::from(route('folders.move', $folder->id)) }}, true, 'folder'); return false;">
+                                                            <i class="bi bi-folder-symlink me-2 text-muted"></i> Move
+                                                        </a>
+                                                    </li>
+                                                @endif
+                                                @if($canDelete)
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <a class="dropdown-item small py-2 text-danger" href="#"
+                                                           onclick="openDeleteModal({{ \Illuminate\Support\Js::from(route('folders.destroy', $folder->id)) }}, {{ \Illuminate\Support\Js::from($folder->name) }}, 'folder'); return false;">
+                                                            <i class="bi bi-trash me-2"></i> Delete
+                                                        </a>
+                                                    </li>
+                                                @endif
+                                            @endunless
                                         </ul>
                                     </div>
                                 </td>
@@ -99,7 +135,7 @@
                             <tr>
                                 <td class="ps-4 py-3">
                                     <div class="d-flex align-items-center">
-                                        <i class="bi bi-file-earmark-text-fill text-primary fs-4 me-3"></i>
+                                        <i class="bi {{ $file->icon_class }} fs-4 me-3"></i>
                                         <span class="fw-medium text-truncate">{{ $file->file_name }}</span>
                                     </div>
                                 </td>
@@ -116,10 +152,30 @@
                                                 <li><a class="dropdown-item small py-2" href="{{ route('files.preview', $file) }}" target="_blank" rel="noopener"><i class="bi bi-eye me-2 text-muted"></i> Preview</a></li>
                                             @endif
                                             <li><a class="dropdown-item small py-2" href="{{ route('files.download', $file->id) }}"><i class="bi bi-download me-2 text-muted"></i> Download</a></li>
-                                            <li><a class="dropdown-item small py-2" href="#"><i class="bi bi-pencil me-2 text-muted"></i> Rename</a></li>
-                                            <li><a class="dropdown-item small py-2" href="#"><i class="bi bi-file-symlink me-2 text-muted"></i> Move</a></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item small py-2 text-danger" href="#"><i class="bi bi-trash me-2"></i> Delete</a></li>
+                                            @if($canRename)
+                                                <li>
+                                                    <a class="dropdown-item small py-2" href="#"
+                                                       onclick="openRenameModal({{ \Illuminate\Support\Js::from(route('files.rename', $file->id)) }}, {{ \Illuminate\Support\Js::from($file->base_name) }}, 'file_name', {{ \Illuminate\Support\Js::from($file->locked_extension) }}, 'file'); return false;">
+                                                        <i class="bi bi-pencil me-2 text-muted"></i> Rename
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    {{-- File bersama wajib berada di sebuah folder: opsi "tingkat atas" disembunyikan --}}
+                                                    <a class="dropdown-item small py-2" href="#"
+                                                       onclick="openMoveModal({{ \Illuminate\Support\Js::from(route('files.move', $file->id)) }}, false, 'file'); return false;">
+                                                        <i class="bi bi-folder-symlink me-2 text-muted"></i> Move
+                                                    </a>
+                                                </li>
+                                            @endif
+                                            @if($canDelete)
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item small py-2 text-danger" href="#"
+                                                       onclick="openDeleteModal({{ \Illuminate\Support\Js::from(route('files.destroy', $file->id)) }}, {{ \Illuminate\Support\Js::from($file->file_name) }}, 'file'); return false;">
+                                                        <i class="bi bi-trash me-2"></i> Delete
+                                                    </a>
+                                                </li>
+                                            @endif
                                         </ul>
                                     </div>
                                 </td>
@@ -144,7 +200,7 @@
             <div class="modal-body py-4">
                 <div class="mb-3">
                     <label for="folder_name" class="form-label fw-medium text-secondary">Folder Name</label>
-                    <input type="text" class="form-control @error('name') is-invalid @enderror" id="folder_name" name="name" required placeholder="Masukkan nama folder...">
+                    <input type="text" class="form-control @error('name') is-invalid @enderror" id="folder_name" name="name" value="{{ old('name') }}" required maxlength="255" placeholder="Masukkan nama folder...">
                     @error('name')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -186,4 +242,8 @@
         </form>
     </div>
 </div>
+@include('data-integration.partials.item-action-modals', [
+    'moveGroups'    => $moveGroups,
+    'moveRootLabel' => 'Root (tingkat atas)',
+])
 @endsection
