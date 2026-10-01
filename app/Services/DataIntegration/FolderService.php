@@ -16,11 +16,19 @@ class FolderService
     protected ActivityLogService $activityLogService;
 
     /**
+     * Service kunci (gembok) file & folder.
+     */
+    protected LockService $lockService;
+
+    /**
      * Constructor.
      */
-    public function __construct(ActivityLogService $activityLogService)
-    {
+    public function __construct(
+        ActivityLogService $activityLogService,
+        LockService $lockService
+    ) {
         $this->activityLogService = $activityLogService;
+        $this->lockService        = $lockService;
     }
 
     /**
@@ -86,6 +94,7 @@ class FolderService
     ): bool {
 
         $this->assertNotSystemFolder($folder);
+        $this->lockService->assertCanChange($folder);
 
         return $folder->update([
             'name' => $newName
@@ -109,6 +118,7 @@ class FolderService
     ): bool {
 
         $this->assertNotSystemFolder($folder);
+        $this->lockService->assertCanChange($folder);
 
         if ($targetFolderId !== null) {
 
@@ -149,6 +159,8 @@ class FolderService
     ): ?bool {
 
         $this->assertNotSystemFolder($folder);
+        $this->lockService->assertCanChange($folder);
+        $this->lockService->assertNoLockedContents($folder);
 
         // Catat siapa yang menghapus (dibaca oleh fitur Trash) sebelum soft delete,
         // karena SoftDeletes::delete() hanya menyimpan kolom deleted_at/updated_at.
@@ -166,6 +178,42 @@ class FolderService
         }
 
         return $deleted;
+    }
+
+    /**
+     * Kunci folder bersama: folder beserta isinya tidak dapat diubah nama, dipindah, atau dihapus.
+     *
+     * @throws Exception
+     */
+    public function lockFolder(Folder $folder): void
+    {
+        if ($folder->is_private) {
+            throw new Exception('Folder pribadi tidak perlu dikunci.');
+        }
+
+        if ($folder->isLocked()) {
+            throw new Exception('Folder ini sudah terkunci.');
+        }
+
+        $this->lockService->lock($folder);
+
+        $this->activityLogService->log(Auth::id(), 'Integrasi Data', 'Lock Folder');
+    }
+
+    /**
+     * Buka kunci folder.
+     *
+     * @throws Exception
+     */
+    public function unlockFolder(Folder $folder): void
+    {
+        if (!$folder->isLocked()) {
+            throw new Exception('Folder ini tidak dalam keadaan terkunci.');
+        }
+
+        $this->lockService->unlock($folder);
+
+        $this->activityLogService->log(Auth::id(), 'Integrasi Data', 'Unlock Folder');
     }
 
     // ------------------------------------------------------------------

@@ -27,7 +27,32 @@ class File extends Model
         'file_size',
         'file_type',
         'deleted_by',
+        'locked_at',
+        'locked_by',
     ];
+
+    /**
+     * Konversi tipe atribut.
+     */
+    protected $casts = [
+        'locked_at' => 'datetime',
+    ];
+
+    /**
+     * User yang mengunci file ini (hanya untuk ditampilkan).
+     */
+    public function lockedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'locked_by');
+    }
+
+    /**
+     * File ini dikunci langsung (kunci dari folder induk dihitung oleh LockService).
+     */
+    public function isLocked(): bool
+    {
+        return !is_null($this->locked_at);
+    }
 
     /**
      * Relasi ke Folder tempat file bernaung (Belongs To).

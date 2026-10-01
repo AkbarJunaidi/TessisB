@@ -197,6 +197,46 @@ class FileController extends Controller
     }
 
     /**
+     * Kunci file bersama (gembok).
+     */
+    public function lock(File $file): RedirectResponse
+    {
+        abort_unless(
+            Auth::user()?->hasPermission('data_integration', 'lock'),
+            403,
+            'Anda tidak memiliki hak akses untuk mengunci file.'
+        );
+
+        try {
+            $this->fileService->lockFile($file);
+
+            return back()->with('success', 'File dikunci.');
+        } catch (Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Buka kunci file.
+     */
+    public function unlock(File $file): RedirectResponse
+    {
+        abort_unless(
+            Auth::user()?->hasPermission('data_integration', 'lock'),
+            403,
+            'Anda tidak memiliki hak akses untuk membuka kunci file.'
+        );
+
+        try {
+            $this->fileService->unlockFile($file);
+
+            return back()->with('success', 'Kunci file dibuka.');
+        } catch (Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
      * Rename file.
      */
     public function rename(

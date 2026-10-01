@@ -100,6 +100,7 @@ class ProjectController extends Controller
             'notes.user',
             'suratJalans.items.inventory',
             'folder.files.user',
+            'folder.files.lockedBy',
             'financeItems',
             'kwitansis',
             'bookings.inventory',

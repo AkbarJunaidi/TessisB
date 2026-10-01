@@ -26,6 +26,8 @@ class Folder extends Model
         'is_private',
         'created_by',
         'deleted_by',
+        'locked_at',
+        'locked_by',
     ];
 
     /**
@@ -33,7 +35,24 @@ class Folder extends Model
      */
     protected $casts = [
         'is_private' => 'boolean',
+        'locked_at'  => 'datetime',
     ];
+
+    /**
+     * User yang mengunci folder ini (hanya untuk ditampilkan).
+     */
+    public function lockedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'locked_by');
+    }
+
+    /**
+     * Folder ini dikunci langsung (kunci dari folder induk dihitung oleh LockService).
+     */
+    public function isLocked(): bool
+    {
+        return !is_null($this->locked_at);
+    }
 
     /**
      * Relasi ke Project pemilik folder ini (Belongs To), jika folder ini

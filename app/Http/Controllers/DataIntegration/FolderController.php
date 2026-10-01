@@ -5,6 +5,7 @@ namespace App\Http\Controllers\DataIntegration;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DataIntegration\FolderRequest;
 use App\Services\DataIntegration\FolderService;
+use App\Services\DataIntegration\LockService;
 use App\Models\Folder;
 use App\Models\File;
 use Illuminate\Http\RedirectResponse;
@@ -17,12 +18,15 @@ class FolderController extends Controller
 {
     protected FolderService $folderService;
 
+    protected LockService $lockService;
+
     /**
      * Dependency Injection melalui Constructor
      */
-    public function __construct(FolderService $folderService)
+    public function __construct(FolderService $folderService, LockService $lockService)
     {
         $this->folderService = $folderService;
+        $this->lockService   = $lockService;
     }
 
     /**
@@ -37,7 +41,7 @@ class FolderController extends Controller
         );
 
         // Folder tingkat paling atas (root) di ruang bersama. Folder pribadi (My Files) tidak ikut.
-        $folders = Folder::with('user')
+        $folders = Folder::with(['user', 'lockedBy'])
             ->whereNull('parent_id')
             ->where('is_private', false)
             ->orderBy('name')
@@ -58,6 +62,8 @@ class FolderController extends Controller
             'current_folder' => null,
             'moveGroups'     => $this->sharedMoveGroups(),
             'systemFolderIds' => $this->folderService->systemFolderIds(),
+            'currentLock'      => null,
+            'lockedContentIds' => $this->lockService->folderIdsWithLockedContents(),
         ]);
     }
 
@@ -76,14 +82,14 @@ class FolderController extends Controller
         abort_if($folder->is_private, 404);
 
         // Ambil anak folder (sub-folder) langsung di bawah folder aktif saat ini
-        $subFolders = Folder::with('user')
+        $subFolders = Folder::with(['user', 'lockedBy'])
             ->where('parent_id', $folder->id)
             ->where('is_private', false)
             ->orderBy('name')
             ->get();
 
         // Ambil seluruh berkas bersama yang diunggah ke dalam folder ini
-        $files = File::with('user')
+        $files = File::with(['user', 'lockedBy'])
             ->where('folder_id', $folder->id)
             ->orderBy('file_name')
             ->get();
@@ -94,6 +100,10 @@ class FolderController extends Controller
             'current_folder' => $folder,
             'moveGroups'     => $this->sharedMoveGroups(),
             'systemFolderIds' => $this->folderService->systemFolderIds(),
+            // Kunci yang berlaku untuk folder yang sedang dibuka (miliknya atau folder induknya);
+            // bila ada, seluruh isinya terlindungi.
+            'currentLock'      => $this->lockService->effectiveLock($folder),
+            'lockedContentIds' => $this->lockService->folderIdsWithLockedContents(),
         ]);
     }
 
@@ -207,6 +217,46 @@ class FolderController extends Controller
             $this->folderService->deleteFolder($folder);
 
             return redirect()->back()->with('success', 'Folder dan seluruh isinya berhasil dihapus.');
+        } catch (Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Kunci folder bersama (gembok).
+     */
+    public function lock(Folder $folder): RedirectResponse
+    {
+        abort_unless(
+            Auth::user()?->hasPermission('data_integration', 'lock'),
+            403,
+            'Anda tidak memiliki hak akses untuk mengunci folder.'
+        );
+
+        try {
+            $this->folderService->lockFolder($folder);
+
+            return redirect()->back()->with('success', 'Folder dikunci.');
+        } catch (Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Buka kunci folder.
+     */
+    public function unlock(Folder $folder): RedirectResponse
+    {
+        abort_unless(
+            Auth::user()?->hasPermission('data_integration', 'lock'),
+            403,
+            'Anda tidak memiliki hak akses untuk membuka kunci folder.'
+        );
+
+        try {
+            $this->folderService->unlockFolder($folder);
+
+            return redirect()->back()->with('success', 'Kunci folder dibuka.');
         } catch (Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }

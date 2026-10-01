@@ -64,6 +64,7 @@ return [
                 'delete'        => 'Hapus file / folder',
                 'create_folder' => 'Buat folder',
                 'rename'        => 'Ubah nama file / folder',
+                'lock'          => 'Mengunci / membuka kunci file & folder bersama',
             ],
         ],
 
@@ -213,6 +214,7 @@ return [
             'data_integration' => [
                 'view' => true, 'upload' => true, 'download' => true, 'delete' => true,
                 'create_folder' => true, 'rename' => true,
+                'lock' => true,
             ],
             'finance' => [
                 'view' => true, 'manage' => true, 'export_report' => true,
@@ -262,6 +264,7 @@ return [
             'data_integration' => [
                 'view' => true, 'upload' => true, 'download' => true, 'delete' => true,
                 'create_folder' => true, 'rename' => true,
+                'lock' => true,
             ],
             'finance' => [
                 // Default: HANYA Super Admin yang bisa akses data keuangan.
@@ -322,6 +325,7 @@ return [
             'data_integration' => [
                 'view' => true, 'upload' => true, 'download' => true, 'delete' => false,
                 'create_folder' => false, 'rename' => false,
+                'lock' => false,
             ],
             'finance' => [
                 'view' => false, 'manage' => false, 'export_report' => false,

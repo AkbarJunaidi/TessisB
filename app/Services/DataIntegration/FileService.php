@@ -28,14 +28,21 @@ class FileService
     protected FolderService $folderService;
 
     /**
+     * Service kunci (gembok) file & folder.
+     */
+    protected LockService $lockService;
+
+    /**
      * Constructor.
      */
     public function __construct(
         ActivityLogService $activityLogService,
-        FolderService $folderService
+        FolderService $folderService,
+        LockService $lockService
     ) {
         $this->activityLogService = $activityLogService;
         $this->folderService      = $folderService;
+        $this->lockService        = $lockService;
     }
 
     /**
@@ -81,7 +88,8 @@ class FileService
         $includeFiles   = $type !== 'folder';
 
         if ($includeFiles) {
-            $files = File::where('user_id', $userId)
+            $files = File::with('lockedBy:id,name')
+                ->where('user_id', $userId)
                 ->whereNotNull('folder_id')
                 // Buang file di dalam folder pribadi (termasuk yang folder-nya sudah dihapus).
                 ->whereDoesntHave('folder', fn ($q) => $q->withTrashed()->where('is_private', true))
@@ -105,7 +113,10 @@ class FileService
         }
 
         if ($includeFolders) {
-            $folders = Folder::where('created_by', $userId)->where('is_private', false)->get();
+            $folders = Folder::with('lockedBy:id,name')
+                ->where('created_by', $userId)
+                ->where('is_private', false)
+                ->get();
 
             foreach ($folders as $folder) {
                 $parentKnown = $folder->parent_id && isset($paths[$folder->parent_id]);
@@ -326,6 +337,8 @@ class FileService
         string $newFileName
     ): bool {
 
+        $this->lockService->assertCanChange($file);
+
         try {
 
             // Ekstensi asli dikunci: "laporan" -> "laporan.docx".
@@ -341,12 +354,50 @@ class FileService
     }
 
     /**
+     * Kunci file bersama: file tidak dapat diubah nama, dipindah, atau dihapus.
+     *
+     * @throws Exception
+     */
+    public function lockFile(File $file): void
+    {
+        if ($file->isPrivate()) {
+            throw new Exception('File pribadi tidak perlu dikunci.');
+        }
+
+        if ($file->isLocked()) {
+            throw new Exception('File ini sudah terkunci.');
+        }
+
+        $this->lockService->lock($file);
+
+        $this->activityLogService->log(Auth::id(), 'Integrasi Data', 'Lock File');
+    }
+
+    /**
+     * Buka kunci file.
+     *
+     * @throws Exception
+     */
+    public function unlockFile(File $file): void
+    {
+        if (!$file->isLocked()) {
+            throw new Exception('File ini tidak dalam keadaan terkunci.');
+        }
+
+        $this->lockService->unlock($file);
+
+        $this->activityLogService->log(Auth::id(), 'Integrasi Data', 'Unlock File');
+    }
+
+    /**
      * Move file.
      */
     public function moveFile(
         File $file,
         ?int $targetFolderId
     ): bool {
+
+        $this->lockService->assertCanChange($file);
 
         try {
 
@@ -420,6 +471,8 @@ class FileService
      */
     public function deleteFile(File $file): ?bool
     {
+        $this->lockService->assertCanChange($file);
+
         try {
 
             // Catat siapa yang menghapus (dibaca oleh fitur Trash) sebelum soft delete,

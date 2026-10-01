@@ -1,5 +1,5 @@
 {{-- Partial: Tab Dokumen
-     Variabel yang dibutuhkan saat di-include: $project (dengan relasi folder.files.user sudah di-load), $allFolders (koleksi seluruh Folder untuk dropdown pilihan) --}}
+     Variabel yang dibutuhkan saat di-include: $project (dengan relasi folder.files.user dan folder.files.lockedBy sudah di-load), $allFolders (koleksi seluruh Folder untuk dropdown pilihan) --}}
 
 <div class="card border-0 shadow-sm rounded-3">
     <div class="card-body">
@@ -26,7 +26,13 @@
                     <tbody>
                         @forelse($project->folder->files as $file)
                             <tr>
-                                <td><i class="bi bi-file-earmark-text me-1 text-secondary"></i> {{ $file->file_name }}</td>
+                                <td>
+                                    <i class="bi bi-file-earmark-text me-1 text-secondary"></i> {{ $file->file_name }}
+                                    @if($file->isLocked())
+                                        <i class="bi bi-lock-fill text-warning ms-1"
+                                           title="Dikunci oleh {{ $file->lockedBy->name ?? 'pengguna yang sudah dihapus' }} pada {{ $file->locked_at->format('d M Y H:i') }}"></i>
+                                    @endif
+                                </td>
                                 <td>{{ $file->readable_size }}</td>
                                 <td>{{ $file->user->name ?? '-' }}</td>
                                 <td>{{ $file->created_at->translatedFormat('d M Y') }}</td>
@@ -40,6 +46,17 @@
                                     <a href="{{ route('files.download', $file) }}" class="btn btn-sm btn-outline-secondary" title="Download" aria-label="Download">
                                         <i class="bi bi-download"></i>
                                     </a>
+                                    {{-- Kunci / Buka Kunci: hanya untuk pemegang hak `lock` --}}
+                                    @if(auth()->user()->hasPermission('data_integration', 'lock'))
+                                        <form method="POST" action="{{ route($file->isLocked() ? 'files.unlock' : 'files.lock', $file) }}" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary"
+                                                    title="{{ $file->isLocked() ? 'Buka Kunci' : 'Kunci' }}"
+                                                    aria-label="{{ $file->isLocked() ? 'Buka Kunci' : 'Kunci' }}">
+                                                <i class="bi {{ $file->isLocked() ? 'bi-unlock' : 'bi-lock' }}"></i>
+                                            </button>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

@@ -42,6 +42,7 @@
     $canDelete   = $me->hasPermission('data_integration', 'delete');
     $canUpload   = $me->hasPermission('data_integration', 'upload');
     $canMkdir    = $me->hasPermission('data_integration', 'create_folder');
+    $canLock     = $me->hasPermission('data_integration', 'lock');
     $isShared    = $tab === 'dibagikan';
 
     // Bangun URL dengan mempertahankan tab & filter lain; null = hapus parameter itu.
@@ -334,7 +335,13 @@
                                     <i class="bi bi-folder-fill text-secondary drv-ico"></i>
                                 @endif
                                 <div class="min-w-0">
-                                    <div class="drv-title">{{ $item['name'] }}</div>
+                                    <div class="drv-title">
+                                        {{ $item['name'] }}
+                                        @if($model->isLocked())
+                                            <i class="bi bi-lock-fill text-warning ms-1"
+                                               title="Dikunci oleh {{ $model->lockedBy->name ?? 'pengguna yang sudah dihapus' }} pada {{ $model->locked_at->format('d M Y H:i') }}"></i>
+                                        @endif
+                                    </div>
                                     {{-- Mobile: lokasi, sumber, dan tanggal di bawah nama --}}
                                     <div class="drv-meta-mobile d-md-none">
                                         <i class="bi bi-geo-alt"></i> {{ $item['location'] }}
@@ -359,7 +366,7 @@
                                 <button class="btn btn-link text-secondary p-1 m-0 border-0 shadow-none" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Aksi">
                                     <i class="bi bi-three-dots-vertical fs-5"></i>
                                 </button>
-                                {{-- Tab ini hanya untuk melihat: tidak ada rename/pindah/hapus --}}
+                                {{-- Tab ini hanya untuk melihat: tidak ada rename/pindah/hapus (hanya Kunci/Buka Kunci bagi pemegang hak `lock`) --}}
                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                                     @if($isFile)
                                         @if($canDownload && $model->preview_type)
@@ -371,6 +378,11 @@
                                         @endif
                                     @else
                                         <li><a class="dropdown-item small py-2" href="{{ route('folders.show', $model) }}"><i class="bi bi-folder2-open me-2 text-muted"></i> Buka folder</a></li>
+                                    @endif
+
+                                    @if($canLock)
+                                        <li><hr class="dropdown-divider"></li>
+                                        @include('data-integration.partials.lock-toggle', ['item' => $model, 'kind' => $item['kind']])
                                     @endif
                                 </ul>
                             </div>

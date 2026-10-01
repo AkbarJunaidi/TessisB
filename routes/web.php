@@ -518,6 +518,13 @@ Route::middleware('auth')->group(function () {
             Route::delete('/folders/{folder}', [FolderController::class, 'destroy'])
                 ->name('folders.destroy');
 
+            // Kunci (gembok): folder/file bersama tidak bisa diubah nama, dipindah, atau dihapus.
+            Route::post('/folders/{folder}/lock', [FolderController::class, 'lock'])
+                ->name('folders.lock');
+
+            Route::post('/folders/{folder}/unlock', [FolderController::class, 'unlock'])
+                ->name('folders.unlock');
+
             // 2. My Files
             Route::get('/my-files', [FileController::class, 'myFiles'])
                 ->name('files.my-files');
@@ -540,6 +547,12 @@ Route::middleware('auth')->group(function () {
 
             Route::delete('/files/{file}', [FileController::class, 'destroy'])
                 ->name('files.destroy');
+
+            Route::post('/files/{file}/lock', [FileController::class, 'lock'])
+                ->name('files.lock');
+
+            Route::post('/files/{file}/unlock', [FileController::class, 'unlock'])
+                ->name('files.unlock');
 
         });
 
