@@ -23,6 +23,12 @@ class InventoryMutation extends Model
         'surat_jalan_id',
         'actor_id',
         'keterangan',
+        'lokasi_asal_id',
+        'lokasi_tujuan_id',
+        'lokasi_metode',
+        'lokasi_lat',
+        'lokasi_lng',
+        'lokasi_akurasi_m',
     ];
 
     public function inventory(): BelongsTo
@@ -38,5 +44,15 @@ class InventoryMutation extends Model
     public function actor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actor_id');
+    }
+
+    public function lokasiAsal(): BelongsTo
+    {
+        return $this->belongsTo(Location::class, 'lokasi_asal_id');
+    }
+
+    public function lokasiTujuan(): BelongsTo
+    {
+        return $this->belongsTo(Location::class, 'lokasi_tujuan_id');
     }
 }

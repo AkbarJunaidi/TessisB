@@ -9,6 +9,7 @@ use App\Http\Controllers\DataIntegration\FileController;
 use App\Http\Controllers\DataIntegration\FolderController;
 use App\Http\Controllers\Inventory\InventoryController;
 use App\Http\Controllers\Inventory\InventoryMutationController;
+use App\Http\Controllers\Inventory\LocationController;
 use App\Http\Controllers\Notification\AnnouncementController;
 use App\Http\Controllers\Notification\NotificationController;
 use App\Http\Controllers\Notification\NotificationSettingController;
@@ -126,6 +127,22 @@ Route::middleware('auth')->group(function () {
         Route::get('inventory/mutasi', [InventoryMutationController::class, 'index'])
             ->name('inventory.mutasi');
 
+        // Master Lokasi (kantor, gudang, lokasi event, dll). SENGAJA sebelum Route::resource di
+        // bawah supaya "locations" tidak ketangkap sebagai {inventory}. search/detect berupa
+        // endpoint JSON (autocomplete & deteksi GPS).
+        Route::get('inventory/locations', [LocationController::class, 'index'])
+            ->name('inventory.locations.index');
+        Route::get('inventory/locations/search', [LocationController::class, 'search'])
+            ->name('inventory.locations.search');
+        Route::get('inventory/locations/detect', [LocationController::class, 'detect'])
+            ->name('inventory.locations.detect');
+        Route::post('inventory/locations', [LocationController::class, 'store'])
+            ->name('inventory.locations.store');
+        Route::patch('inventory/locations/{location}', [LocationController::class, 'update'])
+            ->name('inventory.locations.update');
+        Route::delete('inventory/locations/{location}', [LocationController::class, 'destroy'])
+            ->name('inventory.locations.destroy');
+
         Route::resource('inventory', InventoryController::class);
 
         // Route Preview & Export QR Label
@@ -167,6 +184,10 @@ Route::middleware('auth')->group(function () {
         // FITUR Kelola Unit Fisik (AJAX per-baris)
         Route::patch('inventory/{inventory}/units/{unit}/status', [InventoryController::class, 'updateUnitStatus'])
             ->name('inventory.units.update-status');
+
+        // Pindah lokasi beberapa unit sekaligus (dari Detail Inventory).
+        Route::post('inventory/{inventory}/units/move-location', [LocationController::class, 'moveUnits'])
+            ->name('inventory.units.move-location');
 
     });
 

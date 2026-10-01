@@ -81,6 +81,11 @@
                                 <i class="bi bi-arrow-left-right"></i> Mutasi Aset
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="{{ route('inventory.locations.index') }}" class="nav-link sidebar-sublink {{ request()->routeIs('inventory.locations.*') ? 'active' : '' }}">
+                                <i class="bi bi-geo-alt"></i> Lokasi
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </li>

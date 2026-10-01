@@ -76,11 +76,22 @@ class InventoryController extends Controller
      */
     public function show(Inventory $inventory): View
     {
-        $inventory->load('attributes', 'units.suratJalanItem.suratJalan');
+        $inventory->load(
+            'attributes',
+            'units.suratJalanItem.suratJalan',
+            'units.lokasiUtama:id,name',
+            'units.lokasiSekarang:id,name'
+        );
 
         $borrowHistory = $this->inventoryService->getBorrowHistory($inventory);
 
-        return view('inventory.show', compact('inventory', 'borrowHistory'));
+        // Pilihan lokasi tujuan untuk fitur Pindah Lokasi (kantor/gudang aktif).
+        $canMoveLocation  = (bool) Auth::user()?->hasPermission('inventory', 'move_location');
+        $storageLocations = $canMoveLocation
+            ? \App\Models\Location::active()->storage()->orderByDesc('is_default')->orderBy('name')->get(['id', 'name'])
+            : collect();
+
+        return view('inventory.show', compact('inventory', 'borrowHistory', 'canMoveLocation', 'storageLocations'));
     }
 
     /**

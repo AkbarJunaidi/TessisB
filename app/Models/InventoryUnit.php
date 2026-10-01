@@ -18,6 +18,8 @@ class InventoryUnit extends Model
         'unit_number',
         'status',
         'surat_jalan_item_id',
+        'lokasi_utama_id',
+        'lokasi_sekarang_id',
     ];
 
     public function inventory(): BelongsTo
@@ -32,6 +34,39 @@ class InventoryUnit extends Model
     public function suratJalanItem(): BelongsTo
     {
         return $this->belongsTo(SuratJalanItem::class);
+    }
+
+    /**
+     * Lokasi utama (tempat simpan semestinya) unit ini.
+     */
+    public function lokasiUtama(): BelongsTo
+    {
+        return $this->belongsTo(Location::class, 'lokasi_utama_id');
+    }
+
+    /**
+     * Lokasi unit ini terakhir disimpan. Untuk unit yang sedang dipinjam lewat Surat Jalan,
+     * posisi sebenarnya adalah "di lapangan" - lihat isOnLoan().
+     */
+    public function lokasiSekarang(): BelongsTo
+    {
+        return $this->belongsTo(Location::class, 'lokasi_sekarang_id');
+    }
+
+    public function isOnLoan(): bool
+    {
+        return !is_null($this->surat_jalan_item_id);
+    }
+
+    /**
+     * Unit sedang berada di lokasi yang berbeda dari lokasi utamanya (dan tidak sedang dipinjam).
+     */
+    public function isOffHome(): bool
+    {
+        return !$this->isOnLoan()
+            && $this->lokasi_utama_id !== null
+            && $this->lokasi_sekarang_id !== null
+            && (int) $this->lokasi_utama_id !== (int) $this->lokasi_sekarang_id;
     }
 
     /**

@@ -27,6 +27,8 @@ return [
                 'download_pdf' => 'Download PDF inventory',
                 'print_qr'     => 'Cetak / QR Code',
                 'booking'      => 'Booking alat di halaman detail Project',
+                'manage_locations' => 'Mengelola master Lokasi (tambah / ubah / hapus)',
+                'move_location'    => 'Memindahkan lokasi unit barang',
             ],
         ],
 
@@ -203,6 +205,7 @@ return [
                 'view' => true, 'create' => true, 'edit' => true, 'delete' => true,
                 'upload_image' => true, 'download_pdf' => true, 'print_qr' => true,
                 'booking' => true,
+                'manage_locations' => true, 'move_location' => true,
             ],
             'tracking_progress' => [
                 'view' => true, 'create_project' => true, 'edit_project' => true, 'delete_project' => true,
@@ -253,6 +256,7 @@ return [
                 'view' => true, 'create' => true, 'edit' => true, 'delete' => true,
                 'upload_image' => true, 'download_pdf' => true, 'print_qr' => true,
                 'booking' => true,
+                'manage_locations' => false, 'move_location' => true,
             ],
             'tracking_progress' => [
                 'view' => true, 'create_project' => true, 'edit_project' => true, 'delete_project' => true,
@@ -314,6 +318,7 @@ return [
                 'view' => false, 'create' => false, 'edit' => false, 'delete' => false,
                 'upload_image' => false, 'download_pdf' => false, 'print_qr' => false,
                 'booking' => false,
+                'manage_locations' => false, 'move_location' => false,
             ],
             'tracking_progress' => [
                 'view' => true, 'create_project' => false, 'edit_project' => false, 'delete_project' => false,

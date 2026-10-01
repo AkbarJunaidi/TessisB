@@ -291,14 +291,20 @@ class InventoryService
         $currentCount = $currentUnits->count();
 
         if ($targetQuantity > $currentCount) {
+            // Unit baru ditempatkan di lokasi awal (lihat master Lokasi). insert() massal tidak
+            // memicu event model, jadi lokasi diisi langsung di sini.
+            $defaultLocationId = \App\Models\Location::defaultId();
+
             $newUnits = [];
             for ($i = $currentCount + 1; $i <= $targetQuantity; $i++) {
                 $newUnits[] = [
-                    'inventory_id' => $inventory->id,
-                    'unit_number'  => $i,
-                    'status'       => 'Tersedia',
-                    'created_at'   => now(),
-                    'updated_at'   => now(),
+                    'inventory_id'       => $inventory->id,
+                    'unit_number'        => $i,
+                    'status'             => 'Tersedia',
+                    'lokasi_utama_id'    => $defaultLocationId,
+                    'lokasi_sekarang_id' => $defaultLocationId,
+                    'created_at'         => now(),
+                    'updated_at'         => now(),
                 ];
             }
             \App\Models\InventoryUnit::insert($newUnits);

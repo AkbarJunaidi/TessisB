@@ -377,12 +377,28 @@
         </div>
     </div>
 
-    <!-- CARD BARU: Status Unit Fisik (ringkasan status per-unit, terintegrasi dengan Surat Jalan) -->
+    <!-- CARD BARU: Status Unit Fisik (ringkasan status per-unit, terintegrasi dengan Surat Jalan) + lokasi unit -->
+    @php
+        // Unit yang boleh dipindah lokasi: tidak sedang dipinjam dan tidak berstatus Hilang.
+        $movableCount = $inventory->units->filter(fn ($u) => !$u->isOnLoan() && $u->status !== 'Hilang')->count();
+    @endphp
     <div class="card shadow-sm border-0 rounded-3 bg-white mb-4">
         <div class="card-body p-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                 <h6 class="fw-bold m-0">Status Unit Fisik</h6>
-                <span class="text-muted small">{{ $inventory->qty_available }} dari {{ $inventory->quantity_total }} unit bisa dipinjam sekarang</span>
+                <div class="d-flex flex-wrap align-items-center gap-3">
+                    <span class="text-muted small">{{ $inventory->qty_available }} dari {{ $inventory->quantity_total }} unit bisa dipinjam sekarang</span>
+
+                    @if($canMoveLocation && $movableCount > 0)
+                        <div class="form-check m-0">
+                            <input class="form-check-input" type="checkbox" id="unitSelectAll">
+                            <label class="form-check-label small" for="unitSelectAll">Pilih semua</label>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="btnMoveLocation" disabled>
+                            <i class="bi bi-geo-alt me-1"></i> Pindah Lokasi <span id="unitSelectedCount"></span>
+                        </button>
+                    @endif
+                </div>
             </div>
             <div class="row g-2">
                 @forelse($inventory->units as $unit)
@@ -395,13 +411,29 @@
                             'Hilang'    => 'bg-secondary-subtle text-secondary border-secondary-subtle',
                             default     => 'bg-light text-dark border',
                         };
+                        $onLoan  = $unit->isOnLoan();
+                        $movable = !$onLoan && $unit->status !== 'Hilang';
                     @endphp
                     <div class="col-6 col-md-3 col-lg-2">
-                        <div class="border rounded-3 p-2 text-center {{ $badgeClass }}">
+                        <div class="border rounded-3 p-2 text-center position-relative {{ $badgeClass }}">
+                            @if($canMoveLocation && $movable)
+                                <input class="form-check-input unit-select position-absolute top-0 start-0 m-2" type="checkbox"
+                                       value="{{ $unit->id }}" data-number="{{ $unit->unit_number }}"
+                                       aria-label="Pilih unit {{ $unit->unit_number }}">
+                            @endif
                             <div class="fw-bold">#{{ $unit->unit_number }}</div>
                             <div class="small">{{ $unit->display_status }}</div>
-                            @if($unit->surat_jalan_item_id)
+                            @if($onLoan)
+                                <div class="small text-truncate" style="font-size:.65rem;"><i class="bi bi-truck me-1"></i>Di lapangan</div>
                                 <div class="small text-truncate" style="font-size:.65rem;">{{ $unit->suratJalanItem->suratJalan->nomor ?? '' }}</div>
+                            @elseif($unit->lokasiSekarang)
+                                <div class="small text-truncate" style="font-size:.65rem;" title="Lokasi sekarang: {{ $unit->lokasiSekarang->name }}">
+                                    <i class="bi bi-geo-alt me-1"></i>{{ $unit->lokasiSekarang->name }}
+                                </div>
+                                @if($unit->isOffHome())
+                                    <div class="small text-truncate fw-semibold" style="font-size:.6rem;"
+                                         title="Lokasi utama: {{ $unit->lokasiUtama->name ?? '-' }}">Belum di lokasi utama</div>
+                                @endif
                             @endif
                         </div>
                     </div>
@@ -411,6 +443,215 @@
             </div>
         </div>
     </div>
+
+    @if($canMoveLocation)
+        {{-- Modal Pindah Lokasi: lokasi tujuan terpilih otomatis bila GPS cocok dengan radius sebuah lokasi,
+             selain itu dipilih manual dari daftar lokasi penyimpanan. --}}
+        <div class="modal fade" id="moveLocationModal" tabindex="-1" aria-labelledby="moveLocationTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+                <form id="moveLocationForm" method="POST" action="{{ route('inventory.units.move-location', $inventory) }}"
+                      class="modal-content border-0 shadow"
+                      data-detect-url="{{ route('inventory.locations.detect') }}">
+                    @csrf
+                    <div id="moveUnitInputs"></div>
+                    <input type="hidden" name="lat" id="moveLat">
+                    <input type="hidden" name="lng" id="moveLng">
+                    <input type="hidden" name="accuracy" id="moveAcc">
+
+                    <div class="modal-header border-0 bg-light py-3">
+                        <h5 class="modal-title fw-semibold" id="moveLocationTitle">Pindah Lokasi Unit</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body py-4">
+                        <p class="small text-muted mb-3">Unit dipilih: <strong id="moveUnitList"></strong></p>
+
+                        <div id="moveGpsBox" class="alert alert-light border small py-2 d-flex justify-content-between align-items-center gap-2" role="status">
+                            <span id="moveGpsText">Mendeteksi lokasi...</span>
+                            <button type="button" class="btn btn-sm btn-outline-secondary flex-shrink-0" id="moveGpsRetry">
+                                <i class="bi bi-arrow-repeat me-1"></i>Ulangi
+                            </button>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="moveTarget" class="form-label fw-medium text-secondary">Lokasi Tujuan</label>
+                            <select class="form-select" id="moveTarget" name="target_location_id" required>
+                                <option value="" disabled selected>-- Pilih lokasi tujuan --</option>
+                                @foreach($storageLocations as $loc)
+                                    <option value="{{ $loc->id }}">{{ $loc->name }}</option>
+                                @endforeach
+                            </select>
+                            @if($storageLocations->isEmpty())
+                                <div class="form-text text-danger small">Belum ada lokasi penyimpanan aktif. Tambahkan di halaman Lokasi.</div>
+                            @endif
+                        </div>
+
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="make_home" value="1" id="moveMakeHome">
+                            <label class="form-check-label small" for="moveMakeHome">
+                                Jadikan juga lokasi utama unit (tempat simpan semestinya)
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer border-0 bg-light py-2">
+                        <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary px-4">Pindahkan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            (function () {
+                'use strict';
+
+                const modalEl   = document.getElementById('moveLocationModal');
+                const form      = document.getElementById('moveLocationForm');
+                const btnOpen   = document.getElementById('btnMoveLocation');
+                const selectAll = document.getElementById('unitSelectAll');
+                const countEl   = document.getElementById('unitSelectedCount');
+                const inputsBox = document.getElementById('moveUnitInputs');
+                const listEl    = document.getElementById('moveUnitList');
+                const targetEl  = document.getElementById('moveTarget');
+                const gpsBox    = document.getElementById('moveGpsBox');
+                const gpsText   = document.getElementById('moveGpsText');
+                const latEl     = document.getElementById('moveLat');
+                const lngEl     = document.getElementById('moveLng');
+                const accEl     = document.getElementById('moveAcc');
+
+                if (!btnOpen) return;
+
+                const checkboxes = Array.from(document.querySelectorAll('.unit-select'));
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+                // Naik setiap deteksi baru / modal ditutup; hasil deteksi yang basi dibuang.
+                let detectToken = 0;
+
+                function selected() {
+                    return checkboxes.filter(function (c) { return c.checked; });
+                }
+
+                function refreshSelection() {
+                    const n = selected().length;
+                    btnOpen.disabled = n === 0;
+                    countEl.textContent = n > 0 ? '(' + n + ')' : '';
+                    selectAll.checked = n > 0 && n === checkboxes.length;
+                    selectAll.indeterminate = n > 0 && n < checkboxes.length;
+                }
+
+                checkboxes.forEach(function (c) { c.addEventListener('change', refreshSelection); });
+                selectAll.addEventListener('change', function () {
+                    checkboxes.forEach(function (c) { c.checked = selectAll.checked; });
+                    refreshSelection();
+                });
+
+                /** Tampilan status deteksi: kind = info | success | warning | muted. */
+                function setStatus(kind, text) {
+                    const cls = { info: 'alert-info', success: 'alert-success', warning: 'alert-warning', muted: 'alert-light border' };
+                    gpsBox.className = 'alert ' + (cls[kind] || cls.muted) + ' small py-2 d-flex justify-content-between align-items-center gap-2';
+                    gpsText.textContent = text;
+                }
+
+                function clearCoords() {
+                    latEl.value = '';
+                    lngEl.value = '';
+                    accEl.value = '';
+                }
+
+                function detect() {
+                    const token = ++detectToken;
+                    clearCoords();
+                    targetEl.selectedIndex = 0;
+
+                    if (!('geolocation' in navigator)) {
+                        setStatus('muted', 'GPS tidak tersedia di perangkat ini. Pilih lokasi secara manual.');
+                        return;
+                    }
+                    if (!window.isSecureContext) {
+                        setStatus('muted', 'GPS hanya bisa dipakai lewat HTTPS. Pilih lokasi secara manual.');
+                        return;
+                    }
+
+                    setStatus('info', 'Mendeteksi lokasi...');
+
+                    navigator.geolocation.getCurrentPosition(function (pos) {
+                        if (token !== detectToken) return;
+
+                        const c = pos.coords;
+                        latEl.value = c.latitude;
+                        lngEl.value = c.longitude;
+                        accEl.value = Math.round(c.accuracy);
+
+                        const query = new URLSearchParams({ lat: c.latitude, lng: c.longitude, accuracy: c.accuracy });
+
+                        fetch(form.dataset.detectUrl + '?' + query.toString(), {
+                            headers: { 'Accept': 'application/json' },
+                            credentials: 'same-origin'
+                        })
+                            .then(function (res) {
+                                if (!res.ok) throw new Error('detect failed');
+                                return res.json();
+                            })
+                            .then(function (data) {
+                                if (token !== detectToken) return;
+
+                                if (data.status === 'terdeteksi' && data.location) {
+                                    const option = Array.from(targetEl.options).find(function (o) {
+                                        return o.value === String(data.location.id);
+                                    });
+                                    if (option) {
+                                        targetEl.value = option.value;
+                                        setStatus('success', 'Terdeteksi: ' + data.location.name + ' (sekitar ' + data.distance_m + ' m)');
+                                        return;
+                                    }
+                                }
+
+                                if (data.status === 'akurasi_rendah') {
+                                    setStatus('warning', 'Akurasi GPS rendah (sekitar ' + data.accuracy_m + ' m). Pilih lokasi secara manual.');
+                                    return;
+                                }
+
+                                setStatus('warning', 'Di luar jangkauan. Pilih lokasi secara manual.');
+                            })
+                            .catch(function () {
+                                if (token !== detectToken) return;
+                                setStatus('muted', 'Gagal mendeteksi lokasi. Pilih lokasi secara manual.');
+                            });
+                    }, function (err) {
+                        if (token !== detectToken) return;
+                        clearCoords();
+                        setStatus('muted', err.code === 1
+                            ? 'Izin lokasi ditolak. Pilih lokasi secara manual.'
+                            : 'Lokasi tidak dapat dibaca. Pilih lokasi secara manual.');
+                    }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+                }
+
+                btnOpen.addEventListener('click', function () {
+                    const chosen = selected();
+                    if (chosen.length === 0) return;
+
+                    // Isi id unit terpilih ke form + ringkasan nomor unit.
+                    inputsBox.replaceChildren();
+                    chosen.forEach(function (c) {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'unit_ids[]';
+                        input.value = c.value;
+                        inputsBox.appendChild(input);
+                    });
+                    listEl.textContent = chosen.map(function (c) { return '#' + c.dataset.number; }).join(', ');
+                    document.getElementById('moveMakeHome').checked = false;
+
+                    modal.show();
+                    detect();
+                });
+
+                document.getElementById('moveGpsRetry').addEventListener('click', detect);
+                modalEl.addEventListener('hidden.bs.modal', function () { detectToken++; });
+            })();
+        </script>
+    @endif
     <!-- CARD BARU: Riwayat Peminjaman (lintas semua Project, sumber: SuratJalanItem -
          baris ini tidak pernah dihapus saat barang dikembalikan, jadi otomatis
          jadi riwayat permanen). Dibatasi 20 terbaru - lihat InventoryService::getBorrowHistory(). -->

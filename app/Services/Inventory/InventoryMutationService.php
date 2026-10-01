@@ -41,6 +41,36 @@ class InventoryMutationService
     }
 
     /**
+     * Perpindahan lokasi unit (event_type pindah_lokasi). 1 baris = 1 aksi pindah untuk
+     * satu barang dari satu lokasi asal; nomor unit yang ikut ada di keterangan.
+     */
+    public function recordLocationMove(
+        int $inventoryId,
+        int $qty,
+        ?int $asalId,
+        int $tujuanId,
+        string $metode,
+        ?float $lat,
+        ?float $lng,
+        ?int $akurasiM,
+        string $keterangan
+    ): void {
+        InventoryMutation::create([
+            'inventory_id'     => $inventoryId,
+            'event_type'       => 'pindah_lokasi',
+            'qty'              => $qty,
+            'actor_id'         => Auth::id(),
+            'keterangan'       => $keterangan,
+            'lokasi_asal_id'   => $asalId,
+            'lokasi_tujuan_id' => $tujuanId,
+            'lokasi_metode'    => $metode,
+            'lokasi_lat'       => $lat,
+            'lokasi_lng'       => $lng,
+            'lokasi_akurasi_m' => $akurasiM,
+        ]);
+    }
+
+    /**
      * Khusus perubahan status unit (dropdown di Edit Inventory ubah 1 unit
      * per klik) - kalau hari ini SUDAH ada baris barang+status_after yang
      * sama, jumlahnya ditambah ke baris itu saja (bukan bikin baris baru),
