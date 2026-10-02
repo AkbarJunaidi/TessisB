@@ -49,13 +49,17 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
+                {{-- Lokasi saat ini dicari tiap modal dibuka; dipakai untuk semua perubahan di bawah. --}}
+                <div id="confirmLocationBar" class="mb-3"></div>
+
                 <p class="small text-muted mb-2">Perubahan yang akan diproses:</p>
-                <ul id="confirmReturnList" class="list-unstyled mb-3"></ul>
-                <p class="small text-muted m-0">Barang lain tetap berstatus dipinjam.</p>
+                <ul id="confirmReturnList" class="list-unstyled mb-2"></ul>
+                <p class="small text-muted mb-2">Barang lain tetap berstatus dipinjam.</p>
+                <p id="confirmLocationNote" class="small text-muted m-0"></p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-                <button type="button" id="confirmReturnSubmit" class="btn btn-primary">
+                <button type="button" id="confirmReturnSubmit" class="btn btn-primary" disabled>
                     <span class="btn-text">Ya, Konfirmasi</span>
                     <span class="spinner-border spinner-border-sm d-none" role="status"></span>
                 </button>
@@ -64,11 +68,34 @@
     </div>
 </div>
 
+@include('inventory.partials.location-picker')
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     const confirmModalEl = document.getElementById('confirmReturnModal');
     const confirmModal = new bootstrap.Modal(confirmModalEl);
+
+    const locationPicker = LocationPicker.mount(document.getElementById('confirmLocationBar'), {
+        detectUrl: '{{ route('inventory.locations.detect') }}',
+        locations: {{ \Illuminate\Support\Js::from($storageLocations->map(fn ($l) => ['id' => $l->id, 'name' => $l->name])->values()) }},
+    });
+    const submitButton = document.getElementById('confirmReturnSubmit');
+    const locationNote = document.getElementById('confirmLocationNote');
+    let isSubmitting = false;
+
+    // Tombol Ya, Konfirmasi aktif hanya setelah lokasi siap (terdeteksi atau dipilih manual).
+    function syncSubmitState() {
+        const name = locationPicker.name();
+        const hasHilang = activeGroupKey && Array.from(getStagedMap(activeGroupKey).values()).includes('Hilang');
+
+        submitButton.disabled = isSubmitting || locationPicker.value() === null;
+        locationNote.textContent = !name
+            ? (locationPicker.isBusy() ? 'Menunggu lokasi saat ini...' : 'Pilih lokasi terlebih dahulu untuk melanjutkan.')
+            : 'Dikembalikan/Rusak tercatat di ' + name + (hasHilang ? '; Hilang hanya dicatat dilaporkan di sana.' : '.');
+    }
+
+    locationPicker.onChange(syncSubmitState);
 
     // { groupKey: Map<unitId, statusTujuan> } - cuma unit yang statusnya
     // BUKAN "Dipinjam" (sudah di-cycle minimal 1x) yang tersimpan di sini.
@@ -144,10 +171,18 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
         confirmModal.show();
+        locationPicker.start();
     });
 
     document.getElementById('confirmReturnSubmit').addEventListener('click', function () {
         if (!activeGroupKey) return;
+
+        const lokasi = locationPicker.value();
+
+        if (!lokasi) {
+            alert('Lokasi saat ini belum siap. Tunggu deteksi selesai atau pilih lokasi manual.');
+            return;
+        }
 
         const staged = getStagedMap(activeGroupKey);
         const submitBtn = this;
@@ -160,6 +195,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const unitIdsByStatus = { Dikembalikan: [], Rusak: [], Hilang: [] };
         staged.forEach(function (status, unitId) { unitIdsByStatus[status].push(Number(unitId)); });
 
+        isSubmitting = true;
         submitBtn.disabled = true;
         btnText.classList.add('d-none');
         spinner.classList.remove('d-none');
@@ -167,11 +203,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const requests = [];
 
         if (unitIdsByStatus.Dikembalikan.length > 0) {
-            requests.push(postJson('{{ route('borrowed-items.return-by-ids') }}', { unit_ids: unitIdsByStatus.Dikembalikan }));
+            requests.push(postJson('{{ route('borrowed-items.return-by-ids') }}', Object.assign({ unit_ids: unitIdsByStatus.Dikembalikan }, lokasi)));
         }
         ['Rusak', 'Hilang'].forEach(function (status) {
             if (unitIdsByStatus[status].length > 0) {
-                requests.push(postJson('{{ route('borrowed-items.mark-status') }}', { unit_ids: unitIdsByStatus[status], status: status }));
+                requests.push(postJson('{{ route('borrowed-items.mark-status') }}', Object.assign({ unit_ids: unitIdsByStatus[status], status: status }, lokasi)));
             }
         });
 
@@ -190,7 +226,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 window.location.reload();
             })
             .finally(function () {
-                submitBtn.disabled = false;
+                isSubmitting = false;
+                syncSubmitState();
                 btnText.classList.remove('d-none');
                 spinner.classList.add('d-none');
             });

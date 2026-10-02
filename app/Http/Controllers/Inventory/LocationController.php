@@ -70,10 +70,19 @@ class LocationController extends Controller
      */
     public function detect(Request $request): JsonResponse
     {
+        // Deteksi dipakai halaman Lokasi, Pindah Lokasi, Scan, dan Barang Pinjaman - siapa pun
+        // yang punya salah satu izin itu boleh mendeteksi (hasilnya hanya nama lokasi + jarak).
+        $user = Auth::user();
+
         abort_unless(
-            Auth::user()?->hasPermission('inventory', 'move_location'),
+            $user && (
+                $user->hasPermission('inventory', 'view')
+                || $user->hasPermission('inventory', 'move_location')
+                || $user->hasPermission('scan_barang', 'view')
+                || $user->hasPermission('borrowed_items', 'process_return')
+            ),
             403,
-            'Anda tidak memiliki hak akses untuk memindahkan lokasi unit.'
+            'Anda tidak memiliki hak akses untuk mendeteksi lokasi.'
         );
 
         $validator = Validator::make($request->query(), [

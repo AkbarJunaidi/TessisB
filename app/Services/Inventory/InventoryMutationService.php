@@ -28,8 +28,10 @@ class InventoryMutationService
         string $eventType,
         int $qty,
         ?int $suratJalanId = null,
-        ?string $keterangan = null
+        ?string $keterangan = null,
+        array $lokasi = []
     ): void {
+        // $lokasi: kolom lokasi_* dari LocationContext::mutationColumns() (opsional).
         InventoryMutation::create([
             'inventory_id'   => $inventoryId,
             'event_type'     => $eventType,
@@ -37,7 +39,7 @@ class InventoryMutationService
             'surat_jalan_id' => $suratJalanId,
             'actor_id'       => Auth::id(),
             'keterangan'     => $keterangan,
-        ]);
+        ] + $lokasi);
     }
 
     /**
@@ -108,7 +110,7 @@ class InventoryMutationService
      */
     public function getFiltered(array $filters = [], int $perPage = 25): LengthAwarePaginator
     {
-        $query = InventoryMutation::with(['inventory:id,name', 'suratJalan:id,nomor,project_id', 'actor:id,name'])
+        $query = InventoryMutation::with(['inventory:id,name', 'suratJalan:id,nomor,project_id', 'actor:id,name', 'lokasiAsal:id,name', 'lokasiTujuan:id,name'])
             ->latest('created_at');
 
         if (!empty($filters['search'])) {

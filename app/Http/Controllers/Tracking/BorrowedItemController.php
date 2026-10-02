@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Tracking;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tracking\ReturnBorrowedUnitsRequest;
 use App\Models\Project;
+use App\Services\Inventory\LocationService;
 use App\Services\Tracking\BorrowedItemService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,7 +15,8 @@ use Illuminate\View\View;
 class BorrowedItemController extends Controller
 {
     public function __construct(
-        protected BorrowedItemService $borrowedItemService
+        protected BorrowedItemService $borrowedItemService,
+        protected LocationService $locationService
     ) {}
 
     /**
@@ -35,11 +37,15 @@ class BorrowedItemController extends Controller
         $peminjamLangsung = $this->borrowedItemService->getUsersWithDirectLoans();
         $unitsByUser = $this->borrowedItemService->getBorrowedUnitsGroupedByUser($peminjamLangsung);
 
+        // Pilihan lokasi manual (dipakai kalau GPS tidak tersedia / di luar jangkauan).
+        $storageLocations = $this->locationService->getStorageLocations();
+
         return view('tracking.borrowed-items.index', compact(
             'projects',
             'unitsByProject',
             'peminjamLangsung',
-            'unitsByUser'
+            'unitsByUser',
+            'storageLocations'
         ));
     }
 
@@ -53,7 +59,8 @@ class BorrowedItemController extends Controller
         try {
             $result = $this->borrowedItemService->returnUnits(
                 $project,
-                $request->validated()['unit_ids']
+                $request->validated()['unit_ids'],
+                $this->contextOrNull($request->validated())
             );
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 422);
@@ -87,7 +94,10 @@ class BorrowedItemController extends Controller
     public function returnByIds(ReturnBorrowedUnitsRequest $request): JsonResponse
     {
         try {
-            $this->borrowedItemService->returnByIds($request->validated()['unit_ids']);
+            $this->borrowedItemService->returnByIds(
+                $request->validated()['unit_ids'],
+                $this->contextOrNull($request->validated())
+            );
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }
@@ -111,14 +121,30 @@ class BorrowedItemController extends Controller
             'unit_ids'   => ['required', 'array', 'min:1'],
             'unit_ids.*' => ['integer', 'distinct', 'exists:inventory_units,id'],
             'status'     => ['required', 'in:Rusak,Hilang'],
-        ]);
+        ] + LocationService::INPUT_RULES);
 
         try {
-            $this->borrowedItemService->markStatus($data['unit_ids'], $data['status']);
+            $this->borrowedItemService->markStatus(
+                $data['unit_ids'],
+                $data['status'],
+                $this->locationService->contextFromInput($data)
+            );
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }
 
         return response()->json(['message' => 'Status barang berhasil diubah.']);
+    }
+
+    /**
+     * Konteks lokasi dari input yang sudah tervalidasi; null bila klien tidak mengirim lokasi.
+     *
+     * @throws \Exception
+     */
+    private function contextOrNull(array $data): ?\App\Services\Inventory\LocationContext
+    {
+        return filled($data['lokasi_id'] ?? null)
+            ? $this->locationService->contextFromInput($data)
+            : null;
     }
 }

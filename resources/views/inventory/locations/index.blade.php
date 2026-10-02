@@ -322,6 +322,8 @@
         </div>
     </div>
 
+    {{-- Dimuat lewat stack agar berjalan SETELAH Bootstrap JS (layout memuatnya di akhir body). --}}
+    @push('scripts')
     <script>
         (function () {
             'use strict';
@@ -516,5 +518,6 @@
             @endif
         })();
     </script>
+    @endpush
 @endif
 @endsection

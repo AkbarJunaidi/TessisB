@@ -144,6 +144,17 @@
                                 </td>
                                 <td class="pe-4" data-label="Keterangan">
                                     {{ $m->keterangan ?? '-' }}
+                                    {{-- Pindah Lokasi sudah merinci lokasi di keterangannya; pinjam/kembali ditambah di sini. --}}
+                                    @if(in_array($m->event_type, ['dipinjam', 'dikembalikan'], true) && $m->lokasi_metode)
+                                        @php
+                                            $lokasiNama = $m->event_type === 'dipinjam' ? $m->lokasiAsal?->name : $m->lokasiTujuan?->name;
+                                            $lokasiNama ??= $m->lokasiAsal?->name;
+                                        @endphp
+                                        <div class="text-muted" style="font-size: 0.75rem;">
+                                            <i class="bi bi-geo-alt me-1"></i>{{ $lokasiNama ?? '-' }}
+                                            ({{ \App\Services\Inventory\LocationService::metodeLabel($m->lokasi_metode) }}@if($m->lokasi_akurasi_m), sekitar {{ $m->lokasi_akurasi_m }} m @endif)
+                                        </div>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

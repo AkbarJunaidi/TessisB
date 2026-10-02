@@ -39,6 +39,22 @@ class LocationService
 
     private const EARTH_RADIUS_M = 6371000;
 
+    /**
+     * Aturan validasi input lokasi dari browser (lokasi terpilih + koordinat perangkat).
+     * Dipakai endpoint Scan dan Barang Pinjaman; lokasi_id wajib agar tiap aksi punya lokasi.
+     */
+    public const INPUT_RULES = [
+        'lokasi_id' => ['required', 'integer'],
+        'lat'       => ['nullable', 'numeric', 'between:-90,90'],
+        'lng'       => ['nullable', 'numeric', 'between:-180,180'],
+        'accuracy'  => ['nullable', 'numeric', 'min:0'],
+    ];
+
+    public static function metodeLabel(string $metode): string
+    {
+        return self::METODE_LABEL[$metode] ?? $metode;
+    }
+
     public function __construct(
         protected ActivityLogService $activityLogService,
         protected InventoryMutationService $mutationService
@@ -177,6 +193,34 @@ class LocationService
     }
 
     /**
+     * Bentuk LocationContext dari input browser (lihat INPUT_RULES). Metode dihitung ulang
+     * di server dari koordinat, bukan dipercaya dari klaim klien.
+     *
+     * @param  array<string, mixed> $input
+     * @throws Exception
+     */
+    public function contextFromInput(array $input): LocationContext
+    {
+        $location = $this->findStorageLocation((int) ($input['lokasi_id'] ?? 0));
+
+        if (!$location) {
+            throw new Exception('Lokasi tidak ditemukan atau tidak dapat dipakai untuk menyimpan unit.');
+        }
+
+        $lat      = isset($input['lat']) && $input['lat'] !== '' ? (float) $input['lat'] : null;
+        $lng      = isset($input['lng']) && $input['lng'] !== '' ? (float) $input['lng'] : null;
+        $accuracy = isset($input['accuracy']) && $input['accuracy'] !== '' ? (float) $input['accuracy'] : null;
+
+        return new LocationContext(
+            $location,
+            $this->resolveMetode($location, $lat, $lng, $accuracy),
+            $lat,
+            $lng,
+            $accuracy !== null ? (int) round($accuracy) : null
+        );
+    }
+
+    /**
      * Susun rencana pindah: validasi tiap unit lalu kelompokkan menurut lokasi asal
      * (1 kelompok = 1 baris Mutasi Aset).
      *
@@ -239,7 +283,7 @@ class LocationService
         sort($numbers);
 
         $text = 'Unit ' . implode(', ', $numbers) . ": {$group['asal_name']} -> {$target->name}"
-            . ' (' . (self::METODE_LABEL[$metode] ?? $metode) . ')';
+            . ' (' . self::metodeLabel($metode) . ')';
 
         if ($makeHome && $group['home_changed']) {
             $text .= '; lokasi utama diubah';
@@ -441,6 +485,60 @@ class LocationService
         $location->delete();
 
         $this->activityLogService->log(Auth::id(), 'Inventory', 'Delete Lokasi');
+    }
+
+    /**
+     * Koreksi lokasi unit yang ternyata fisiknya ada di lokasi $ctx (mis. saat dipinjam lewat
+     * Scan di lokasi itu). Dicatat sebagai Pindah Lokasi per lokasi asal.
+     *
+     * @param Collection<int, InventoryUnit> $units unit dengan relasi lokasiSekarang ter-load
+     */
+    public function correctUnitsTo(Inventory $inventory, Collection $units, LocationContext $ctx, string $alasan): void
+    {
+        $groups = $units
+            ->filter(fn ($unit) => (int) $unit->lokasi_sekarang_id !== (int) $ctx->location->id)
+            ->groupBy(fn ($unit) => $unit->lokasi_sekarang_id ?? 0);
+
+        foreach ($groups as $asalId => $group) {
+            InventoryUnit::whereIn('id', $group->pluck('id'))->update(['lokasi_sekarang_id' => $ctx->location->id]);
+
+            $numbers = $group->pluck('unit_number')->sort()->values()->all();
+            $asalName = $group->first()->lokasiSekarang?->name ?? 'Tanpa lokasi';
+
+            $this->mutationService->recordLocationMove(
+                $inventory->id,
+                $group->count(),
+                $asalId ?: null,
+                $ctx->location->id,
+                $ctx->metode,
+                $ctx->lat,
+                $ctx->lng,
+                $ctx->accuracyM,
+                Str::limit('Unit ' . implode(', ', $numbers) . ": {$asalName} -> {$ctx->location->name} ({$alasan})", 252, '...')
+            );
+        }
+    }
+
+    /**
+     * Jumlah unit yang siap dipinjam (kondisi Tersedia, tidak sedang dipinjam) per lokasi.
+     *
+     * @return array<int, array{id: int|null, name: string, qty: int}>
+     */
+    public function availableByLocation(Inventory $inventory): array
+    {
+        return $inventory->units()
+            ->where('status', 'Tersedia')
+            ->whereNull('surat_jalan_item_id')
+            ->with('lokasiSekarang:id,name')
+            ->get()
+            ->groupBy(fn ($unit) => $unit->lokasi_sekarang_id ?? 0)
+            ->map(fn ($group, $id) => [
+                'id'   => $id ?: null,
+                'name' => $group->first()->lokasiSekarang?->name ?? 'Tanpa lokasi',
+                'qty'  => $group->count(),
+            ])
+            ->values()
+            ->all();
     }
 
     /**

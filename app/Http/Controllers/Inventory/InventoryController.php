@@ -7,6 +7,7 @@ use App\Http\Requests\Inventory\InventoryRequest;
 use App\Models\Inventory;
 use App\Models\ReportExport;
 use App\Services\Inventory\InventoryService;
+use App\Services\Inventory\LocationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,7 +23,8 @@ class InventoryController extends Controller
      */
     public function __construct(
         protected InventoryService $inventoryService,
-        protected \App\Services\Project\SuratJalanService $suratJalanService
+        protected \App\Services\Project\SuratJalanService $suratJalanService,
+        protected LocationService $locationService
     ) {}
 
     /**
@@ -39,7 +41,10 @@ class InventoryController extends Controller
         $filters = $request->only(['search', 'status']);
         $inventories = $this->inventoryService->getAllPaginated($filters, 10);
 
-        return view('inventory.index', compact('inventories'));
+        // Pilihan lokasi manual untuk modal Scan (dipakai kalau GPS tidak tersedia / di luar jangkauan).
+        $storageLocations = $this->locationService->getStorageLocations();
+
+        return view('inventory.index', compact('inventories', 'storageLocations'));
     }
 
     /**
@@ -146,6 +151,8 @@ class InventoryController extends Controller
 
         if ($mode === 'pinjam') {
             $response['available_qty'] = $inventory->qty_available;
+            // Rincian unit siap pinjam per lokasi, untuk catatan "unit ada di lokasi lain" di modal Scan.
+            $response['available_by_location'] = $this->locationService->availableByLocation($inventory);
             // Stok 0 - tampilkan siapa yang pinjam sekarang (info saja,
             // bukan berarti mode ini jadi bisa dipakai buat mengembalikan).
             $response['borrowed_units'] = $inventory->qty_available > 0
@@ -200,10 +207,14 @@ class InventoryController extends Controller
         $data = $request->validate([
             'inventory_id' => ['required', 'integer', 'exists:inventories,id'],
             'qty'          => ['required', 'integer', 'min:1'],
-        ]);
+        ] + LocationService::INPUT_RULES);
 
         try {
-            $suratJalan = $this->suratJalanService->createDirectLoan($data['inventory_id'], $data['qty']);
+            $suratJalan = $this->suratJalanService->createDirectLoan(
+                $data['inventory_id'],
+                $data['qty'],
+                $this->locationService->contextFromInput($data)
+            );
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }
@@ -227,10 +238,13 @@ class InventoryController extends Controller
         $data = $request->validate([
             'unit_ids'   => ['required', 'array', 'min:1'],
             'unit_ids.*' => ['integer', 'distinct', 'exists:inventory_units,id'],
-        ]);
+        ] + LocationService::INPUT_RULES);
 
         try {
-            $this->suratJalanService->returnUnitsByIds($data['unit_ids']);
+            $this->suratJalanService->returnUnitsByIds(
+                $data['unit_ids'],
+                $this->locationService->contextFromInput($data)
+            );
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }
@@ -255,10 +269,14 @@ class InventoryController extends Controller
             'unit_ids'   => ['required', 'array', 'min:1'],
             'unit_ids.*' => ['integer', 'distinct', 'exists:inventory_units,id'],
             'status'     => ['required', 'in:Rusak,Hilang'],
-        ]);
+        ] + LocationService::INPUT_RULES);
 
         try {
-            $this->suratJalanService->returnAndMarkStatus($data['unit_ids'], $data['status']);
+            $this->suratJalanService->returnAndMarkStatus(
+                $data['unit_ids'],
+                $data['status'],
+                $this->locationService->contextFromInput($data)
+            );
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }

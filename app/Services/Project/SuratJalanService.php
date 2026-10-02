@@ -11,11 +11,14 @@ use App\Services\DataIntegration\FileService;
 use App\Services\DataIntegration\FolderService;
 use App\Services\Inventory\InventoryMutationService;
 use App\Services\Inventory\InventoryService;
+use App\Services\Inventory\LocationContext;
+use App\Services\Inventory\LocationService;
 use App\Services\Project\EquipmentBookingService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Exception;
 
 class SuratJalanService
@@ -26,6 +29,7 @@ class SuratJalanService
     protected InventoryMutationService $mutationService;
     protected InventoryService $inventoryService;
     protected EquipmentBookingService $bookingService;
+    protected LocationService $locationService;
 
     public function __construct(
         ActivityLogService $activityLogService,
@@ -33,7 +37,8 @@ class SuratJalanService
         FileService $fileService,
         InventoryMutationService $mutationService,
         InventoryService $inventoryService,
-        EquipmentBookingService $bookingService
+        EquipmentBookingService $bookingService,
+        LocationService $locationService
     ) {
         $this->activityLogService = $activityLogService;
         $this->folderService = $folderService;
@@ -41,6 +46,7 @@ class SuratJalanService
         $this->mutationService = $mutationService;
         $this->inventoryService = $inventoryService;
         $this->bookingService = $bookingService;
+        $this->locationService = $locationService;
     }
 
     /**
@@ -219,9 +225,9 @@ class SuratJalanService
      *
      * @throws Exception
      */
-    public function returnItem(SuratJalanItem $item, int $qty): SuratJalanItem
+    public function returnItem(SuratJalanItem $item, int $qty, ?LocationContext $lokasi = null): SuratJalanItem
     {
-        return DB::transaction(function () use ($item, $qty) {
+        return DB::transaction(function () use ($item, $qty, $lokasi) {
             $item = SuratJalanItem::where('id', $item->id)->lockForUpdate()->first();
 
             // Unit fisik dipilih otomatis (nomor terkecil dulu) karena caller cuma
@@ -231,7 +237,7 @@ class SuratJalanService
                 ->limit($qty)
                 ->get();
 
-            ['item' => $updatedItem, 'suratJalan' => $suratJalan] = $this->applyReturn($item, $unitsToRelease);
+            ['item' => $updatedItem, 'suratJalan' => $suratJalan] = $this->applyReturn($item, $unitsToRelease, $lokasi);
 
             $this->activityLogService->log(
                 Auth::id(),
@@ -255,9 +261,9 @@ class SuratJalanService
      *
      * @throws Exception
      */
-    public function returnUnitsForProject(\App\Models\Project $project, \Illuminate\Support\Collection $units): array
+    public function returnUnitsForProject(\App\Models\Project $project, \Illuminate\Support\Collection $units, ?LocationContext $lokasi = null): array
     {
-        return DB::transaction(function () use ($project, $units) {
+        return DB::transaction(function () use ($project, $units, $lokasi) {
             $groupedByItem = $units->groupBy('surat_jalan_item_id');
             $updatedCount = 0;
             $itemSummaries = [];
@@ -276,7 +282,7 @@ class SuratJalanService
                     throw new Exception('Salah satu barang tidak berasal dari project ini.');
                 }
 
-                $this->applyReturn($item, $unitsGroup);
+                $this->applyReturn($item, $unitsGroup, $lokasi);
                 $updatedCount++;
 
                 // Dikumpulkan per barang (bukan cuma total gabungan semua barang)
@@ -310,8 +316,12 @@ class SuratJalanService
      *
      * @throws Exception
      */
-    private function applyReturn(SuratJalanItem $item, \Illuminate\Support\Collection $unitsToRelease): array
-    {
+    private function applyReturn(
+        SuratJalanItem $item,
+        \Illuminate\Support\Collection $unitsToRelease,
+        ?LocationContext $lokasi = null,
+        bool $placeAtLocation = true
+    ): array {
         $qty = $unitsToRelease->count();
         $sisa = $item->qty_dipakai - $item->qty_dikembalikan;
 
@@ -323,16 +333,28 @@ class SuratJalanService
             'qty_dikembalikan' => $item->qty_dikembalikan + $qty,
         ]);
 
+        // Unit dikembalikan ke lokasi $lokasi; kalau tidak ditempatkan (mis. Hilang), lokasi lamanya dibiarkan.
         \App\Models\InventoryUnit::whereIn('id', $unitsToRelease->pluck('id'))
-            ->update(['surat_jalan_item_id' => null]);
+            ->update(['surat_jalan_item_id' => null] + ($lokasi && $placeAtLocation ? ['lokasi_sekarang_id' => $lokasi->location->id] : []));
 
         if ($qty > 0) {
+            $keterangan    = $item->suratJalan?->referensiLabel();
+            $lokasiColumns = [];
+
+            if ($lokasi && $placeAtLocation) {
+                $lokasiColumns = $lokasi->mutationColumns(null, $lokasi->location->id);
+            } elseif ($lokasi) {
+                $keterangan    = trim(($keterangan ?? '') . ' - dilaporkan di ' . $lokasi->location->name);
+                $lokasiColumns = $lokasi->mutationColumns($lokasi->location->id, null);
+            }
+
             $this->mutationService->record(
                 $item->inventory_id,
                 'dikembalikan',
                 $qty,
                 $item->surat_jalan_id,
-                $item->suratJalan?->referensiLabel()
+                $keterangan !== null ? Str::limit($keterangan, 252, '...') : null,
+                $lokasiColumns
             );
         }
 
@@ -354,9 +376,9 @@ class SuratJalanService
      *
      * @throws Exception
      */
-    public function createDirectLoan(int $inventoryId, int $qty): SuratJalan
+    public function createDirectLoan(int $inventoryId, int $qty, ?LocationContext $lokasi = null): SuratJalan
     {
-        return DB::transaction(function () use ($inventoryId, $qty) {
+        return DB::transaction(function () use ($inventoryId, $qty, $lokasi) {
             $inventory = Inventory::where('id', $inventoryId)->lockForUpdate()->first();
 
             if (!$inventory) {
@@ -384,9 +406,13 @@ class SuratJalanService
                 'qty_dikembalikan' => 0,
             ]);
 
+            // Unit yang tercatat di lokasi peminjam diambil lebih dulu (reorder: units() sudah punya orderBy).
             $unitsToAssign = $inventory->units()
                 ->where('status', 'Tersedia')
                 ->whereNull('surat_jalan_item_id')
+                ->with('lokasiSekarang:id,name')
+                ->reorder()
+                ->when($lokasi, fn ($q) => $q->orderByRaw('CASE WHEN lokasi_sekarang_id = ? THEN 0 ELSE 1 END', [$lokasi->location->id]))
                 ->orderBy('unit_number')
                 ->limit($qty)
                 ->get();
@@ -398,18 +424,24 @@ class SuratJalanService
             \App\Models\InventoryUnit::whereIn('id', $unitsToAssign->pluck('id'))
                 ->update(['surat_jalan_item_id' => $suratJalanItem->id]);
 
+            if ($lokasi) {
+                // Peminjam memegang unit di lokasi ini, jadi unit yang tercatat di tempat lain dikoreksi.
+                $this->locationService->correctUnitsTo($inventory, $unitsToAssign, $lokasi, 'dikoreksi saat peminjaman lewat Scan');
+            }
+
             $this->mutationService->record(
                 $inventory->id,
                 'dipinjam',
                 $qty,
                 $suratJalan->id,
-                $suratJalan->referensiLabel()
+                $suratJalan->referensiLabel(),
+                $lokasi ? $lokasi->mutationColumns($lokasi->location->id, null) : []
             );
 
             $this->activityLogService->log(
                 Auth::id(),
                 'Inventory',
-                "Pinjam langsung {$qty} unit \"{$inventory->name}\" lewat Scan"
+                "Pinjam langsung {$qty} unit \"{$inventory->name}\" lewat Scan" . ($lokasi ? " di {$lokasi->location->name}" : '')
             );
 
             return $suratJalan;
@@ -427,9 +459,9 @@ class SuratJalanService
      * @param  array<int>  $unitIds
      * @throws Exception
      */
-    public function returnUnitsByIds(array $unitIds): array
+    public function returnUnitsByIds(array $unitIds, ?LocationContext $lokasi = null, bool $placeAtLocation = true): array
     {
-        return DB::transaction(function () use ($unitIds) {
+        return DB::transaction(function () use ($unitIds, $lokasi, $placeAtLocation) {
             $units = \App\Models\InventoryUnit::whereIn('id', $unitIds)
                 ->whereNotNull('surat_jalan_item_id')
                 ->with('suratJalanItem.inventory')
@@ -443,14 +475,14 @@ class SuratJalanService
 
             foreach ($units->groupBy('surat_jalan_item_id') as $unitsForItem) {
                 $item = $unitsForItem->first()->suratJalanItem;
-                $this->applyReturn($item, $unitsForItem);
+                $this->applyReturn($item, $unitsForItem, $lokasi, $placeAtLocation);
                 $itemSummaries[] = "{$item->inventory->name} x{$unitsForItem->count()}";
             }
 
             $this->activityLogService->log(
                 Auth::id(),
                 'Inventory',
-                'Kembalikan barang lewat Scan - ' . implode(', ', $itemSummaries)
+                'Kembalikan barang lewat Scan - ' . implode(', ', $itemSummaries) . ($lokasi ? " di {$lokasi->location->name}" : '')
             );
 
             return ['returned_count' => $units->count()];
@@ -468,14 +500,15 @@ class SuratJalanService
      * @param  array<int>  $unitIds
      * @throws Exception
      */
-    public function returnAndMarkStatus(array $unitIds, string $status): void
+    public function returnAndMarkStatus(array $unitIds, string $status, ?LocationContext $lokasi = null): void
     {
         if (!in_array($status, ['Rusak', 'Hilang'], true)) {
             throw new Exception('Status tidak valid untuk aksi ini.');
         }
 
-        DB::transaction(function () use ($unitIds, $status) {
-            $this->returnUnitsByIds($unitIds);
+        DB::transaction(function () use ($unitIds, $status, $lokasi) {
+            // Rusak: unit ada di tangan pelapor, jadi ditempatkan di lokasi itu. Hilang: lokasi tidak diubah.
+            $this->returnUnitsByIds($unitIds, $lokasi, $status === 'Rusak');
 
             // Query ULANG di sini (bukan reuse dari atas) - unit-unit ini
             // sudah lepas dari peminjaman barusan, updateUnitStatus() akan

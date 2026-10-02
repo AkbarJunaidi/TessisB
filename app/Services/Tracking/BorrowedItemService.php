@@ -8,6 +8,7 @@ use App\Models\SuratJalan;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use App\Services\Project\SuratJalanService;
+use App\Services\Inventory\LocationContext;
 use Exception;
 
 class BorrowedItemService
@@ -98,7 +99,7 @@ class BorrowedItemService
      * @param  array<int>  $unitIds
      * @throws Exception
      */
-    public function returnUnits(Project $project, array $unitIds): array
+    public function returnUnits(Project $project, array $unitIds, ?LocationContext $lokasi = null): array
     {
         $units = InventoryUnit::whereIn('id', $unitIds)
             ->whereNotNull('surat_jalan_item_id')
@@ -119,7 +120,7 @@ class BorrowedItemService
             throw new Exception('Salah satu unit yang dipilih tidak berasal dari project ini atau sudah dikembalikan.');
         }
 
-        return $this->suratJalanService->returnUnitsForProject($project, $units);
+        return $this->suratJalanService->returnUnitsForProject($project, $units, $lokasi);
     }
 
     /**
@@ -165,9 +166,9 @@ class BorrowedItemService
      * @param  array<int>  $unitIds
      * @throws Exception
      */
-    public function returnByIds(array $unitIds): void
+    public function returnByIds(array $unitIds, ?LocationContext $lokasi = null): void
     {
-        $this->suratJalanService->returnUnitsByIds($unitIds);
+        $this->suratJalanService->returnUnitsByIds($unitIds, $lokasi);
     }
 
     /**
@@ -177,8 +178,8 @@ class BorrowedItemService
      * @param  array<int>  $unitIds
      * @throws Exception
      */
-    public function markStatus(array $unitIds, string $status): void
+    public function markStatus(array $unitIds, string $status, ?LocationContext $lokasi = null): void
     {
-        $this->suratJalanService->returnAndMarkStatus($unitIds, $status);
+        $this->suratJalanService->returnAndMarkStatus($unitIds, $status, $lokasi);
     }
 }

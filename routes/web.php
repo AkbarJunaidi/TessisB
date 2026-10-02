@@ -128,14 +128,12 @@ Route::middleware('auth')->group(function () {
             ->name('inventory.mutasi');
 
         // Master Lokasi (kantor, gudang, lokasi event, dll). SENGAJA sebelum Route::resource di
-        // bawah supaya "locations" tidak ketangkap sebagai {inventory}. search/detect berupa
-        // endpoint JSON (autocomplete & deteksi GPS).
+        // bawah supaya "locations" tidak ketangkap sebagai {inventory}. search berupa
+        // endpoint JSON (autocomplete); deteksi GPS ada di grup Barang Pinjaman (lebih luas).
         Route::get('inventory/locations', [LocationController::class, 'index'])
             ->name('inventory.locations.index');
         Route::get('inventory/locations/search', [LocationController::class, 'search'])
             ->name('inventory.locations.search');
-        Route::get('inventory/locations/detect', [LocationController::class, 'detect'])
-            ->name('inventory.locations.detect');
         Route::post('inventory/locations', [LocationController::class, 'store'])
             ->name('inventory.locations.store');
         Route::patch('inventory/locations/{location}', [LocationController::class, 'update'])
@@ -377,6 +375,11 @@ Route::middleware('auth')->group(function () {
             ->name('borrowed-items.return-by-ids');
         Route::post('barang-pinjaman/status', [BorrowedItemController::class, 'markStatus'])
             ->name('borrowed-items.mark-status');
+
+        // Deteksi lokasi dari GPS: dipakai juga halaman Barang Pinjaman (employee dengan izin
+        // process_return); izin sesungguhnya dicek di LocationController::detect().
+        Route::get('inventory/locations/detect', [LocationController::class, 'detect'])
+            ->name('inventory.locations.detect');
 
     });
 

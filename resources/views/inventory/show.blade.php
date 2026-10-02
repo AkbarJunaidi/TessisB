@@ -502,6 +502,8 @@
             </div>
         </div>
 
+        {{-- Dimuat lewat stack agar berjalan SETELAH Bootstrap JS (layout memuatnya di akhir body). --}}
+        @push('scripts')
         <script>
             (function () {
                 'use strict';
@@ -651,6 +653,7 @@
                 modalEl.addEventListener('hidden.bs.modal', function () { detectToken++; });
             })();
         </script>
+        @endpush
     @endif
     <!-- CARD BARU: Riwayat Peminjaman (lintas semua Project, sumber: SuratJalanItem -
          baris ini tidak pernah dihapus saat barang dikembalikan, jadi otomatis
