@@ -6,8 +6,8 @@
     <style>
         @page {
             size: a4 portrait;
-            /* Margin atas 5.3cm / bawah 4.8cm berlaku di SEMUA halaman; kiri/kanan 0 agar kop full-bleed */
-            margin: 5.3cm 0 4.8cm;
+            /* Margin atas 5cm / bawah 4.8cm berlaku di SEMUA halaman; kiri/kanan 0 agar kop full-bleed */
+            margin: 5cm 0 4.8cm;
         }
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
@@ -27,7 +27,7 @@
         }
         /* Offset negatif = masuk ke area margin @page (cara DOMPDF untuk header/footer) */
         .kop-atas {
-            top: -5.3cm;
+            top: -5cm;
         }
         .kop-bawah {
             bottom: -4.8cm;

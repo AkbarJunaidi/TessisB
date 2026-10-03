@@ -257,10 +257,10 @@
                 $hasAttributes = $inventory->attributes && $inventory->attributes->count() > 0;
             @endphp
 
-            <!-- SISI KIRI (8 KOLOM): Informasi Identitas Aset & Informasi Tambahan -->
+            <!-- SISI KIRI (8 KOLOM): Informasi Identitas Aset, di bawahnya Informasi Tambahan (selebar sama) -->
             <div class="col-12 col-lg-8">
                 <div class="row g-4">
-                    <div class="{{ $hasAttributes ? 'col-6' : 'col-12' }}">
+                    <div class="col-12">
                         <div class="card shadow-sm border-0 rounded-3 bg-white h-100">
                             <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
                                 <h6 class="fw-bold text-dark m-0">Informasi Identitas Aset</h6>
@@ -307,7 +307,7 @@
                     </div>
 
                     @if($hasAttributes)
-                        <div class="col-6">
+                        <div class="col-12">
                             <div class="card shadow-sm border-0 rounded-3 bg-white h-100">
                                 <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
                                     <h6 class="fw-bold text-dark m-0">Informasi Tambahan</h6>

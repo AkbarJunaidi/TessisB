@@ -3,115 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $inventory->name }} - Detail Barang</title>
+    <title>{{ $inventory->name }} - Detail Inventory</title>
 
-    {{-- Halaman ini SENGAJA berdiri sendiri (bukan @extends layouts.app) -
-         diakses tanpa login lewat scan QR, jadi tidak butuh sidebar/topbar
-         admin, dan harus tetap ringan & cepat dibuka dari kamera HP. --}}
+    {{-- Halaman publik hasil scan QR Report: berdiri sendiri (tanpa layout admin), hanya baca. --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" integrity="sha384-XGjxtQfXaH2tnPFa9x+ruJTuLE3Aa6LhHSWRr1XeTyhezb4abCG4ccI5AkVDxqC+" crossorigin="anonymous">
 
     <style>
-        body {
-            background-color: #f4f6f9;
-        }
-        .scan-photo {
-            width: 100%;
-            max-height: 260px;
-            object-fit: cover;
-        }
+        body { background-color: #f4f6f9; }
+        .scan-wrap { max-width: 960px; }
+        .scan-photo { max-height: 240px; width: 100%; object-fit: contain; }
+        .scan-value { word-break: break-word; }
     </style>
 </head>
 <body>
 
-    <div class="container py-4" style="max-width: 480px;">
+    @php
+        $badgeMap = [
+            'Tersedia'  => 'bg-success-subtle text-success border-success-subtle',
+            'Dipinjam'  => 'bg-primary-subtle text-primary border-primary-subtle',
+            'Perbaikan' => 'bg-warning-subtle text-warning border-warning-subtle',
+            'Rusak'     => 'bg-danger-subtle text-danger border-danger-subtle',
+            'Hilang'    => 'bg-secondary-subtle text-secondary border-secondary-subtle',
+        ];
+        $status      = $inventory->display_status ?? 'Tersedia';
+        $statusClass = $badgeMap[$status] ?? 'bg-success-subtle text-success border-success-subtle';
+    @endphp
 
-        <div class="text-center mb-3">
-            <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-semibold">
-                <i class="bi bi-qr-code-scan me-1"></i> Hasil Scan Barang
+    <!-- Top bar: tombol login mengarah ke detail barang ini (guest otomatis dialihkan ke halaman login dulu) -->
+    <header class="bg-white border-bottom sticky-top">
+        <div class="scan-wrap container d-flex align-items-center justify-content-between gap-2 py-2 px-3">
+            <div class="lh-sm">
+                <div class="fw-bold text-dark">Detail Inventory</div>
+                <div class="text-muted small d-none d-sm-block">Sistem Informasi Manajemen</div>
+            </div>
+            <a href="{{ route('inventory.show', $inventory) }}" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 fw-medium flex-shrink-0">
+                <i class="bi bi-box-arrow-in-right"></i> Login
+            </a>
+        </div>
+    </header>
+
+    <main class="scan-wrap container px-3 py-3 py-md-4">
+
+        <!-- Judul + status -->
+        <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+            <h4 class="fw-bold text-dark m-0 scan-value">{{ $inventory->name }}</h4>
+            <span class="badge border {{ $statusClass }} px-3 py-2 rounded-pill fw-semibold flex-shrink-0">
+                <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i>{{ strtoupper($status) }}
             </span>
         </div>
 
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-3">
-
-            @if($inventory->image)
-                <img src="{{ asset('storage/' . $inventory->image) }}" alt="{{ $inventory->name }}" class="scan-photo">
-            @else
-                <div class="scan-photo d-flex align-items-center justify-content-center bg-light text-muted">
-                    <i class="bi bi-box-seam" style="font-size: 3rem;"></i>
+        <!-- Foto + Deskripsi -->
+        <div class="row g-3 mb-3">
+            <div class="col-12 col-md-4">
+                <div class="card shadow-sm border-0 rounded-3 bg-white h-100">
+                    <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
+                        <h6 class="fw-bold text-dark m-0">Foto Fisik Barang</h6>
+                    </div>
+                    <div class="card-body p-4 d-flex align-items-center justify-content-center">
+                        @if($inventory->image)
+                            <img src="{{ asset('storage/' . $inventory->image) }}" alt="Foto {{ $inventory->name }}" class="img-fluid rounded scan-photo">
+                        @else
+                            <div class="text-center py-5 text-muted border border-dashed rounded w-100 bg-light">
+                                <i class="bi bi-image opacity-25 d-block mb-2" style="font-size: 3rem;"></i>
+                                <span class="small fw-medium">Foto barang belum diunggah</span>
+                            </div>
+                        @endif
+                    </div>
                 </div>
-            @endif
+            </div>
 
+            <div class="col-12 col-md-8">
+                <div class="card shadow-sm border-0 rounded-3 bg-white h-100">
+                    <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
+                        <h6 class="fw-bold text-dark m-0">Deskripsi Barang</h6>
+                    </div>
+                    <div class="card-body p-4">
+                        @if(!empty($inventory->description))
+                            <p class="text-dark small mb-0 scan-value" style="white-space: pre-line; line-height: 1.6;">{{ $inventory->description }}</p>
+                        @else
+                            <p class="text-muted fst-italic small mb-0">Belum ada deskripsi.</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informasi Identitas Aset -->
+        <div class="card shadow-sm border-0 rounded-3 bg-white mb-3">
+            <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
+                <h6 class="fw-bold text-dark m-0">Informasi Identitas Aset</h6>
+            </div>
             <div class="card-body p-4">
+                <table class="table table-borderless table-sm align-middle small mb-0">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted py-2" style="width: 40%;">Nama Barang</td>
+                            <td class="fw-bold text-dark py-2 scan-value">{{ $inventory->name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted py-2">Serial Number</td>
+                            <td class="py-2"><span class="font-monospace fw-semibold text-secondary scan-value">{{ $inventory->serial_number }}</span></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted py-2">Status Barang</td>
+                            <td class="py-2"><span class="badge border {{ $statusClass }} px-2 py-1">{{ strtoupper($status) }}</span></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted py-2">Jumlah Barang</td>
+                            <td class="py-2">
+                                <span class="fw-semibold">{{ $inventory->quantity_total }} unit total</span>
+                                <span class="text-success">({{ $inventory->qty_available }} tersedia</span>,
+                                <span class="text-secondary">{{ $inventory->qty_in_use }} sedang dipakai)</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted py-2">Brand</td>
+                            <td class="fw-bold text-dark py-2 scan-value">{{ $inventory->brand ?: '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted py-2">Tanggal Input</td>
+                            <td class="text-dark py-2">{{ $inventory->created_at ? $inventory->created_at->format('d F Y H:i') . ' WIB' : '-' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted py-2">Terakhir Update</td>
+                            <td class="text-dark py-2">{{ $inventory->updated_at ? $inventory->updated_at->format('d F Y H:i') . ' WIB' : '-' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <h4 class="fw-bold mb-0">{{ $inventory->name }}</h4>
-                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill fw-semibold flex-shrink-0 ms-2">
-                        {{ strtoupper($inventory->display_status ?? 'TERSEDIA') }}
-                    </span>
+        <!-- Informasi Tambahan -->
+        @if($inventory->attributes->isNotEmpty())
+            <div class="card shadow-sm border-0 rounded-3 bg-white mb-3">
+                <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
+                    <h6 class="fw-bold text-dark m-0">Informasi Tambahan</h6>
                 </div>
-
-                <div class="font-monospace text-secondary small mb-3">
-                    SN: {{ $inventory->serial_number }}
-                </div>
-
-                <hr>
-
-                <div class="row g-2 small">
-
-                    @if($inventory->brand)
-                        <div class="col-6">
-                            <div class="text-muted">Brand</div>
-                            <div class="fw-semibold">{{ $inventory->brand }}</div>
-                        </div>
-                    @endif
-
-                    <div class="col-6">
-                        <div class="text-muted">Jumlah Barang</div>
-                        <div class="fw-semibold">{{ $inventory->quantity_total }}</div>
-                    </div>
-
-                </div>
-
-                @php
-                    // Ringkasan status unit fisik, urutan tetap: Tersedia,
-                    // Dipinjam, Perbaikan, Rusak, Hilang - HANYA status yang
-                    // jumlahnya > 0 yang ditampilkan (sesuai permintaan).
-                    $statusOrder = ['Tersedia', 'Dipinjam', 'Perbaikan', 'Rusak', 'Hilang'];
-                    $statusCounts = $inventory->units->countBy(fn ($unit) => $unit->display_status);
-                    $summaryParts = collect($statusOrder)
-                        ->filter(fn ($status) => ($statusCounts[$status] ?? 0) > 0)
-                        ->map(fn ($status) => $statusCounts[$status] . ' ' . $status);
-                @endphp
-
-                @if($summaryParts->isNotEmpty())
-                    <div class="mt-3 pt-3 border-top">
-                        <div class="text-muted small mb-1">Status Unit Fisik</div>
-                        <div class="fw-semibold">{{ $summaryParts->implode(', ') }}</div>
-                    </div>
-                @endif
-
-                @if($inventory->description)
-                    <div class="mt-3">
-                        <div class="text-muted small mb-1">Deskripsi</div>
-                        <div>{{ $inventory->description }}</div>
-                    </div>
-                @endif
-
-                @if($inventory->attributes->isNotEmpty())
-                    <div class="mt-3">
-                        <div class="text-muted small mb-2">Informasi Tambahan</div>
-                        <div class="row g-2 small">
-                            @foreach($inventory->attributes as $attribute)
-                                <div class="col-6">
-                                    <div class="text-muted">{{ $attribute->attribute_name }}</div>
-                                    <div class="fw-semibold">{{ $attribute->attribute_value }}</div>
-                                </div>
+                <div class="card-body p-4">
+                    <table class="table table-borderless table-sm align-middle small mb-0">
+                        <tbody>
+                            @foreach($inventory->attributes as $attr)
+                                <tr>
+                                    <td class="text-muted py-2" style="width: 40%;"><i class="bi bi-tag text-primary me-2"></i>{{ $attr->attribute_name }}</td>
+                                    <td class="fw-semibold text-dark py-2 scan-value">{{ $attr->attribute_value }}</td>
+                                </tr>
                             @endforeach
-                        </div>
-                    </div>
-                @endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @endif
 
+        <!-- Status Unit Fisik (hanya nomor dan status unit) -->
+        <div class="card shadow-sm border-0 rounded-3 bg-white mb-3">
+            <div class="card-body p-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                    <h6 class="fw-bold m-0">Status Unit Fisik</h6>
+                    <span class="text-muted small">{{ $inventory->qty_available }} dari {{ $inventory->quantity_total }} unit bisa dipinjam sekarang</span>
+                </div>
+                <div class="row g-2">
+                    @forelse($inventory->units as $unit)
+                        <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                            <div class="border rounded-3 p-2 text-center {{ $badgeMap[$unit->display_status] ?? 'bg-light text-dark border' }}">
+                                <div class="fw-bold">#{{ $unit->unit_number }}</div>
+                                <div class="small">{{ $unit->display_status }}</div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="col-12 text-muted small">Belum ada data unit.</div>
+                    @endforelse
+                </div>
             </div>
         </div>
 
@@ -120,7 +182,7 @@
             Halaman ini hanya bisa dibuka lewat QR Code resmi dari sistem inventory.
         </p>
 
-    </div>
+    </main>
 
 </body>
 </html>
