@@ -1,8 +1,8 @@
 <style>
     @page {
         size: a4 portrait;
-        /* Margin atas/bawah setinggi kop berlaku di SEMUA halaman; kiri/kanan 0 agar kop full-bleed */
-        margin: 4.8cm 0;
+        /* Margin atas 5.3cm / bawah 4.8cm berlaku di SEMUA halaman; kiri/kanan 0 agar kop full-bleed */
+        margin: 5.3cm 0 4.8cm;
     }
     body {
         font-family: 'Helvetica', 'Arial', sans-serif;
@@ -22,7 +22,7 @@
         width: 100%;
     }
     .kop-atas {
-        top: -4.8cm;
+        top: -5.3cm;
     }
     .kop-bawah {
         bottom: -4.8cm;
@@ -38,6 +38,15 @@
     }
     .page-bundle:last-child {
         page-break-after: avoid;
+    }
+
+    .doc-title {
+        text-align: center;
+        font-size: 15pt;
+        font-weight: bold;
+        color: #1a3d8f;
+        letter-spacing: 0.5px;
+        margin: 0 0 14px 0;
     }
 
     /* BAGIAN 1: FOTO + IDENTITAS */

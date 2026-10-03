@@ -1,5 +1,7 @@
 <div class="page-bundle">
 
+    <p class="doc-title">INVENTORY REPORT</p>
+
     <!-- Bagian 1: Foto Barang & Informasi Identitas -->
     <table class="section-table">
         <tr>
