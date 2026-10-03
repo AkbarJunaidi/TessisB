@@ -202,15 +202,37 @@
         info.textContent = max;
     });
 
-    document.getElementById('suratJalanForm').addEventListener('submit', function (e) {
+    const suratJalanForm = document.getElementById('suratJalanForm');
+    let servisChecked = false;
+
+    suratJalanForm.addEventListener('submit', function (e) {
         if (rowsWrapper.children.length === 0) {
             e.preventDefault();
             alert('Tambahkan minimal 1 barang sebelum menyimpan Surat Jalan.');
+            return;
         }
+
+        if (servisChecked) return;
+
+        // Peringatan servis: hanya info, user tetap boleh melanjutkan.
+        e.preventDefault();
+        const items = Array.from(rowsWrapper.querySelectorAll('.item-row')).map(function (row) {
+            return {
+                inventory_id: parseInt(row.querySelector('.item-select').value, 10),
+                qty: parseInt(row.querySelector('.item-qty').value, 10),
+            };
+        }).filter(function (it) { return it.inventory_id && it.qty > 0; });
+
+        ServisWarning.confirm(items).then(function (ok) {
+            if (!ok) return;
+            servisChecked = true;
+            suratJalanForm.requestSubmit();
+        });
     });
 
     // Baris pertama otomatis ditambahkan agar form tidak kosong
     addRow();
 })();
 </script>
+@include('inventory.partials.servis-warning-modal')
 @endsection

@@ -109,12 +109,7 @@ class SuratJalanService
                 // Tandai unit fisik spesifik mana yang benar-benar keluar (bukan cuma
                 // hitungan qty), supaya "Kelola Unit Fisik" & "Unit Tersedia" akurat
                 // menampilkan unit mana yang sedang dipakai.
-                $unitsToAssign = $inventory->units()
-                    ->where('status', 'Tersedia')
-                    ->whereNull('surat_jalan_item_id')
-                    ->orderBy('unit_number')
-                    ->limit($row['qty'])
-                    ->get();
+                $unitsToAssign = $inventory->pickUnitsForLoan($row['qty']);
 
                 if ($unitsToAssign->count() < $row['qty']) {
                     throw new Exception("Unit fisik \"{$inventory->name}\" yang benar-benar tersedia tidak mencukupi.");
@@ -412,15 +407,7 @@ class SuratJalanService
             ]);
 
             // Unit yang tercatat di lokasi peminjam diambil lebih dulu (reorder: units() sudah punya orderBy).
-            $unitsToAssign = $inventory->units()
-                ->where('status', 'Tersedia')
-                ->whereNull('surat_jalan_item_id')
-                ->with('lokasiSekarang:id,name')
-                ->reorder()
-                ->when($lokasi, fn ($q) => $q->orderByRaw('CASE WHEN lokasi_sekarang_id = ? THEN 0 ELSE 1 END', [$lokasi->location->id]))
-                ->orderBy('unit_number')
-                ->limit($qty)
-                ->get();
+            $unitsToAssign = $inventory->pickUnitsForLoan($qty, $lokasi?->location->id, ['lokasiSekarang:id,name']);
 
             if ($unitsToAssign->count() < $qty) {
                 throw new Exception("Unit fisik \"{$inventory->name}\" yang benar-benar tersedia tidak mencukupi.");

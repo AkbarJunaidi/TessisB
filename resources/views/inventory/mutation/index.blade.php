@@ -14,6 +14,8 @@
         'dikembalikan'  => ['Dikembalikan', 'info'],
         'pindah_lokasi' => ['Pindah Lokasi', 'warning'],
         'servis_selesai' => ['Servis Selesai', 'success'],
+        'masuk_servis'   => ['Masuk Servis', 'warning'],
+        'servis_dibatalkan' => ['Servis Dibatalkan', 'secondary'],
     ];
     $statusLabels = [
         'Rusak'      => 'danger',
@@ -65,7 +67,7 @@
                         <label class="form-label small fw-semibold text-muted d-block">Jenis Kejadian</label>
                         @php $selectedTypes = $filters['event_types'] ?? []; @endphp
                         <div class="d-flex flex-wrap gap-3">
-                            @foreach(['ditambahkan' => 'Ditambahkan', 'dihapus' => 'Dihapus', 'dipinjam' => 'Dipinjam', 'dikembalikan' => 'Dikembalikan', 'pindah_lokasi' => 'Pindah Lokasi', 'servis_selesai' => 'Servis Selesai', 'status_berubah' => 'Status Berubah (Rusak/Perbaikan/Hilang)'] as $value => $label)
+                            @foreach(['ditambahkan' => 'Ditambahkan', 'dihapus' => 'Dihapus', 'dipinjam' => 'Dipinjam', 'dikembalikan' => 'Dikembalikan', 'pindah_lokasi' => 'Pindah Lokasi', 'servis_selesai' => 'Servis Selesai', 'masuk_servis' => 'Masuk Servis', 'servis_dibatalkan' => 'Servis Dibatalkan', 'status_berubah' => 'Status Berubah (Rusak/Perbaikan/Hilang)'] as $value => $label)
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" name="event_types[]" value="{{ $value }}"
                                            id="type_{{ $value }}" {{ in_array($value, $selectedTypes) ? 'checked' : '' }}>

@@ -86,6 +86,11 @@
                                 <i class="bi bi-geo-alt"></i> Lokasi
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="{{ route('inventory.repairs.index') }}" class="nav-link sidebar-sublink {{ request()->routeIs('inventory.repairs.*') ? 'active' : '' }}">
+                                <i class="bi bi-tools"></i> Perbaikan Barang
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </li>

@@ -44,7 +44,7 @@ class InventoryService
     {
         // Unit ikut di-load (kolom minimal) untuk badge servis di daftar.
         $query = Inventory::withAvailability()
-            ->with('units:id,inventory_id,unit_number,status,servis_terakhir_at,pemakaian_sejak_servis,created_at');
+            ->with('units:id,inventory_id,unit_number,status,repair_item_id,servis_terakhir_at,pemakaian_sejak_servis,created_at');
 
         // Search berdasarkan Nama Barang ATAU Brand
         if (!empty($filters['search'])) {
@@ -420,6 +420,10 @@ class InventoryService
             throw new \Exception("Unit #{$unit->unit_number} sedang dipinjam - status tidak bisa diubah manual sampai dikembalikan.");
         }
 
+        if ($unit->repair_item_id) {
+            throw new \Exception("Unit #{$unit->unit_number} sedang diservis - selesaikan atau batalkan dulu lewat halaman Perbaikan Barang.");
+        }
+
         $statusLama = $unit->status;
         $unit->update(['status' => $status]);
 
@@ -459,6 +463,10 @@ class InventoryService
 
         if ($unit->surat_jalan_item_id) {
             throw new \Exception("Unit #{$unit->unit_number} sedang dipinjam - tandai servis setelah dikembalikan.");
+        }
+
+        if ($unit->repair_item_id) {
+            throw new \Exception("Unit #{$unit->unit_number} sedang diservis - selesaikan lewat halaman Perbaikan Barang.");
         }
 
         if ($unit->status !== 'Tersedia') {

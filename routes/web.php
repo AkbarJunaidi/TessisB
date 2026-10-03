@@ -10,6 +10,7 @@ use App\Http\Controllers\DataIntegration\FolderController;
 use App\Http\Controllers\Inventory\InventoryController;
 use App\Http\Controllers\Inventory\InventoryMutationController;
 use App\Http\Controllers\Inventory\LocationController;
+use App\Http\Controllers\Inventory\RepairController;
 use App\Http\Controllers\Notification\AnnouncementController;
 use App\Http\Controllers\Notification\NotificationController;
 use App\Http\Controllers\Notification\NotificationSettingController;
@@ -140,6 +141,25 @@ Route::middleware('auth')->group(function () {
             ->name('inventory.locations.update');
         Route::delete('inventory/locations/{location}', [LocationController::class, 'destroy'])
             ->name('inventory.locations.destroy');
+
+        // Perbaikan Barang (kirim unit ke vendor / toko / bengkel servis). SENGAJA sebelum
+        // Route::resource di bawah supaya "perbaikan" tidak ketangkap sebagai {inventory}.
+        Route::get('inventory/perbaikan', [RepairController::class, 'index'])
+            ->name('inventory.repairs.index');
+        Route::get('inventory/perbaikan/create', [RepairController::class, 'create'])
+            ->name('inventory.repairs.create');
+        Route::post('inventory/perbaikan', [RepairController::class, 'store'])
+            ->name('inventory.repairs.store');
+        Route::get('inventory/perbaikan/{repair}', [RepairController::class, 'show'])
+            ->name('inventory.repairs.show');
+        Route::post('inventory/perbaikan/{repair}/selesai', [RepairController::class, 'complete'])
+            ->name('inventory.repairs.complete');
+        Route::post('inventory/perbaikan/{repair}/batal', [RepairController::class, 'cancel'])
+            ->name('inventory.repairs.cancel');
+
+        // Cek unit yang servisnya segera / terlambat sebelum barang dipakai (popup peringatan).
+        Route::post('inventory/servis-check', [InventoryController::class, 'servisCheck'])
+            ->name('inventory.servis-check');
 
         Route::resource('inventory', InventoryController::class);
 

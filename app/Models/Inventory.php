@@ -126,6 +126,67 @@ class Inventory extends Model
         return $counts;
     }
 
+    /**
+     * Tingkat urgensi servis satu unit: 0 = aman / tanpa jadwal, 1 = segera, 2 = terlambat.
+     */
+    public function servisRank(InventoryUnit $unit, ?Carbon $today = null): int
+    {
+        return match ($this->servisStatusFor($unit, $today)['state'] ?? 'ok') {
+            'terlambat' => 2,
+            'segera'    => 1,
+            default     => 0,
+        };
+    }
+
+    /**
+     * Unit yang ikut keluar saat dipinjam: lokasi diutamakan, lalu servis paling aman, lalu nomor unit.
+     * Dipakai Surat Jalan, Scan, dan cek peringatan servis agar ketiganya memilih unit yang sama.
+     */
+    public function pickUnitsForLoan(int $qty, ?int $preferLocationId = null, array $with = []): \Illuminate\Support\Collection
+    {
+        $today = Carbon::today();
+
+        return $this->units()
+            ->where('status', 'Tersedia')
+            ->whereNull('surat_jalan_item_id')
+            ->with($with)
+            ->reorder()
+            ->get()
+            ->sortBy(fn (InventoryUnit $u) => [
+                $preferLocationId !== null && (int) $u->lokasi_sekarang_id === $preferLocationId ? 0 : 1,
+                $this->servisRank($u, $today),
+                $u->unit_number,
+            ])
+            ->take($qty)
+            ->values();
+    }
+
+    /**
+     * Unit (dari daftar yang akan dipakai) yang servisnya segera atau terlambat,
+     * untuk ditampilkan di popup peringatan sebelum barang dipinjam.
+     *
+     * @return array<int, array{unit_number: int, state: string, pesan: string}>
+     */
+    public function servisWarnings(iterable $units): array
+    {
+        $today = Carbon::today();
+        $rows = [];
+
+        foreach ($units as $unit) {
+            $servis = $this->servisStatusFor($unit, $today);
+
+            if ($servis && $servis['state'] !== 'ok') {
+                $rows[] = [
+                    'unit_number' => (int) $unit->unit_number,
+                    'state'       => $servis['state'],
+                    'pesan'       => implode(' / ', $servis['pesan']),
+                ];
+            }
+        }
+
+        return $rows;
+    }
+
 // Relasi ke Model InventoryAttribute (Has Many)
     public function attributes(): HasMany
     {

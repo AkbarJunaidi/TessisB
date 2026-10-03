@@ -388,6 +388,27 @@
                 <h6 class="fw-bold m-0">Status Unit Fisik</h6>
                 <div class="d-flex flex-wrap align-items-center gap-3">
                     <span class="text-muted small">{{ $inventory->qty_available }} dari {{ $inventory->quantity_total }} unit bisa dipinjam sekarang</span>
+                    @php
+                        $servisCounts = $inventory->punyaJadwalServis() ? $inventory->servisCounts() : ['terlambat' => 0, 'segera' => 0];
+                        $inRepairCount = $inventory->units->filter(fn ($u) => $u->isInRepair())->count();
+                        $needServiceIds = $inventory->units->filter(
+                            fn ($u) => !$u->isOnLoan() && ($inventory->servisStatusFor($u)['state'] ?? 'ok') !== 'ok'
+                        )->pluck('id')->all();
+                    @endphp
+                    @if($servisCounts['terlambat'] > 0)
+                        <span class="badge-soft-danger px-2 py-1 rounded-pill small"><i class="bi bi-exclamation-octagon me-1"></i>{{ $servisCounts['terlambat'] }} unit servis terlewat</span>
+                    @endif
+                    @if($servisCounts['segera'] > 0)
+                        <span class="badge-soft-warning px-2 py-1 rounded-pill small"><i class="bi bi-clock-history me-1"></i>{{ $servisCounts['segera'] }} unit segera servis</span>
+                    @endif
+                    @if($inRepairCount > 0)
+                        <span class="badge-soft-info px-2 py-1 rounded-pill small"><i class="bi bi-wrench-adjustable me-1"></i>{{ $inRepairCount }} unit sedang diperbaiki</span>
+                    @endif
+                    @if($canManageRepairs)
+                        <a href="{{ route('inventory.repairs.create', $needServiceIds ? ['unit_ids' => $needServiceIds] : []) }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-tools me-1"></i> Kirim ke Servis
+                        </a>
+                    @endif
                     @if($inventory->punyaJadwalServis())
                         <span class="text-muted small">
                             <i class="bi bi-tools me-1"></i>Servis:
@@ -424,7 +445,7 @@
                         $movable = !$onLoan && $unit->status !== 'Hilang';
                     @endphp
                     <div class="col-6 col-md-3 col-lg-2">
-                        <div class="border rounded-3 p-2 text-center position-relative {{ $badgeClass }}">
+                        <div class="border rounded-3 p-2 text-center position-relative {{ $badgeClass }} {{ ($inventory->servisStatusFor($unit)['state'] ?? '') === 'terlambat' ? 'border-danger' : '' }}">
                             @if($canMoveLocation && $movable)
                                 <input class="form-check-input unit-select position-absolute top-0 start-0 m-2" type="checkbox"
                                        value="{{ $unit->id }}" data-number="{{ $unit->unit_number }}"
@@ -435,6 +456,14 @@
                             @if($onLoan)
                                 <div class="small text-truncate" style="font-size:.65rem;"><i class="bi bi-truck me-1"></i>Di lapangan</div>
                                 <div class="small text-truncate" style="font-size:.65rem;">{{ $unit->suratJalanItem->suratJalan->nomor ?? '' }}</div>
+                            @elseif($unit->isInRepair())
+                                @php $repair = $unit->repairItem->repair ?? null; @endphp
+                                <div class="small fw-semibold" style="font-size:.65rem; line-height:1.2;" title="Perbaikan di {{ $repair->tempat_nama ?? '-' }}">
+                                    <i class="bi bi-wrench-adjustable me-1"></i>Perbaikan di {{ $repair->tempat_nama ?? '-' }}
+                                </div>
+                                @if($repair)
+                                    <a href="{{ route('inventory.repairs.show', $repair) }}" class="small text-decoration-none d-block" style="font-size:.6rem;">{{ $repair->code }}</a>
+                                @endif
                             @elseif($unit->lokasiSekarang)
                                 <div class="small text-truncate" style="font-size:.65rem;" title="Lokasi sekarang: {{ $unit->lokasiSekarang->name }}">
                                     <i class="bi bi-geo-alt me-1"></i>{{ $unit->lokasiSekarang->name }}
@@ -446,8 +475,9 @@
                             @endif
                             @php $servis = $inventory->servisStatusFor($unit); @endphp
                             @if($servis && $servis['state'] !== 'ok')
-                                <div class="small text-truncate fw-semibold" style="font-size:.6rem;" title="{{ implode(' / ', $servis['pesan']) }}">
-                                    <i class="bi bi-tools me-1"></i>{{ $servis['state'] === 'terlambat' ? 'Servis jatuh tempo' : 'Servis segera' }}
+                                <div class="small fw-semibold {{ $servis['state'] === 'terlambat' ? 'text-danger' : '' }}" style="font-size:.6rem; line-height:1.2;" title="{{ implode(' / ', $servis['pesan']) }}">
+                                    <i class="bi bi-tools me-1"></i>{{ $servis['state'] === 'terlambat' ? 'Servis terlewat' : 'Segera servis' }}
+                                    <span class="d-block fw-normal">{{ implode(' / ', $servis['pesan']) }}</span>
                                 </div>
                             @endif
                         </div>

@@ -815,7 +815,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            submitPinjam(data.inventory.id, qty, this);
+            const btn = this;
+            btn.disabled = true;
+            ServisWarning.confirm([{ inventory_id: data.inventory.id, qty: qty }], locationPicker.locationId(), resultArea)
+                .then(function (ok) {
+                    btn.disabled = false;
+                    if (ok) submitPinjam(data.inventory.id, qty, btn);
+                });
         });
 
         syncActionState();
@@ -985,5 +991,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
+
+@include('inventory.partials.servis-warning-modal')
 
 @endsection

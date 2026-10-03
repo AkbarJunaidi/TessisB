@@ -284,7 +284,7 @@
                                     <td>
                                         <div class="d-flex flex-column gap-1">
                                             <div class="d-flex gap-2">
-                                                <select class="form-select form-select-sm unit-status-select" @disabled($unit->surat_jalan_item_id)>
+                                                <select class="form-select form-select-sm unit-status-select" @disabled($unit->surat_jalan_item_id || $unit->repair_item_id)>
                                                     @if($unit->surat_jalan_item_id)
                                                         <option value="Dipinjam" selected>Dipinjam</option>
                                                     @else
@@ -297,12 +297,17 @@
                                                         class="btn btn-sm btn-outline-primary save-unit-status"
                                                         data-unit-id="{{ $unit->id }}"
                                                         data-url="{{ route('inventory.units.update-status', [$inventory, $unit]) }}"
-                                                        @disabled($unit->surat_jalan_item_id)>
+                                                        @disabled($unit->surat_jalan_item_id || $unit->repair_item_id)>
                                                     <i class="bi bi-check-lg"></i>
                                                 </button>
                                             </div>
                                             @if($unit->surat_jalan_item_id)
                                                 <span class="small text-muted">Sedang dipinjam - tunggu dikembalikan.</span>
+                                            @elseif($unit->repair_item_id)
+                                                <span class="small text-muted">
+                                                    Diservis di {{ $unit->repairItem->repair->tempat_nama ?? '-' }} -
+                                                    <a href="{{ route('inventory.repairs.show', $unit->repairItem->repair_id) }}" class="text-decoration-none">kelola di Perbaikan Barang</a>
+                                                </span>
                                             @endif
                                         </div>
                                     </td>

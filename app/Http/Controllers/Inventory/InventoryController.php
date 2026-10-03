@@ -84,6 +84,7 @@ class InventoryController extends Controller
         $inventory->load(
             'attributes',
             'units.suratJalanItem.suratJalan',
+            'units.repairItem.repair',
             'units.lokasiUtama:id,name',
             'units.lokasiSekarang:id,name'
         );
@@ -96,7 +97,9 @@ class InventoryController extends Controller
             ? \App\Models\Location::active()->storage()->orderByDesc('is_default')->orderBy('name')->get(['id', 'name'])
             : collect();
 
-        return view('inventory.show', compact('inventory', 'borrowHistory', 'canMoveLocation', 'storageLocations'));
+        $canManageRepairs = (bool) Auth::user()?->hasPermission('inventory', 'manage_repairs');
+
+        return view('inventory.show', compact('inventory', 'borrowHistory', 'canMoveLocation', 'storageLocations', 'canManageRepairs'));
     }
 
     /**
@@ -295,7 +298,7 @@ class InventoryController extends Controller
             'Anda tidak memiliki hak akses untuk mengubah data inventory.'
         );
 
-        $inventory->load('attributes', 'units.suratJalanItem.suratJalan');
+        $inventory->load('attributes', 'units.suratJalanItem.suratJalan', 'units.repairItem.repair');
 
         return view('inventory.edit', compact('inventory'));
     }
@@ -347,6 +350,53 @@ class InventoryController extends Controller
             'message' => "Status Unit #{$updated->unit_number} berhasil diperbarui.",
             'unit'    => $updated,
         ]);
+    }
+
+    /**
+     * [AJAX] Cek unit yang servisnya segera / terlambat dari barang yang akan dipakai.
+     * Hanya peringatan: pemakaian tetap boleh dilanjutkan oleh user. Unit yang dicek
+     * dipilih dengan aturan yang sama seperti saat peminjaman benar-benar dibuat.
+     */
+    public function servisCheck(Request $request): JsonResponse
+    {
+        $user = Auth::user();
+
+        abort_unless(
+            $user && (
+                $user->hasPermission('inventory', 'view')
+                || $user->hasPermission('scan_barang', 'view')
+                || $user->isSuperAdmin()
+            ),
+            403,
+            'Anda tidak memiliki hak akses untuk mengecek servis barang.'
+        );
+
+        $data = $request->validate([
+            'items'                => ['required', 'array', 'min:1', 'max:50'],
+            'items.*.inventory_id' => ['required', 'integer', 'exists:inventories,id'],
+            'items.*.qty'          => ['required', 'integer', 'min:1'],
+            'prefer_location_id'   => ['nullable', 'integer'],
+        ]);
+
+        $preferLocationId = isset($data['prefer_location_id']) ? (int) $data['prefer_location_id'] : null;
+        $warnings = [];
+
+        foreach ($data['items'] as $row) {
+            $inventory = Inventory::find($row['inventory_id']);
+
+            if (!$inventory || !$inventory->punyaJadwalServis()) {
+                continue;
+            }
+
+            $units = $inventory->pickUnitsForLoan((int) $row['qty'], $preferLocationId);
+            $units = $inventory->servisWarnings($units);
+
+            if ($units) {
+                $warnings[] = ['inventory' => $inventory->name, 'units' => $units];
+            }
+        }
+
+        return response()->json(['warnings' => $warnings]);
     }
 
     /**

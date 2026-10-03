@@ -18,6 +18,7 @@ class InventoryUnit extends Model
         'unit_number',
         'status',
         'surat_jalan_item_id',
+        'repair_item_id',
         'lokasi_utama_id',
         'lokasi_sekarang_id',
         'servis_terakhir_at',
@@ -40,6 +41,20 @@ class InventoryUnit extends Model
     public function suratJalanItem(): BelongsTo
     {
         return $this->belongsTo(SuratJalanItem::class);
+    }
+
+    /**
+     * Baris catatan Perbaikan Barang yang sedang berjalan untuk unit ini
+     * (null kalau unit tidak sedang diservis).
+     */
+    public function repairItem(): BelongsTo
+    {
+        return $this->belongsTo(InventoryRepairItem::class, 'repair_item_id');
+    }
+
+    public function isInRepair(): bool
+    {
+        return !is_null($this->repair_item_id);
     }
 
     /**
