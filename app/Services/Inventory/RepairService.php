@@ -6,6 +6,8 @@ use App\Models\Inventory;
 use App\Models\InventoryRepair;
 use App\Models\InventoryRepairItem;
 use App\Models\InventoryUnit;
+use App\Models\Purchase;
+use App\Models\PurchaseItem;
 use App\Services\ActivityLog\ActivityLogService;
 use Exception;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -19,6 +21,12 @@ use Illuminate\Support\Facades\DB;
  */
 class RepairService
 {
+    /** Biaya servis satu unit di atas rasio ini terhadap harga beli baru dianggap layak diganti. */
+    public const REPLACE_WARN_RATIO = 0.5;
+
+    /** Rasio mulai dari sini ditandai "pantau" di Daftar Harga Barang. */
+    public const REPLACE_WATCH_RATIO = 0.3;
+
     public function __construct(
         protected ActivityLogService $activityLogService,
         protected InventoryMutationService $mutationService
@@ -277,6 +285,115 @@ class RepairService
 
             return $repair->fresh();
         });
+    }
+
+    /**
+     * Perbandingan servis vs beli baru per barang untuk form Pembelian.
+     * Biaya catatan berisi beberapa unit dibagi rata per unit (perkiraan).
+     *
+     * @return array<int, array{last_price: ?float, last_code: ?string, last_purchase_id: ?int, servis_total: float, servis_count: int, worst_unit: ?array{number: int, total: float}, units: array<int, array{number: int, total: float}>}>
+     */
+    public function costComparison(): array
+    {
+        $shares = DB::table('inventory_repair_items as i')
+            ->join('inventory_repairs as r', 'r.id', '=', 'i.repair_id')
+            ->join('inventory_units as u', 'u.id', '=', 'i.inventory_unit_id')
+            ->joinSub(
+                DB::table('inventory_repair_items')->select('repair_id', DB::raw('COUNT(*) as n'))->groupBy('repair_id'),
+                'c',
+                'c.repair_id',
+                '=',
+                'i.repair_id'
+            )
+            ->where('r.status', InventoryRepair::STATUS_DONE)
+            ->where('r.biaya', '>', 0)
+            ->selectRaw('i.inventory_id, i.inventory_unit_id, u.unit_number, r.id as repair_id, r.biaya / c.n as share')
+            ->get();
+
+        $empty = ['last_price' => null, 'last_code' => null, 'last_purchase_id' => null, 'servis_total' => 0.0, 'servis_count' => 0, 'worst_unit' => null, 'units' => []];
+        $map = [];
+
+        foreach ($shares->groupBy('inventory_id') as $inventoryId => $rows) {
+            $perUnit = $rows->groupBy('inventory_unit_id')
+                ->map(fn ($g) => ['number' => (int) $g->first()->unit_number, 'total' => round((float) $g->sum('share'), 2)]);
+
+            $map[(int) $inventoryId] = array_merge($empty, [
+                'servis_total' => round((float) $rows->sum('share'), 2),
+                'servis_count' => $rows->pluck('repair_id')->unique()->count(),
+                'worst_unit'   => $perUnit->sortByDesc('total')->first(),
+                'units'        => $perUnit->all(),
+            ]);
+        }
+
+        $prices = PurchaseItem::query()
+            ->join('purchases', 'purchases.id', '=', 'purchase_items.purchase_id')
+            ->where('purchases.status', Purchase::STATUS_RECEIVED)
+            ->whereNotNull('purchase_items.inventory_id')
+            ->orderByDesc('purchases.purchase_date')
+            ->orderByDesc('purchases.id')
+            ->get(['purchase_items.inventory_id', 'purchase_items.unit_price', 'purchases.code', 'purchases.id as purchase_id']);
+
+        foreach ($prices->unique('inventory_id') as $row) {
+            $map[(int) $row->inventory_id] = array_merge($map[(int) $row->inventory_id] ?? $empty, [
+                'last_price' => (float) $row->unit_price,
+                'last_code'  => $row->code,
+                'last_purchase_id' => (int) $row->purchase_id,
+            ]);
+        }
+
+        return $map;
+    }
+
+    /**
+     * Daftar harga barang: harga beli terakhir berdampingan dengan biaya servisnya.
+     *
+     * @param array{search?: ?string, filter?: ?string} $filters filter: servis | ganti
+     * @return array{items: LengthAwarePaginator, costs: array, summary: array<string, int|float>}
+     */
+    public function getPriceList(array $filters = [], int $perPage = 20): array
+    {
+        $costs = $this->costComparison();
+        $activeIds = Inventory::pluck('id')->all();
+        $costs = array_intersect_key($costs, array_flip($activeIds));
+
+        $filterIds = match ($filters['filter'] ?? null) {
+            'servis' => array_keys(array_filter($costs, fn ($c) => $c['servis_count'] > 0)),
+            'ganti'  => array_keys(array_filter($costs, fn ($c) => (self::replaceRatio($c) ?? 0) >= self::REPLACE_WARN_RATIO)),
+            default  => null,
+        };
+
+        $items = Inventory::withCount('units')
+            ->when(!empty($filters['search']), function ($q) use ($filters) {
+                $keyword = trim($filters['search']);
+                $q->where(fn ($w) => $w->where('name', 'like', "%{$keyword}%")
+                    ->orWhere('brand', 'like', "%{$keyword}%")
+                    ->orWhere('serial_number', 'like', "%{$keyword}%"));
+            })
+            ->when($filterIds !== null, fn ($q) => $q->whereIn('id', $filterIds))
+            ->orderBy('name')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        $summary = [
+            'total_barang' => count($activeIds),
+            'ada_harga'    => count(array_filter($costs, fn ($c) => $c['last_price'] !== null)),
+            'total_servis' => round(array_sum(array_column($costs, 'servis_total')), 2),
+            'layak_ganti'  => count(array_filter($costs, fn ($c) => (self::replaceRatio($c) ?? 0) >= self::REPLACE_WARN_RATIO)),
+        ];
+
+        return ['items' => $items, 'costs' => $costs, 'summary' => $summary];
+    }
+
+    /**
+     * Biaya servis unit paling mahal dibanding harga beli terakhir; null bila salah satunya belum ada.
+     */
+    public static function replaceRatio(array $cost): ?float
+    {
+        if (empty($cost['worst_unit']) || empty($cost['last_price'])) {
+            return null;
+        }
+
+        return $cost['worst_unit']['total'] / $cost['last_price'];
     }
 
     protected function generateCode(): string

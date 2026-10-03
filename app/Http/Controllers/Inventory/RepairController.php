@@ -46,7 +46,10 @@ class RepairController extends Controller
         // Dari tombol "Kirim ke Servis" di Detail Inventory: unit sudah tercentang.
         $preselected = array_map('intval', (array) $request->query('unit_ids', []));
 
-        return view('inventory.repair.create', compact('inventories', 'vendors', 'people', 'preselected'));
+        // Harga beli berasal dari Pembelian, jadi perbandingan hanya untuk yang boleh melihat Pembelian.
+        $repairCosts = Auth::user()?->hasPermission('purchase', 'view') ? $this->repairService->costComparison() : [];
+
+        return view('inventory.repair.create', compact('inventories', 'vendors', 'people', 'preselected', 'repairCosts'));
     }
 
     public function store(RepairRequest $request): RedirectResponse

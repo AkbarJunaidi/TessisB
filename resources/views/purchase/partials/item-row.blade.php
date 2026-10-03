@@ -48,4 +48,6 @@
             <input type="text" name="items[{{ $i }}][brand]" class="form-control form-control-sm" value="{{ $item['brand'] ?? '' }}" maxlength="100" placeholder="Brand (opsional). Serial number diisi saat barang diterima.">
         </div>
     </div>
+
+    <div class="item-compare d-none mt-2"></div>
 </div>

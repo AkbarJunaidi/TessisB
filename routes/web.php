@@ -10,6 +10,7 @@ use App\Http\Controllers\DataIntegration\FolderController;
 use App\Http\Controllers\Inventory\InventoryController;
 use App\Http\Controllers\Inventory\InventoryMutationController;
 use App\Http\Controllers\Inventory\LocationController;
+use App\Http\Controllers\Inventory\PriceController;
 use App\Http\Controllers\Inventory\RepairController;
 use App\Http\Controllers\Notification\AnnouncementController;
 use App\Http\Controllers\Notification\NotificationController;
@@ -156,6 +157,10 @@ Route::middleware('auth')->group(function () {
             ->name('inventory.repairs.complete');
         Route::post('inventory/perbaikan/{repair}/batal', [RepairController::class, 'cancel'])
             ->name('inventory.repairs.cancel');
+
+        // Daftar Harga Barang (harga beli vs biaya servis). Sebelum Route::resource, sama alasannya.
+        Route::get('inventory/harga', [PriceController::class, 'index'])
+            ->name('inventory.prices.index');
 
         // Cek unit yang servisnya segera / terlambat sebelum barang dipakai (popup peringatan).
         Route::post('inventory/servis-check', [InventoryController::class, 'servisCheck'])

@@ -91,6 +91,13 @@
                                 <i class="bi bi-tools"></i> Perbaikan Barang
                             </a>
                         </li>
+                        @if(auth()->user()->hasPermission('purchase', 'view'))
+                        <li class="nav-item">
+                            <a href="{{ route('inventory.prices.index') }}" class="nav-link sidebar-sublink {{ request()->routeIs('inventory.prices.*') ? 'active' : '' }}">
+                                <i class="bi bi-currency-dollar"></i> Daftar Harga Barang
+                            </a>
+                        </li>
+                        @endif
                     </ul>
                 </div>
             </li>

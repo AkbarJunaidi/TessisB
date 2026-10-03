@@ -10,6 +10,7 @@ use App\Models\Contact;
 use App\Models\Inventory;
 use App\Models\Project;
 use App\Models\Purchase;
+use App\Services\Inventory\RepairService;
 use App\Services\Purchase\PurchaseService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,8 +21,10 @@ use Exception;
 
 class PurchaseController extends Controller
 {
-    public function __construct(protected PurchaseService $purchaseService)
-    {
+    public function __construct(
+        protected PurchaseService $purchaseService,
+        protected RepairService $repairService
+    ) {
     }
 
     public function index(Request $request): View
@@ -168,6 +171,8 @@ class PurchaseController extends Controller
             'vendors'     => Contact::vendors()->orderBy('name')->get(['id', 'name', 'company']),
             'projects'    => Project::orderByDesc('id')->limit(300)->get(['id', 'name']),
             'inventories' => Inventory::orderBy('name')->get(['id', 'name', 'serial_number']),
+            // Biaya servis termasuk data inventory, jadi hanya untuk yang boleh melihat Inventory.
+            'repairCosts' => Auth::user()?->hasPermission('inventory', 'view') ? $this->repairService->costComparison() : [],
         ];
     }
 

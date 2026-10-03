@@ -134,6 +134,56 @@ document.addEventListener('DOMContentLoaded', function () {
         return digits === '' ? 0 : parseInt(digits, 10);
     };
     const rupiah = (value) => 'Rp ' + Math.round(value).toLocaleString('id-ID');
+    const repairCosts = @json($repairCosts ?? []);
+    const warnRatio = {{ \App\Services\Inventory\RepairService::REPLACE_WARN_RATIO }};
+    const esc = (text) => { const d = document.createElement('div'); d.textContent = text == null ? '' : String(text); return d.innerHTML; };
+
+    // Perbandingan beli baru vs riwayat servis, hanya untuk mode "Tambah stok barang yang ada".
+    function renderCompare(row) {
+        const box = row.querySelector('.item-compare');
+        const inventoryId = row.querySelector('.item-inventory').value;
+
+        if (row.querySelector('.item-mode').value !== 'existing' || !inventoryId) {
+            box.classList.add('d-none');
+            box.innerHTML = '';
+            return;
+        }
+
+        const qty = parseInt(row.querySelector('.item-qty').value, 10) || 0;
+        const price = toNumber(row.querySelector('.item-price').value);
+        const info = repairCosts[inventoryId];
+        const cell = (label, value) => `<div class="col-6 col-md-3"><div class="text-muted">${label}</div><div class="fw-semibold">${value}</div></div>`;
+
+        let html = '<div class="row g-2">'
+            + cell('Harga beli baru / unit', price > 0 ? rupiah(price) : '-')
+            + cell('Total beli baru (' + qty + ' unit)', price > 0 ? rupiah(price * qty) : '-');
+
+        if (info) {
+            html += cell('Harga beli terakhir', info.last_price !== null
+                ? rupiah(info.last_price) + ' <span class="text-muted fw-normal">(' + esc(info.last_code) + ')</span>' : '-');
+            html += cell('Total biaya servis', info.servis_count > 0
+                ? rupiah(info.servis_total) + ' <span class="text-muted fw-normal">(' + info.servis_count + 'x servis)</span>' : '-');
+        }
+        html += '</div>';
+
+        if (info && info.worst_unit) {
+            const w = info.worst_unit;
+            const ratio = price > 0 ? w.total / price : null;
+            const pct = ratio === null ? '' : ' (' + Math.round(ratio * 100) + '% dari harga beli baru)';
+
+            if (ratio !== null && ratio >= warnRatio) {
+                html += '<div class="text-danger fw-semibold mt-2"><i class="bi bi-exclamation-triangle me-1"></i>Servis Unit #'
+                    + w.number + ' sudah ' + rupiah(w.total) + pct + '. Pertimbangkan mengganti dengan yang baru.</div>';
+            } else {
+                html += '<div class="text-muted mt-2">Unit paling mahal diservis: Unit #' + w.number + ' ' + rupiah(w.total) + pct + '</div>';
+            }
+        } else if (!info) {
+            html += '<div class="text-muted mt-2">Belum ada riwayat servis atau harga beli untuk barang ini.</div>';
+        }
+
+        box.innerHTML = '<div class="rounded-3 border bg-light p-2 small">' + html + '</div>';
+        box.classList.remove('d-none');
+    }
 
     function recalculate() {
         let total = 0;
@@ -141,6 +191,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const qty = parseInt(row.querySelector('.item-qty').value, 10) || 0;
             const subtotal = qty * toNumber(row.querySelector('.item-price').value);
             row.querySelector('.item-subtotal').textContent = rupiah(subtotal);
+            renderCompare(row);
             total += subtotal;
         });
         totalEl.textContent = rupiah(total);
@@ -169,6 +220,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const row = e.target.closest('.purchase-item');
         if (e.target.classList.contains('item-mode')) {
             syncMode(row);
+            renderCompare(row);
         }
         if (e.target.classList.contains('item-inventory')) {
             const nameInput = row.querySelector('.item-name');
@@ -176,6 +228,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (selected && selected.dataset.name && nameInput.value.trim() === '') {
                 nameInput.value = selected.dataset.name;
             }
+            renderCompare(row);
         }
     });
 
