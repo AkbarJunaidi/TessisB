@@ -20,6 +20,12 @@ class InventoryUnit extends Model
         'surat_jalan_item_id',
         'lokasi_utama_id',
         'lokasi_sekarang_id',
+        'servis_terakhir_at',
+        'pemakaian_sejak_servis',
+    ];
+
+    protected $casts = [
+        'servis_terakhir_at' => 'date',
     ];
 
     public function inventory(): BelongsTo

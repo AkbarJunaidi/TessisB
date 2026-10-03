@@ -123,6 +123,11 @@ class SuratJalanService
                 \App\Models\InventoryUnit::whereIn('id', $unitsToAssign->pluck('id'))
                     ->update(['surat_jalan_item_id' => $suratJalanItem->id]);
 
+                // Pemakaian untuk jadwal servis dihitung per peminjaman.
+                if ($inventory->punyaJadwalServis()) {
+                    \App\Models\InventoryUnit::whereIn('id', $unitsToAssign->pluck('id'))->increment('pemakaian_sejak_servis');
+                }
+
                 $this->mutationService->record(
                     $inventory->id,
                     'dipinjam',
@@ -423,6 +428,11 @@ class SuratJalanService
 
             \App\Models\InventoryUnit::whereIn('id', $unitsToAssign->pluck('id'))
                 ->update(['surat_jalan_item_id' => $suratJalanItem->id]);
+
+            // Pemakaian untuk jadwal servis dihitung per peminjaman.
+            if ($inventory->punyaJadwalServis()) {
+                \App\Models\InventoryUnit::whereIn('id', $unitsToAssign->pluck('id'))->increment('pemakaian_sejak_servis');
+            }
 
             if ($lokasi) {
                 // Peminjam memegang unit di lokasi ini, jadi unit yang tercatat di tempat lain dikoreksi.

@@ -350,6 +350,33 @@ class InventoryController extends Controller
     }
 
     /**
+     * Menandai 1 unit sudah diservis (AJAX per-baris di form Edit).
+     */
+    public function completeUnitService(Inventory $inventory, \App\Models\InventoryUnit $unit): \Illuminate\Http\JsonResponse
+    {
+        if (!Auth::user()?->hasPermission('inventory', 'edit')) {
+            return response()->json(['message' => 'Anda tidak memiliki hak akses untuk mengubah data inventory.'], 403);
+        }
+
+        if ((int) $unit->inventory_id !== (int) $inventory->id) {
+            return response()->json(['message' => 'Unit tidak ditemukan pada barang ini.'], 404);
+        }
+
+        try {
+            $updated = $this->inventoryService->completeUnitService($unit);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        $servis = $inventory->servisStatusFor($updated);
+
+        return response()->json([
+            'message' => "Unit #{$updated->unit_number} ditandai sudah diservis.",
+            'servis'  => ['state' => $servis['state'] ?? 'ok', 'pesan' => implode(' / ', $servis['pesan'] ?? [])],
+        ]);
+    }
+
+    /**
      * Menghapus inventory.
      */
     public function destroy(Inventory $inventory): RedirectResponse

@@ -155,6 +155,9 @@
             </div>
         </div>
 
+        {{-- Jadwal Servis diletakkan di atas (setelah Informasi Utama), bukan di bawah seperti Informasi Tambahan. --}}
+        @include('inventory.partials.service-schedule-fields')
+
         <!-- CARD 2: Foto Barang -->
         <div class="app-panel mb-4">
             <div class="app-panel-header">
@@ -226,6 +229,9 @@
                             <tr class="text-uppercase text-secondary small">
                                 <th>Unit #</th>
                                 <th>Status Saat Ini</th>
+                                @if($inventory->punyaJadwalServis())
+                                    <th>Servis</th>
+                                @endif
                                 <th style="width:260px;">Ubah Status</th>
                             </tr>
                         </thead>
@@ -249,6 +255,32 @@
                                             <div class="small text-muted mt-1">Dipinjam via {{ $unit->suratJalanItem->suratJalan->nomor ?? '-' }}</div>
                                         @endif
                                     </td>
+                                    @if($inventory->punyaJadwalServis())
+                                        @php
+                                            $servis = $inventory->servisStatusFor($unit);
+                                            $servisBadge = match($servis['state'] ?? null) {
+                                                'terlambat' => 'bg-danger-subtle text-danger border border-danger-subtle',
+                                                'segera'    => 'bg-warning-subtle text-warning border border-warning-subtle',
+                                                default     => 'bg-success-subtle text-success border border-success-subtle',
+                                            };
+                                        @endphp
+                                        <td>
+                                            @if($servis)
+                                                <span class="badge rounded-pill px-2 py-1 servis-badge {{ $servisBadge }}">{{ implode(' / ', $servis['pesan']) }}</span>
+                                            @else
+                                                <span class="badge rounded-pill px-2 py-1 servis-badge bg-light text-muted border">-</span>
+                                            @endif
+                                            @if(!$unit->surat_jalan_item_id && $unit->status === 'Tersedia')
+                                                <div class="mt-1">
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-outline-secondary complete-unit-service"
+                                                            data-url="{{ route('inventory.units.complete-service', [$inventory, $unit]) }}">
+                                                        <i class="bi bi-tools me-1"></i> Sudah Diservis
+                                                    </button>
+                                                </div>
+                                            @endif
+                                        </td>
+                                    @endif
                                     <td>
                                         <div class="d-flex flex-column gap-1">
                                             <div class="d-flex gap-2">
@@ -542,6 +574,39 @@
                         btn.disabled = false;
                         btn.innerHTML = originalIcon;
                     });
+            });
+        });
+
+        // Tandai unit sudah diservis: servis terakhir = hari ini, hitungan pemakaian direset.
+        const servisBadgeClass = {
+            ok: 'bg-success-subtle text-success border border-success-subtle',
+            segera: 'bg-warning-subtle text-warning border border-warning-subtle',
+            terlambat: 'bg-danger-subtle text-danger border border-danger-subtle',
+        };
+
+        document.querySelectorAll('.complete-unit-service').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const row = btn.closest('tr');
+                const badge = row.querySelector('.servis-badge');
+
+                btn.disabled = true;
+
+                fetch(btn.dataset.url, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                })
+                    .then(async (response) => {
+                        const data = await response.json();
+                        if (!response.ok) { throw new Error(data.message || 'Gagal menandai servis.'); }
+                        return data;
+                    })
+                    .then((data) => {
+                        badge.textContent = data.servis.pesan;
+                        badge.className = 'badge rounded-pill px-2 py-1 servis-badge ' + (servisBadgeClass[data.servis.state] || servisBadgeClass.ok);
+                        showAlert(data.message, false);
+                    })
+                    .catch((err) => { showAlert(err.message, true); })
+                    .finally(() => { btn.disabled = false; });
             });
         });
     })();

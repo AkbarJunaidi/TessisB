@@ -153,6 +153,9 @@
             </div>
         </div>
 
+        {{-- Jadwal Servis diletakkan di atas (setelah Informasi Utama), bukan di bawah seperti Informasi Tambahan. --}}
+        @include('inventory.partials.service-schedule-fields')
+
         <!-- CARD 2: Foto Barang -->
         <div class="app-panel mb-4">
             <div class="app-panel-header">

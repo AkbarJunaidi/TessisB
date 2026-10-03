@@ -69,6 +69,7 @@ class NotificationService
         'finance_missing'        => 'Pendapatan Belum Diisi (H-5 Akhir Bulan)',
         'approval_pending'       => 'Permintaan Approval Menunggu',
         'schedule_conflict'      => 'Bentrok Jadwal Alat Antar Project',
+        'servis_jatuh_tempo'     => 'Servis Alat Jatuh Tempo / Segera',
         'announcement'           => 'Pengumuman dari Super Admin',
     ];
 
@@ -112,6 +113,7 @@ class NotificationService
                 'finance_missing'        => $this->getFinanceNotFilledThisMonthNotifications(),
                 'approval_pending'       => $this->getPendingApprovalNotifications(),
                 'schedule_conflict'      => $this->getScheduleConflictNotifications(),
+                'servis_jatuh_tempo'     => $this->getServiceDueNotifications(),
             ]
         );
 
@@ -287,6 +289,42 @@ class NotificationService
             'message' => $request->display_title,
             'url'     => route('approval.index'),
         ])->all();
+    }
+
+    /**
+     * Notifikasi: barang yang punya unit dengan servis terlambat atau segera (lihat
+     * Inventory::servisStatusFor). Hilang sendiri begitu unitnya ditandai sudah diservis.
+     */
+    private function getServiceDueNotifications(): array
+    {
+        return \App\Models\Inventory::denganJadwalServis()
+            ->with('units:id,inventory_id,unit_number,status,servis_terakhir_at,pemakaian_sejak_servis,created_at')
+            ->get()
+            ->map(fn ($inventory) => ['inventory' => $inventory, 'counts' => $inventory->servisCounts()])
+            ->filter(fn ($row) => $row['counts']['terlambat'] > 0 || $row['counts']['segera'] > 0)
+            ->sortByDesc(fn ($row) => $row['counts']['terlambat'])
+            ->take(self::MAX_PER_TYPE)
+            ->map(function ($row) {
+                $parts = [];
+
+                if ($row['counts']['terlambat'] > 0) {
+                    $parts[] = $row['counts']['terlambat'] . ' unit jatuh tempo';
+                }
+                if ($row['counts']['segera'] > 0) {
+                    $parts[] = $row['counts']['segera'] . ' unit segera';
+                }
+
+                return [
+                    'id'      => "servis-{$row['inventory']->id}",
+                    'type'    => 'servis_jatuh_tempo',
+                    'icon'    => 'bi-tools ' . ($row['counts']['terlambat'] > 0 ? 'text-danger' : 'text-warning'),
+                    'title'   => 'Servis Alat ' . ($row['counts']['terlambat'] > 0 ? 'Jatuh Tempo' : 'Segera'),
+                    'message' => $row['inventory']->name . ': ' . implode(', ', $parts),
+                    'url'     => route('inventory.show', $row['inventory']),
+                ];
+            })
+            ->values()
+            ->all();
     }
 
     /**

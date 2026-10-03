@@ -42,7 +42,9 @@ class InventoryService
      */
     public function getAllPaginated(array $filters = [], int $perPage = 10): LengthAwarePaginator
     {
-        $query = Inventory::withAvailability();
+        // Unit ikut di-load (kolom minimal) untuk badge servis di daftar.
+        $query = Inventory::withAvailability()
+            ->with('units:id,inventory_id,unit_number,status,servis_terakhir_at,pemakaian_sejak_servis,created_at');
 
         // Search berdasarkan Nama Barang ATAU Brand
         if (!empty($filters['search'])) {
@@ -114,7 +116,7 @@ class InventoryService
                 'image'         => $imagePath,
                 'qr_code'       => null,
                 'quantity_total' => $data['quantity_total'] ?? 1,
-            ]);
+            ] + $this->servisSchedule($data));
 
             // Generate file fisik QR Code berdasarkan serial_number
             $qrCodePath = $this->qrCodeService->generate($inventory->serial_number);
@@ -190,6 +192,7 @@ class InventoryService
             // bawah supaya perubahan stok ("ditambah dari X ke Y unit")
             // tercatat jelas, bukan cuma "Update Inventory" generik.
             $oldQuantityTotal = $inventory->quantity_total;
+            $hadServisSchedule = $inventory->punyaJadwalServis();
 
             // Jalankan update database data tekstual
             $inventory->update([
@@ -200,7 +203,13 @@ class InventoryService
                 'brand'         => $data['brand'] ?? null,
                 'image'         => $inventory->image,
                 'quantity_total' => $data['quantity_total'] ?? $inventory->quantity_total,
-            ]);
+            ] + $this->servisSchedule($data));
+
+            // Jadwal baru diaktifkan: hitungan semua unit dimulai dari hari ini.
+            if (!$hadServisSchedule && $inventory->punyaJadwalServis()) {
+                \App\Models\InventoryUnit::where('inventory_id', $inventory->id)
+                    ->update(['servis_terakhir_at' => now()->toDateString(), 'pemakaian_sejak_servis' => 0]);
+            }
 
             // Logika Siklus Hidup File QR Code
             if ($oldSerialNumber !== $inventory->serial_number) {
@@ -303,6 +312,8 @@ class InventoryService
                     'status'             => 'Tersedia',
                     'lokasi_utama_id'    => $defaultLocationId,
                     'lokasi_sekarang_id' => $defaultLocationId,
+                    'servis_terakhir_at' => $inventory->punyaJadwalServis() ? now()->toDateString() : null,
+                    'pemakaian_sejak_servis' => 0,
                     'created_at'         => now(),
                     'updated_at'         => now(),
                 ];
@@ -418,6 +429,11 @@ class InventoryService
             $this->mutationService->recordStatusChange($unit->inventory_id, $statusLama, $status);
         }
 
+        // Unit kembali dari Perbaikan: hitungan servisnya dimulai ulang dari hari ini.
+        if ($statusLama === 'Perbaikan' && $status === 'Tersedia' && $unit->inventory->punyaJadwalServis()) {
+            $unit->update(['servis_terakhir_at' => now()->toDateString(), 'pemakaian_sejak_servis' => 0]);
+        }
+
         $this->activityLogService->log(
             Auth::id(),
             'Inventory',
@@ -425,6 +441,58 @@ class InventoryService
         );
 
         return $unit->fresh();
+    }
+
+    /**
+     * Menandai 1 unit sudah diservis: servis terakhir = hari ini, hitungan pemakaian direset,
+     * dan tercatat di Mutasi Aset (servis_selesai).
+     *
+     * @throws \Exception
+     */
+    public function completeUnitService(\App\Models\InventoryUnit $unit): \App\Models\InventoryUnit
+    {
+        $inventory = $unit->inventory;
+
+        if (!$inventory->punyaJadwalServis()) {
+            throw new \Exception('Barang ini tidak memiliki jadwal servis.');
+        }
+
+        if ($unit->surat_jalan_item_id) {
+            throw new \Exception("Unit #{$unit->unit_number} sedang dipinjam - tandai servis setelah dikembalikan.");
+        }
+
+        if ($unit->status !== 'Tersedia') {
+            throw new \Exception("Unit #{$unit->unit_number} berstatus \"{$unit->status}\". Ubah ke Tersedia untuk menyelesaikan perbaikan; hitungan servis ikut direset.");
+        }
+
+        DB::transaction(function () use ($unit, $inventory) {
+            $unit->update(['servis_terakhir_at' => now()->toDateString(), 'pemakaian_sejak_servis' => 0]);
+
+            $this->mutationService->record($inventory->id, 'servis_selesai', 1, null, "Unit #{$unit->unit_number} - servis berkala");
+
+            $this->activityLogService->log(
+                Auth::id(),
+                'Inventory',
+                "Servis selesai Unit #{$unit->unit_number} ({$inventory->name})"
+            );
+        });
+
+        return $unit->fresh();
+    }
+
+    /**
+     * Interval jadwal servis dari input form; toggle mati atau kolom kosong menjadi null.
+     *
+     * @return array{servis_interval_hari: ?int, servis_interval_pemakaian: ?int}
+     */
+    private function servisSchedule(array $data): array
+    {
+        $aktif = filter_var($data['use_servis'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+        return [
+            'servis_interval_hari'      => $aktif && filled($data['servis_interval_hari'] ?? null) ? (int) $data['servis_interval_hari'] : null,
+            'servis_interval_pemakaian' => $aktif && filled($data['servis_interval_pemakaian'] ?? null) ? (int) $data['servis_interval_pemakaian'] : null,
+        ];
     }
 
     /**

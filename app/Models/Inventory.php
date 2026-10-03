@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -28,8 +29,102 @@ class Inventory extends Model
         'qr_code', // Kolom bawaan tetap dipertahankan untuk menyimpan path berkas gambar QR
         'qr_code_report', // QR kedua khusus Inventory Report - isinya Signed URL ke halaman scan publik
         'quantity_total',
+        'servis_interval_hari',
+        'servis_interval_pemakaian',
         'deleted_by',
     ];
+
+    /** Sisa hari (atau 1 pemakaian) di bawah ini dianggap "servis segera". */
+    public const SERVIS_SEGERA_HARI = 7;
+
+    /**
+     * Jadwal servis aktif bila minimal satu interval (hari / pemakaian) terisi.
+     */
+    public function punyaJadwalServis(): bool
+    {
+        return !is_null($this->servis_interval_hari) || !is_null($this->servis_interval_pemakaian);
+    }
+
+    public function scopeDenganJadwalServis(Builder $query): Builder
+    {
+        return $query->where(
+            fn ($q) => $q->whereNotNull('servis_interval_hari')->orWhereNotNull('servis_interval_pemakaian')
+        );
+    }
+
+    /**
+     * Status servis satu unit; null bila barang tanpa jadwal atau unit tidak berstatus Tersedia.
+     * state: ok | segera | terlambat. Jatuh tempo begitu salah satu syarat (hari / pemakaian) terpenuhi.
+     *
+     * @return array{state: string, pesan: array<int, string>, sisaHari: ?int, sisaPemakaian: ?int}|null
+     */
+    public function servisStatusFor(InventoryUnit $unit, ?Carbon $today = null): ?array
+    {
+        if (!$this->punyaJadwalServis() || $unit->status !== 'Tersedia') {
+            return null;
+        }
+
+        $today ??= Carbon::today();
+        $state = 'ok';
+        $pesan = [];
+        $sisaHari = null;
+        $sisaPemakaian = null;
+
+        if ($this->servis_interval_hari) {
+            $baseline = $unit->servis_terakhir_at ?? $unit->created_at ?? $today;
+            $jatuhTempo = Carbon::parse($baseline)->startOfDay()->addDays($this->servis_interval_hari);
+            $sisaHari = (int) $today->diffInDays($jatuhTempo, false);
+
+            if ($sisaHari < 0) {
+                $state = 'terlambat';
+                $pesan[] = 'Terlambat ' . abs($sisaHari) . ' hari';
+            } elseif ($sisaHari === 0) {
+                $state = 'terlambat';
+                $pesan[] = 'Jatuh tempo hari ini';
+            } else {
+                $state = $sisaHari <= self::SERVIS_SEGERA_HARI ? 'segera' : 'ok';
+                $pesan[] = "{$sisaHari} hari lagi";
+            }
+        }
+
+        if ($this->servis_interval_pemakaian) {
+            $dipakai = (int) $unit->pemakaian_sejak_servis;
+            $sisaPemakaian = $this->servis_interval_pemakaian - $dipakai;
+
+            if ($sisaPemakaian <= 0) {
+                $state = 'terlambat';
+                $pesan[] = "Pemakaian {$dipakai}/{$this->servis_interval_pemakaian} (batas tercapai)";
+            } else {
+                if ($sisaPemakaian === 1 && $state !== 'terlambat') {
+                    $state = 'segera';
+                }
+                $pesan[] = "{$sisaPemakaian} pemakaian lagi";
+            }
+        }
+
+        return compact('state', 'pesan', 'sisaHari', 'sisaPemakaian');
+    }
+
+    /**
+     * Jumlah unit yang servisnya terlambat / segera (memakai relasi units yang sudah di-load).
+     *
+     * @return array{terlambat: int, segera: int}
+     */
+    public function servisCounts(): array
+    {
+        $today = Carbon::today();
+        $counts = ['terlambat' => 0, 'segera' => 0];
+
+        foreach ($this->units as $unit) {
+            $state = $this->servisStatusFor($unit, $today)['state'] ?? 'ok';
+
+            if (isset($counts[$state])) {
+                $counts[$state]++;
+            }
+        }
+
+        return $counts;
+    }
 
 // Relasi ke Model InventoryAttribute (Has Many)
     public function attributes(): HasMany

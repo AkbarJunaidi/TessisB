@@ -388,6 +388,15 @@
                 <h6 class="fw-bold m-0">Status Unit Fisik</h6>
                 <div class="d-flex flex-wrap align-items-center gap-3">
                     <span class="text-muted small">{{ $inventory->qty_available }} dari {{ $inventory->quantity_total }} unit bisa dipinjam sekarang</span>
+                    @if($inventory->punyaJadwalServis())
+                        <span class="text-muted small">
+                            <i class="bi bi-tools me-1"></i>Servis:
+                            {{ collect([
+                                $inventory->servis_interval_hari ? "setiap {$inventory->servis_interval_hari} hari" : null,
+                                $inventory->servis_interval_pemakaian ? "setiap {$inventory->servis_interval_pemakaian} pemakaian" : null,
+                            ])->filter()->implode(' / ') }}
+                        </span>
+                    @endif
 
                     @if($canMoveLocation && $movableCount > 0)
                         <div class="form-check m-0">
@@ -434,6 +443,12 @@
                                     <div class="small text-truncate fw-semibold" style="font-size:.6rem;"
                                          title="Lokasi utama: {{ $unit->lokasiUtama->name ?? '-' }}">Belum di lokasi utama</div>
                                 @endif
+                            @endif
+                            @php $servis = $inventory->servisStatusFor($unit); @endphp
+                            @if($servis && $servis['state'] !== 'ok')
+                                <div class="small text-truncate fw-semibold" style="font-size:.6rem;" title="{{ implode(' / ', $servis['pesan']) }}">
+                                    <i class="bi bi-tools me-1"></i>{{ $servis['state'] === 'terlambat' ? 'Servis jatuh tempo' : 'Servis segera' }}
+                                </div>
                             @endif
                         </div>
                     </div>

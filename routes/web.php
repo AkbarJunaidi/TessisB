@@ -183,6 +183,10 @@ Route::middleware('auth')->group(function () {
         Route::patch('inventory/{inventory}/units/{unit}/status', [InventoryController::class, 'updateUnitStatus'])
             ->name('inventory.units.update-status');
 
+        // Tandai unit sudah diservis (AJAX per-baris di form Edit).
+        Route::post('inventory/{inventory}/units/{unit}/service', [InventoryController::class, 'completeUnitService'])
+            ->name('inventory.units.complete-service');
+
         // Pindah lokasi beberapa unit sekaligus (dari Detail Inventory).
         Route::post('inventory/{inventory}/units/move-location', [LocationController::class, 'moveUnits'])
             ->name('inventory.units.move-location');

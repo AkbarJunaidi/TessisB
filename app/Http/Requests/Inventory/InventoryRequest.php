@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Inventory;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -69,7 +70,26 @@ class InventoryRequest extends FormRequest
             'attributes' => ['nullable', 'array', 'max:8'],
             'attributes.*.name' => ['nullable', 'string', 'max:40'],
             'attributes.*.value' => ['nullable', 'string', 'max:100'],
+
+            // Jadwal servis (opsional): interval hari dan/atau interval pemakaian (per peminjaman)
+            'use_servis' => ['nullable', 'in:1,0,true,false'],
+            'servis_interval_hari' => ['nullable', 'integer', 'min:1', 'max:3650'],
+            'servis_interval_pemakaian' => ['nullable', 'integer', 'min:1', 'max:1000'],
         ];
+    }
+
+    /**
+     * Toggle jadwal servis aktif wajib mengisi minimal satu interval.
+     */
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            $aktif = filter_var($this->input('use_servis'), FILTER_VALIDATE_BOOLEAN);
+
+            if ($aktif && !$this->filled('servis_interval_hari') && !$this->filled('servis_interval_pemakaian')) {
+                $validator->errors()->add('servis_interval_hari', 'Isi minimal salah satu: interval hari atau interval pemakaian.');
+            }
+        });
     }
 
     /**
@@ -95,6 +115,12 @@ class InventoryRequest extends FormRequest
             'attributes.max' => 'Informasi tambahan maksimal 8 baris agar laporan PDF tetap muat 1 halaman.',
             'attributes.*.name.max' => 'Nama informasi tambahan maksimal 40 karakter.',
             'attributes.*.value.max' => 'Nilai informasi tambahan maksimal 100 karakter.',
+            'servis_interval_hari.integer' => 'Interval servis (hari) harus berupa angka.',
+            'servis_interval_hari.min' => 'Interval servis (hari) minimal 1.',
+            'servis_interval_hari.max' => 'Interval servis (hari) maksimal 3650.',
+            'servis_interval_pemakaian.integer' => 'Interval servis (pemakaian) harus berupa angka.',
+            'servis_interval_pemakaian.min' => 'Interval servis (pemakaian) minimal 1.',
+            'servis_interval_pemakaian.max' => 'Interval servis (pemakaian) maksimal 1000.',
         ];
     }
 }

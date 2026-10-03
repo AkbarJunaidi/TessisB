@@ -149,6 +149,14 @@
                                     <span class="badge-soft-success">{{ $item->status ?? 'Tersedia' }}</span>
                             @endswitch
                             <div class="small text-muted mt-1">{{ $item->qty_available }}/{{ $item->quantity_total }} unit tersedia</div>
+                            @if($item->punyaJadwalServis())
+                                @php $servisCounts = $item->servisCounts(); @endphp
+                                @if($servisCounts['terlambat'] > 0)
+                                    <div class="mt-1"><span class="badge-soft-danger">Servis jatuh tempo: {{ $servisCounts['terlambat'] }} unit</span></div>
+                                @elseif($servisCounts['segera'] > 0)
+                                    <div class="mt-1"><span class="badge-soft-warning">Servis segera: {{ $servisCounts['segera'] }} unit</span></div>
+                                @endif
+                            @endif
                         </td>
 
                         <td class="py-3 text-secondary" data-label="Tanggal Input">{{ $item->created_at ? $item->created_at->format('d M Y') : '-' }}</td>
