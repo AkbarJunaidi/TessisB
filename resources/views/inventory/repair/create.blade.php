@@ -5,6 +5,22 @@
 @section('content')
 @php
     $selectedUnits = collect(old('unit_ids', $preselected))->map(fn ($id) => (int) $id)->all();
+
+    // Barang dengan unit terlewat/segera servis tampil paling atas.
+    $groups = $inventories->map(function ($inventory) use ($selectedUnits) {
+        $states = $inventory->units->map(fn ($unit) => $inventory->servisStatusFor($unit)['state'] ?? 'ok');
+
+        return [
+            'inventory' => $inventory,
+            'late'      => $states->filter(fn ($s) => $s === 'terlambat')->count(),
+            'soon'      => $states->filter(fn ($s) => $s === 'segera')->count(),
+            'selected'  => $inventory->units->whereIn('id', $selectedUnits)->count(),
+        ];
+    })->sortBy([
+        fn ($a, $b) => ($b['late'] > 0) <=> ($a['late'] > 0),
+        fn ($a, $b) => ($b['soon'] > 0) <=> ($a['soon'] > 0),
+        fn ($a, $b) => strcasecmp($a['inventory']->name, $b['inventory']->name),
+    ])->values();
 @endphp
 
 <div class="container-fluid px-4 py-3">
@@ -122,44 +138,67 @@
                 <input type="search" id="inventoryFilter" class="form-control mb-3" placeholder="Cari nama barang...">
 
                 <div id="inventoryGroups">
-                    @forelse($inventories as $inventory)
-                        <div class="border rounded-3 p-2 mb-2 inventory-group" data-name="{{ strtolower($inventory->name) }}">
-                            <div class="fw-semibold small mb-2">
-                                {{ $inventory->name }}
-                                <span class="text-muted fw-normal">SN {{ $inventory->serial_number }}</span>
-                            </div>
-                            <div class="d-flex flex-wrap gap-2">
-                                @foreach($inventory->units as $unit)
-                                    @php
-                                        $servis = $inventory->servisStatusFor($unit);
-                                        $state = $servis['state'] ?? 'ok';
-                                        $tone = match(true) {
-                                            $state === 'terlambat' => 'border-danger-subtle bg-danger-subtle',
-                                            $state === 'segera'    => 'border-warning-subtle bg-warning-subtle',
-                                            $unit->status !== 'Tersedia' => 'border-secondary-subtle bg-light',
-                                            default => 'bg-white',
-                                        };
-                                    @endphp
-                                    <label class="border rounded-3 px-3 py-2 d-flex align-items-center gap-2 {{ $tone }}" style="cursor:pointer;">
-                                        <input type="checkbox" class="form-check-input m-0 unit-check" name="unit_ids[]"
-                                               value="{{ $unit->id }}"
-                                               data-inventory="{{ $inventory->id }}"
-                                               data-inventory-name="{{ $inventory->name }}"
-                                               data-number="{{ $unit->unit_number }}"
-                                               data-state="{{ $state }}"
-                                               @checked(in_array($unit->id, $selectedUnits, true))>
-                                        <span>
-                                            <span class="fw-semibold">#{{ $unit->unit_number }}</span>
-                                            @if($state === 'terlambat')
-                                                <span class="d-block small text-danger">Servis terlewat</span>
-                                            @elseif($state === 'segera')
-                                                <span class="d-block small text-warning">Segera servis</span>
-                                            @elseif($unit->status !== 'Tersedia')
-                                                <span class="d-block small text-muted">{{ $unit->status }}</span>
-                                            @endif
-                                        </span>
-                                    </label>
-                                @endforeach
+                    @forelse($groups as $group)
+                        @php
+                            $inventory = $group['inventory'];
+                            $headTone = $group['late'] > 0
+                                ? 'border-danger-subtle bg-danger-subtle'
+                                : ($group['soon'] > 0 ? 'border-warning-subtle bg-warning-subtle' : 'bg-white');
+                            $open = $group['selected'] > 0;
+                        @endphp
+                        <div class="mb-2 inventory-group" data-name="{{ strtolower($inventory->name) }}" data-inventory="{{ $inventory->id }}">
+                            <button type="button" class="btn w-100 text-start border rounded-3 px-3 py-2 d-flex align-items-center gap-2 {{ $headTone }} {{ $open ? '' : 'collapsed' }}"
+                                    data-bs-toggle="collapse" data-bs-target="#unitGroup{{ $inventory->id }}"
+                                    aria-expanded="{{ $open ? 'true' : 'false' }}" aria-controls="unitGroup{{ $inventory->id }}">
+                                <i class="bi bi-chevron-down small"></i>
+                                <span class="fw-semibold small flex-grow-1">
+                                    {{ $inventory->name }}
+                                    <span class="text-muted fw-normal">SN {{ $inventory->serial_number }}</span>
+                                </span>
+                                @if($group['late'] > 0)
+                                    <span class="badge text-bg-danger">{{ $group['late'] }} terlewat</span>
+                                @endif
+                                @if($group['soon'] > 0)
+                                    <span class="badge text-bg-warning">{{ $group['soon'] }} segera</span>
+                                @endif
+                                <span class="badge text-bg-primary group-selected {{ $open ? '' : 'd-none' }}">{{ $group['selected'] }} dipilih</span>
+                                <span class="badge text-bg-light border">{{ $inventory->units->count() }} unit</span>
+                            </button>
+
+                            <div class="collapse {{ $open ? 'show' : '' }}" id="unitGroup{{ $inventory->id }}">
+                                <div class="d-flex flex-wrap gap-2 pt-2 px-1">
+                                    @foreach($inventory->units as $unit)
+                                        @php
+                                            $servis = $inventory->servisStatusFor($unit);
+                                            $state = $servis['state'] ?? 'ok';
+                                            $tone = match(true) {
+                                                $state === 'terlambat' => 'border-danger-subtle bg-danger-subtle',
+                                                $state === 'segera'    => 'border-warning-subtle bg-warning-subtle',
+                                                $unit->status !== 'Tersedia' => 'border-secondary-subtle bg-light',
+                                                default => 'bg-white',
+                                            };
+                                        @endphp
+                                        <label class="border rounded-3 px-3 py-2 d-flex align-items-center gap-2 {{ $tone }}" style="cursor:pointer;">
+                                            <input type="checkbox" class="form-check-input m-0 unit-check" name="unit_ids[]"
+                                                   value="{{ $unit->id }}"
+                                                   data-inventory="{{ $inventory->id }}"
+                                                   data-inventory-name="{{ $inventory->name }}"
+                                                   data-number="{{ $unit->unit_number }}"
+                                                   data-state="{{ $state }}"
+                                                   @checked(in_array($unit->id, $selectedUnits, true))>
+                                            <span>
+                                                <span class="fw-semibold">#{{ $unit->unit_number }}</span>
+                                                @if($state === 'terlambat')
+                                                    <span class="d-block small text-danger">Servis terlewat</span>
+                                                @elseif($state === 'segera')
+                                                    <span class="d-block small text-warning">Segera servis</span>
+                                                @elseif($unit->status !== 'Tersedia')
+                                                    <span class="d-block small text-muted">{{ $unit->status }}</span>
+                                                @endif
+                                            </span>
+                                        </label>
+                                    @endforeach
+                                </div>
                             </div>
                         </div>
                     @empty
@@ -190,6 +229,11 @@
         </div>
     </form>
 </div>
+
+<style>
+    .inventory-group .bi-chevron-down { transition: transform .15s; }
+    .inventory-group button:not(.collapsed) .bi-chevron-down { transform: rotate(180deg); }
+</style>
 
 <script>
 (function () {
@@ -258,6 +302,13 @@
     function updateSummary() {
         const checked = Array.from(document.querySelectorAll('.unit-check:checked'));
         document.getElementById('selectedCount').textContent = checked.length;
+
+        document.querySelectorAll('.inventory-group').forEach(function (g) {
+            const n = g.querySelectorAll('.unit-check:checked').length;
+            const badge = g.querySelector('.group-selected');
+            badge.textContent = n + ' dipilih';
+            badge.classList.toggle('d-none', n === 0);
+        });
 
         const groups = {};
         checked.forEach(function (c) {

@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const warnRatio = {{ \App\Services\Inventory\RepairService::REPLACE_WARN_RATIO }};
     const esc = (text) => { const d = document.createElement('div'); d.textContent = text == null ? '' : String(text); return d.innerHTML; };
 
-    // Perbandingan beli baru vs riwayat servis, hanya untuk mode "Tambah stok barang yang ada".
+    // Perbandingan harga beli terakhir vs biaya servis, hanya untuk mode "Tambah stok barang yang ada".
     function renderCompare(row) {
         const box = row.querySelector('.item-compare');
         const inventoryId = row.querySelector('.item-inventory').value;
@@ -152,33 +152,36 @@ document.addEventListener('DOMContentLoaded', function () {
         const qty = parseInt(row.querySelector('.item-qty').value, 10) || 0;
         const price = toNumber(row.querySelector('.item-price').value);
         const info = repairCosts[inventoryId];
-        const cell = (label, value) => `<div class="col-6 col-md-3"><div class="text-muted">${label}</div><div class="fw-semibold">${value}</div></div>`;
+        const cell = (label, value) => `<div class="col-12 col-md-4"><div class="text-muted">${label}</div><div class="fw-semibold">${value}</div></div>`;
+
+        if (!info) {
+            box.innerHTML = '<div class="rounded-3 border bg-light p-2 small text-muted">Belum ada riwayat servis atau harga beli untuk barang ini.</div>';
+            box.classList.remove('d-none');
+            return;
+        }
+
+        // Rata-rata biaya servis per unit yang pernah diservis, dikali jumlah yang akan dibeli.
+        const servisUnits = Object.keys(info.units || {}).length;
+        const avg = servisUnits > 0 ? info.servis_total / servisUnits : null;
 
         let html = '<div class="row g-2">'
-            + cell('Harga beli baru / unit', price > 0 ? rupiah(price) : '-')
-            + cell('Total beli baru (' + qty + ' unit)', price > 0 ? rupiah(price * qty) : '-');
+            + cell('Harga beli terakhir / unit', info.last_price !== null
+                ? rupiah(info.last_price) + ' <span class="text-muted fw-normal">(' + esc(info.last_code) + ')</span>' : '-')
+            + cell('Biaya servis / unit (rata-rata)', avg !== null
+                ? rupiah(avg) + ' <span class="text-muted fw-normal">(' + servisUnits + ' unit pernah diservis)</span>' : '-')
+            + cell('Total biaya servis ' + qty + ' unit', avg !== null && qty > 0
+                ? rupiah(avg * qty) + ' <span class="text-muted fw-normal">(perkiraan)</span>' : '-')
+            + '</div>';
 
-        if (info) {
-            html += cell('Harga beli terakhir', info.last_price !== null
-                ? rupiah(info.last_price) + ' <span class="text-muted fw-normal">(' + esc(info.last_code) + ')</span>' : '-');
-            html += cell('Total biaya servis', info.servis_count > 0
-                ? rupiah(info.servis_total) + ' <span class="text-muted fw-normal">(' + info.servis_count + 'x servis)</span>' : '-');
-        }
-        html += '</div>';
-
-        if (info && info.worst_unit) {
+        // Peringatan ganti baru: unit paling mahal diservis dibanding harga yang diisi (atau harga beli terakhir).
+        const refPrice = price > 0 ? price : (info.last_price || 0);
+        if (info.worst_unit && refPrice > 0) {
             const w = info.worst_unit;
-            const ratio = price > 0 ? w.total / price : null;
-            const pct = ratio === null ? '' : ' (' + Math.round(ratio * 100) + '% dari harga beli baru)';
-
-            if (ratio !== null && ratio >= warnRatio) {
+            const ratio = w.total / refPrice;
+            if (ratio >= warnRatio) {
                 html += '<div class="text-danger fw-semibold mt-2"><i class="bi bi-exclamation-triangle me-1"></i>Servis Unit #'
-                    + w.number + ' sudah ' + rupiah(w.total) + pct + '. Pertimbangkan mengganti dengan yang baru.</div>';
-            } else {
-                html += '<div class="text-muted mt-2">Unit paling mahal diservis: Unit #' + w.number + ' ' + rupiah(w.total) + pct + '</div>';
+                    + w.number + ' sudah ' + rupiah(w.total) + ' (' + Math.round(ratio * 100) + '% dari harga beli). Pertimbangkan mengganti dengan yang baru.</div>';
             }
-        } else if (!info) {
-            html += '<div class="text-muted mt-2">Belum ada riwayat servis atau harga beli untuk barang ini.</div>';
         }
 
         box.innerHTML = '<div class="rounded-3 border bg-light p-2 small">' + html + '</div>';
@@ -197,10 +200,27 @@ document.addEventListener('DOMContentLoaded', function () {
         totalEl.textContent = rupiah(total);
     }
 
+    // Mode "existing": nama item mengikuti barang Inventory yang dipilih dan dikunci.
+    function syncName(row) {
+        const nameInput = row.querySelector('.item-name');
+        const existing = row.querySelector('.item-mode').value === 'existing';
+        nameInput.readOnly = existing;
+        nameInput.classList.toggle('bg-light', existing);
+        nameInput.placeholder = existing ? 'Otomatis dari barang Inventory' : '';
+    }
+
+    function fillNameFromInventory(row) {
+        const selected = row.querySelector('.item-inventory').selectedOptions[0];
+        if (selected && selected.dataset.name) {
+            row.querySelector('.item-name').value = selected.dataset.name;
+        }
+    }
+
     function syncMode(row) {
         const mode = row.querySelector('.item-mode').value;
         row.querySelector('.item-existing').classList.toggle('d-none', mode !== 'existing');
         row.querySelector('.item-new').classList.toggle('d-none', mode !== 'new');
+        syncName(row);
     }
 
     document.getElementById('addItem').addEventListener('click', function () {
@@ -220,14 +240,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const row = e.target.closest('.purchase-item');
         if (e.target.classList.contains('item-mode')) {
             syncMode(row);
+            if (e.target.value === 'existing') fillNameFromInventory(row);
             renderCompare(row);
         }
         if (e.target.classList.contains('item-inventory')) {
-            const nameInput = row.querySelector('.item-name');
-            const selected = e.target.selectedOptions[0];
-            if (selected && selected.dataset.name && nameInput.value.trim() === '') {
-                nameInput.value = selected.dataset.name;
-            }
+            fillNameFromInventory(row);
             renderCompare(row);
         }
     });
@@ -243,6 +260,7 @@ document.addEventListener('DOMContentLoaded', function () {
         recalculate();
     });
 
+    list.querySelectorAll('.purchase-item').forEach(syncName);
     recalculate();
 });
 </script>
