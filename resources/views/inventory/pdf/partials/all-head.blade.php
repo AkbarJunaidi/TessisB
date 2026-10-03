@@ -1,7 +1,8 @@
 <style>
     @page {
         size: a4 portrait;
-        margin: 0; /* full-bleed: kop atas & bawah 100% lebar halaman, sama seperti single report */
+        /* Margin atas/bawah setinggi kop berlaku di SEMUA halaman; kiri/kanan 0 agar kop full-bleed */
+        margin: 4.8cm 0;
     }
     body {
         font-family: 'Helvetica', 'Arial', sans-serif;
@@ -21,10 +22,10 @@
         width: 100%;
     }
     .kop-atas {
-        top: 0;
+        top: -4.8cm;
     }
     .kop-bawah {
-        bottom: 0;
+        bottom: -4.8cm;
     }
     .kop-atas img, .kop-bawah img {
         width: 100%;
@@ -32,10 +33,7 @@
     }
 
     .page-bundle {
-        /* Padding atas/bawah pas tinggi kop (sama seperti single report),
-           kiri/kanan 1.8cm - supaya konten tidak ketiban/kepotong gambar
-           kop-atas & kop-bawah yang position: fixed */
-        padding: 4.8cm 1.8cm;
+        padding: 0 1.8cm;
         page-break-after: always;
     }
     .page-bundle:last-child {
@@ -90,19 +88,6 @@
         font-weight: bold;
         color: #111111;
     }
-    .status-badge {
-        display: inline-block;
-        padding: 2px 10px;
-        border-radius: 10px;
-        font-size: 9pt;
-        font-weight: bold;
-        border: 1px solid;
-    }
-    .status-tersedia  { background-color: #e8f7ee; color: #1e7e34; border-color: #b7e4c7; }
-    .status-dipinjam  { background-color: #e7f0fe; color: #0854a0; border-color: #b6d4fe; }
-    .status-perbaikan { background-color: #fff6e0; color: #a66a00; border-color: #ffe08a; }
-    .status-rusak     { background-color: #fdeceb; color: #c0392b; border-color: #f3b8b3; }
-    .status-hilang    { background-color: #ececed; color: #343a40; border-color: #c8cacc; }
 
     /* BAGIAN 2: DESKRIPSI */
     .box-section {

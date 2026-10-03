@@ -6,7 +6,8 @@
     <style>
         @page {
             size: a4 portrait;
-            margin: 0; /* full-bleed: kop atas & bawah 100% lebar halaman (2480px = 21cm @300dpi) */
+            /* Margin atas/bawah setinggi kop berlaku di SEMUA halaman; kiri/kanan 0 agar kop full-bleed */
+            margin: 4.8cm 0;
         }
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
@@ -24,20 +25,19 @@
             right: 0;
             width: 100%;
         }
+        /* Offset negatif = masuk ke area margin @page (cara DOMPDF untuk header/footer) */
         .kop-atas {
-            top: 0;
+            top: -4.8cm;
         }
         .kop-bawah {
-            bottom: 0;
+            bottom: -4.8cm;
         }
         .kop-atas img, .kop-bawah img {
             width: 100%;
             display: block;
         }
-        /* Margin isi dokumen: atas/bawah pas tinggi kop (5.03cm), kiri/kanan 1.8cm seperti semula */
         .content-wrapper {
-            /* padding: 5.03cm 1.8cm; */
-            padding: 4.8cm 1.8cm;
+            padding: 0 1.8cm;
         }
         .doc-title {
             text-align: center;
@@ -96,19 +96,6 @@
             font-weight: bold;
             color: #111111;
         }
-        .status-badge {
-            display: inline-block;
-            padding: 2px 10px;
-            border-radius: 10px;
-            font-size: 9pt;
-            font-weight: bold;
-            border: 1px solid;
-        }
-        .status-tersedia  { background-color: #e8f7ee; color: #1e7e34; border-color: #b7e4c7; }
-        .status-dipinjam  { background-color: #e7f0fe; color: #0854a0; border-color: #b6d4fe; }
-        .status-perbaikan { background-color: #fff6e0; color: #a66a00; border-color: #ffe08a; }
-        .status-rusak     { background-color: #fdeceb; color: #c0392b; border-color: #f3b8b3; }
-        .status-hilang    { background-color: #ececed; color: #343a40; border-color: #c8cacc; }
 
         /* BAGIAN 2: DESKRIPSI */
         .box-section {
@@ -222,19 +209,8 @@
                         <td class="identity-value">{{ $inventory->serial_number }}</td>
                     </tr>
                     <tr>
-                        <td class="identity-label">Status</td>
-                        <td>
-                            @php
-                                $statusSlug = match($inventory->status) {
-                                    'Dipinjam'  => 'dipinjam',
-                                    'Perbaikan' => 'perbaikan',
-                                    'Rusak'     => 'rusak',
-                                    'Hilang'    => 'hilang',
-                                    default     => 'tersedia',
-                                };
-                            @endphp
-                            <span class="status-badge status-{{ $statusSlug }}">{{ $inventory->status ?? 'Tersedia' }}</span>
-                        </td>
+                        <td class="identity-label">Jumlah Unit</td>
+                        <td class="identity-value">{{ $inventory->quantity_total ?? '-' }}</td>
                     </tr>
                     <tr>
                         <td class="identity-label">Brand</td>
@@ -257,7 +233,7 @@
     <div class="box-section">
         <p class="box-title">Deskripsi Barang</p>
         @if(!empty($inventory->description))
-            <div class="box-body">{{ $inventory->description }}</div>
+            <div class="box-body">{!! nl2br(e($inventory->description)) !!}</div>
         @else
             <div class="box-body-empty">Belum ada deskripsi.</div>
         @endif

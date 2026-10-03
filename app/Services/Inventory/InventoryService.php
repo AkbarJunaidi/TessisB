@@ -565,6 +565,7 @@ class InventoryService
         $pdf = Pdf::loadView('inventory.pdf.single', compact('inventory', 'exportDate'));
         // Memaksa driver printer untuk mengunci ukuran kertas ke standar internasional A4 Tegak
         $pdf->setPaper('a4', 'portrait');
+        $this->addPageNumbers($pdf);
         // Output penamaan berkas terstandardisasi: inventory-report-{serial_number}.pdf
         $filename = 'inventory-report-' . $inventory->serial_number . '.pdf';
         // Log audit sistem
@@ -587,8 +588,35 @@ class InventoryService
 
         $pdf = Pdf::loadView('inventory.pdf.all', compact('inventories', 'exportDate'));
         $pdf->setPaper('a4', 'portrait');
+        $this->addPageNumbers($pdf);
 
         return $pdf;
+    }
+
+    /**
+     * Menambah "Halaman X dari Y" di footer kanan tiap halaman. Dokumen dirender dulu supaya
+     * jumlah halaman diketahui; lewat API canvas, jadi tidak perlu mengaktifkan isPhpEnabled.
+     */
+    private function addPageNumbers(\Barryvdh\DomPDF\PDF $pdf): void
+    {
+        $pdf->render();
+
+        $dompdf  = $pdf->getDomPDF();
+        $canvas  = $dompdf->getCanvas();
+        $font    = $dompdf->getFontMetrics()->getFont('Helvetica');
+        $size    = 8;
+        $total   = $canvas->get_page_count();
+        $width   = $dompdf->getFontMetrics()->getTextWidth("Halaman {$total} dari {$total}", $font, $size);
+
+        // Rata kanan dengan margin isi 1.8cm (51pt); y sejajar baris teks footer di kop bawah
+        $canvas->page_text(
+            $canvas->get_width() - 51 - $width,
+            $canvas->get_height() - 96,
+            'Halaman {PAGE_NUM} dari {PAGE_COUNT}',
+            $font,
+            $size,
+            [0.35, 0.35, 0.35]
+        );
     }
 
     public function generateAllReport(bool $stream = true)
@@ -702,6 +730,7 @@ class InventoryService
 
         $pdf = Pdf::loadView('inventory.pdf.all-shell', compact('bodyHtml'));
         $pdf->setPaper('a4', 'portrait');
+        $this->addPageNumbers($pdf);
 
         $filename = 'all-inventory-report-' . now()->format('YmdHis') . '.pdf';
         $storedPath = 'inventory-reports/' . $filename;

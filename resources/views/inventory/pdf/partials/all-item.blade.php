@@ -21,19 +21,8 @@
                         <td class="identity-value">{{ $inventory->serial_number }}</td>
                     </tr>
                     <tr>
-                        <td class="identity-label">Status</td>
-                        <td>
-                            @php
-                                $statusSlug = match($inventory->status) {
-                                    'Dipinjam'  => 'dipinjam',
-                                    'Perbaikan' => 'perbaikan',
-                                    'Rusak'     => 'rusak',
-                                    'Hilang'    => 'hilang',
-                                    default     => 'tersedia',
-                                };
-                            @endphp
-                            <span class="status-badge status-{{ $statusSlug }}">{{ $inventory->status ?? 'Tersedia' }}</span>
-                        </td>
+                        <td class="identity-label">Jumlah Unit</td>
+                        <td class="identity-value">{{ $inventory->quantity_total ?? '-' }}</td>
                     </tr>
                     <tr>
                         <td class="identity-label">Brand</td>
@@ -56,7 +45,7 @@
     <div class="box-section">
         <p class="box-title">Deskripsi Barang</p>
         @if(!empty($inventory->description))
-            <div class="box-body">{{ $inventory->description }}</div>
+            <div class="box-body">{!! nl2br(e($inventory->description)) !!}</div>
         @else
             <div class="box-body-empty">Belum ada deskripsi.</div>
         @endif
