@@ -327,13 +327,13 @@ class InventoryController extends Controller
     }
 
     /**
-     * [AJAX] Mengubah status kondisi 1 unit fisik (Tersedia/Rusak/Perbaikan/Hilang)
+     * [AJAX] Mengubah status kondisi 1 unit fisik (status sistem atau kustom dari Pengaturan)
      * tanpa reload halaman - dipanggil per-baris dari tabel Kelola Unit Fisik.
      */
     public function updateUnitStatus(Request $request, Inventory $inventory, \App\Models\InventoryUnit $unit): \Illuminate\Http\JsonResponse
     {
         $request->validate([
-            'status' => ['required', 'in:Tersedia,Rusak,Perbaikan,Hilang'],
+            'status' => ['required', \Illuminate\Validation\Rule::in(\App\Support\InventoryStatus::assignable())],
         ]);
 
         if ($unit->inventory_id !== $inventory->id) {

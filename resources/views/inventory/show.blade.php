@@ -10,25 +10,7 @@
         <div>
             <h3 class="fw-bold text-dark m-0 d-flex align-items-center gap-2">
                 {{ $inventory->name }}
-                @switch($inventory->display_status)
-                    @case('Tersedia')
-                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.65rem;"><i class="bi bi-circle-fill me-1" style="font-size: 0.45rem;"></i>TERSEDIA</span>
-                        @break
-                    @case('Dipinjam')
-                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.65rem;"><i class="bi bi-circle-fill me-1" style="font-size: 0.45rem;"></i>DIPINJAM</span>
-                        @break
-                    @case('Perbaikan')
-                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.65rem;"><i class="bi bi-circle-fill me-1" style="font-size: 0.45rem;"></i>PERBAIKAN</span>
-                        @break
-                    @case('Rusak')
-                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.65rem;"><i class="bi bi-circle-fill me-1" style="font-size: 0.45rem;"></i>RUSAK</span>
-                        @break
-                    @case('Hilang')
-                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.65rem;"><i class="bi bi-circle-fill me-1" style="font-size: 0.45rem;"></i>HILANG</span>
-                        @break
-                    @default
-                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.65rem;">{{ strtoupper($inventory->display_status ?? 'TERSEDIA') }}</span>
-                @endswitch
+                <span class="badge {{ \App\Support\InventoryStatus::subtleClass($inventory->display_status) }} px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.65rem;"><i class="bi bi-circle-fill me-1" style="font-size: 0.45rem;"></i>{{ strtoupper($inventory->display_status ?? 'TERSEDIA') }}</span>
             </h3>
             <p class="text-muted small m-0">Menampilkan informasi lengkap dan identitas aset barang.</p>
         </div>
@@ -60,25 +42,7 @@
     <div class="d-md-none mb-3 px-1">
         <div class="d-flex align-items-center justify-content-between gap-2">
             <h4 class="fw-bold text-dark m-0">{{ $inventory->name }}</h4>
-            @switch($inventory->display_status)
-                @case('Tersedia')
-                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> TERSEDIA</span>
-                    @break
-                @case('Dipinjam')
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> DIPINJAM</span>
-                    @break
-                @case('Perbaikan')
-                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> PERBAIKAN</span>
-                    @break
-                @case('Rusak')
-                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> RUSAK</span>
-                    @break
-                @case('Hilang')
-                    <span class="badge bg-dark-subtle text-dark border border-dark-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> HILANG</span>
-                    @break
-                @default
-                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> {{ strtoupper($inventory->display_status ?? 'TERSEDIA') }}</span>
-            @endswitch
+            <span class="badge {{ \App\Support\InventoryStatus::subtleClass($inventory->display_status) }} px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> {{ strtoupper($inventory->display_status ?? 'TERSEDIA') }}</span>
         </div>
         <p class="text-muted small mb-2">Informasi lengkap aset barang</p>
         <a href="{{ route('inventory.index') }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-2 fw-medium">
@@ -433,14 +397,7 @@
             <div class="row g-2">
                 @forelse($inventory->units as $unit)
                     @php
-                        $badgeClass = match($unit->display_status) {
-                            'Tersedia'  => 'bg-success-subtle text-success border-success-subtle',
-                            'Dipinjam'  => 'bg-primary-subtle text-primary border-primary-subtle',
-                            'Perbaikan' => 'bg-warning-subtle text-warning border-warning-subtle',
-                            'Rusak'     => 'bg-danger-subtle text-danger border-danger-subtle',
-                            'Hilang'    => 'bg-secondary-subtle text-secondary border-secondary-subtle',
-                            default     => 'bg-light text-dark border',
-                        };
+                        $badgeClass = \App\Support\InventoryStatus::subtleClass($unit->display_status, false);
                         $onLoan  = $unit->isOnLoan();
                         $movable = !$onLoan && $unit->status !== 'Hilang';
                     @endphp

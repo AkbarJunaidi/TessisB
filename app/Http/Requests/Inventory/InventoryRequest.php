@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Inventory;
 
+use App\Support\InventoryStatus;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -39,7 +40,7 @@ class InventoryRequest extends FormRequest
                 'required',
                 'string',
                 // Membatasi status hanya pada pilihan yang telah ditentukan
-                Rule::in(['Tersedia', 'Dipinjam', 'Perbaikan', 'Rusak', 'Hilang'])
+                Rule::in(InventoryStatus::all())
             ],
             'brand' => ['nullable', 'string', 'max:100'],
             'quantity_total' => [

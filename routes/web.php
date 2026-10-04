@@ -15,6 +15,7 @@ use App\Http\Controllers\Inventory\RepairController;
 use App\Http\Controllers\Notification\AnnouncementController;
 use App\Http\Controllers\Notification\NotificationController;
 use App\Http\Controllers\Notification\NotificationSettingController;
+use App\Http\Controllers\Setting\SettingController;
 use App\Http\Controllers\Notification\SystemNotificationController;
 use App\Http\Controllers\Project\ProjectController;
 use App\Http\Controllers\Project\ProjectNoteController;
@@ -511,6 +512,10 @@ Route::middleware('auth')->group(function () {
 
         Route::post('notification-settings', [NotificationSettingController::class, 'update'])
             ->name('notification-settings.update');
+
+        // Pengaturan Pemilik (profil perusahaan, kategori project, aturan operasional)
+        Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
+        Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
 
     });
 

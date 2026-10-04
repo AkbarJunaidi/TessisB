@@ -99,11 +99,9 @@
                         <label for="status" class="form-label fw-semibold small text-secondary">Status Barang <span class="text-danger">*</span></label>
                         <select class="form-select @error('status') is-invalid @enderror" id="status" name="status" required>
                             @php $currentStatus = old('status', 'Tersedia'); @endphp
-                            <option value="Tersedia" {{ $currentStatus == 'Tersedia' ? 'selected' : '' }}>Tersedia</option>
-                            <option value="Dipinjam" {{ $currentStatus == 'Dipinjam' ? 'selected' : '' }}>Dipinjam</option>
-                            <option value="Perbaikan" {{ $currentStatus == 'Perbaikan' ? 'selected' : '' }}>Perbaikan</option>
-                            <option value="Rusak" {{ $currentStatus == 'Rusak' ? 'selected' : '' }}>Rusak</option>
-                            <option value="Hilang" {{ $currentStatus == 'Hilang' ? 'selected' : '' }}>Hilang</option>
+                            @foreach(\App\Support\InventoryStatus::all() as $statusName)
+                                <option value="{{ $statusName }}" {{ $currentStatus == $statusName ? 'selected' : '' }}>{{ $statusName }}</option>
+                            @endforeach
                         </select>
                         @error('status')
                             <div class="invalid-feedback">

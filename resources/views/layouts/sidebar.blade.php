@@ -2,8 +2,8 @@
      Di desktop, offcanvas-lg otomatis jadi sidebar statis tanpa header ini. --}}
 <div class="offcanvas-header d-lg-none px-3 pt-3 pb-2">
     <a href="{{ route('dashboard') }}" class="sidebar-logo-wrap text-decoration-none" id="appSidebarLabel">
-        <img src="{{ asset('image/logo1.png') }}" alt="Logo CV Arindra Production" class="sidebar-logo-mobile">
-        <span class="sidebar-brand-text">CV Arindra Production</span>
+        <img src="{{ asset('image/logo1.png') }}" alt="Logo {{ \App\Models\AppSetting::get('company_name') }}" class="sidebar-logo-mobile">
+        <span class="sidebar-brand-text">{{ \App\Models\AppSetting::get('company_name') }}</span>
     </a>
     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#appSidebar" aria-label="Tutup menu"></button>
 </div>
@@ -29,10 +29,10 @@
     <div class="d-none d-lg-flex px-1 sidebar-brand-row">
         <a href="{{ route('dashboard') }}" class="sidebar-brand-link" id="sidebarBrandLink">
             <span class="sidebar-brand-icon-wrap">
-                <img src="{{ asset('image/logo1.png') }}" alt="Logo CV Arindra Production" class="sidebar-brand-icon">
+                <img src="{{ asset('image/logo1.png') }}" alt="Logo {{ \App\Models\AppSetting::get('company_name') }}" class="sidebar-brand-icon">
                 <i class="bi bi-chevron-right sidebar-brand-expand-icon" aria-hidden="true"></i>
             </span>
-            <span class="sidebar-brand-text sidebar-link-text">CV Arindra Production</span>
+            <span class="sidebar-brand-text sidebar-link-text">{{ \App\Models\AppSetting::get('company_name') }}</span>
         </a>
         <button type="button" class="sidebar-collapse-toggle" id="sidebarCollapseToggle" aria-label="Tutup sidebar" title="Tutup sidebar">
             <i class="bi bi-chevron-left"></i>
@@ -219,6 +219,15 @@
                         </li>
                     </ul>
                 </div>
+            </li>
+        @endif
+
+        @if(auth()->user()->isSuperAdmin())
+            <li class="nav-item">
+                <a href="{{ route('settings.index') }}"
+                    class="nav-link sidebar-link text-white {{ request()->routeIs('settings.*') ? 'active' : '' }}">
+                    <i class="bi bi-gear"></i> <span class="sidebar-link-text">Pengaturan</span>
+                </a>
             </li>
         @endif
 

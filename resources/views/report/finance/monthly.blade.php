@@ -260,7 +260,8 @@
                 <!-- Kolom Logo (Tanpa Garis Vertikal) -->
                 <td class="logo-cell">
                     @php
-                        $imagePath = public_path('image/Arindra.png');
+                        $company = \App\Models\AppSetting::company();
+                        $imagePath = \App\Models\AppSetting::imagePath('logo_pdf');
                         if (file_exists($imagePath)) {
                             $imageData = base64_encode(file_get_contents($imagePath));
                             $mimeType = mime_content_type($imagePath);
@@ -279,9 +280,11 @@
 
                 <!-- Kolom Nama & Detail Perusahaan -->
                 <td class="brand-cell">
-                    <p class="brand-name">CV. ARINDRA PRODUCTION</p>
-                    <p class="brand-sub">Creative House Production</p>
-                    <p class="brand-address">Alamat : Bendul Merisi Selatan 3/102 Surabaya, Telp : 031- 8431462, Whatsapp : 081252200899</p>
+                    <p class="brand-name">{{ mb_strtoupper($company['name']) }}</p>
+                    @if($company['tagline'] !== '')
+                <p class="brand-sub">{{ $company['tagline'] }}</p>
+                @endif
+                    <p class="brand-address">{{ $company['address_line'] }}</p>
                 </td>
             </tr>
         </table>
@@ -406,10 +409,10 @@
 
     <!-- WRAPPER FOOTER -->
     <div class="footer-container">
-        <p class="tagline">Videography | Photography | Live Streaming</p>
+        <p class="tagline">{{ $company['footer_tagline'] }}</p>
         <div class="footer-divider"></div>
         <p class="footer-contact">
-            081217439568, 081252200899 &nbsp;|&nbsp; www.arindraproduction.co.id &nbsp;|&nbsp; @arindraproduction &nbsp;|&nbsp; @cvarindraproduction
+            {!! implode(' &nbsp;|&nbsp; ', array_map('e', $company['footer_parts'])) !!}
         </p>
     </div>
 

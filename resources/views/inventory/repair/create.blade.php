@@ -238,7 +238,7 @@
 <script>
 (function () {
     const repairCosts = @json($repairCosts ?? []);
-    const warnRatio = {{ \App\Services\Inventory\RepairService::REPLACE_WARN_RATIO }};
+    const warnRatio = {{ \App\Services\Inventory\RepairService::replaceWarnRatio() }};
     const rupiah = (v) => 'Rp ' + Math.round(v).toLocaleString('id-ID');
     const esc = (t) => { const d = document.createElement('div'); d.textContent = t == null ? '' : String(t); return d.innerHTML; };
 

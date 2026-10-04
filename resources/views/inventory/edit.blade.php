@@ -101,11 +101,9 @@
                         <label for="status" class="form-label fw-semibold small text-secondary">Status Barang <span class="text-danger">*</span></label>
                         <select class="form-select @error('status') is-invalid @enderror" id="status" name="status" required>
                             @php $currentStatus = old('status', $inventory->status ?? 'Tersedia'); @endphp
-                            <option value="Tersedia" {{ $currentStatus == 'Tersedia' ? 'selected' : '' }}>Tersedia</option>
-                            <option value="Dipinjam" {{ $currentStatus == 'Dipinjam' ? 'selected' : '' }}>Dipinjam</option>
-                            <option value="Perbaikan" {{ $currentStatus == 'Perbaikan' ? 'selected' : '' }}>Perbaikan</option>
-                            <option value="Rusak" {{ $currentStatus == 'Rusak' ? 'selected' : '' }}>Rusak</option>
-                            <option value="Hilang" {{ $currentStatus == 'Hilang' ? 'selected' : '' }}>Hilang</option>
+                            @foreach(\App\Support\InventoryStatus::all() as $statusName)
+                                <option value="{{ $statusName }}" {{ $currentStatus == $statusName ? 'selected' : '' }}>{{ $statusName }}</option>
+                            @endforeach
                         </select>
                         @error('status')
                             <div class="invalid-feedback">
@@ -235,17 +233,13 @@
                                 <th style="width:260px;">Ubah Status</th>
                             </tr>
                         </thead>
+                        @php
+                            $statusBadgeMap = collect(\App\Support\InventoryStatus::colors())->map(fn ($c) => "bg-{$c}-subtle text-{$c} border border-{$c}-subtle")->all();
+                        @endphp
                         <tbody id="unitStatusTableBody">
                             @foreach($inventory->units as $unit)
                                 @php
-                                    $badgeClass = match($unit->display_status) {
-                                        'Tersedia'  => 'bg-success-subtle text-success border border-success-subtle',
-                                        'Dipinjam'  => 'bg-primary-subtle text-primary border border-primary-subtle',
-                                        'Perbaikan' => 'bg-warning-subtle text-warning border border-warning-subtle',
-                                        'Rusak'     => 'bg-danger-subtle text-danger border border-danger-subtle',
-                                        'Hilang'    => 'bg-secondary-subtle text-secondary border border-secondary-subtle',
-                                        default     => 'bg-light text-dark border',
-                                    };
+                                    $badgeClass = \App\Support\InventoryStatus::subtleClass($unit->display_status);
                                 @endphp
                                 <tr data-unit-row="{{ $unit->id }}" data-on-loan="{{ $unit->surat_jalan_item_id ? '1' : '0' }}">
                                     <td class="fw-semibold">#{{ $unit->unit_number }}</td>
@@ -288,7 +282,7 @@
                                                     @if($unit->surat_jalan_item_id)
                                                         <option value="Dipinjam" selected>Dipinjam</option>
                                                     @else
-                                                        @foreach(['Tersedia', 'Perbaikan', 'Rusak', 'Hilang'] as $statusOption)
+                                                        @foreach(\App\Support\InventoryStatus::assignable() as $statusOption)
                                                             <option value="{{ $statusOption }}" @selected($unit->status === $statusOption)>{{ $statusOption }}</option>
                                                         @endforeach
                                                     @endif
@@ -522,13 +516,7 @@
     (function () {
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         const alertBox = document.getElementById('unitStatusAlert');
-        const badgeClassMap = {
-            'Tersedia':  'bg-success-subtle text-success border border-success-subtle',
-            'Dipinjam':  'bg-primary-subtle text-primary border border-primary-subtle',
-            'Perbaikan': 'bg-warning-subtle text-warning border border-warning-subtle',
-            'Rusak':     'bg-danger-subtle text-danger border border-danger-subtle',
-            'Hilang':    'bg-secondary-subtle text-secondary border border-secondary-subtle',
-        };
+        const badgeClassMap = @json($statusBadgeMap);
 
         function showAlert(message, isError) {
             alertBox.textContent = message;

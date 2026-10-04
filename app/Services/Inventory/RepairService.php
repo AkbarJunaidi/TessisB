@@ -2,6 +2,7 @@
 
 namespace App\Services\Inventory;
 
+use App\Models\AppSetting;
 use App\Models\Inventory;
 use App\Models\InventoryRepair;
 use App\Models\InventoryRepairItem;
@@ -21,11 +22,17 @@ use Illuminate\Support\Facades\DB;
  */
 class RepairService
 {
-    /** Biaya servis satu unit di atas rasio ini terhadap harga beli baru dianggap layak diganti. */
-    public const REPLACE_WARN_RATIO = 0.5;
+    /** Biaya servis satu unit di atas rasio ini terhadap harga beli baru dianggap layak diganti (Pengaturan). */
+    public static function replaceWarnRatio(): float
+    {
+        return AppSetting::int('repair_warn_percent') / 100;
+    }
 
-    /** Rasio mulai dari sini ditandai "pantau" di Daftar Harga Barang. */
-    public const REPLACE_WATCH_RATIO = 0.3;
+    /** Rasio mulai dari sini ditandai "pantau" di Daftar Harga Barang: 60% dari ambang ganti. */
+    public static function replaceWatchRatio(): float
+    {
+        return round(self::replaceWarnRatio() * 0.6, 2);
+    }
 
     public function __construct(
         protected ActivityLogService $activityLogService,
@@ -358,7 +365,7 @@ class RepairService
 
         $filterIds = match ($filters['filter'] ?? null) {
             'servis' => array_keys(array_filter($costs, fn ($c) => $c['servis_count'] > 0)),
-            'ganti'  => array_keys(array_filter($costs, fn ($c) => (self::replaceRatio($c) ?? 0) >= self::REPLACE_WARN_RATIO)),
+            'ganti'  => array_keys(array_filter($costs, fn ($c) => (self::replaceRatio($c) ?? 0) >= self::replaceWarnRatio())),
             default  => null,
         };
 
@@ -378,7 +385,7 @@ class RepairService
             'total_barang' => count($activeIds),
             'ada_harga'    => count(array_filter($costs, fn ($c) => $c['last_price'] !== null)),
             'total_servis' => round(array_sum(array_column($costs, 'servis_total')), 2),
-            'layak_ganti'  => count(array_filter($costs, fn ($c) => (self::replaceRatio($c) ?? 0) >= self::REPLACE_WARN_RATIO)),
+            'layak_ganti'  => count(array_filter($costs, fn ($c) => (self::replaceRatio($c) ?? 0) >= self::replaceWarnRatio())),
         ];
 
         return ['items' => $items, 'costs' => $costs, 'summary' => $summary];

@@ -256,7 +256,7 @@
                         <div class="col-md-4">
                             <label for="locRadius" class="form-label fw-medium text-secondary">Radius Deteksi (m)</label>
                             <input type="number" class="form-control" id="locRadius" name="radius_m" min="10" max="5000"
-                                   value="{{ old('radius_m', \App\Models\Location::DEFAULT_RADIUS_M) }}">
+                                   value="{{ old('radius_m', \App\Models\AppSetting::int('location_default_radius')) }}">
                             <div class="form-text small">Default 100 m.</div>
                         </div>
 

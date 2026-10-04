@@ -291,7 +291,7 @@
                     <label for="choose_file" class="form-label fw-medium text-secondary">Choose File</label>
                     <input class="form-control @error('file') is-invalid @enderror" type="file" id="choose_file" name="file" required>
                     <div class="form-text text-muted mt-2 small">
-                        Ekstensi diizinkan: pdf, doc, docx, xls, xlsx, jpg, jpeg, png (Maks. 10MB)
+                        Ekstensi diizinkan: {{ implode(', ', \App\Models\AppSetting::allowedExtensions()) }} (Maks. {{ \App\Models\AppSetting::int('upload_max_mb') }}MB)
                     </div>
                     @error('file')
                         <div class="invalid-feedback">{{ $message }}</div>

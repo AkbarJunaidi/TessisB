@@ -19,13 +19,7 @@
 <body>
 
     @php
-        $badgeMap = [
-            'Tersedia'  => 'bg-success-subtle text-success border-success-subtle',
-            'Dipinjam'  => 'bg-primary-subtle text-primary border-primary-subtle',
-            'Perbaikan' => 'bg-warning-subtle text-warning border-warning-subtle',
-            'Rusak'     => 'bg-danger-subtle text-danger border-danger-subtle',
-            'Hilang'    => 'bg-secondary-subtle text-secondary border-secondary-subtle',
-        ];
+        $badgeMap = collect(\App\Support\InventoryStatus::colors())->map(fn ($c) => "bg-{$c}-subtle text-{$c} border-{$c}-subtle")->all();
         $status      = $inventory->display_status ?? 'Tersedia';
         $statusClass = $badgeMap[$status] ?? 'bg-success-subtle text-success border-success-subtle';
     @endphp

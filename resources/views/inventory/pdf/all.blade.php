@@ -8,12 +8,12 @@
 <body>
 
     @php
-        $kopAtasPath = public_path('image/kopatas.png');
+        $kopAtasPath = \App\Models\AppSetting::imagePath('kop_atas');
         $kopAtasBase64 = file_exists($kopAtasPath)
             ? 'data:' . mime_content_type($kopAtasPath) . ';base64,' . base64_encode(file_get_contents($kopAtasPath))
             : '';
 
-        $kopBawahPath = public_path('image/kopbawah.png');
+        $kopBawahPath = \App\Models\AppSetting::imagePath('kop_bawah');
         $kopBawahBase64 = file_exists($kopBawahPath)
             ? 'data:' . mime_content_type($kopBawahPath) . ';base64,' . base64_encode(file_get_contents($kopBawahPath))
             : '';

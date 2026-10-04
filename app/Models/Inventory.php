@@ -34,9 +34,6 @@ class Inventory extends Model
         'deleted_by',
     ];
 
-    /** Sisa hari (atau 1 pemakaian) di bawah ini dianggap "servis segera". */
-    public const SERVIS_SEGERA_HARI = 7;
-
     /**
      * Jadwal servis aktif bila minimal satu interval (hari / pemakaian) terisi.
      */
@@ -82,7 +79,7 @@ class Inventory extends Model
                 $state = 'terlambat';
                 $pesan[] = 'Jatuh tempo hari ini';
             } else {
-                $state = $sisaHari <= self::SERVIS_SEGERA_HARI ? 'segera' : 'ok';
+                $state = $sisaHari <= AppSetting::int('servis_segera_hari') ? 'segera' : 'ok';
                 $pesan[] = "{$sisaHari} hari lagi";
             }
         }

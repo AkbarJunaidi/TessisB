@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Project;
 
+use App\Models\AppSetting;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ProjectRequest extends FormRequest
 {
@@ -23,7 +25,11 @@ class ProjectRequest extends FormRequest
             'company'     => ['nullable', 'string', 'max:255'],
             'email'       => ['nullable', 'email', 'max:255'],
             'phone'       => ['nullable', 'string', 'max:30'],
-            'category'    => ['required', 'string', 'max:100'],
+            'category'    => [
+                'required', 'string', 'max:100',
+                // Harus ada di daftar Pengaturan, kecuali kategori yang sudah tersimpan di project ini.
+                Rule::in(array_merge(AppSetting::projectCategories(), array_filter([$this->route('project')?->category]))),
+            ],
 
             'event_date'       => ['required', 'date', 'after_or_equal:today'],
             'event_end_date'   => ['nullable', 'date', 'after_or_equal:event_date'],
@@ -66,6 +72,7 @@ class ProjectRequest extends FormRequest
             'pic.required'      => 'PIC wajib diisi.',
             'email.email'       => 'Format email tidak valid.',
             'category.required' => 'Kategori project wajib dipilih.',
+            'category.in'       => 'Kategori project tidak ada di daftar. Tambahkan lewat menu Pengaturan.',
 
             'event_date.required'       => 'Tanggal acara mulai wajib diisi.',
             'event_date.after_or_equal' => 'Tanggal acara mulai tidak boleh sebelum hari ini.',

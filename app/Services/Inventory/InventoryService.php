@@ -11,6 +11,7 @@ use App\Services\ActivityLog\ActivityLogService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use App\Support\InventoryStatus;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -57,7 +58,12 @@ class InventoryService
 
         // Filter berdasarkan Dropdown Status
         if (!empty($filters['status']) && $filters['status'] !== 'Semua Status') {
-            $query->where('status', $filters['status']);
+            $status = $filters['status'];
+            $isCustom = in_array($status, array_column(InventoryStatus::custom(), 'name'), true);
+
+            // Status kustom hanya tercatat di tingkat unit, jadi cari barang yang punya unit berstatus itu.
+            $query->where(fn ($q) => $q->where('status', $status)
+                ->when($isCustom, fn ($q2) => $q2->orWhereHas('units', fn ($u) => $u->where('status', $status))));
         }
 
         return $query->latest()->paginate($perPage)->withQueryString();

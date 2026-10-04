@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
     const rupiah = (value) => 'Rp ' + Math.round(value).toLocaleString('id-ID');
     const repairCosts = @json($repairCosts ?? []);
-    const warnRatio = {{ \App\Services\Inventory\RepairService::REPLACE_WARN_RATIO }};
+    const warnRatio = {{ \App\Services\Inventory\RepairService::replaceWarnRatio() }};
     const esc = (text) => { const d = document.createElement('div'); d.textContent = text == null ? '' : String(text); return d.innerHTML; };
 
     // Perbandingan harga beli terakhir vs biaya servis, hanya untuk mode "Tambah stok barang yang ada".

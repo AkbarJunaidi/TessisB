@@ -23,8 +23,6 @@ class Location extends Model
         'lainnya' => 'Lainnya',
     ];
 
-    public const DEFAULT_RADIUS_M = 100;
-
     protected $fillable = [
         'name',
         'jenis',

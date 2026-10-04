@@ -156,7 +156,7 @@
                 </form>
 
                 <p class="form-footer">
-                    &copy; 2026 CV Arindra Production. Seluruh hak cipta dilindungi.
+                    &copy; 2026 {{ \App\Models\AppSetting::get('company_name') }}. Seluruh hak cipta dilindungi.
                 </p>
             </div>
         </div>

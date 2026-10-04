@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\DataIntegration;
 
+use App\Models\AppSetting;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -41,7 +42,8 @@ class FileRequest extends FormRequest
                     'file' => [
                         'required',
                         'file',
-                        'max:10240', // 10 MB
+                        'max:' . (AppSetting::int('upload_max_mb') * 1024),
+                        'extensions:' . implode(',', AppSetting::allowedExtensions()),
                     ],
 
                     'folder_id' => [
@@ -82,7 +84,8 @@ class FileRequest extends FormRequest
 
             'file.required' => 'Silakan pilih file yang akan diunggah.',
             'file.file' => 'File yang dipilih tidak valid.',
-            'file.max' => 'Ukuran file maksimal 10 MB.',
+            'file.max' => 'Ukuran file maksimal ' . AppSetting::int('upload_max_mb') . ' MB.',
+            'file.extensions' => 'Ekstensi file tidak diizinkan. Diizinkan: ' . implode(', ', AppSetting::allowedExtensions()) . '.',
 
             'folder_id.exists' => 'Folder tujuan tidak ditemukan.',
 

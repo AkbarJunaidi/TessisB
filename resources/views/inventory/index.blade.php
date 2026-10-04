@@ -65,11 +65,9 @@
                 <label for="status" class="visually-hidden">Filter status</label>
                 <select name="status" id="status" class="form-select bg-light" onchange="this.form.submit()">
                     <option value="Semua Status" {{ request('status') == 'Semua Status' || !request('status') ? 'selected' : '' }}>Semua Status</option>
-                    <option value="Tersedia" {{ request('status') == 'Tersedia' ? 'selected' : '' }}>Tersedia</option>
-                    <option value="Dipinjam" {{ request('status') == 'Dipinjam' ? 'selected' : '' }}>Dipinjam</option>
-                    <option value="Perbaikan" {{ request('status') == 'Perbaikan' ? 'selected' : '' }}>Perbaikan</option>
-                    <option value="Rusak" {{ request('status') == 'Rusak' ? 'selected' : '' }}>Rusak</option>
-                    <option value="Hilang" {{ request('status') == 'Hilang' ? 'selected' : '' }}>Hilang</option>
+                    @foreach(\App\Support\InventoryStatus::all() as $statusName)
+                        <option value="{{ $statusName }}" {{ request('status') == $statusName ? 'selected' : '' }}>{{ $statusName }}</option>
+                    @endforeach
                 </select>
             </div>
 
@@ -129,25 +127,7 @@
 
                         {{-- Status Barang - otomatis "Tersedia" jika masih ada unit available (logika tidak diubah) --}}
                         <td class="py-3" data-label="Status">
-                            @switch($item->display_status)
-                                @case('Tersedia')
-                                    <span class="badge-soft-success">Tersedia</span>
-                                    @break
-                                @case('Dipinjam')
-                                    <span class="badge-soft-primary">Dipinjam</span>
-                                    @break
-                                @case('Perbaikan')
-                                    <span class="badge-soft-warning">Perbaikan</span>
-                                    @break
-                                @case('Rusak')
-                                    <span class="badge-soft-danger">Rusak</span>
-                                    @break
-                                @case('Hilang')
-                                    <span class="badge-soft-secondary">Hilang</span>
-                                    @break
-                                @default
-                                    <span class="badge-soft-success">{{ $item->status ?? 'Tersedia' }}</span>
-                            @endswitch
+                            <span class="{{ \App\Support\InventoryStatus::softClass($item->display_status) }}">{{ $item->display_status ?? 'Tersedia' }}</span>
                             <div class="small text-muted mt-1">{{ $item->qty_available }}/{{ $item->quantity_total }} unit tersedia</div>
                             @if($item->punyaJadwalServis())
                                 @php $servisCounts = $item->servisCounts(); @endphp

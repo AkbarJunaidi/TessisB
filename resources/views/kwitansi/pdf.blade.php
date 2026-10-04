@@ -80,7 +80,8 @@
         <tr>
             <td class="logo-cell">
                 @php
-                    $logoPath = public_path('image/Arindra.png');
+                    $company = \App\Models\AppSetting::company();
+                    $logoPath = \App\Models\AppSetting::imagePath('logo_pdf');
                     $logoSrc = file_exists($logoPath)
                         ? 'data:' . mime_content_type($logoPath) . ';base64,' . base64_encode(file_get_contents($logoPath))
                         : '';
@@ -90,9 +91,9 @@
                 @endif
             </td>
             <td class="brand-cell">
-                <p class="brand-name">CV. Arindra Production</p>
+                <p class="brand-name">{{ $company['name'] }}</p>
                 <p class="brand-contact">
-                    Bendul Merisi Selatan 3/102 Surabaya &nbsp;|&nbsp; 031-8431462 / 081252200899
+                    {!! implode(' &nbsp;|&nbsp; ', array_map('e', $company['contact_line'])) !!}
                 </p>
             </td>
             <td class="doc-title-cell">
@@ -159,11 +160,11 @@
                 @endif
             @endif
         </div>
-        <p class="signature-name">{{ $kwitansi->creator->name ?? 'CV. Arindra Production' }}</p>
+        <p class="signature-name">{{ $kwitansi->creator->name ?? $company['name'] }}</p>
     </div>
 
     <p class="footer-note">
-        Pembayaran melalui transfer dianggap sah setelah dana diterima dan dikonfirmasi oleh CV. Arindra Production.
+        Pembayaran melalui transfer dianggap sah setelah dana diterima dan dikonfirmasi oleh {{ $company['name'] }}.
     </p>
 
 </body>

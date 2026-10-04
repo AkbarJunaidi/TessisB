@@ -15,7 +15,11 @@
         return $value ? \Carbon\Carbon::parse($value)->format('H:i') : '';
     };
 
-    $categories = ['Wedding', 'Corporate', 'Graduation', 'Live Streaming', 'Product Launch', 'Lainnya'];
+    // Daftar dari Pengaturan; kategori project yang sedang diedit tetap muncul walau sudah dihapus dari daftar.
+    $categories = \App\Models\AppSetting::projectCategories();
+    if ($project?->category && !in_array($project->category, $categories, true)) {
+        $categories[] = $project->category;
+    }
 @endphp
 
 <div class="row g-3">

@@ -22,7 +22,7 @@
         'Perbaikan'  => 'warning',
         'Hilang'     => 'dark',
         'Tersedia'   => 'success',
-    ];
+    ] + collect(\App\Support\InventoryStatus::custom())->pluck('color', 'name')->all();
 @endphp
 
 @section('content')

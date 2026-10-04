@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Inventory;
 
+use App\Models\AppSetting;
 use App\Models\Location;
 use App\Services\Inventory\LocationService;
 use Illuminate\Foundation\Http\FormRequest;
@@ -78,7 +79,7 @@ class LocationRequest extends FormRequest
             'address'         => filled($this->input('address')) ? trim((string) $this->input('address')) : null,
             'latitude'        => $coords['lat'] ?? null,
             'longitude'       => $coords['lng'] ?? null,
-            'radius_m'        => $this->filled('radius_m') ? (int) $this->input('radius_m') : Location::DEFAULT_RADIUS_M,
+            'radius_m'        => $this->filled('radius_m') ? (int) $this->input('radius_m') : AppSetting::int('location_default_radius'),
             'can_store_units' => $this->boolean('can_store_units'),
             'is_default'      => $this->boolean('is_default'),
             'is_active'       => $this->boolean('is_active'),

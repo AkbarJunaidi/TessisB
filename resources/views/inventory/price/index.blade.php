@@ -53,7 +53,7 @@
                 <div class="card-body">
                     <div class="text-muted small">Layak Dipertimbangkan Ganti</div>
                     <div class="fs-4 fw-bold {{ $summary['layak_ganti'] > 0 ? 'text-danger' : '' }}">{{ $summary['layak_ganti'] }}</div>
-                    <div class="text-muted small">servis unit &ge; {{ (int) (\App\Services\Inventory\RepairService::REPLACE_WARN_RATIO * 100) }}% harga beli</div>
+                    <div class="text-muted small">servis unit &ge; {{ \App\Models\AppSetting::int('repair_warn_percent') }}% harga beli</div>
                 </div>
             </div>
         </div>
@@ -138,9 +138,9 @@
                                 <td class="pe-4" data-label="Perbandingan">
                                     @if($pct === null)
                                         <span class="text-muted">{{ $cost && $cost['worst_unit'] ? 'Harga beli belum ada' : '-' }}</span>
-                                    @elseif($ratio >= \App\Services\Inventory\RepairService::REPLACE_WARN_RATIO)
+                                    @elseif($ratio >= \App\Services\Inventory\RepairService::replaceWarnRatio())
                                         <span class="badge-soft-danger px-2 py-1 rounded-pill">{{ $pct }}% - pertimbangkan ganti</span>
-                                    @elseif($ratio >= \App\Services\Inventory\RepairService::REPLACE_WATCH_RATIO)
+                                    @elseif($ratio >= \App\Services\Inventory\RepairService::replaceWatchRatio())
                                         <span class="badge-soft-warning px-2 py-1 rounded-pill">{{ $pct }}% - pantau</span>
                                     @else
                                         <span class="badge-soft-success px-2 py-1 rounded-pill">{{ $pct }}% - aman</span>
