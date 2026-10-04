@@ -21,6 +21,7 @@ class Project extends Model
         'event_end_date' => 'date',
         'board_lists' => 'array',
         'estimated_value' => 'decimal:2',
+        'budget'          => 'decimal:2',
     ];
 
     /**
@@ -86,6 +87,7 @@ class Project extends Model
         'priority',
         'status',
         'estimated_value',
+        'budget',
         'deleted_by',
     ];
 

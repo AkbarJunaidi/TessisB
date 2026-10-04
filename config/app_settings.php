@@ -22,9 +22,11 @@ return [
         'repair_warn_percent'       => 50,
         'location_default_radius'   => 100,
         'upload_max_mb'             => 10,
+        'finance_lock_date'         => '',
         'upload_allowed_extensions' => 'pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
 
         'inventory_statuses' => [],
+        'finance_categories' => [],
 
         'project_categories' => ['Wedding', 'Corporate', 'Graduation', 'Live Streaming', 'Product Launch', 'Lainnya'],
     ],

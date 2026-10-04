@@ -182,8 +182,8 @@
              di tab Project Detail. --}}
         @if(auth()->user()->hasPermission('finance', 'view'))
         <li class="nav-item">
-            <a href="{{ route('kwitansi.index') }}"
-                class="nav-link sidebar-link text-white {{ request()->routeIs('kwitansi.*') ? 'active' : '' }}">
+            <a href="{{ route('finance.summary') }}"
+                class="nav-link sidebar-link text-white {{ request()->routeIs('kwitansi.*', 'finance.*') ? 'active' : '' }}">
                 <i class="bi bi-cash-coin"></i> <span class="sidebar-link-text">Keuangan</span>
             </a>
         </li>

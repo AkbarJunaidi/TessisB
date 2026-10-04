@@ -23,6 +23,8 @@
         <p class="text-muted mb-0">Ringkasan tagihan & pembayaran seluruh project - gabungan Pendapatan (Data Keuangan) + Kwitansi.</p>
     </div>
 
+    @include('finance.partials.tabs', ['active' => 'projects'])
+
     <div class="card border-0 shadow-sm rounded-3 mb-3">
         <div class="card-body p-3">
             <form method="GET" class="d-flex gap-2">

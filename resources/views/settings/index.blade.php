@@ -15,6 +15,8 @@
     $categories = old('project_categories', $settings['project_categories']);
     $customStatuses = old('inventory_statuses', $settings['inventory_statuses']);
     $statusColors = \App\Support\InventoryStatus::COLORS;
+    $customFinanceCategories = old('finance_categories', $settings['finance_categories']);
+    $financeTypes = \App\Support\FinanceCategory::TYPES;
 @endphp
 
 <div class="container-fluid px-4 py-3">
@@ -167,6 +169,56 @@
             </div>
         </div>
 
+        {{-- Kategori Keuangan --}}
+        <div class="card border-0 shadow-sm rounded-3 mb-4">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-1"><i class="bi bi-wallet2 me-2"></i>Kategori Transaksi Keuangan</h6>
+                <p class="text-muted small mb-3">Kategori bawaan: {{ implode(', ', array_keys(\App\Support\FinanceCategory::SYSTEM)) }}. Tambahkan kategori lain di bawah, misalnya "Sewa Kantor".</p>
+
+                <div id="financeCategoryList" class="d-flex flex-column gap-2">
+                    @foreach($customFinanceCategories as $i => $row)
+                        <div class="row g-2 finance-category-row">
+                            <div class="col-7 col-md-5">
+                                <input type="text" name="finance_categories[{{ $i }}][name]" maxlength="50" autocomplete="off"
+                                       class="form-control @error('finance_categories.' . $i . '.name') is-invalid @enderror"
+                                       value="{{ $row['name'] }}" placeholder="Nama kategori">
+                                @error('finance_categories.' . $i . '.name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                            </div>
+                            <div class="col-5 col-md-3">
+                                <select name="finance_categories[{{ $i }}][type]" class="form-select">
+                                    @foreach($financeTypes as $value => $label)
+                                        <option value="{{ $value }}" @selected(($row['type'] ?? '') === $value)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-auto">
+                                <button type="button" class="btn btn-outline-danger btn-remove-finance-category" aria-label="Hapus kategori"><i class="bi bi-trash"></i></button>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                @error('finance_categories')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
+
+                <button type="button" class="btn btn-outline-primary btn-sm mt-3" id="btnAddFinanceCategory">
+                    <i class="bi bi-plus-lg me-1"></i> Tambah Kategori
+                </button>
+            </div>
+        </div>
+
+        {{-- Tutup Buku --}}
+        <div class="card border-0 shadow-sm rounded-3 mb-4">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-1"><i class="bi bi-lock me-2"></i>Tutup Buku</h6>
+                <p class="text-muted small mb-3">Transaksi bertanggal sampai tanggal ini tidak bisa dibuat, diubah, atau dihapus, termasuk dari Pembelian, Perbaikan Barang, dan Data Keuangan project. Kosongkan untuk membuka kembali.</p>
+                <div class="col-12 col-md-4 px-0">
+                    <label for="finance_lock_date" class="form-label fw-semibold small text-secondary">Dikunci Sampai Tanggal</label>
+                    <input type="date" name="finance_lock_date" id="finance_lock_date" max="{{ now()->toDateString() }}"
+                           class="form-control @error('finance_lock_date') is-invalid @enderror" value="{{ $v('finance_lock_date') }}">
+                    @error('finance_lock_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+            </div>
+        </div>
+
         {{-- Aturan Operasional --}}
         <div class="card border-0 shadow-sm rounded-3 mb-4">
             <div class="card-body p-4">
@@ -270,6 +322,27 @@ document.addEventListener('DOMContentLoaded', function () {
     statusList.addEventListener('click', function (e) {
         const btn = e.target.closest('.btn-remove-status');
         if (btn) btn.closest('.status-row').remove();
+    });
+
+    const financeList = document.getElementById('financeCategoryList');
+    const financeTypes = @json(\App\Support\FinanceCategory::TYPES);
+
+    document.getElementById('btnAddFinanceCategory').addEventListener('click', function () {
+        const i = Date.now();
+        const options = Object.keys(financeTypes).map(function (k) { return '<option value="' + k + '">' + financeTypes[k] + '</option>'; }).join('');
+
+        financeList.insertAdjacentHTML('beforeend',
+            '<div class="row g-2 finance-category-row">'
+            + '<div class="col-7 col-md-5"><input type="text" name="finance_categories[' + i + '][name]" maxlength="50" autocomplete="off" class="form-control" placeholder="Nama kategori"></div>'
+            + '<div class="col-5 col-md-3"><select name="finance_categories[' + i + '][type]" class="form-select">' + options + '</select></div>'
+            + '<div class="col-auto"><button type="button" class="btn btn-outline-danger btn-remove-finance-category" aria-label="Hapus kategori"><i class="bi bi-trash"></i></button></div>'
+            + '</div>');
+        financeList.lastElementChild.querySelector('input').focus();
+    });
+
+    financeList.addEventListener('click', function (e) {
+        const btn = e.target.closest('.btn-remove-finance-category');
+        if (btn) btn.closest('.finance-category-row').remove();
     });
 
     document.getElementById('btnAddCategory').addEventListener('click', function () {

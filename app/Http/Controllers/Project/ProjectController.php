@@ -219,12 +219,18 @@ class ProjectController extends Controller
      */
     public function updateFinance(ProjectFinanceRequest $request, Project $project): RedirectResponse
     {
-        $this->projectFinanceService->syncFinanceItems(
-            $project,
-            $request->validated()['incomes'] ?? [],
-            $request->validated()['expenses'] ?? [],
-            $request->validated()['estimated_value'] ?? null
-        );
+        try {
+            $this->projectFinanceService->syncFinanceItems(
+                $project,
+                $request->validated()['incomes'] ?? [],
+                $request->validated()['expenses'] ?? [],
+                $request->validated()['estimated_value'] ?? null,
+                array_map('intval', array_filter(explode(',', (string) ($request->validated()['loaded_ids'] ?? '')))),
+                $request->validated()['budget'] ?? null
+            );
+        } catch (\Exception $e) {
+            return redirect()->route('projects.show', $project)->with('error', $e->getMessage());
+        }
 
         return redirect()
             ->route('projects.show', $project)

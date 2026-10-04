@@ -15,6 +15,8 @@ use App\Http\Controllers\Inventory\RepairController;
 use App\Http\Controllers\Notification\AnnouncementController;
 use App\Http\Controllers\Notification\NotificationController;
 use App\Http\Controllers\Notification\NotificationSettingController;
+use App\Http\Controllers\Finance\FinanceSummaryController;
+use App\Http\Controllers\Finance\FinanceTransactionController;
 use App\Http\Controllers\Setting\SettingController;
 use App\Http\Controllers\Notification\SystemNotificationController;
 use App\Http\Controllers\Project\ProjectController;
@@ -312,6 +314,18 @@ Route::middleware('auth')->group(function () {
 
         Route::get('keuangan', [KwitansiController::class, 'index'])
             ->name('kwitansi.index');
+
+        // Tab Ringkasan dan Transaksi - SENGAJA sebelum 'keuangan/{project}'.
+        Route::get('keuangan/ringkasan', [FinanceSummaryController::class, 'index'])
+            ->name('finance.summary');
+        Route::get('keuangan/transaksi', [FinanceTransactionController::class, 'index'])
+            ->name('finance.transactions.index');
+        Route::post('keuangan/transaksi', [FinanceTransactionController::class, 'store'])
+            ->name('finance.transactions.store');
+        Route::put('keuangan/transaksi/{transaction}', [FinanceTransactionController::class, 'update'])
+            ->name('finance.transactions.update');
+        Route::delete('keuangan/transaksi/{transaction}', [FinanceTransactionController::class, 'destroy'])
+            ->name('finance.transactions.destroy');
 
         // Halaman "Detail Keuangan" 1 project (dari tombol "Detail" di
         // halaman Keuangan) - path 'keuangan/{project}' SENGAJA didaftarkan

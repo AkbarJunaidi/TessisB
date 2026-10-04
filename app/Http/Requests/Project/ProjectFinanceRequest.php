@@ -25,6 +25,9 @@ class ProjectFinanceRequest extends FormRequest
         $this->merge([
             'incomes'  => $clean($this->input('incomes')),
             'expenses' => $clean($this->input('expenses')),
+            'budget' => $this->filled('budget')
+                ? str_replace('.', '', (string) $this->input('budget'))
+                : null,
             'estimated_value' => $this->filled('estimated_value')
                 ? str_replace('.', '', (string) $this->input('estimated_value'))
                 : null,
@@ -45,25 +48,36 @@ class ProjectFinanceRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // Id baris yang tampil di form saat dimuat; form lama tanpa field ini ditolak agar tidak menimpa data.
+            'loaded_ids'              => ['present', 'nullable', 'string', 'regex:/^[0-9,]*$/'],
+
             'incomes'                 => ['nullable', 'array'],
+            'incomes.*.id'            => ['nullable', 'integer'],
             'incomes.*.amount'        => ['required_with:incomes', 'numeric', 'min:0', 'max:999999999999.99'],
             'incomes.*.description'   => ['nullable', 'string', 'max:255'],
 
             'expenses'                => ['nullable', 'array'],
+            'expenses.*.id'           => ['nullable', 'integer'],
             'expenses.*.amount'       => ['required_with:expenses', 'numeric', 'min:0', 'max:999999999999.99'],
             'expenses.*.description'  => ['nullable', 'string', 'max:255'],
 
             'estimated_value' => ['nullable', 'numeric', 'min:0', 'max:999999999999.99'],
+            'budget'          => ['nullable', 'numeric', 'min:0', 'max:999999999999.99'],
         ];
     }
 
     public function messages(): array
     {
         return [
+            'loaded_ids.present' => 'Halaman sudah usang. Muat ulang halaman lalu simpan lagi.',
+
             'incomes.*.amount.required_with' => 'Nominal pendapatan wajib diisi.',
             'incomes.*.amount.numeric'       => 'Nominal pendapatan harus berupa angka.',
             'expenses.*.amount.required_with' => 'Nominal pengeluaran wajib diisi.',
             'expenses.*.amount.numeric'       => 'Nominal pengeluaran harus berupa angka.',
+
+            'budget.numeric' => 'Anggaran biaya harus berupa angka.',
+            'budget.min'     => 'Anggaran biaya tidak boleh negatif.',
 
             'estimated_value.numeric' => 'Estimasi pendapatan harus berupa angka.',
             'estimated_value.min'     => 'Estimasi pendapatan tidak boleh negatif.',

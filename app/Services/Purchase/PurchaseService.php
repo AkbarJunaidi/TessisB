@@ -6,6 +6,8 @@ use App\Models\ApprovalRequest;
 use App\Models\Contact;
 use App\Models\Inventory;
 use App\Models\ProjectFinanceItem;
+use App\Support\FinanceCategory;
+use App\Support\FinanceLock;
 use App\Models\Purchase;
 use App\Models\PurchaseItem;
 use App\Services\ActivityLog\ActivityLogService;
@@ -239,6 +241,8 @@ class PurchaseService
             throw new Exception('Pembelian ini belum bisa dicatat pembayarannya.');
         }
 
+        FinanceLock::assertOpen($data['paid_at']);
+
         return DB::transaction(function () use ($purchase, $data) {
             $purchase->update([
                 'payment_status' => Purchase::PAYMENT_PAID,
@@ -247,15 +251,20 @@ class PurchaseService
                 'paid_by'        => Auth::id(),
             ]);
 
-            // Pengeluaran ikut tercatat di Data Keuangan project terkait.
-            if ($purchase->project_id) {
-                ProjectFinanceItem::create([
-                    'project_id'  => $purchase->project_id,
-                    'type'        => 'expense',
-                    'amount'      => $purchase->total,
-                    'description' => "Pembelian {$purchase->code} - {$purchase->vendor_name}",
-                ]);
-            }
+            // Pengeluaran otomatis masuk buku kas; terkait project bila pembelian punya project.
+            ProjectFinanceItem::create([
+                'project_id'     => $purchase->project_id,
+                'type'           => 'expense',
+                'amount'         => $purchase->total,
+                'description'    => "Pembelian {$purchase->code} - {$purchase->vendor_name}",
+                'tanggal'        => $data['paid_at'],
+                'category'       => FinanceCategory::PURCHASE,
+                'contact_id'     => $purchase->vendor_id,
+                'payment_method' => $data['payment_method'] ?? null,
+                'source_type'    => ProjectFinanceItem::SOURCE_PURCHASE,
+                'source_id'      => $purchase->id,
+                'created_by'     => Auth::id(),
+            ]);
 
             $this->log("Mencatat pembayaran pembelian {$purchase->code}");
 

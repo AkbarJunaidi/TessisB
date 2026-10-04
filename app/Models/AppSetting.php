@@ -130,6 +130,14 @@ class AppSetting extends Model
         return is_array($list) ? array_values($list) : [];
     }
 
+    /** @return array<int, array{name: string, type: string}> kategori transaksi keuangan kustom */
+    public static function financeCategories(): array
+    {
+        $list = json_decode(self::stored()['finance_categories'] ?? '[]', true);
+
+        return is_array($list) ? array_values($list) : [];
+    }
+
     /** @return array<int, string> */
     public static function allowedExtensions(): array
     {

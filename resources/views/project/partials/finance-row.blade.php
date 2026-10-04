@@ -1,6 +1,7 @@
 {{-- Partial: 1 baris item keuangan (Pendapatan/Pengeluaran)
      Variabel: $group ('incomes'|'expenses'), $index, $item (ProjectFinanceItem) --}}
 <div class="row g-2 mb-2 finance-row">
+    <input type="hidden" name="{{ $group }}[{{ $index }}][id]" value="{{ $item->id }}">
     <div class="col-4">
         <input type="text" inputmode="numeric"
                name="{{ $group }}[{{ $index }}][amount]"

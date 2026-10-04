@@ -3,6 +3,9 @@
 namespace App\Services\Inventory;
 
 use App\Models\AppSetting;
+use App\Models\ProjectFinanceItem;
+use App\Support\FinanceCategory;
+use App\Support\FinanceLock;
 use App\Models\Inventory;
 use App\Models\InventoryRepair;
 use App\Models\InventoryRepairItem;
@@ -189,6 +192,10 @@ class RepairService
                 throw new Exception('Tanggal selesai tidak boleh sebelum tanggal barang masuk servis.');
             }
 
+            if ((float) ($data['biaya'] ?? 0) > 0) {
+                FinanceLock::assertOpen($data['tanggal_selesai']);
+            }
+
             $items   = $repair->items()->with(['unit', 'inventory'])->get();
             $hasil   = $data['hasil'] ?? [];
             $tersedia = collect();
@@ -223,6 +230,22 @@ class RepairService
                 'biaya'           => ($biaya === null || $biaya === '') ? null : $biaya,
                 'completed_by'    => Auth::id(),
             ]);
+
+            // Biaya servis otomatis masuk buku kas sebagai pengeluaran non-project.
+            if ((float) $repair->biaya > 0) {
+                ProjectFinanceItem::create([
+                    'project_id'  => null,
+                    'type'        => 'expense',
+                    'amount'      => $repair->biaya,
+                    'description' => "Perbaikan {$repair->code} - {$repair->tempat_nama}",
+                    'tanggal'     => $data['tanggal_selesai'],
+                    'category'    => FinanceCategory::REPAIR,
+                    'contact_id'  => $repair->vendor_id,
+                    'source_type' => ProjectFinanceItem::SOURCE_REPAIR,
+                    'source_id'   => $repair->id,
+                    'created_by'  => Auth::id(),
+                ]);
+            }
 
             foreach ($tersedia->groupBy('inventory_id') as $inventoryId => $group) {
                 $this->mutationService->record(

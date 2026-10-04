@@ -280,7 +280,35 @@
                                     </button>
                                 </div>
                             </div>
+
+                            {{-- ANGGARAN BIAYA - dibanding total pengeluaran di bawah; ikut tersimpan bersama form ini. --}}
+                            @php
+                                $budget = (float) $project->budget;
+                                $spent = (float) $project->total_expense;
+                                $budgetPct = $budget > 0 ? min(100, round($spent / $budget * 100)) : 0;
+                                $overBudget = $budget > 0 && $spent > $budget;
+                            @endphp
+                            <div class="p-3 rounded-3 bg-light mb-3">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                                    <label for="budgetInput" class="fw-bold mb-0">Anggaran Biaya</label>
+                                    <input type="text" inputmode="numeric" name="budget" id="budgetInput"
+                                           class="form-control form-control-sm finance-amount-input" style="width: 160px;" placeholder="0"
+                                           value="{{ $project->budget ? number_format($budget, 0, ',', '.') : '' }}">
+                                </div>
+                                @if($budget > 0)
+                                    <div class="progress mt-2" style="height: 8px;">
+                                        <div class="progress-bar {{ $overBudget ? 'bg-danger' : 'bg-success' }}" style="width: {{ $budgetPct }}%"></div>
+                                    </div>
+                                    <div class="small mt-1 {{ $overBudget ? 'text-danger fw-semibold' : 'text-muted' }}">
+                                        Terpakai {{ \App\Support\Money::formatRupiah($spent) }} dari {{ \App\Support\Money::formatRupiah($budget) }}
+                                        @if($overBudget) (lebih {{ \App\Support\Money::formatRupiah($spent - $budget) }}) @endif
+                                    </div>
+                                @endif
+                            </div>
                             @method('PUT')
+
+                            {{-- Id baris yang dimuat: hanya baris ini yang boleh terhapus saat simpan --}}
+                            <input type="hidden" name="loaded_ids" value="{{ $project->financeItems->pluck('id')->implode(',') }}">
 
                             {{-- PENDAPATAN --}}
                             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -342,6 +370,12 @@
                             <span class="fw-bold">Estimasi Pendapatan</span>
                             <span class="fw-bold fs-5 text-info flex-shrink-0 ms-2">{{ \App\Support\Money::formatRupiah($project->estimated_value) }}</span>
                         </div>
+                        @if($project->budget)
+                            <div class="p-3 rounded-3 bg-light d-flex justify-content-between align-items-center mb-3">
+                                <span class="fw-bold">Anggaran Biaya</span>
+                                <span class="fw-semibold flex-shrink-0 ms-2">{{ \App\Support\Money::formatRupiah($project->budget) }} (terpakai {{ \App\Support\Money::formatRupiah($project->total_expense) }})</span>
+                            </div>
+                        @endif
 
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="fw-bold m-0">Pendapatan</h6>

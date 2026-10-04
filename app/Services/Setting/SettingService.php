@@ -18,7 +18,7 @@ class SettingService
         'company_name', 'company_tagline', 'company_address', 'company_phone', 'company_whatsapp',
         'company_footer_tagline', 'company_footer_contact', 'company_website', 'company_instagram', 'company_tiktok',
         'servis_segera_hari', 'repair_warn_percent', 'location_default_radius',
-        'upload_max_mb', 'upload_allowed_extensions',
+        'upload_max_mb', 'upload_allowed_extensions', 'finance_lock_date',
     ];
 
     public function __construct(
@@ -36,6 +36,7 @@ class SettingService
 
         $values['project_categories'] = AppSetting::projectCategories();
         $values['inventory_statuses'] = AppSetting::inventoryStatuses();
+        $values['finance_categories'] = AppSetting::financeCategories();
 
         return $values;
     }
@@ -69,6 +70,7 @@ class SettingService
 
             $this->put('project_categories', json_encode(array_values($data['project_categories']), JSON_UNESCAPED_UNICODE));
             $this->put('inventory_statuses', json_encode(array_values($data['inventory_statuses'] ?? []), JSON_UNESCAPED_UNICODE));
+            $this->put('finance_categories', json_encode(array_values($data['finance_categories'] ?? []), JSON_UNESCAPED_UNICODE));
 
             foreach (array_keys(config('app_settings.images')) as $key) {
                 if (isset($files[$key])) {

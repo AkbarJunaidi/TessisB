@@ -5,6 +5,8 @@ namespace App\Http\Requests\Setting;
 use App\Models\AppSetting;
 use App\Models\Inventory;
 use App\Models\InventoryUnit;
+use App\Models\ProjectFinanceItem;
+use App\Support\FinanceCategory;
 use App\Support\InventoryStatus;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
@@ -31,6 +33,13 @@ class SettingUpdateRequest extends FormRequest
             ->values()
             ->all();
 
+        // Baris kategori keuangan kustom yang namanya kosong dibuang.
+        $financeCategories = collect($this->input('finance_categories', []))
+            ->map(fn ($row) => ['name' => trim((string) ($row['name'] ?? '')), 'type' => (string) ($row['type'] ?? '')])
+            ->filter(fn ($row) => $row['name'] !== '')
+            ->values()
+            ->all();
+
         // Ekstensi dipisah koma/spasi/baris baru; titik dan karakter selain huruf-angka dibuang.
         $extensions = collect(preg_split('/[\s,;]+/', strtolower((string) $this->input('upload_allowed_extensions')), -1, PREG_SPLIT_NO_EMPTY))
             ->map(fn ($e) => preg_replace('/[^a-z0-9]/', '', $e))
@@ -41,6 +50,7 @@ class SettingUpdateRequest extends FormRequest
         $this->merge([
             'project_categories'        => $categories,
             'inventory_statuses'        => $statuses,
+            'finance_categories'        => $financeCategories,
             'upload_allowed_extensions' => $extensions->implode(','),
         ]);
     }
@@ -65,6 +75,7 @@ class SettingUpdateRequest extends FormRequest
             'repair_warn_percent'     => ['required', 'integer', 'between:10,200'],
             'location_default_radius' => ['required', 'integer', 'between:10,5000'],
             'upload_max_mb'           => ['required', 'integer', 'between:1,50'],
+            'finance_lock_date'       => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
             'upload_allowed_extensions' => [
                 'required', 'string', 'max:300',
                 function (string $attribute, mixed $value, \Closure $fail) {
@@ -92,6 +103,17 @@ class SettingUpdateRequest extends FormRequest
             ],
             'inventory_statuses.*.color' => ['required', 'in:' . implode(',', array_keys(InventoryStatus::COLORS))],
 
+            'finance_categories'        => ['nullable', 'array', 'max:30'],
+            'finance_categories.*.name' => [
+                'required', 'string', 'max:50', 'regex:/^[\p{L}\p{N}\s\-\/]+$/u', 'distinct:ignore_case',
+                function (string $attribute, mixed $value, \Closure $fail) {
+                    if (in_array(mb_strtolower((string) $value), array_map('mb_strtolower', array_keys(FinanceCategory::SYSTEM)), true)) {
+                        $fail('Nama kategori sudah dipakai sistem.');
+                    }
+                },
+            ],
+            'finance_categories.*.type' => ['required', 'in:income,expense'],
+
             'logo_pdf'  => $image,
             'kop_atas'  => $image,
             'kop_bawah' => $image,
@@ -117,6 +139,21 @@ class SettingUpdateRequest extends FormRequest
 
                 if ($used > 0) {
                     $validator->errors()->add('inventory_statuses', "Status \"{$old['name']}\" masih dipakai {$used} data barang/unit dan tidak bisa dihapus.");
+                }
+            }
+
+            // Kategori keuangan kustom yang masih dipakai transaksi tidak boleh dihapus.
+            $keptCategories = array_map('mb_strtolower', array_column($this->input('finance_categories', []), 'name'));
+
+            foreach (AppSetting::financeCategories() as $old) {
+                if (in_array(mb_strtolower($old['name']), $keptCategories, true)) {
+                    continue;
+                }
+
+                $used = ProjectFinanceItem::where('category', $old['name'])->count();
+
+                if ($used > 0) {
+                    $validator->errors()->add('finance_categories', "Kategori \"{$old['name']}\" masih dipakai {$used} transaksi dan tidak bisa dihapus.");
                 }
             }
 
@@ -147,6 +184,8 @@ class SettingUpdateRequest extends FormRequest
             'repair_warn_percent.between'     => 'Ambang biaya servis harus antara 10 dan 200 persen.',
             'location_default_radius.between' => 'Radius default harus antara 10 dan 5000 meter.',
             'upload_max_mb.between'           => 'Batas ukuran upload harus antara 1 dan 50 MB.',
+            'finance_lock_date.date_format'   => 'Tanggal tutup buku tidak valid.',
+            'finance_lock_date.before_or_equal' => 'Tanggal tutup buku tidak boleh melewati hari ini.',
             'upload_allowed_extensions.required' => 'Isi minimal satu ekstensi file yang diizinkan.',
 
             'project_categories.required'     => 'Minimal satu kategori project.',
@@ -159,6 +198,12 @@ class SettingUpdateRequest extends FormRequest
             'inventory_statuses.*.name.regex'    => 'Nama status hanya boleh huruf, angka, spasi, tanda hubung, dan garis miring.',
             'inventory_statuses.*.name.distinct' => 'Ada nama status yang sama.',
             'inventory_statuses.*.color.in'      => 'Warna status tidak valid.',
+
+            'finance_categories.*.name.required' => 'Nama kategori wajib diisi.',
+            'finance_categories.*.name.max'      => 'Nama kategori maksimal 50 karakter.',
+            'finance_categories.*.name.regex'    => 'Nama kategori hanya boleh huruf, angka, spasi, tanda hubung, dan garis miring.',
+            'finance_categories.*.name.distinct' => 'Ada nama kategori yang sama.',
+            'finance_categories.*.type.in'       => 'Tipe kategori tidak valid.',
 
             'logo_pdf.image'  => 'Logo harus berupa gambar PNG atau JPG.',
             'logo_pdf.mimes'  => 'Logo harus berformat PNG atau JPG.',
