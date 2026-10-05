@@ -56,7 +56,7 @@
 
         @if(auth()->user()->hasRole('super_admin', 'admin'))
 
-            @php $invActive = request()->routeIs('inventory.*'); @endphp
+            @php $invActive = request()->routeIs('inventory.*') && !request()->routeIs('inventory.locations.*'); @endphp
             <li class="nav-item">
                 <a href="#menuInventory" data-bs-toggle="collapse" class="nav-link sidebar-link text-white d-flex align-items-center justify-content-between {{ $invActive ? 'active' : '' }}" aria-expanded="{{ $invActive ? 'true' : 'false' }}">
                     <span><i class="bi bi-box-seam"></i> <span class="sidebar-link-text">Inventory</span></span>
@@ -79,11 +79,6 @@
                         <li class="nav-item">
                             <a href="{{ route('inventory.mutasi') }}" class="nav-link sidebar-sublink {{ request()->routeIs('inventory.mutasi') ? 'active' : '' }}">
                                 <i class="bi bi-arrow-left-right"></i> Mutasi Aset
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('inventory.locations.index') }}" class="nav-link sidebar-sublink {{ request()->routeIs('inventory.locations.*') ? 'active' : '' }}">
-                                <i class="bi bi-geo-alt"></i> Lokasi
                             </a>
                         </li>
                         <li class="nav-item">
@@ -222,15 +217,6 @@
             </li>
         @endif
 
-        @if(auth()->user()->isSuperAdmin())
-            <li class="nav-item">
-                <a href="{{ route('settings.index') }}"
-                    class="nav-link sidebar-link text-white {{ request()->routeIs('settings.*') ? 'active' : '' }}">
-                    <i class="bi bi-gear"></i> <span class="sidebar-link-text">Pengaturan</span>
-                </a>
-            </li>
-        @endif
-
         {{-- Activity Logs - level-atas, tetap role-only (sengaja tidak
              ikut sistem Permission Override, lihat config/permissions.php). --}}
         @if(auth()->user()->hasRole('super_admin', 'admin'))
@@ -276,14 +262,51 @@
             </a>
         </li>
 
-        {{-- Tanda Tangan Saya - personal (bukan modul bisnis), semua role
-             login boleh akses, tidak digating permission khusus. --}}
-        <li class="nav-item">
-            <a href="{{ route('signature.index') }}"
-                class="nav-link sidebar-link text-white {{ request()->routeIs('signature.*') ? 'active' : '' }}">
-                <i class="bi bi-pen"></i> <span class="sidebar-link-text">Tanda Tangan Saya</span>
-            </a>
-        </li>
+        {{-- Pengaturan: Umum (Super Admin), Lokasi (Admin dengan akses Inventory), Tanda Tangan Saya
+             (semua role). Kalau cuma Tanda Tangan yang berhak, tampil sebagai link langsung. --}}
+        @php
+            $setShowUmum   = auth()->user()->isSuperAdmin();
+            $setShowLokasi = auth()->user()->hasRole('super_admin', 'admin') && auth()->user()->hasPermission('inventory', 'view');
+            $setActive     = request()->routeIs('settings.*', 'inventory.locations.*', 'signature.*');
+        @endphp
+        @if($setShowUmum || $setShowLokasi)
+            <li class="nav-item">
+                <a href="#menuPengaturan" data-bs-toggle="collapse" class="nav-link sidebar-link text-white d-flex align-items-center justify-content-between {{ $setActive ? 'active' : '' }}" aria-expanded="{{ $setActive ? 'true' : 'false' }}">
+                    <span><i class="bi bi-gear"></i> <span class="sidebar-link-text">Pengaturan</span></span>
+                    <i class="bi bi-chevron-down sidebar-collapse-icon"></i>
+                </a>
+                <div class="collapse {{ $setActive ? 'show' : '' }}" id="menuPengaturan" data-bs-parent="#sidebarMenuAccordion">
+                    <ul class="nav flex-column sidebar-submenu">
+                        @if($setShowUmum)
+                            <li class="nav-item">
+                                <a href="{{ route('settings.index') }}" class="nav-link sidebar-sublink {{ request()->routeIs('settings.*') ? 'active' : '' }}">
+                                    <i class="bi bi-building"></i> Umum
+                                </a>
+                            </li>
+                        @endif
+                        @if($setShowLokasi)
+                            <li class="nav-item">
+                                <a href="{{ route('inventory.locations.index') }}" class="nav-link sidebar-sublink {{ request()->routeIs('inventory.locations.*') ? 'active' : '' }}">
+                                    <i class="bi bi-geo-alt"></i> Lokasi
+                                </a>
+                            </li>
+                        @endif
+                        <li class="nav-item">
+                            <a href="{{ route('signature.index') }}" class="nav-link sidebar-sublink {{ request()->routeIs('signature.*') ? 'active' : '' }}">
+                                <i class="bi bi-pen"></i> Tanda Tangan Saya
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+        @else
+            <li class="nav-item">
+                <a href="{{ route('signature.index') }}"
+                    class="nav-link sidebar-link text-white {{ request()->routeIs('signature.*') ? 'active' : '' }}">
+                    <i class="bi bi-pen"></i> <span class="sidebar-link-text">Tanda Tangan Saya</span>
+                </a>
+            </li>
+        @endif
 
     </ul>
 
