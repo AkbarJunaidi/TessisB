@@ -76,100 +76,30 @@
         @endif
     </div>
 
-    {{-- Layout shell styles: dipusatkan di sini karena spesifik struktural,
-         bukan token desain umum (yang sudah ada di theme.css).
-
-         MEKANISME - 2 aturan yang saling melengkapi, BUKAN cuma "kunci
-         tinggi shell" seperti percobaan sebelumnya (itu ternyata rapuh -
-         kalau isi sidebar kebetulan lebih panjang dari 1 layar, konten
-         yang kelebihan itu genuinely tidak terjangkau sama sekali, bukan
-         cuma terpotong tampilan):
-
-         1. .app-shell pakai min-height (LANTAI minimal 1 layar, boleh
-            tumbuh lebih tinggi kalau perlu) - bukan height (kaku/mentok).
-         2. .app-main (area konten utama) pakai max-height (ATAP maksimal
-            1 layar) + overflow-y:auto - jadi HALAMAN PANJANG tidak pernah
-            menyeret shell/sidebar ikut tumbuh, karena kelebihannya
-            di-scroll sendiri di dalam .app-main.
-
-         Karena sidebar TIDAK diberi pembatas apa pun (tidak max-height,
-         tidak overflow sendiri), kalau suatu saat isinya (menu + dropdown
-         + Activity Logs + Trash + kartu profil) kebetulan lebih panjang
-         dari 1 layar, dia bebas mendorong .app-shell (yang cuma punya
-         lantai minimal, bukan langit-langit) tumbuh lebih tinggi - dan
-         HALAMAN yang scroll sedikit menampakkannya (fallback alami
-         browser), BUKAN sidebar dikasih scrollbar sendiri. Pembagian
-         tugas "shell=lantai, main=atap" inilah yang membuat 2 bug (halaman
-         panjang menyeret sidebar vs sidebar panjang kepotong) tidak bisa
-         terjadi bersamaan - keduanya diselesaikan oleh 2 aturan berbeda,
-         bukan 1 aturan yang dipaksa menyelesaikan keduanya sekaligus. --}}
+    {{-- Shell desktop setinggi 1 layar: sidebar dan konten masing-masing scroll sendiri,
+         halaman browser tidak ikut scroll. Mobile tetap offcanvas (scroll bawaan Bootstrap). --}}
     <style>
         .app-shell {
             display: flex;
-            min-height: 100vh;
-            min-height: 100dvh; /* ikut tinggi viewport yang sebenarnya di HP */
             width: 100%;
-            /* PENTING: min-height, BUKAN height. Beda dari percobaan
-               sebelumnya - shell ini punya LANTAI minimal setinggi layar,
-               tapi BOLEH tumbuh lebih tinggi kalau memang dibutuhkan (lihat
-               .app-main di bawah untuk kenapa ini aman dari 2 bug
-               sekaligus). */
+            min-height: 100vh;
+            min-height: 100dvh;
         }
 
         .app-sidebar {
-            /* 272px (awal) -> 296px -> 304px -> 320px. Sejak permintaan
-               "kelipatan 8" untuk seluruh header sidebar (logo, tombol,
-               tinggi container, dst - lihat sidebar.blade.php &
-               theme.css), semua angka terkait dibuat kelipatan 8 termasuk
-               ini. Tiap kenaikan lebar di sini dipasangkan dengan
-               font-size di .sidebar-brand-text (theme.css) - kalau nanti
-               nama perusahaan berubah jadi lebih panjang/pendek atau
-               font-nya diubah lagi, 2 angka ini yang perlu disesuaikan
-               bareng. */
             width: 272px;
             background: linear-gradient(180deg, var(--c-navy) 0%, var(--c-navy-2) 100%);
             border-right: 1px solid rgba(255,255,255,.06);
             transition: width .2s ease;
         }
-        /* Mode collapsed (icon-only) - HANYA desktop (>=992px), diaktifkan
-           lewat class "sidebar-collapsed" di <html> (tombol toggle ada di
-           bagian atas sidebar, lihat layouts/sidebar.blade.php). Mobile/
-           tablet (<992px, offcanvas) tidak pernah kena aturan ini - di sana
-           sudah ada cara tutup sendiri (backdrop + tombol X). Ikon brand
-           (.sidebar-brand-icon di theme.css) SENGAJA satu ukuran konstan di
-           kedua state (tidak tergantung angka di sini) - supaya logonya
-           tidak kelihatan "membesar-mengecil" tiap kali toggle. 80px
-           (kelipatan 8, sebelumnya 84px) tetap nyaman menampung logo 24px -
-           tombol toggle terpisah sendiri sudah tidak ditampilkan lagi saat
-           collapsed (fungsinya diambil alih logo, lihat sidebar.blade.php),
-           jadi tidak perlu lagi berbagi ruang dengan logo di rail ini. */
-        @media (min-width: 992px) {
-            html.sidebar-collapsed .app-sidebar { width: 88px; }
-        }
-        /* Desktop (>=992px): offcanvas-lg otomatis jadi kolom statis oleh
-
-           Bootstrap, lalu default flexbox (align-items: stretch) membuat
-           sidebar ikut tinggi baris. Sengaja TIDAK diberi max-height atau
-           overflow-nya sendiri - kalau isinya (menu + 1 dropdown + Activity
-           Logs + Trash + kartu profil) kebetulan lebih panjang dari 1
-           layar, sidebar boleh mendorong .app-shell tumbuh lebih tinggi
-           dari 100vh, dan HALAMAN (bukan sidebar) yang scroll sedikit
-           untuk menampakkannya - graceful fallback alami, bukan scrollbar
-           terpisah di sidebar yang terlihat aneh. Ini aman dipakai karena
-           dropdown sudah dikelompokkan 1 accordion (data-bs-parent), jadi
-           kasus ini jarang kepakai. */
 
         .app-main {
             flex: 1;
-            min-width: 0; /* cegah overflow horizontal di flex child */
+            min-width: 0;
             display: flex;
             flex-direction: column;
             max-height: 100vh;
-            max-height: 100dvh; /* KUNCI dari bug ini: dibatasi maksimal, BUKAN dikunci pas (height). Kalau halaman
-                                    panjang, area ini scroll SENDIRI dan tidak pernah menyeret .app-shell/sidebar
-                                    ikut tumbuh - beda dari sidebar di atas yang justru BOLEH menyeret shell tumbuh
-                                    kalau perlu. Pembagian tugas inilah yang membuat 2 bug (halaman panjang menyeret
-                                    sidebar, DAN sidebar panjang kepotong) tidak bisa terjadi bersamaan. */
+            max-height: 100dvh;
             overflow-y: auto;
         }
 
@@ -179,6 +109,64 @@
         }
         @media (min-width: 768px) {
             .app-content { padding: 2rem 2rem 2.5rem; }
+        }
+
+        @media (min-width: 992px) {
+            html.sidebar-collapsed .app-sidebar { width: 88px; }
+
+            .app-shell {
+                height: 100vh;
+                height: 100dvh;
+                min-height: 0;
+                overflow: hidden;
+            }
+
+            /* Hanya daftar menu yang scroll. Logo dan profil tetap di tempat, jadi
+               scrollbar tidak menyempitkan atau memotong area logo. */
+            .app-sidebar {
+                flex-shrink: 0;
+                height: 100%;
+                overflow: hidden;
+            }
+            .app-sidebar .sidebar-body {
+                height: 100% !important;
+                min-height: 0;
+            }
+            /* Bootstrap .nav = flex-wrap: wrap; dengan tinggi terbatas, menu pecah jadi 2 kolom. */
+            .app-sidebar .sidebar-nav {
+                flex: 1 1 auto;
+                flex-wrap: nowrap;
+                min-height: 0;
+                overflow-x: hidden;
+                overflow-y: auto;
+                scrollbar-width: thin;
+                scrollbar-color: transparent transparent;
+            }
+            .app-sidebar .sidebar-nav:hover { scrollbar-color: rgba(255,255,255,.28) transparent; }
+            .app-sidebar .sidebar-nav > li { flex-shrink: 0; }
+
+            /* Baris brand: nama 1 baris (ellipsis dari theme.css), logo diberi tepi kosong
+               (tidak di-crop), tombol tutup sedikit menjorok ke kanan. */
+            .app-sidebar .sidebar-brand-row { padding-inline: 0 !important; gap: .5rem; }
+            .app-sidebar .sidebar-brand-link { gap: .375rem; }
+            .app-sidebar .sidebar-brand-icon {
+                height: auto;
+                width: 44px;
+                aspect-ratio: auto;
+                object-fit: contain;
+                margin-inline: .25rem .125rem;
+            }
+            .app-sidebar .sidebar-collapse-toggle { margin-right: -.25rem; }
+
+            /* Rail 88px: baris dilebarkan, logo di tengah. */
+            html.sidebar-collapsed .app-sidebar .sidebar-brand-row { margin-inline: -.5rem; }
+            html.sidebar-collapsed .app-sidebar .sidebar-brand-link { justify-content: center; }
+            html.sidebar-collapsed .app-sidebar .sidebar-brand-icon { margin-inline: 0; }
+
+            .app-main {
+                height: 100%;
+                max-height: none;
+            }
         }
     </style>
 
