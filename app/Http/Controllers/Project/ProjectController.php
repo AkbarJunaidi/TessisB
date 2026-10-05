@@ -7,6 +7,7 @@ use App\Http\Requests\Project\ProjectCrewRequest;
 use App\Http\Requests\Project\ProjectFinanceRequest;
 use App\Http\Requests\Project\ProjectRequest;
 use App\Models\Project;
+use App\Services\Inventory\LocationService;
 use App\Services\Project\ProjectCrewService;
 use App\Services\Project\ProjectFinanceService;
 use App\Services\Project\ProjectService;
@@ -26,7 +27,8 @@ class ProjectController extends Controller
         protected ProjectService $projectService,
         protected ProjectCrewService $projectCrewService,
         protected ProjectFinanceService $projectFinanceService,
-        protected TaskService $taskService
+        protected TaskService $taskService,
+        protected LocationService $locationService
     ) {}
 
     /**
@@ -109,9 +111,11 @@ class ProjectController extends Controller
         $allFolders = \App\Models\Folder::where('is_private', false)->orderBy('name')->get();
         $bookableInventories = \App\Models\Inventory::orderBy('name')->get(['id', 'name', 'serial_number']);
 
+        $storageLocations = $this->locationService->getStorageLocations();
+
         return view(
             'project.show',
-            compact('project', 'groupedTasks', 'allFolders', 'bookableInventories')
+            compact('project', 'groupedTasks', 'allFolders', 'bookableInventories', 'storageLocations')
         );
     }
 

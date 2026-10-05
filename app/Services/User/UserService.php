@@ -8,6 +8,7 @@ use App\Services\Auth\PasswordResetRequestService;
 use Exception;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class UserService
 {
@@ -131,25 +132,17 @@ class UserService
 
     /**
      * Reset password user ke password baru yang diinput Super Admin.
-     *
-     * Password baru disimpan di kolom `temp_password_plain` (plaintext)
-     * supaya bisa ditampilkan lagi di halaman Detail User - dipakai Super
-     * Admin untuk memberitahu user, karena project ini tidak mengirim email.
-     * Kolom ini tidak dipakai untuk autentikasi (login tetap memakai kolom
-     * `password` yang sudah di-hash otomatis lewat cast pada model User).
-     *
-     * Juga menandai selesai (resolved) seluruh permintaan "Lupa Password"
-     * yang masih pending milik user ini, supaya badge & notifikasinya
-     * hilang otomatis tanpa langkah manual terpisah.
+     * Password hanya disimpan sebagai hash; sesi login lama user dicabut.
+     * Permintaan "Lupa Password" yang masih pending ikut ditandai selesai.
      */
     public function resetPassword(User $user, string $newPassword): bool
     {
-        $updated = $user->update([
-            'password' => $newPassword,
-            'temp_password_plain' => $newPassword,
-        ]);
+        $updated = $user->update(['password' => $newPassword]);
 
         if ($updated) {
+            if ($user->id !== Auth::id() && config('session.driver') === 'database') {
+                DB::table(config('session.table', 'sessions'))->where('user_id', $user->id)->delete();
+            }
 
             $this->passwordResetRequestService->resolveForUser(
                 $user->id,

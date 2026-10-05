@@ -205,15 +205,6 @@
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <div class="alert alert-secondary py-2 small mb-3">
-                                        <div class="text-muted">Password saat ini (hasil reset terakhir):</div>
-                                        @if($pr->user->temp_password_plain)
-                                            <code>{{ $pr->user->temp_password_plain }}</code>
-                                        @else
-                                            <span class="text-muted">Belum pernah di-reset lewat sistem ini.</span>
-                                        @endif
-                                    </div>
-
                                     <div class="mb-3">
                                         <label class="form-label">Password Baru</label>
                                         <input type="password" name="password" class="form-control" minlength="8" required>

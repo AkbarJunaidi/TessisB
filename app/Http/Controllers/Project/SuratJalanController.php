@@ -9,6 +9,7 @@ use App\Models\Inventory;
 use App\Models\Project;
 use App\Models\SuratJalan;
 use App\Models\SuratJalanItem;
+use App\Services\Inventory\LocationService;
 use App\Services\Project\SuratJalanService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -17,7 +18,8 @@ use Illuminate\View\View;
 class SuratJalanController extends Controller
 {
     public function __construct(
-        protected SuratJalanService $suratJalanService
+        protected SuratJalanService $suratJalanService,
+        protected LocationService $locationService
     ) {}
 
     /**
@@ -65,7 +67,9 @@ class SuratJalanController extends Controller
 
         $suratJalan->load('items.inventory', 'project');
 
-        return view('surat-jalan.show', compact('suratJalan'));
+        $storageLocations = $this->locationService->getStorageLocations();
+
+        return view('surat-jalan.show', compact('suratJalan', 'storageLocations'));
     }
 
     /**
@@ -102,7 +106,10 @@ class SuratJalanController extends Controller
     public function returnItem(ReturnBarangRequest $request, SuratJalanItem $item): RedirectResponse
     {
         try {
-            $this->suratJalanService->returnItem($item, (int) $request->validated()['qty']);
+            $data   = $request->validated();
+            $lokasi = filled($data['lokasi_id'] ?? null) ? $this->locationService->contextFromInput($data) : null;
+
+            $this->suratJalanService->returnItem($item, (int) $data['qty'], $lokasi);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }

@@ -21,7 +21,7 @@
                     <i class="bi bi-folder-plus"></i> Tambah Project
                 </a>
             @endif
-            @if(auth()->user()->hasPermission('surat_jalan', 'create'))
+            @if(auth()->user()->isSuperAdmin())
                 <button type="button" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm fw-medium" data-bs-toggle="modal" data-bs-target="#pickProjectModal">
                     <i class="bi bi-file-earmark-text"></i> Buat Surat Jalan
                 </button>
@@ -410,7 +410,7 @@
 @endif
 
 {{-- Modal pilih project untuk Buat Surat Jalan langsung dari halaman index --}}
-@if(auth()->user()->hasPermission('surat_jalan', 'create'))
+@if(auth()->user()->isSuperAdmin())
 <div class="modal fade" id="pickProjectModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">

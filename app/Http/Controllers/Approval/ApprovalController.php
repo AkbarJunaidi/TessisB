@@ -42,12 +42,6 @@ class ApprovalController extends Controller
         $history = $this->approvalService->listHistory();
         $pendingPasswordResets = $this->passwordResetRequestService->pendingWithUser();
 
-        // Password hasil reset terakhir (plaintext) HANYA dimuat untuk
-        // Super Admin - sama seperti aturan di halaman Detail User.
-        if (Auth::user()->isSuperAdmin()) {
-            $pendingPasswordResets->load('user:id,name,email,temp_password_plain');
-        }
-
         return view('approval.index', compact('pending', 'history', 'pendingPasswordResets'));
     }
 

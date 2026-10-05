@@ -58,7 +58,7 @@
                         <i class="bi bi-file-earmark-text"></i> Surat Jalan
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        @if(auth()->user()->hasPermission('surat_jalan', 'create'))
+                        @if(auth()->user()->isSuperAdmin())
                             <li><a class="dropdown-item" href="{{ route('surat-jalan.create', $project) }}"><i class="bi bi-plus-lg me-1"></i> Buat Surat Jalan</a></li>
                         @endif
                         <li>
