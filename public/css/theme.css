@@ -337,7 +337,7 @@ button:focus-visible,
 .sidebar-brand-text {
     color: #fff;
     font-weight: 700;
-    font-size: .68rem; /* = 14px (asumsi root 16px) */
+    font-size: .72rem; /* = 14px (asumsi root 16px) */
     letter-spacing: 0;
     text-transform: uppercase;
     line-height: 1.15;

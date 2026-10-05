@@ -143,6 +143,8 @@
                 scrollbar-color: transparent transparent;
             }
             .app-sidebar .sidebar-nav:hover { scrollbar-color: rgba(255,255,255,.28) transparent; }
+            /* Hanya daftar menu yang boleh menyusut; baris brand harus tetap 64px sama dengan navbar. */
+            .app-sidebar .sidebar-body > :not(.sidebar-nav) { flex-shrink: 0; }
             .app-sidebar .sidebar-nav > li { flex-shrink: 0; }
 
             /* Baris brand: nama 1 baris (ellipsis dari theme.css), logo diberi tepi kosong
