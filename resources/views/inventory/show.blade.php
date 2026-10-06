@@ -169,6 +169,37 @@
                     </div>
                 @endif
 
+                <!-- 4. QR Code (Label dan Report) -->
+                <hr class="border-light my-4">
+                <div>
+                    <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                        <i class="bi bi-qr-code text-primary"></i> QR Code
+                    </h6>
+                    <div class="row g-3 text-center">
+                        <div class="col-6">
+                            <div class="p-2 bg-white rounded-3 border d-inline-block">
+                                @if($inventory->qr_code_url)
+                                    <img src="{{ $inventory->qr_code_url }}" alt="QR Code Label {{ $inventory->serial_number }}" class="img-fluid" style="width: 130px; height: 130px; object-fit: contain;">
+                                @else
+                                    <div class="d-flex align-items-center justify-content-center text-muted small" style="width: 130px; height: 130px;">Belum tersedia</div>
+                                @endif
+                            </div>
+                            <div class="fw-semibold small mt-2">QR Label</div>
+                            <div class="font-monospace text-muted small text-break">{{ $inventory->serial_number }}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 bg-white rounded-3 border d-inline-block">
+                                @if($inventory->qr_code_report_url)
+                                    <img src="{{ $inventory->qr_code_report_url }}" alt="QR Code Report {{ $inventory->serial_number }}" class="img-fluid" style="width: 130px; height: 130px; object-fit: contain;">
+                                @else
+                                    <div class="d-flex align-items-center justify-content-center text-muted small" style="width: 130px; height: 130px;">Belum tersedia</div>
+                                @endif
+                            </div>
+                            <div class="fw-semibold small mt-2">QR Report</div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
