@@ -54,6 +54,39 @@
             </a>
         </li>
 
+        {{-- Notifikasi - SEMUA role bisa akses halamannya (isi di dalam
+             menyesuaikan role: form kirim pengumuman & panel kelola jenis
+             notifikasi otomatis cuma tampil untuk Super Admin, lihat
+             notification/index.blade.php). --}}
+        <li class="nav-item">
+            <a href="{{ route('announcements.index') }}"
+                class="nav-link sidebar-link text-white {{ request()->routeIs('announcements.*') ? 'active' : '' }}">
+                <i class="bi bi-megaphone"></i> <span class="sidebar-link-text">Notifikasi</span>
+            </a>
+        </li>
+
+        {{-- Approval - kotak masuk approval generik lintas modul, pakai
+             permission 'approval.view' (default hanya Super Admin). --}}
+        @if(auth()->user()->hasPermission('approval', 'view'))
+            <li class="nav-item">
+                <a href="{{ route('approval.index') }}"
+                    class="nav-link sidebar-link text-white {{ request()->routeIs('approval.*') ? 'active' : '' }}">
+                    <i class="bi bi-check2-square"></i> <span class="sidebar-link-text">Approval</span>
+                </a>
+            </li>
+        @endif
+
+        <li class="sidebar-group-label sidebar-link-text" role="presentation">Operasional</li>
+
+        @if(auth()->user()->hasPermission('scan_barang', 'view'))
+        <li class="nav-item">
+            <a href="{{ route('scan.index') }}"
+                class="nav-link sidebar-link text-white {{ request()->routeIs('scan.index') ? 'active' : '' }}">
+                <i class="bi bi-upc-scan"></i> <span class="sidebar-link-text">Scan Barang</span>
+            </a>
+        </li>
+        @endif
+
         @if(auth()->user()->hasRole('super_admin', 'admin'))
 
             @php $invActive = request()->routeIs('inventory.*') && !request()->routeIs('inventory.locations.*'); @endphp
@@ -137,6 +170,41 @@
             </div>
         </li>
 
+        @if(auth()->user()->hasPermission('purchase', 'view'))
+        <li class="nav-item">
+            <a href="{{ route('purchases.index') }}"
+                class="nav-link sidebar-link text-white {{ request()->routeIs('purchases.*') ? 'active' : '' }}">
+                <i class="bi bi-bag-check"></i> <span class="sidebar-link-text">Pembelian</span>
+            </a>
+        </li>
+        @endif
+
+        {{-- Kontak (buku alamat client) - sekarang pakai permission
+             'kontak.view' (default aktif semua role, sama seperti akses
+             yang sudah berlaku sebelumnya - lihat config/permissions.php). --}}
+        @if(auth()->user()->hasPermission('kontak', 'view'))
+        <li class="nav-item">
+            <a href="{{ route('contacts.index') }}"
+                class="nav-link sidebar-link text-white {{ request()->routeIs('contacts.*') ? 'active' : '' }}">
+                <i class="bi bi-person-vcard"></i> <span class="sidebar-link-text">Kontak</span>
+            </a>
+        </li>
+        @endif
+
+        <li class="sidebar-group-label sidebar-link-text" role="presentation">Data</li>
+
+        {{-- Keuangan (halaman "Keuangan" - ringkasan Kwitansi semua project) -
+             pakai permission 'finance.view', sama dengan gate Data Keuangan
+             di tab Project Detail. --}}
+        @if(auth()->user()->hasPermission('finance', 'view'))
+        <li class="nav-item">
+            <a href="{{ route('finance.summary') }}"
+                class="nav-link sidebar-link text-white {{ request()->routeIs('kwitansi.*', 'finance.*') ? 'active' : '' }}">
+                <i class="bi bi-cash-coin"></i> <span class="sidebar-link-text">Keuangan</span>
+            </a>
+        </li>
+        @endif
+
         {{-- Integrasi Data --}}
         @php $intActive = request()->routeIs('folders.*') || request()->routeIs('files.*'); @endphp
         <li class="nav-item">
@@ -160,38 +228,7 @@
             </div>
         </li>
 
-        {{-- Kontak (buku alamat client) - sekarang pakai permission
-             'kontak.view' (default aktif semua role, sama seperti akses
-             yang sudah berlaku sebelumnya - lihat config/permissions.php). --}}
-        @if(auth()->user()->hasPermission('kontak', 'view'))
-        <li class="nav-item">
-            <a href="{{ route('contacts.index') }}"
-                class="nav-link sidebar-link text-white {{ request()->routeIs('contacts.*') ? 'active' : '' }}">
-                <i class="bi bi-person-vcard"></i> <span class="sidebar-link-text">Kontak</span>
-            </a>
-        </li>
-        @endif
-
-        {{-- Keuangan (halaman "Keuangan" - ringkasan Kwitansi semua project) -
-             pakai permission 'finance.view', sama dengan gate Data Keuangan
-             di tab Project Detail. --}}
-        @if(auth()->user()->hasPermission('finance', 'view'))
-        <li class="nav-item">
-            <a href="{{ route('finance.summary') }}"
-                class="nav-link sidebar-link text-white {{ request()->routeIs('kwitansi.*', 'finance.*') ? 'active' : '' }}">
-                <i class="bi bi-cash-coin"></i> <span class="sidebar-link-text">Keuangan</span>
-            </a>
-        </li>
-        @endif
-
-        @if(auth()->user()->hasPermission('purchase', 'view'))
-        <li class="nav-item">
-            <a href="{{ route('purchases.index') }}"
-                class="nav-link sidebar-link text-white {{ request()->routeIs('purchases.*') ? 'active' : '' }}">
-                <i class="bi bi-bag-check"></i> <span class="sidebar-link-text">Pembelian</span>
-            </a>
-        </li>
-        @endif
+        <li class="sidebar-group-label sidebar-link-text" role="presentation">Administrasi</li>
 
         @if(auth()->user()->isSuperAdmin())
             @php $userActive = request()->routeIs('users.*'); @endphp
@@ -239,28 +276,6 @@
                 </a>
             </li>
         @endif
-
-        {{-- Approval - kotak masuk approval generik lintas modul, pakai
-             permission 'approval.view' (default hanya Super Admin). --}}
-        @if(auth()->user()->hasPermission('approval', 'view'))
-            <li class="nav-item">
-                <a href="{{ route('approval.index') }}"
-                    class="nav-link sidebar-link text-white {{ request()->routeIs('approval.*') ? 'active' : '' }}">
-                    <i class="bi bi-check2-square"></i> <span class="sidebar-link-text">Approval</span>
-                </a>
-            </li>
-        @endif
-
-        {{-- Notifikasi - SEMUA role bisa akses halamannya (isi di dalam
-             menyesuaikan role: form kirim pengumuman & panel kelola jenis
-             notifikasi otomatis cuma tampil untuk Super Admin, lihat
-             notification/index.blade.php). --}}
-        <li class="nav-item">
-            <a href="{{ route('announcements.index') }}"
-                class="nav-link sidebar-link text-white {{ request()->routeIs('announcements.*') ? 'active' : '' }}">
-                <i class="bi bi-megaphone"></i> <span class="sidebar-link-text">Notifikasi</span>
-            </a>
-        </li>
 
         {{-- Pengaturan: Umum (Super Admin), Lokasi (Admin dengan akses Inventory), Tanda Tangan Saya
              (semua role). Kalau cuma Tanda Tangan yang berhak, tampil sebagai link langsung. --}}
@@ -332,7 +347,7 @@
     </div>
 
     {{-- Keluar sistem --}}
-    <form action="{{ route('logout') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin keluar sistem?');">
+    <form action="{{ route('logout') }}" method="POST" data-confirm="Apakah Anda yakin ingin keluar sistem?" data-confirm-label="Keluar">
         @csrf
         <button type="submit" class="btn btn-sm btn-outline-light w-100 d-flex align-items-center justify-content-center py-2 rounded-3">
             <i class="bi bi-box-arrow-left me-2"></i> <span class="sidebar-link-text">Keluar Sistem</span>
@@ -357,10 +372,10 @@
     .sidebar-link i { font-size: 1.05rem; width: 1.1rem; text-align: center; }
     .sidebar-link:hover { background: rgba(255,255,255,.08); opacity: 1; }
     .sidebar-link.active {
-        background: var(--c-primary, #0d84fc);
+        background: var(--c-primary, #0b6fd6);
         opacity: 1;
         font-weight: 600;
-        box-shadow: 0 6px 16px -4px rgba(13,132,252,.55);
+        box-shadow: 0 6px 16px -4px rgba(11,111,214,.55);
     }
 
     .sidebar-collapse-icon { font-size: .75rem; transition: transform .25s ease; }
@@ -387,7 +402,7 @@
     .sidebar-sublink:hover { background: rgba(255,255,255,.1); color: #fff; }
     .sidebar-sublink.active {
         background: #fff;
-        color: var(--c-accent, #035eb9);
+        color: var(--c-accent, #0a5cb0);
         font-weight: 700;
     }
 

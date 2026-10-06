@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 datasets: [
                     { type: 'bar', label: 'Pemasukan', data: trend.income, backgroundColor: '#198754', borderRadius: 4 },
                     { type: 'bar', label: 'Pengeluaran', data: trend.expense, backgroundColor: '#dc3545', borderRadius: 4 },
-                    { type: 'line', label: 'Laba/Rugi', data: trend.net, borderColor: '#0d6efd', backgroundColor: '#0d6efd', tension: 0.3, pointRadius: 3 }
+                    { type: 'line', label: 'Laba/Rugi', data: trend.net, borderColor: '#0b6fd6', backgroundColor: '#0b6fd6', tension: 0.3, pointRadius: 3 }
                 ]
             },
             options: {
@@ -291,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const categories = @json($categories);
     const categoryEl = document.getElementById('categoryChart');
-    const palette = ['#0d6efd', '#dc3545', '#ffc107', '#198754', '#6f42c1', '#fd7e14', '#20c997', '#6c757d'];
+    const palette = ['#0b2447', '#0b6fd6', '#4a90e2', '#86b6ee', '#b9d5f6', '#546680', '#8fa1b8', '#c8d3e0'];
 
     if (categoryEl && categories.length) {
         new Chart(categoryEl, {

@@ -36,7 +36,7 @@
             <form
                 action="{{ route('contacts.destroy', $contact) }}"
                 method="POST"
-                onsubmit="return confirm('Yakin ingin menghapus kontak ini?');"
+                data-confirm="Yakin ingin menghapus kontak ini?" data-confirm-label="Hapus" data-confirm-danger
             >
                 @csrf
                 @method('DELETE')

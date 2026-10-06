@@ -32,7 +32,7 @@
                             <span class="badge-soft-success mt-2 d-inline-block">+{{ $statistics['new_inventory_this_month'] }} barang baru</span>
                         @endif
                     </div>
-                    <div class="icon-tile" style="background: rgba(13,132,252,.12); color: var(--c-primary);">
+                    <div class="icon-tile">
                         <i class="bi bi-box-seam fs-5"></i>
                     </div>
                 </div>
@@ -49,7 +49,7 @@
                             <span class="badge-soft-success mt-2 d-inline-block">+{{ $statistics['new_projects_this_month'] }} project baru</span>
                         @endif
                     </div>
-                    <div class="icon-tile" style="background: rgba(25,135,84,.12); color: #198754;">
+                    <div class="icon-tile">
                         <i class="bi bi-kanban fs-5"></i>
                     </div>
                 </div>
@@ -61,7 +61,7 @@
                         <span class="text-muted text-uppercase fw-bold" style="font-size:.7rem; letter-spacing:.06em;">Task</span>
                         <h3 class="fw-bolder text-navy mt-2 mb-0">{{ $statistics['total_task'] }}</h3>
                     </div>
-                    <div class="icon-tile" style="background: rgba(255,193,7,.18); color: #997404;">
+                    <div class="icon-tile">
                         <i class="bi bi-list-task fs-5"></i>
                     </div>
                 </div>
@@ -75,7 +75,7 @@
                         <span class="text-muted text-uppercase fw-bold" style="font-size:.7rem; letter-spacing:.06em;">Files</span>
                         <h3 class="fw-bolder text-navy mt-2 mb-0">{{ $statistics['total_files'] }}</h3>
                     </div>
-                    <div class="icon-tile" style="background: rgba(13,202,240,.16); color: #0aa2c0;">
+                    <div class="icon-tile">
                         <i class="bi bi-file-earmark-arrow-up fs-5"></i>
                     </div>
                 </div>
@@ -94,7 +94,7 @@
                         <span class="badge-soft-success mt-2 d-inline-block">+{{ $statistics['new_contacts_this_month'] }} kontak baru</span>
                     @endif
                 </div>
-                <div class="icon-tile" style="background: rgba(111,66,193,.12); color: #6f42c1;">
+                <div class="icon-tile">
                     <i class="bi bi-person-lines-fill fs-5"></i>
                 </div>
             </div>
@@ -107,7 +107,7 @@
                         <span class="text-muted text-uppercase fw-bold" style="font-size:.7rem; letter-spacing:.06em;">Belum Dikembalikan</span>
                         <h3 class="fw-bolder text-navy mt-2 mb-0">{{ $borrowedUnitsCount }}</h3>
                     </div>
-                    <div class="icon-tile" style="background: rgba(220,53,69,.12); color: #b02a37;">
+                    <div class="icon-tile icon-tile-danger">
                         <i class="bi bi-box-arrow-in-left fs-5"></i>
                     </div>
                 </div>
@@ -124,7 +124,7 @@
                             <span class="badge-soft-success mt-2 d-inline-block">+{{ $statistics['new_users_this_month'] }} bulan ini</span>
                         @endif
                     </div>
-                    <div class="icon-tile" style="background: rgba(11,36,71,.1); color: var(--c-navy);">
+                    <div class="icon-tile icon-tile-navy">
                         <i class="bi bi-people fs-5"></i>
                     </div>
                 </div>
@@ -145,7 +145,7 @@
                 <div class="app-panel dashboard-list-panel overflow-hidden h-100">
                     <div class="app-panel-header">
                         <div class="d-flex align-items-center gap-3">
-                            <div class="icon-tile" style="background: rgba(255,193,7,.18); color: #997404;">
+                            <div class="icon-tile">
                                 <i class="bi bi-list-task fs-5"></i>
                             </div>
                             <h5 class="fw-bold text-navy m-0">Task Saya</h5>
@@ -201,7 +201,7 @@
                 <div class="app-panel dashboard-list-panel overflow-hidden h-100">
                     <div class="app-panel-header">
                         <div class="d-flex align-items-center gap-3">
-                            <div class="icon-tile" style="background: rgba(25,135,84,.12); color: #198754;">
+                            <div class="icon-tile">
                                 <i class="bi bi-calendar-event fs-5"></i>
                             </div>
                             <h5 class="fw-bold text-navy m-0">Project 7 Hari Ke Depan</h5>
@@ -264,7 +264,7 @@
                     <div class="app-panel overflow-hidden h-100">
                         <div class="app-panel-header">
                             <div class="d-flex align-items-center gap-3">
-                                <div class="icon-tile" style="background: rgba(25,135,84,.12); color: #198754;">
+                                <div class="icon-tile">
                                     <i class="bi bi-cash-coin fs-5"></i>
                                 </div>
                                 <h5 class="fw-bold text-navy m-0">Data Keuangan</h5>
@@ -292,7 +292,7 @@
                     <div class="app-panel dashboard-list-panel overflow-hidden h-100">
                         <div class="app-panel-header">
                             <div class="d-flex align-items-center gap-3">
-                                <div class="icon-tile" style="background: rgba(13,132,252,.12); color: var(--c-primary);">
+                                <div class="icon-tile">
                                     <i class="bi bi-file-earmark-text fs-5"></i>
                                 </div>
                                 <h5 class="fw-bold text-navy m-0">Surat Jalan Terbaru</h5>
@@ -350,7 +350,7 @@
     <div class="app-panel dashboard-list-panel overflow-hidden">
         <div class="app-panel-header">
             <div class="d-flex align-items-center gap-3">
-                <div class="icon-tile" style="background: rgba(13,132,252,.12); color: var(--c-primary);">
+                <div class="icon-tile">
                     <i class="bi bi-clock-history fs-5"></i>
                 </div>
                 <h5 class="fw-bold text-navy m-0">

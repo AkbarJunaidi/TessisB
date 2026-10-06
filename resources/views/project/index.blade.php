@@ -17,7 +17,7 @@
                 </a>
             @endif
             @if(auth()->user()->hasPermission('tracking_progress', 'create_project'))
-                <a href="{{ route('projects.create') }}" class="btn btn-success d-flex align-items-center gap-2 shadow-sm fw-medium">
+                <a href="{{ route('projects.create') }}" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm fw-medium">
                     <i class="bi bi-folder-plus"></i> Tambah Project
                 </a>
             @endif
@@ -483,7 +483,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 window.URL.revokeObjectURL(url);
             })
             .catch(function (err) {
-                alert(err.message);
+                AppUI.toast(err.message);
             })
             .finally(function () {
                 btn.disabled = false;

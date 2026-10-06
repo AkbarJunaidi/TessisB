@@ -294,7 +294,7 @@
                 }
             })
             .catch(() => {
-                alert('Gagal memindahkan task. Silakan coba lagi.');
+                AppUI.toast('Gagal memindahkan task. Silakan coba lagi.');
             });
     }
 

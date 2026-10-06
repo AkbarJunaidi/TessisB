@@ -47,7 +47,7 @@
                             <td class="text-end">
                                 @if($booking->isEditable() && $canBook)
                                     <form action="{{ route('projects.bookings.destroy', [$project, $booking]) }}" method="POST"
-                                          onsubmit="return confirm('Batalkan booking ini?');" class="d-inline">
+                                          data-confirm="Batalkan booking ini?" data-confirm-label="Ya, batalkan" data-confirm-danger class="d-inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-outline-danger">

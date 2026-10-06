@@ -102,7 +102,7 @@
                                 <option value="Review" {{ $task->status === 'Review' ? 'selected' : '' }}>Review</option>
                                 <option value="Done" {{ $task->status === 'Done' ? 'selected' : '' }}>Done</option>
                             </select>
-                            <button type="submit" class="btn btn-dark fw-medium px-3">Update</button>
+                            <button type="submit" class="btn btn-primary fw-medium px-3">Update</button>
                         </div>
                     </form>
 
@@ -131,7 +131,7 @@
                         </span>
                     </div>
 
-                    <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus kartu tugas ini dari papan board?');">
+                    <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" data-confirm="Apakah Anda yakin ingin menghapus kartu tugas ini dari papan board?" data-confirm-label="Hapus" data-confirm-danger>
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-outline-danger w-100 fw-medium">

@@ -48,7 +48,7 @@
             </a>
 
             @if($canDecide)
-                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#approveModal">
                     <i class="bi bi-check2-circle me-1"></i> Setujui
                 </button>
                 <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
@@ -60,33 +60,33 @@
                 <a href="{{ route('purchases.edit', $purchase) }}" class="btn btn-warning">
                     <i class="bi bi-pencil-square me-1"></i> Ubah
                 </a>
-                <form action="{{ route('purchases.submit', $purchase) }}" method="POST" onsubmit="return confirm('Ajukan pembelian ini untuk approval?');">
+                <form action="{{ route('purchases.submit', $purchase) }}" method="POST" data-confirm="Ajukan pembelian ini untuk approval?" data-confirm-label="Ajukan">
                     @csrf
                     <button type="submit" class="btn btn-primary"><i class="bi bi-send me-1"></i> Ajukan Approval</button>
                 </form>
             @endif
 
             @if($purchase->canReceive() && $user->hasPermission('purchase', 'receive'))
-                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#receiveModal">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#receiveModal">
                     <i class="bi bi-box-arrow-in-down me-1"></i> Barang Diterima
                 </button>
             @endif
 
             @if($purchase->canPay() && $user->hasPermission('purchase', 'pay'))
-                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#payModal">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#payModal">
                     <i class="bi bi-cash-coin me-1"></i> Catat Pembayaran
                 </button>
             @endif
 
             @if($purchase->canCancel() && $canEdit)
-                <form action="{{ route('purchases.cancel', $purchase) }}" method="POST" onsubmit="return confirm('Batalkan pembelian ini?');">
+                <form action="{{ route('purchases.cancel', $purchase) }}" method="POST" data-confirm="Batalkan pembelian ini?" data-confirm-label="Ya, batalkan" data-confirm-danger>
                     @csrf
                     <button type="submit" class="btn btn-outline-danger"><i class="bi bi-x-circle me-1"></i> Batalkan</button>
                 </form>
             @endif
 
             @if($purchase->canDelete() && $user->hasPermission('purchase', 'delete'))
-                <form action="{{ route('purchases.destroy', $purchase) }}" method="POST" onsubmit="return confirm('Hapus draft pembelian ini?');">
+                <form action="{{ route('purchases.destroy', $purchase) }}" method="POST" data-confirm="Hapus draft pembelian ini?" data-confirm-label="Hapus" data-confirm-danger>
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i> Hapus</button>
@@ -310,7 +310,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-success">Konfirmasi Diterima</button>
+                            <button type="submit" class="btn btn-primary">Konfirmasi Diterima</button>
                         </div>
                     </form>
                 </div>
@@ -344,7 +344,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-success">Simpan</button>
+                            <button type="submit" class="btn btn-primary">Simpan</button>
                         </div>
                     </form>
                 </div>
@@ -368,7 +368,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-success">Setujui</button>
+                            <button type="submit" class="btn btn-primary">Setujui</button>
                         </div>
                     </form>
                 </div>

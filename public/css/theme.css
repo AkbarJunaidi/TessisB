@@ -4,27 +4,25 @@
     Palet warna & identitas project TIDAK diubah — hanya dirapikan jadi token. */
 
 :root {
-    /* --- Warna dasar (identitas project: putih - biru muda - navy) --- */
-    --bg-page: #f8fbff;
-    --bg-soft: #eef6ff;
-    --bg-white: #ffffff;
-
-    --c-primary: #0d84fc;
-    --c-primary-rgb: 13, 132, 252;
-    --c-primary-hover: #0b6fd6;
-    --c-accent: #035eb9;
+    /* 4 warna utama: navy, biru, biru muda, putih. Warna lain hanya turunan keempatnya. */
     --c-navy: #0b2447;
     --c-navy-2: #0f3163;
-    --c-navy-soft: #eef3fb;
+    --c-primary: #0b6fd6;
+    --c-primary-rgb: 11, 111, 214;
+    --c-primary-hover: #0a5cb0;
+    --c-accent: #0a5cb0;
+    --bg-soft: #eef6ff;
+    --bg-white: #ffffff;
+    --bg-page: var(--bg-soft);
+    --c-navy-soft: var(--bg-soft);
+    --c-ink: var(--c-navy);
+    --c-muted: #546680;
+    --c-border: #dbe7f5;
 
-    --c-ink: #1f2937;
-    --c-muted: #64748b;
-    --c-border: #e6edf5;
-
-    /* --- Radius & Shadow (Soft UI, bukan neumorphism) --- */
+    /* Dua bentuk: kontrol/dropdown (sm, md) dan wadah kartu/modal (lg), plus pill. */
     --radius-sm: .5rem;
-    --radius-md: .9rem;
-    --radius-lg: 1.25rem;
+    --radius-md: .5rem;
+    --radius-lg: 1rem;
     --radius-pill: 50rem;
 
     --shadow-xs: 0 1px 2px rgba(15, 23, 42, .05);
@@ -34,6 +32,30 @@
 
     --transition-fast: all .15s ease;
     --transition-base: all .25s ease;
+
+    /* Jembatan ke variabel Bootstrap supaya komponen bawaan ikut palet. */
+    --bs-body-color: #0b2447;
+    --bs-body-color-rgb: 11, 36, 71;
+    --bs-body-bg: #eef6ff;
+    --bs-secondary-color: #546680;
+    --bs-border-color: #dbe7f5;
+    --bs-primary: #0b6fd6;
+    --bs-primary-rgb: 11, 111, 214;
+    --bs-link-color: #0b6fd6;
+    --bs-link-color-rgb: 11, 111, 214;
+    --bs-link-hover-color: #0a5cb0;
+    --bs-link-hover-color-rgb: 10, 92, 176;
+    --bs-info: #0b6fd6;
+    --bs-info-rgb: 11, 111, 214;
+    --bs-info-text-emphasis: #0a5cb0;
+    --bs-info-bg-subtle: #eef6ff;
+    --bs-info-border-subtle: #cfe3fb;
+    --bs-secondary: #546680;
+    --bs-secondary-rgb: 84, 102, 128;
+    --bs-light: #eef6ff;
+    --bs-light-rgb: 238, 246, 255;
+    --bs-dark: #0b2447;
+    --bs-dark-rgb: 11, 36, 71;
 }
 
 /* BASE */
@@ -80,7 +102,7 @@ button:focus-visible,
     --bs-btn-focus-shadow-rgb: var(--c-primary-rgb);
     box-shadow: var(--shadow-xs);
 }
-.btn-primary:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.btn-primary:hover { box-shadow: var(--shadow-sm); }
 
 .btn-outline-primary {
     --bs-btn-color: var(--c-primary);
@@ -163,7 +185,6 @@ button:focus-visible,
 }
 .stat-card:hover {
     box-shadow: var(--shadow-md);
-    transform: translateY(-3px);
 }
 .stat-card .icon-tile,
 .icon-tile {
@@ -227,7 +248,7 @@ button:focus-visible,
 .badge-soft-danger    { background: rgba(220, 53, 69, .12); color: #b02a37; }
 .badge-soft-warning   { background: rgba(255, 193, 7, .18); color: #997404; }
 .badge-soft-secondary { background: rgba(11, 36, 71, .08); color: var(--c-navy); }
-.badge-soft-info      { background: rgba(13, 202, 240, .14); color: #0aa2c0; }
+.badge-soft-info      { background: rgba(var(--c-primary-rgb), .12); color: var(--c-accent); }
 [class^="badge-soft-"], [class*=" badge-soft-"] {
     font-weight: 600; font-size: .74rem; letter-spacing: .02em;
     padding: .4rem .7rem; border-radius: var(--radius-pill);
@@ -265,7 +286,7 @@ button:focus-visible,
 
 /* --- Utility hover-lift generik --- */
 .hover-lift { transition: var(--transition-base); }
-.hover-lift:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.hover-lift:hover { box-shadow: var(--shadow-md); }
 
 /* --- Skeleton/soft divider --- */
 .divider-soft { border-color: var(--c-border); opacity: 1; }
@@ -577,3 +598,123 @@ button:focus-visible,
     .form-select-sm,
     .form-control-sm { min-height: 36px; }
 }
+
+/* ==========================================================================
+   TAHAP 1 - aksesibilitas, bar bawah HP, label grup sidebar, tab project
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+    }
+}
+
+.skip-link {
+    position: absolute; left: .75rem; top: -4rem; z-index: 2000;
+    background: var(--c-navy); color: #fff;
+    padding: .5rem 1rem; border-radius: var(--radius-sm);
+}
+.skip-link:focus { top: .75rem; color: #fff; }
+
+/* Bar bawah (HP/tablet, di bawah 992px): Beranda, Notifikasi, Scan, Project, Menu. */
+.app-bottom-nav {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 1030;
+    display: flex; align-items: stretch;
+    background: var(--bg-white);
+    border-top: 1px solid var(--c-border);
+    box-shadow: 0 -2px 10px rgba(11, 36, 71, .06);
+    padding-bottom: env(safe-area-inset-bottom);
+}
+.app-bottom-link {
+    position: relative; flex: 1 1 0; min-width: 0; min-height: 56px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .15rem;
+    padding: .4rem .25rem;
+    background: none; border: 0;
+    color: var(--c-muted); font-size: .7rem; font-weight: 600; line-height: 1.1;
+}
+.app-bottom-link i { font-size: 1.35rem; line-height: 1; }
+.app-bottom-link:hover { color: var(--c-primary); }
+.app-bottom-link.active { color: var(--c-primary); }
+.app-bottom-scan { color: var(--c-primary); }
+.app-bottom-scan .scan-disc {
+    width: 52px; height: 52px; margin-top: -24px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--c-primary); color: #fff;
+    border: 4px solid var(--bg-white); border-radius: 50%;
+    box-shadow: var(--shadow-md);
+}
+.app-bottom-scan:hover .scan-disc { background: var(--c-primary-hover); }
+.app-bottom-badge {
+    position: absolute; top: .3rem; left: calc(50% + .3rem);
+    min-width: 1.1rem; height: 1.1rem; padding: 0 .3rem;
+    background: var(--bs-danger); color: #fff;
+    border-radius: var(--radius-pill);
+    font-size: .62rem; font-weight: 700; line-height: 1.1rem; text-align: center;
+}
+
+/* Label grup menu sidebar. Grup tanpa menu otomatis tersembunyi. */
+.sidebar-group-label {
+    list-style: none;
+    padding: .9rem .85rem .25rem;
+    font-size: .75rem; font-weight: 600;
+    color: rgba(255, 255, 255, .55);
+}
+.sidebar-group-label:has(+ .sidebar-group-label),
+.sidebar-group-label:last-child { display: none; }
+
+/* Tab project: satu baris, geser ke samping di HP. */
+.project-tabs {
+    flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden;
+    scrollbar-width: none;
+}
+.project-tabs::-webkit-scrollbar { display: none; }
+.project-tabs .nav-link { white-space: nowrap; }
+
+/* Halaman Scan: pilihan aksi berupa 4 tombol besar. */
+.scan-mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+.scan-mode-btn {
+    display: flex; flex-direction: column; align-items: center; gap: .4rem;
+    padding: 1.25rem .5rem; font-weight: 600;
+}
+.scan-mode-btn i { font-size: 1.6rem; line-height: 1; }
+
+/* Notifikasi: item belum dibaca diberi garis biru di kiri. */
+.list-group-item.notif-unread { background: var(--bg-soft); box-shadow: inset 3px 0 0 var(--c-primary); }
+.notif-dot { width: .5rem; height: .5rem; border-radius: 50%; background: var(--c-primary); flex-shrink: 0; }
+
+/* ==========================================================================
+   TAHAP 3 - penyeragaman lintas halaman tanpa mengubah banyak view
+   ========================================================================== */
+/* Kartu: satu bentuk, satu bayangan, satu garis tepi. */
+.card.rounded-2, .card.rounded-3, .card.rounded-4 { border-radius: var(--radius-lg) !important; }
+.card.shadow-sm { box-shadow: var(--shadow-xs) !important; }
+.card.border-0 { border: 1px solid var(--c-border) !important; }
+.btn.rounded-3, .btn.rounded-4, .form-control.rounded-3, .form-select.rounded-3 { border-radius: var(--radius-sm) !important; }
+
+/* Jarak halaman diatur .app-content; container di dalamnya tidak menambah jarak lagi. */
+.app-content > .container-fluid { padding: 0 !important; }
+.container-fluid h3.fw-bold.text-dark { color: var(--c-navy) !important; letter-spacing: -.02em; }
+
+/* Tombol sekunder, terang, dan gelap ikut palet. */
+.btn-outline-secondary {
+    --bs-btn-color: var(--c-muted); --bs-btn-border-color: var(--c-border);
+    --bs-btn-hover-color: var(--c-navy); --bs-btn-hover-bg: var(--bg-soft); --bs-btn-hover-border-color: var(--c-border);
+    --bs-btn-active-color: var(--c-navy); --bs-btn-active-bg: var(--bg-soft); --bs-btn-active-border-color: var(--c-border);
+}
+.btn-light {
+    --bs-btn-bg: var(--bg-white); --bs-btn-border-color: var(--c-border); --bs-btn-color: var(--c-navy);
+    --bs-btn-hover-bg: var(--bg-soft); --bs-btn-hover-border-color: var(--c-border); --bs-btn-hover-color: var(--c-navy);
+    --bs-btn-active-bg: var(--bg-soft); --bs-btn-active-border-color: var(--c-border);
+}
+.btn-dark {
+    --bs-btn-bg: var(--c-navy); --bs-btn-border-color: var(--c-navy);
+    --bs-btn-hover-bg: var(--c-navy-2); --bs-btn-hover-border-color: var(--c-navy-2);
+    --bs-btn-active-bg: var(--c-navy-2); --bs-btn-active-border-color: var(--c-navy-2);
+}
+
+/* Ikon tile: default biru; varian untuk peringatan dan netral. */
+.icon-tile { background: rgba(var(--c-primary-rgb), .12); color: var(--c-primary); }
+.icon-tile-danger { background: rgba(var(--bs-danger-rgb), .12); color: var(--bs-danger); }
+.icon-tile-navy { background: rgba(11, 36, 71, .1); color: var(--c-navy); }

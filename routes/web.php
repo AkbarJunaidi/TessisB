@@ -109,26 +109,10 @@ Route::middleware('auth')->group(function () {
         ->name('search.suggest');
 
     // Modul Inventory Management
-    // Route scan-lookup SENGAJA didaftarkan SEBELUM Route::resource di bawah
-    // - kalau ditaruh setelah, "scan-lookup" akan ketangkap sebagai parameter
-    // {inventory} pada route show resource (inventory/{inventory}).
     Route::middleware('role:super_admin,admin')->group(function () {
 
-        Route::get('inventory/scan-lookup', [InventoryController::class, 'scanLookup'])
-            ->name('inventory.scan-lookup');
-
-        // 3 endpoint submit fitur Scan (mode Pinjam/Kembalikan/Rusak+Hilang)
-        // - tidak perlu didaftarkan sebelum Route::resource (method POST,
-        // tidak ada risiko ketangkap {inventory} yang scope-nya GET).
-        Route::post('inventory/scan/pinjam', [InventoryController::class, 'scanPinjam'])
-            ->name('inventory.scan.pinjam');
-        Route::post('inventory/scan/kembalikan', [InventoryController::class, 'scanKembalikan'])
-            ->name('inventory.scan.kembalikan');
-        Route::post('inventory/scan/status', [InventoryController::class, 'scanStatus'])
-            ->name('inventory.scan.status');
-
-        // Sama seperti scan-lookup di atas - didaftarkan SEBELUM Route::resource
-        // supaya "mutasi" tidak ketangkap sebagai {inventory} pada route show.
+        // Didaftarkan SEBELUM Route::resource supaya "mutasi" tidak ketangkap
+        // sebagai {inventory} pada route show.
         Route::get('inventory/mutasi', [InventoryMutationController::class, 'index'])
             ->name('inventory.mutasi');
 
@@ -164,10 +148,6 @@ Route::middleware('auth')->group(function () {
         // Daftar Harga Barang (harga beli vs biaya servis). Sebelum Route::resource, sama alasannya.
         Route::get('inventory/harga', [PriceController::class, 'index'])
             ->name('inventory.prices.index');
-
-        // Cek unit yang servisnya segera / terlambat sebelum barang dipakai (popup peringatan).
-        Route::post('inventory/servis-check', [InventoryController::class, 'servisCheck'])
-            ->name('inventory.servis-check');
 
         Route::resource('inventory', InventoryController::class);
 
@@ -424,6 +404,32 @@ Route::middleware('auth')->group(function () {
         // process_return); izin sesungguhnya dicek di LocationController::detect().
         Route::get('inventory/locations/detect', [LocationController::class, 'detect'])
             ->name('inventory.locations.detect');
+
+    });
+
+    // Scan Barang: halaman penuh untuk semua role; izin sesungguhnya (scan_barang.view)
+    // dicek di InventoryController. Dipisah dari grup Inventory yang khusus admin.
+    Route::middleware('role:super_admin,admin,employee')->group(function () {
+
+        Route::get('scan-barang', [InventoryController::class, 'scanPage'])
+            ->name('scan.index');
+
+        Route::get('scan-barang/lookup', [InventoryController::class, 'scanLookup'])
+            ->name('inventory.scan-lookup');
+
+        // 3 endpoint submit fitur Scan (mode Pinjam/Kembalikan/Rusak+Hilang)
+        // - tidak perlu didaftarkan sebelum Route::resource (method POST,
+        // tidak ada risiko ketangkap {inventory} yang scope-nya GET).
+        Route::post('inventory/scan/pinjam', [InventoryController::class, 'scanPinjam'])
+            ->name('inventory.scan.pinjam');
+        Route::post('inventory/scan/kembalikan', [InventoryController::class, 'scanKembalikan'])
+            ->name('inventory.scan.kembalikan');
+        Route::post('inventory/scan/status', [InventoryController::class, 'scanStatus'])
+            ->name('inventory.scan.status');
+
+        // Cek unit yang servisnya segera / terlambat sebelum barang dipakai (popup peringatan).
+        Route::post('inventory/servis-check', [InventoryController::class, 'servisCheck'])
+            ->name('inventory.servis-check');
 
     });
 

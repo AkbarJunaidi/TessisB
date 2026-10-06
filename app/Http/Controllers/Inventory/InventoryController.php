@@ -41,10 +41,24 @@ class InventoryController extends Controller
         $filters = $request->only(['search', 'status']);
         $inventories = $this->inventoryService->getAllPaginated($filters, 10);
 
-        // Pilihan lokasi manual untuk modal Scan (dipakai kalau GPS tidak tersedia / di luar jangkauan).
+        return view('inventory.index', compact('inventories'));
+    }
+
+    /**
+     * Halaman Scan Barang (Pinjam/Kembalikan/Rusak/Hilang). Izin sendiri
+     * (scan_barang.view), tidak ikut permission modul 'inventory'.
+     */
+    public function scanPage(): View
+    {
+        abort_unless(
+            Auth::user()?->hasPermission('scan_barang', 'view'),
+            403,
+            'Anda tidak memiliki hak akses untuk fitur Scan.'
+        );
+
         $storageLocations = $this->locationService->getStorageLocations();
 
-        return view('inventory.index', compact('inventories', 'storageLocations'));
+        return view('inventory.scan-page', compact('storageLocations'));
     }
 
     /**

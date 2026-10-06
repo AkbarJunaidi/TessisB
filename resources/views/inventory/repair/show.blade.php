@@ -33,7 +33,7 @@
                 <button type="button" class="btn btn-outline-danger px-3" data-bs-toggle="modal" data-bs-target="#cancelRepairModal">
                     <i class="bi bi-x-circle me-1"></i> Batalkan Catatan
                 </button>
-                <button type="button" class="btn btn-success px-3" data-bs-toggle="modal" data-bs-target="#completeRepairModal">
+                <button type="button" class="btn btn-primary px-3" data-bs-toggle="modal" data-bs-target="#completeRepairModal">
                     <i class="bi bi-check2-circle me-1"></i> Selesaikan Perbaikan
                 </button>
             </div>
@@ -223,7 +223,7 @@
                 </div>
                 <div class="modal-footer border-0 bg-light py-2">
                     <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success px-4">Simpan</button>
+                    <button type="submit" class="btn btn-primary px-4">Simpan</button>
                 </div>
             </form>
         </div>

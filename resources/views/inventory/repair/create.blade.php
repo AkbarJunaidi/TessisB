@@ -340,7 +340,7 @@
     document.getElementById('repairForm').addEventListener('submit', function (e) {
         if (document.querySelectorAll('.unit-check:checked').length === 0) {
             e.preventDefault();
-            alert('Pilih minimal satu unit yang diservis.');
+            AppUI.toast('Pilih minimal satu unit yang diservis.');
         }
     });
 })();

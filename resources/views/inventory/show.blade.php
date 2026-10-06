@@ -3,7 +3,7 @@
 @section('title', 'Detail Inventory - ' . $inventory->name)
 
 @section('content')
-<div class="container-fluid p-0 pb-5 pb-lg-0">
+<div class="container-fluid p-0">
 
     <!-- Header Page & Back Button (Hanya Tampil di Desktop) -->
     <div class="d-none d-md-flex justify-content-between align-items-center mb-4">
@@ -45,9 +45,28 @@
             <span class="badge {{ \App\Support\InventoryStatus::subtleClass($inventory->display_status) }} px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> {{ strtoupper($inventory->display_status ?? 'TERSEDIA') }}</span>
         </div>
         <p class="text-muted small mb-2">Informasi lengkap aset barang</p>
-        <a href="{{ route('inventory.index') }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-2 fw-medium">
-            <i class="bi bi-arrow-left"></i> Kembali
-        </a>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ route('inventory.index') }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-2 fw-medium">
+                <i class="bi bi-arrow-left"></i> Kembali
+            </a>
+            @if(auth()->user()->hasPermission('inventory', 'edit'))
+            <a href="{{ route('inventory.edit', $inventory->id) }}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-2 fw-medium">
+                <i class="bi bi-pencil"></i> Edit
+            </a>
+            @endif
+            <a href="{{ route('inventory.preview-qr', $inventory->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-2 fw-medium">
+                <i class="bi bi-qr-code"></i> Cetak QR
+            </a>
+            <div class="dropdown">
+                <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle d-inline-flex align-items-center gap-2 fw-medium" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-file-earmark-text"></i> Report
+                </button>
+                <ul class="dropdown-menu shadow-sm">
+                    <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('inventory.preview', $inventory->id) }}" target="_blank"><i class="bi bi-eye"></i> Preview</a></li>
+                    <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('inventory.download', $inventory->id) }}"><i class="bi bi-download"></i> Download</a></li>
+                </ul>
+            </div>
+        </div>
     </div>
 
     <!-- Alert Success -->
@@ -721,32 +740,4 @@
     </div>
 
 </div>
-
-
-<!-- FIXED BOTTOM ACTION BAR UNTUK MOBILE (STYLE SAMA DENGAN BOTTOM NAV DETAIL PROJECT) -->
-<nav class="d-md-none fixed-bottom bg-white border-top shadow-sm">
-    <div class="d-flex justify-content-around py-2">
-        @if(auth()->user()->hasPermission('inventory', 'edit'))
-        <a href="{{ route('inventory.edit', $inventory->id) }}" class="text-center text-decoration-none text-secondary small inventory-mobile-nav-link">
-            <i class="bi bi-pencil-square d-block fs-5"></i>Edit
-        </a>
-        @endif
-        <a href="{{ route('inventory.preview-qr', $inventory->id) }}" target="_blank" class="text-center text-decoration-none text-secondary small inventory-mobile-nav-link">
-            <i class="bi bi-qr-code d-block fs-5"></i>Download QR
-        </a>
-        <a href="{{ route('inventory.preview', $inventory->id) }}" target="_blank" class="text-center text-decoration-none text-secondary small inventory-mobile-nav-link">
-            <i class="bi bi-file-earmark-pdf d-block fs-5"></i> preview
-        </a>
-        <a href="{{ route('inventory.download', $inventory->id) }}" class="text-center text-decoration-none text-secondary small inventory-mobile-nav-link">
-            <i class="bi bi-download d-block fs-5"></i> download
-        </a>
-    </div>
-</nav>
-
-<style>
-    .inventory-mobile-nav-link:active,
-    .inventory-mobile-nav-link:focus {
-        color: var(--bs-primary) !important;
-    }
-</style>
 @endsection

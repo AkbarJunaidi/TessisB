@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const staged = getStagedMap(groupKey);
 
         if (staged.size === 0) {
-            alert('Klik barang yang mau diubah statusnya dulu (Dikembalikan/Rusak/Hilang).');
+            AppUI.toast('Klik barang yang mau diubah statusnya dulu (Dikembalikan/Rusak/Hilang).');
             return;
         }
 
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const lokasi = locationPicker.value();
 
         if (!lokasi) {
-            alert('Lokasi saat ini belum siap. Tunggu deteksi selesai atau pilih lokasi manual.');
+            AppUI.toast('Lokasi saat ini belum siap. Tunggu deteksi selesai atau pilih lokasi manual.');
             return;
         }
 
@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const failed = results.filter((r) => r.status === 'rejected');
 
                 if (failed.length > 0) {
-                    alert(failed.map((r) => r.reason.message).join('\n'));
+                    AppUI.toast(failed.map((r) => r.reason.message).join('\n'));
                     return;
                 }
 

@@ -208,7 +208,7 @@
     suratJalanForm.addEventListener('submit', function (e) {
         if (rowsWrapper.children.length === 0) {
             e.preventDefault();
-            alert('Tambahkan minimal 1 barang sebelum menyimpan Surat Jalan.');
+            AppUI.toast('Tambahkan minimal 1 barang sebelum menyimpan Surat Jalan.');
             return;
         }
 

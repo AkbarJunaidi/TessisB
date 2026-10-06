@@ -85,7 +85,7 @@
                                     @endif
                                 </div>
                                 <div class="d-flex gap-2 flex-shrink-0">
-                                    <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#approveModal{{ $req->id }}">
+                                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#approveModal{{ $req->id }}">
                                         <i class="bi bi-check-lg"></i> Setujui
                                     </button>
                                     <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $req->id }}">
@@ -158,7 +158,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-success">Setujui</button>
+                            <button type="submit" class="btn btn-primary">Setujui</button>
                         </div>
                     </form>
                 </div>

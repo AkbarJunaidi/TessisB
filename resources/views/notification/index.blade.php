@@ -3,7 +3,7 @@
 @section('title', 'Notifikasi')
 
 @section('content')
-<div class="container-fluid px-4 py-3">
+<div class="container-fluid p-0">
 
     @php
         $isSuperAdmin = auth()->user()->hasRole('super_admin');
@@ -14,26 +14,11 @@
         $canKirimPengumuman = auth()->user()->hasPermission('notifikasi_sistem', 'kirim');
     @endphp
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h3 class="fw-bold text-dark m-0">Notifikasi</h3>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0 small">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Notifikasi</li>
-                </ol>
-            </nav>
-        </div>
-
-        {{-- Tombol aktifkan Web Push - disembunyikan default lewat class
-             d-none, dimunculkan JS di layouts/app.blade.php HANYA kalau
-             browser mendukung Push API DAN server sudah setup VAPID key
-             (config('webpush.vapid.public_key') tidak kosong). Kalau
-             paket belum di-install sama sekali, tombol ini permanen
-             tersembunyi - tidak ada yang rusak, fitur kirim pengumuman
-             tetap jalan normal lewat channel database saja. --}}
-        <button type="button" id="btnEnablePush" class="btn btn-sm btn-outline-primary fw-medium d-none">
-            <i class="bi bi-bell me-1"></i>Aktifkan Notifikasi Browser
+    <div class="page-heading">
+        <h3>Notifikasi</h3>
+        {{-- Disembunyikan; JS memunculkannya hanya jika browser dan server mendukung Web Push. --}}
+        <button type="button" id="btnEnablePush" class="btn btn-sm btn-outline-primary d-none">
+            <i class="bi bi-bell me-1"></i>Aktifkan notifikasi browser
         </button>
     </div>
 
@@ -46,7 +31,7 @@
              kirim/hapus masih belum didesain, belum ada di versi ini. --}}
         @if($canKirimPengumuman)
             <div class="col-lg-4">
-                <div class="card shadow-sm border-0 rounded-3 bg-white">
+                <div class="app-panel">
                     <div class="card-body p-4">
                         <h6 class="fw-bold mb-3"><i class="bi bi-megaphone me-2 text-primary"></i>Kirim Pengumuman</h6>
 
@@ -70,11 +55,8 @@
                             </div>
 
                             <button type="submit" class="btn btn-primary w-100 fw-semibold">
-                                <i class="bi bi-send me-1"></i>Kirim ke Semua User Aktif
+                                <i class="bi bi-send me-1"></i>Kirim ke semua user
                             </button>
-                            <p class="text-muted small mt-2 mb-0">
-                                Terkirim ke semua user aktif.
-                            </p>
                         </form>
                     </div>
                 </div>
@@ -91,8 +73,8 @@
              tombol cuma muncul kalau $canDeleteSystemNotification
              (default hanya Super Admin, Admin lewat Permission Override). --}}
         <div class="{{ $canKirimPengumuman ? 'col-lg-8' : 'col-12' }}">
-            <div class="card shadow-sm border-0 rounded-3 bg-white">
-                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+            <div class="app-panel">
+                <div class="app-panel-header">
                     <h6 class="fw-bold m-0">
                         <i class="bi bi-bell me-2 text-primary"></i>Semua Notifikasi
                     </h6>
@@ -107,41 +89,46 @@
                 </div>
 
                 @if($inbox->isEmpty() && empty($systemNotifications))
-                    <div class="card-body p-5 text-center text-muted">
-                        <i class="bi bi-inbox" style="font-size: 2.5rem;"></i>
-                        <p class="mt-2 mb-0">Belum ada notifikasi.</p>
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="bi bi-inbox"></i></div>
+                        <p class="mb-0">Belum ada notifikasi.</p>
                     </div>
                 @else
+                    <div class="d-flex gap-2 flex-wrap px-3 py-2 border-bottom" id="notifFilters" role="group" aria-label="Filter notifikasi">
+                        <button type="button" class="btn btn-sm btn-primary" data-filter="all">Semua</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-filter="important">Penting</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-filter="unread">Belum dibaca</button>
+                    </div>
                     <div class="list-group list-group-flush" id="notificationInboxList">
                         {{-- Notifikasi Sistem dulu (butuh tindakan admin -
                              reset password, deadline, dst), baru Pengumuman
                              di bawahnya. --}}
                         @if($isAdminOrSuperAdmin)
                             @foreach($systemNotifications as $item)
-                                <div class="list-group-item p-3 system-notif-item" data-notif-key="{{ $item['id'] }}">
+                                <div class="list-group-item p-3 system-notif-item" data-notif-key="{{ $item['id'] }}" data-important="1" data-unread="0">
                                     <div class="d-flex justify-content-between align-items-start gap-3">
                                         <a href="{{ $item['url'] }}" class="d-flex align-items-start gap-3 text-decoration-none text-reset flex-grow-1">
                                             <i class="bi {{ $item['icon'] }} mt-1"></i>
                                             <div>
                                                 <div class="d-flex align-items-center gap-2">
                                                     @if($item['pinned'] ?? false)
-                                                        <i class="bi bi-pin-angle-fill text-warning" title="Disematkan"></i>
+                                                        <i class="bi bi-pin-angle-fill text-primary" title="Disematkan"></i>
                                                     @endif
                                                     <span class="fw-semibold">{{ $item['title'] }}</span>
+                                                    <span class="badge-soft-primary">Penting</span>
                                                 </div>
                                                 <div class="text-secondary small">{{ $item['message'] }}</div>
-                                                <div class="text-muted small mt-1">Notifikasi sistem (otomatis)</div>
                                             </div>
                                         </a>
                                         <div class="btn-group btn-group-sm flex-shrink-0">
                                             <button type="button"
-                                                    class="btn btn-outline-secondary btn-toggle-system-pin"
+                                                    class="btn btn-outline-secondary btn-toggle-system-pin" aria-label="Sematkan atau lepas sematan"
                                                     data-pinned="{{ ($item['pinned'] ?? false) ? '1' : '0' }}"
                                                     title="{{ ($item['pinned'] ?? false) ? 'Lepas sematan' : 'Sematkan' }}">
                                                 <i class="bi {{ ($item['pinned'] ?? false) ? 'bi-pin-angle-fill' : 'bi-pin-angle' }}"></i>
                                             </button>
                                             @if($canDeleteSystemNotification)
-                                                <button type="button" class="btn btn-outline-danger btn-delete-system-notif" title="Hapus untuk semua user">
+                                                <button type="button" class="btn btn-outline-danger btn-delete-system-notif" title="Hapus untuk semua user" aria-label="Hapus untuk semua user">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             @endif
@@ -153,16 +140,16 @@
 
                         @foreach($inbox as $item)
                             @php $isPinned = !is_null($item->pinned_at); @endphp
-                            <div class="list-group-item p-3 notif-item {{ $item->read_at ? '' : 'bg-primary-subtle bg-opacity-10' }}"
-                                 data-notif-id="{{ $item->id }}">
+                            <div class="list-group-item p-3 notif-item {{ $item->read_at ? '' : 'notif-unread' }}"
+                                 data-notif-id="{{ $item->id }}" data-important="{{ $isPinned ? '1' : '0' }}" data-unread="{{ $item->read_at ? '0' : '1' }}">
                                 <div class="d-flex justify-content-between align-items-start gap-3">
                                     <div>
                                         <div class="d-flex align-items-center gap-2 mb-1">
                                             @if(!$item->read_at)
-                                                <span class="badge bg-primary rounded-pill" style="width:8px;height:8px;padding:0;"></span>
+                                                <span class="notif-dot" role="img" aria-label="Belum dibaca"></span>
                                             @endif
                                             @if($isPinned)
-                                                <i class="bi bi-pin-angle-fill text-warning" title="Disematkan"></i>
+                                                <i class="bi bi-pin-angle-fill text-primary" title="Disematkan"></i>
                                             @endif
                                             <span class="fw-semibold">{{ $item->data['title'] ?? '(Tanpa judul)' }}</span>
                                         </div>
@@ -180,12 +167,12 @@
                                         @endif
                                         <div class="btn-group btn-group-sm">
                                             <button type="button"
-                                                    class="btn btn-outline-secondary btn-toggle-pin"
+                                                    class="btn btn-outline-secondary btn-toggle-pin" aria-label="Sematkan atau lepas sematan"
                                                     data-pinned="{{ $isPinned ? '1' : '0' }}"
                                                     title="{{ $isPinned ? 'Lepas sematan' : 'Sematkan' }}">
                                                 <i class="bi {{ $isPinned ? 'bi-pin-angle-fill' : 'bi-pin-angle' }}"></i>
                                             </button>
-                                            <button type="button" class="btn btn-outline-danger btn-delete-notif" title="Hapus">
+                                            <button type="button" class="btn btn-outline-danger btn-delete-notif" title="Hapus" aria-label="Hapus">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </div>
@@ -193,6 +180,10 @@
                                 </div>
                             </div>
                         @endforeach
+                    </div>
+
+                    <div id="notifFilterEmpty" class="empty-state d-none">
+                        <p class="mb-0">Tidak ada notifikasi.</p>
                     </div>
 
                     @if($inbox->isNotEmpty())
@@ -210,12 +201,9 @@
     @if($isSuperAdmin)
         <div class="row g-4 mt-1">
             <div class="col-12">
-                <div class="card shadow-sm border-0 rounded-3 bg-white">
-                    <div class="card-header bg-white py-3 border-bottom">
+                <div class="app-panel">
+                    <div class="app-panel-header">
                         <h6 class="fw-bold m-0"><i class="bi bi-sliders me-2 text-primary"></i>Kelola Notifikasi Otomatis</h6>
-                        <p class="text-muted small mb-0 mt-1">
-                            Aktif/nonaktifkan & atur urutan jenis notifikasi otomatis.
-                        </p>
                     </div>
                     <div class="card-body p-4">
                         <form method="POST" action="{{ route('notification-settings.update') }}" id="notifSettingsForm">
@@ -284,6 +272,38 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+        // Filter daftar di sisi browser: Semua / Penting / Belum dibaca.
+        let activeFilter = 'all';
+        const filterBox = document.getElementById('notifFilters');
+
+        function applyFilter() {
+            const items = document.querySelectorAll('#notificationInboxList > [data-important]');
+            let shown = 0;
+            items.forEach(function (el) {
+                const ok = activeFilter === 'all'
+                    || (activeFilter === 'important' && el.dataset.important === '1')
+                    || (activeFilter === 'unread' && el.dataset.unread === '1');
+                el.classList.toggle('d-none', !ok);
+                if (ok) shown++;
+            });
+            const empty = document.getElementById('notifFilterEmpty');
+            if (empty) empty.classList.toggle('d-none', shown > 0);
+        }
+
+        if (filterBox) {
+            filterBox.addEventListener('click', function (e) {
+                const btn = e.target.closest('[data-filter]');
+                if (!btn) return;
+                activeFilter = btn.dataset.filter;
+                filterBox.querySelectorAll('[data-filter]').forEach(function (b) {
+                    const on = b === btn;
+                    b.classList.toggle('btn-primary', on);
+                    b.classList.toggle('btn-outline-primary', !on);
+                });
+                applyFilter();
+            });
+        }
+
         // Tandai 1 notifikasi dibaca lewat AJAX (tanpa reload halaman) -
         // menyamarkan highlight biru begitu ditandai dibaca.
         document.querySelectorAll('.btn-mark-read').forEach(function (btn) {
@@ -296,9 +316,11 @@
                     headers: { 'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json' },
                 }).then(function (res) {
                     if (res.ok) {
-                        item.classList.remove('bg-primary-subtle', 'bg-opacity-10');
+                        item.classList.remove('notif-unread');
+                        item.dataset.unread = '0';
                         btn.remove();
-                        item.querySelector('.badge')?.remove();
+                        item.querySelector('.notif-dot')?.remove();
+                        applyFilter();
                     }
                 });
             });
@@ -322,28 +344,30 @@
                     btn.dataset.pinned = currentlyPinned ? '0' : '1';
                     btn.title = currentlyPinned ? 'Sematkan' : 'Lepas sematan';
                     btn.querySelector('i').className = currentlyPinned ? 'bi bi-pin-angle' : 'bi bi-pin-angle-fill';
+                    item.dataset.important = currentlyPinned ? '0' : '1';
+                    applyFilter();
                 });
             });
         });
 
-        // Hapus notifikasi - konfirmasi dulu (aksi tidak bisa dibatalkan),
-        // baru hilangkan barisnya dari tampilan begitu server konfirmasi sukses.
+        // Hapus notifikasi: konfirmasi dulu, baris hilang setelah server sukses.
         document.querySelectorAll('.btn-delete-notif').forEach(function (btn) {
             btn.addEventListener('click', function () {
-                if (!confirm('Hapus notifikasi ini? Tindakan ini tidak bisa dibatalkan.')) {
-                    return;
-                }
+                AppUI.confirm('Hapus notifikasi ini?', { label: 'Hapus', danger: true }).then(function (ok) {
+                    if (!ok) return;
 
-                const item = btn.closest('.notif-item');
-                const id = item.dataset.notifId;
+                    const item = btn.closest('.notif-item');
+                    const id = item.dataset.notifId;
 
-                fetch(`/announcements/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json' },
-                }).then(function (res) { return res.json(); }).then(function (data) {
-                    if (data.success) {
-                        item.remove();
-                    }
+                    fetch(`/announcements/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json' },
+                    }).then(function (res) { return res.json(); }).then(function (data) {
+                        if (data.success) {
+                            item.remove();
+                            applyFilter();
+                        }
+                    });
                 });
             });
         });
@@ -378,20 +402,21 @@
 
         document.querySelectorAll('.btn-delete-system-notif').forEach(function (btn) {
             btn.addEventListener('click', function () {
-                if (!confirm('Hapus notifikasi ini untuk SEMUA user? Bisa muncul lagi kalau kondisinya terjadi lagi di masa depan.')) {
-                    return;
-                }
+                AppUI.confirm('Hapus untuk semua user? Bisa muncul lagi jika kondisinya terjadi lagi.', { label: 'Hapus', danger: true }).then(function (ok) {
+                    if (!ok) return;
 
-                const item = btn.closest('.system-notif-item');
-                const key = encodeURIComponent(item.dataset.notifKey);
+                    const item = btn.closest('.system-notif-item');
+                    const key = encodeURIComponent(item.dataset.notifKey);
 
-                fetch(`/system-notifications/${key}`, {
-                    method: 'DELETE',
-                    headers: { 'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json' },
-                }).then(function (res) { return res.json(); }).then(function (data) {
-                    if (data.success) {
-                        item.remove();
-                    }
+                    fetch(`/system-notifications/${key}`, {
+                        method: 'DELETE',
+                        headers: { 'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json' },
+                    }).then(function (res) { return res.json(); }).then(function (data) {
+                        if (data.success) {
+                            item.remove();
+                            applyFilter();
+                        }
+                    });
                 });
             });
         });
@@ -494,7 +519,7 @@
                     .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
                     .then(function (result) {
                         if (result.ok && result.data.success) {
-                            notifSettingsStatus.textContent = '✓ ' + result.data.message;
+                            notifSettingsStatus.textContent = result.data.message;
                             notifSettingsStatus.classList.add('text-success');
                         } else {
                             notifSettingsStatus.textContent = result.data.message || 'Gagal menyimpan pengaturan.';

@@ -157,7 +157,7 @@
 
                                     <a
                                         href="{{ route('users.show', $user) }}"
-                                        class="btn btn-sm btn-info"
+                                        class="btn btn-sm btn-outline-primary"
                                     >
                                         <i class="bi bi-eye"></i>
                                     </a>
@@ -176,7 +176,7 @@
                                         action="{{ route('users.destroy', $user) }}"
                                         method="POST"
                                         class="d-inline"
-                                        onsubmit="return confirm('Yakin ingin menghapus user ini?');"
+                                        data-confirm="Yakin ingin menghapus user ini?" data-confirm-label="Hapus" data-confirm-danger
                                     >
 
                                         @csrf

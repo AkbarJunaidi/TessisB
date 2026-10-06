@@ -102,7 +102,7 @@
                                         </button>
                                     </form>
                                 @endunless
-                                <form action="{{ route('signature.destroy', $sig) }}" method="POST" onsubmit="return confirm('Hapus tanda tangan ini?');">
+                                <form action="{{ route('signature.destroy', $sig) }}" method="POST" data-confirm="Hapus tanda tangan ini?" data-confirm-label="Hapus" data-confirm-danger>
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">

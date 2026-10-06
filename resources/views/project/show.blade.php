@@ -3,7 +3,7 @@
 @section('title', 'Detail Project - ' . $project->name)
 
 @section('content')
-<div class="container-fluid p-0 pb-5 pb-md-0">
+<div class="container-fluid p-0">
 
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-3" role="alert">
@@ -263,7 +263,7 @@
                                 <div class="d-flex align-items-center gap-2 flex-shrink-0 ms-2">
                                     <span class="fw-bold fs-5 text-info" id="estimatedValueDisplay">{{ \App\Support\Money::formatRupiah($project->estimated_value) }}</span>
 
-                                    <button type="button" class="btn btn-sm btn-outline-info" id="estimatedValueEditBtn" title="Edit Estimasi Pendapatan">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" id="estimatedValueEditBtn" title="Edit Estimasi Pendapatan">
                                         <i class="bi bi-pencil"></i>
                                     </button>
 
@@ -272,7 +272,7 @@
                                            style="width: 140px;"
                                            value="{{ $project->estimated_value ? number_format((float) $project->estimated_value, 0, ',', '.') : '' }}">
 
-                                    <button type="button" class="btn btn-sm btn-success d-none" id="estimatedValueConfirmBtn" title="Konfirmasi">
+                                    <button type="button" class="btn btn-sm btn-primary d-none" id="estimatedValueConfirmBtn" title="Konfirmasi">
                                         <i class="bi bi-check-lg"></i>
                                     </button>
                                     <button type="button" class="btn btn-sm btn-outline-secondary d-none" id="estimatedValueCancelBtn" title="Batal">
@@ -436,7 +436,7 @@
     @endif
 
     {{-- Tabs --}}
-    <ul class="nav nav-tabs mb-3 d-none d-md-flex" id="projectTabs" role="tablist">
+    <ul class="nav nav-tabs project-tabs mb-3" id="projectTabs" role="tablist">
         <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-kanban" type="button">Kanban</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-barang" type="button">Barang</button></li>
         @if(auth()->user()->hasPermission('inventory', 'booking'))
@@ -486,80 +486,16 @@
 
 </div>
 
-{{-- Bottom Navigation khusus Mobile (tanpa Floating Action Button, sesuai PRD) --}}
-<nav class="d-md-none fixed-bottom bg-white border-top shadow-sm">
-    <div class="d-flex justify-content-around py-2">
-        <a href="#tab-kanban" class="text-center text-decoration-none text-secondary small mobile-tab-link active">
-            <i class="bi bi-kanban d-block fs-5"></i>Kanban
-        </a>
-        <a href="#tab-barang" class="text-center text-decoration-none text-secondary small mobile-tab-link">
-            <i class="bi bi-box-seam d-block fs-5"></i>Barang
-        </a>
-        <a href="#tab-suratjalan" class="text-center text-decoration-none text-secondary small mobile-tab-link">
-            <i class="bi bi-file-earmark-text d-block fs-5"></i>Surat Jalan
-        </a>
-        <a href="#tab-dokumen" class="text-center text-decoration-none text-secondary small mobile-tab-link">
-            <i class="bi bi-folder d-block fs-5"></i>Dokumen
-        </a>
-        @if(auth()->user()->hasPermission('finance', 'view'))
-            <a href="#tab-kwitansi" class="text-center text-decoration-none text-secondary small mobile-tab-link">
-                <i class="bi bi-cash-coin d-block fs-5"></i>Kwitansi
-            </a>
-        @endif
-    </div>
-</nav>
-
 <script>
-    // Bottom nav mobile - pindah tab, sorot highlight, DAN auto-scroll ke
-    // area tab-content-nya. PENTING: sengaja TIDAK mengandalkan
-    // data-bs-toggle="tab" bawaan di link ini lagi - link bottom nav ini
-    // bukan bagian dari grup tablist yang sama dengan <ul id="projectTabs">
-    // (beda container sama sekali), jadi Bootstrap tidak bisa menentukan
-    // dengan benar tab-pane mana yang harus disembunyikan/ditampilkan lewat
-    // atributnya sendiri (itu penyebab card-nya "diam" tidak ikut ganti
-    // walau tab di bottom nav sudah kesorot aktif). Solusinya: trigger
-    // tombol tab ASLI di #projectTabs secara langsung lewat Bootstrap Tab
-    // API - persis mekanisme yang sudah terbukti benar di link "Lihat
-    // Surat Jalan" di bawah.
-    document.querySelectorAll('.mobile-tab-link').forEach(function (link) {
-        link.addEventListener('click', function (e) {
-            e.preventDefault();
-
-            const targetSelector = this.getAttribute('href'); // contoh: "#tab-suratjalan"
-            const realTabButton = document.querySelector('#projectTabs [data-bs-target="' + targetSelector + '"]');
-            if (realTabButton) {
-                bootstrap.Tab.getOrCreateInstance(realTabButton).show();
-            }
-
-            document.querySelectorAll('.mobile-tab-link').forEach(l => l.classList.remove('active', 'text-primary'));
-            this.classList.add('active', 'text-primary');
-
-            setTimeout(function () {
-                // PENTING: target-nya .tab-content ("projectTabContent"),
-                // BUKAN #projectTabs (<ul> tab desktop) - <ul> itu
-                // "d-none" di mobile (disembunyikan, diganti bottom nav
-                // ini), jadi tidak punya posisi layout untuk di-scroll ke
-                // situ sama sekali kalau ditarget langsung.
-                const tabsSection = document.getElementById('projectTabContent');
-                if (tabsSection) tabsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 50);
-        });
-    });
-
     // "Lihat Surat Jalan" di dropdown header, DAN link "Surat Jalan" di halaman
     // daftar project (kolom SURAT JALAN): keduanya perlu pindah tab (dengan memicu
     // tombol tab aslinya secara langsung, supaya Bootstrap benar-benar menonaktifkan
-    // tab yang sedang aktif) + scroll ke section tab-nya + sinkronkan bottom nav mobile.
+    // tab yang sedang aktif) + scroll ke section tab-nya.
     function goToSuratJalanTab() {
         const realTabButton = document.querySelector('#projectTabs [data-bs-target="#tab-suratjalan"]');
         if (realTabButton) {
             bootstrap.Tab.getOrCreateInstance(realTabButton).show();
         }
-
-        // Sinkronkan highlight bottom nav mobile juga
-        document.querySelectorAll('.mobile-tab-link').forEach(l => l.classList.remove('active', 'text-primary'));
-        const mobileLink = document.querySelector('.mobile-tab-link[href="#tab-suratjalan"]');
-        if (mobileLink) mobileLink.classList.add('active', 'text-primary');
 
         setTimeout(function () {
             // Sama seperti di atas - target .tab-content, bukan #projectTabs

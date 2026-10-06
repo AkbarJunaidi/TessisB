@@ -31,7 +31,7 @@
                     <div class="small">{{ $note->note }}</div>
                 </div>
                 @if($note->user_id === auth()->id() || auth()->user()->isSuperAdmin())
-                    <form action="{{ route('projects.notes.destroy', $note) }}" method="POST" onsubmit="return confirm('Hapus catatan ini?');">
+                    <form action="{{ route('projects.notes.destroy', $note) }}" method="POST" data-confirm="Hapus catatan ini?" data-confirm-label="Hapus" data-confirm-danger>
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-link text-danger p-0">

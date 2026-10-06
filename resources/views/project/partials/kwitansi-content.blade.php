@@ -68,7 +68,7 @@
                     <td class="text-muted">{{ $item->description ?: '-' }}</td>
                     <td class="text-end" style="width: 160px;">
                         @if($canCreateKwitansi)
-                            <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#cetakDariPendapatan{{ $item->id }}">
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#cetakDariPendapatan{{ $item->id }}">
                                 <i class="bi bi-printer"></i> Cetak Kwitansi
                             </button>
                         @endif
@@ -242,7 +242,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                            <button type="submit" class="btn btn-success"><i class="bi bi-printer"></i> Simpan & Cetak</button>
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-printer"></i> Simpan & Cetak</button>
                         </div>
                     </form>
                 </div>

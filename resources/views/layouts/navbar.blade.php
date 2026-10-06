@@ -1,13 +1,6 @@
 <nav class="app-topbar navbar navbar-expand-lg border-bottom bg-white px-3 px-md-4 py-2">
     <div class="container-fluid p-0 flex-nowrap">
 
-        {{-- Tombol buka sidebar --}}
-        <button class="btn btn-light border rounded-3 me-3 d-lg-none flex-shrink-0" type="button"
-                data-bs-toggle="offcanvas" data-bs-target="#appSidebar" aria-controls="appSidebar"
-                aria-label="Buka menu navigasi">
-            <i class="bi bi-list fs-5"></i>
-        </button>
-
         <div class="d-flex align-items-center gap-4" style="min-width:0;">
             <div style="min-width:0;">
                 <span class="fw-semibold text-navy d-block navbar-page-title" style="font-size:.95rem;">
@@ -371,7 +364,15 @@
             return div.innerHTML;
         }
 
+        function syncBottomBadge(count) {
+            document.querySelectorAll('[data-notif-badge]').forEach(function (el) {
+                el.textContent = count > 9 ? '9+' : count;
+                el.classList.toggle('d-none', count === 0);
+            });
+        }
+
         function renderNotifications(notifications) {
+            syncBottomBadge(notifications.length);
             if (!notifications.length) {
                 listEl.innerHTML = '<div class="text-center text-muted small py-4">Tidak ada notifikasi saat ini.</div>';
                 badgeEl.classList.add('d-none');
@@ -483,6 +484,7 @@
         }
 
         loadNotifications();
-        setInterval(loadNotifications, 60000);
+        setInterval(function () { if (!document.hidden) loadNotifications(); }, 60000);
+        document.addEventListener('visibilitychange', function () { if (!document.hidden) loadNotifications(); });
     })();
 </script>

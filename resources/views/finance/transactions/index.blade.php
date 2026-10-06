@@ -213,7 +213,7 @@
                                         <i class="bi bi-pencil"></i>
                                     </button>
                                     <form method="POST" action="{{ route('finance.transactions.destroy', $t) }}" class="d-inline"
-                                          onsubmit="return confirm('Hapus transaksi ini?')">
+                                          data-confirm="Hapus transaksi ini?" data-confirm-label="Hapus" data-confirm-danger>
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Hapus"><i class="bi bi-trash"></i></button>
