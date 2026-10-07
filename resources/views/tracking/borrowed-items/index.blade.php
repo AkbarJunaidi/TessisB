@@ -106,10 +106,12 @@ document.addEventListener('DOMContentLoaded', function () {
     // jadi tidak pernah jadi target aksi - cuma titik "reset".
     const STATUS_CYCLE = ['Dipinjam', 'Dikembalikan', 'Rusak', 'Hilang'];
 
+    // Kunci grup peminjam: per project atau per user.
     function getGroupKey(el) {
         return el.dataset.projectId ? `project-${el.dataset.projectId}` : `user-${el.dataset.userId}`;
     }
 
+    // Peta unit yang dipilih (staged) untuk satu grup.
     function getStagedMap(groupKey) {
         if (!stagedByGroup[groupKey]) {
             stagedByGroup[groupKey] = new Map();
@@ -117,6 +119,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return stagedByGroup[groupKey];
     }
 
+    // Klik kartu unit memutar status tujuan (STATUS_CYCLE) dan mencatatnya di peta staged.
     function bindUnitCards(container) {
         const groupKey = getGroupKey(container);
 
@@ -189,9 +192,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const btnText = submitBtn.querySelector('.btn-text');
         const spinner = submitBtn.querySelector('.spinner-border');
 
-        // Kelompokkan per status tujuan - "Dikembalikan" lewat 1 endpoint,
-        // "Rusak"/"Hilang" lewat endpoint lain (lihat routes/web.php
-        // borrowed-items.return-by-ids & .mark-status).
+        // Kelompokkan per status tujuan: Dikembalikan lewat return-by-ids, Rusak/Hilang lewat mark-status.
         const unitIdsByStatus = { Dikembalikan: [], Rusak: [], Hilang: [] };
         staged.forEach(function (status, unitId) { unitIdsByStatus[status].push(Number(unitId)); });
 
@@ -220,9 +221,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
                 }
 
-                // Disederhanakan jadi reload halaman - perubahannya bisa
-                // campur 3 jenis aksi sekaligus, lebih aman & sederhana
-                // daripada rekonstruksi ulang tampilan accordion manual.
+                // Cukup reload halaman: perubahan bisa campuran 3 jenis aksi, lebih aman daripada membangun ulang accordion.
                 window.location.reload();
             })
             .finally(function () {
@@ -233,6 +232,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     });
 
+    // POST JSON dengan CSRF; mengembalikan JSON respons.
     function postJson(url, body) {
         return fetch(url, {
             method: 'POST',

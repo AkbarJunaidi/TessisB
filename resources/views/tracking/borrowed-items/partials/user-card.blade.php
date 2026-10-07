@@ -1,8 +1,5 @@
-{{-- Partial: 1 akun (peminjaman langsung lewat Scan, TANPA Project) pada
-     halaman Barang Pinjaman - kembaran project-card.blade.php, struktur &
-     class SAMA PERSIS (termasuk class "project-card" - dipakai query umum
-     "kartu apa saja yang masih ada" di JS) supaya JS yang sudah ada jalan
-     tanpa perlu tahu bedanya. Variabel: $user, $units --}}
+{{-- 1 akun (peminjaman via Scan tanpa Project) di Barang Pinjaman; kembaran project-card dengan struktur dan class sama persis (termasuk 'project-card') agar JS jalan.
+     Variabel: $user, $units. --}}
 
 <div class="card border-0 shadow-sm rounded-3 mb-2 project-card" data-user-id="{{ $user->id }}">
     <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">

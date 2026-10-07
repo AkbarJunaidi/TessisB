@@ -42,9 +42,7 @@
                 </button>
             @endif
 
-            {{-- Hapus Permanen - permission 'trash.force_delete' (default
-                 cuma Super Admin, bisa didelegasikan lewat Permission
-                 Override - lihat config/permissions.php). --}}
+            {{-- Hapus Permanen: permission 'trash.force_delete' (default Super Admin, bisa didelegasikan lewat Permission Override). --}}
             @if(auth()->user()->hasPermission('trash', 'force_delete'))
                 <button type="button"
                         class="btn btn-sm btn-outline-danger px-2 fw-medium rounded-2 d-flex align-items-center gap-1"

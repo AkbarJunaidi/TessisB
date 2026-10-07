@@ -15,11 +15,65 @@
         </div>
     </div>
 
-    {{-- Bento grid statistik - dipindah paling atas (ringkasan cepat dulu,
-         pola umum ERP dashboard) - permission-aware, auto-reflow (lihat
-         .dashboard-stat-grid di theme.css). Tiap kartu dicek izinnya
-         sendiri-sendiri, jadi jumlah kartu yang muncul memang berbeda
-         wajar per role, bukan bug. --}}
+    {{-- Pusat pantau: kartu KPI "Perlu perhatian" (Super Admin/Admin) dan feed notifikasi terbaru. --}}
+    @if(!empty($attention) || !empty($latestNotifications))
+        <div class="row g-4 mb-4">
+            @if(!empty($attention))
+                <div class="col-xl-7">
+                    <div class="row g-3">
+                        @foreach($attention as $card)
+                            <div class="col-6">
+                                <a href="{{ route($card['route']) }}" class="stat-card p-3 p-md-4 d-block text-decoration-none">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <span class="text-muted text-uppercase fw-bold" style="font-size:.7rem; letter-spacing:.06em;">{{ $card['label'] }}</span>
+                                            <h3 class="fw-bolder text-navy mt-2 mb-0">{{ $card['text'] }}</h3>
+                                        </div>
+                                        <div class="icon-tile {{ $card['count'] > 0 ? 'icon-tile-danger' : '' }}">
+                                            <i class="bi {{ $card['icon'] }} fs-5"></i>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            <div class="{{ !empty($attention) ? 'col-xl-5' : 'col-12' }}">
+                <div class="app-panel overflow-hidden h-100">
+                    <div class="app-panel-header">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="icon-tile">
+                                <i class="bi bi-bell fs-5"></i>
+                            </div>
+                            <h5 class="fw-bold text-navy m-0">Notifikasi Terbaru</h5>
+                        </div>
+                        <a href="{{ route('announcements.index') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Lihat Semua</a>
+                    </div>
+
+                    <div class="list-group list-group-flush">
+                        @forelse($latestNotifications as $item)
+                            <a href="{{ $item['url'] }}" class="list-group-item list-group-item-action d-flex gap-3 align-items-start py-3">
+                                <i class="bi {{ $item['icon'] }} fs-5"></i>
+                                <div class="min-w-0">
+                                    <div class="fw-semibold small">{{ $item['title'] }}</div>
+                                    <div class="text-muted small text-truncate">{{ $item['message'] }}</div>
+                                </div>
+                            </a>
+                        @empty
+                            <div class="empty-state">
+                                <div class="empty-icon"><i class="bi bi-inbox"></i></div>
+                                <span class="fw-medium">Tidak ada notifikasi.</span>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Grid statistik permission-aware; jumlah kartu berbeda per role itu wajar (lihat .dashboard-stat-grid). --}}
     <div class="dashboard-stat-grid mb-4">
 
         @if($user->hasPermission('inventory', 'view'))
@@ -82,9 +136,7 @@
             </div>
         @endif
 
-        {{-- Kontak SENGAJA tidak digate hasPermission() - modul ini aksesnya
-             role-based (Super Admin/Admin/Employee, lihat routes/web.php),
-             tidak diatur lewat config/permissions.php seperti modul lain. --}}
+        {{-- Kontak tidak digate hasPermission(): aksesnya berbasis role (routes/web.php). --}}
         <div class="stat-card p-3 p-md-4">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
@@ -133,11 +185,7 @@
 
     </div>
 
-    {{-- Task Saya + Project Hari Ini & 7 Hari Ke Depan - dipasangkan 2
-         kolom (bukan ditumpuk full-width) supaya tidak ada card yang
-         kelihatan terlalu besar. Tinggi tabel dibatasi scroll internal
-         (.dashboard-list-panel di theme.css, max-height 300px) - berapa
-         pun jumlah baris datanya, card-nya tidak akan membengkak. --}}
+    {{-- Task Saya dan Project 7 hari dalam dua kolom; tinggi tabel dibatasi scroll internal (.dashboard-list-panel). --}}
     <div class="row g-4 mb-4">
 
         @if($user->hasPermission('tracking_progress', 'view'))

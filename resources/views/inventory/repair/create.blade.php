@@ -263,6 +263,7 @@
 
     const cell = (label, value) => '<div class="col-6 col-md-3"><div class="text-muted">' + label + '</div><div class="fw-semibold">' + value + '</div></div>';
 
+    // Render satu barang beserta unit yang bisa dipilih untuk diservis, lengkap dengan harga terakhir.
     function renderGroup(inventoryId, name, units) {
         const info = repairCosts[inventoryId];
         const price = info && info.last_price !== null ? info.last_price : null;
@@ -299,6 +300,7 @@
         return html + lines.join('') + '</div></div>';
     }
 
+    // Perbarui jumlah unit terpilih per grup dan total biaya.
     function updateSummary() {
         const checked = Array.from(document.querySelectorAll('.unit-check:checked'));
         document.getElementById('selectedCount').textContent = checked.length;

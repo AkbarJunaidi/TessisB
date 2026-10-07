@@ -94,10 +94,7 @@
                                         </div>
                                     @endif
 
-                                    {{-- Pengganti drag & drop di mobile (drag bawaan browser tidak
-                                         berfungsi di layar sentuh) - dropdown "Pindahkan ke...", pakai
-                                         endpoint yang SAMA (projects.update-status) dengan drag-drop
-                                         di desktop, tidak ada perubahan backend. --}}
+                                    {{-- Dropdown 'Pindahkan ke...' pengganti drag-drop di layar sentuh; endpoint sama (projects.update-status). --}}
                                     <div class="dropdown mt-2 d-md-none" onclick="event.stopPropagation();">
                                         <button type="button" class="btn btn-sm btn-outline-secondary w-100 dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                                             <i class="bi bi-arrow-left-right me-1"></i> Pindahkan ke...
@@ -142,6 +139,7 @@
     const alertPlaceholder = document.getElementById('pipelineAlertPlaceholder');
     let draggedCard = null;
 
+    // Tampilkan alert Bootstrap di atas halaman.
     function showAlert(type, message) {
         const alertEl = document.createElement('div');
         alertEl.className = `alert alert-${type} alert-dismissible fade show mb-4`;
@@ -196,9 +194,7 @@
 
     });
 
-    // Tombol "Pindahkan ke..." (dropdown) - pengganti drag & drop khusus
-    // mobile, karena drag bawaan browser tidak berfungsi di layar sentuh.
-    // Pakai fungsi moveProject() yang SAMA dengan drag-drop desktop di atas.
+    // Dropdown 'Pindahkan ke...' pengganti drag-drop di layar sentuh; memakai moveProject() yang sama.
     document.querySelectorAll('#pipelineBoard .pipeline-move-btn').forEach((btn) => {
         btn.addEventListener('click', function (e) {
             e.stopPropagation();
@@ -208,6 +204,7 @@
         });
     });
 
+    // Ubah status project lewat PATCH; kartu baru pindah di UI setelah server sukses.
     function moveProject(cardEl, targetStatus) {
         const originZone = cardEl.closest('.pipeline-dropzone');
         if (!originZone || originZone.dataset.status === targetStatus) return;
@@ -253,6 +250,7 @@
             });
     }
 
+    // Perbarui jumlah dan total nilai di header kolom.
     function updateColumnStats(zone) {
         const cards = zone.querySelectorAll('.card-pipeline');
         const header = zone.closest('.card').querySelector('.card-header');

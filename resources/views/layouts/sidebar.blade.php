@@ -10,22 +10,8 @@
 
 <div class="offcanvas-body d-flex flex-column p-3 pt-lg-0 text-white h-100 sidebar-body">
 
-    {{-- Brand (hanya tampil di desktop; di mobile sudah ada di offcanvas-header).
-         Tombol di sebelahnya untuk collapse/expand sidebar jadi mode
-         icon-only - HANYA muncul di desktop (d-none d-lg-inline-flex),
-         karena di mobile "menutup sidebar" sudah difasilitasi tombol X
-         di atas + backdrop offcanvas, tidak perlu mode ini. Logic-nya
-         (baca localStorage, toggle class, dst) ada di layouts/app.blade.php
-         supaya semua kode perilaku shell terkumpul di 1 tempat.
-
-         Tinggi 64px (di .sidebar-brand-row, style block di bawah pada
-         file ini) SENGAJA dibuat presisi sama dengan tinggi navbar
-         (.app-topbar, navbar.blade.php) - garis border-bottom di
-         bawahnya jadi menyatu lurus dengan garis navbar. Makanya
-         padding-top offcanvas-body dihapus KHUSUS desktop (pt-lg-0) -
-         brand-row perlu nempel pas di y=0 supaya perhitungan 64px itu
-         akurat dari titik paling atas sidebar, bukan ketambahan padding
-         lain lebih dulu. --}}
+    {{-- Brand + tombol collapse (hanya desktop; logikanya di layouts/app.blade.php). Tinggi 64px .sidebar-brand-row = tinggi navbar agar garisnya sejajar,
+         karena itu offcanvas-body memakai pt-lg-0 supaya brand menempel di y=0. --}}
     <div class="d-none d-lg-flex px-1 sidebar-brand-row">
         <a href="{{ route('dashboard') }}" class="sidebar-brand-link" id="sidebarBrandLink">
             <span class="sidebar-brand-icon-wrap">
@@ -39,10 +25,7 @@
         </button>
     </div>
 
-    {{-- Garis pembatas ini HANYA untuk mobile sekarang - di desktop,
-         border-bottom pada .sidebar-brand-row di atas sudah berfungsi
-         sebagai garis yang sama (sekaligus itulah yang membuatnya presisi
-         sejajar dengan garis navbar, lihat komentar di atas). --}}
+    {{-- Garis pembatas hanya untuk mobile; di desktop border-bottom .sidebar-brand-row sudah menjadi garisnya. --}}
     <hr class="border-white opacity-10 sidebar-divider d-lg-none">
 
     <ul class="nav nav-pills flex-column mb-auto gap-1 sidebar-nav" id="sidebarMenuAccordion" role="menu" aria-label="Menu utama">
@@ -54,10 +37,7 @@
             </a>
         </li>
 
-        {{-- Notifikasi - SEMUA role bisa akses halamannya (isi di dalam
-             menyesuaikan role: form kirim pengumuman & panel kelola jenis
-             notifikasi otomatis cuma tampil untuk Super Admin, lihat
-             notification/index.blade.php). --}}
+        {{-- Notifikasi: semua role; isi halaman menyesuaikan role (notification/index.blade.php). --}}
         <li class="nav-item">
             <a href="{{ route('announcements.index') }}"
                 class="nav-link sidebar-link text-white {{ request()->routeIs('announcements.*') ? 'active' : '' }}">
@@ -179,9 +159,7 @@
         </li>
         @endif
 
-        {{-- Kontak (buku alamat client) - sekarang pakai permission
-             'kontak.view' (default aktif semua role, sama seperti akses
-             yang sudah berlaku sebelumnya - lihat config/permissions.php). --}}
+        {{-- Kontak: permission 'kontak.view' (config/permissions.php). --}}
         @if(auth()->user()->hasPermission('kontak', 'view'))
         <li class="nav-item">
             <a href="{{ route('contacts.index') }}"
@@ -193,9 +171,7 @@
 
         <li class="sidebar-group-label sidebar-link-text" role="presentation">Data</li>
 
-        {{-- Keuangan (halaman "Keuangan" - ringkasan Kwitansi semua project) -
-             pakai permission 'finance.view', sama dengan gate Data Keuangan
-             di tab Project Detail. --}}
+        {{-- Keuangan: permission 'finance.view', sama dengan gate Data Keuangan di tab Project. --}}
         @if(auth()->user()->hasPermission('finance', 'view'))
         <li class="nav-item">
             <a href="{{ route('finance.summary') }}"
@@ -265,9 +241,7 @@
             </li>
         @endif
 
-        {{-- Trash - sekarang pakai permission 'trash.view' (default Super
-             Admin & Admin aktif, sama seperti akses yang sudah berlaku
-             sebelumnya). --}}
+        {{-- Trash: permission 'trash.view'. --}}
         @if(auth()->user()->hasPermission('trash', 'view'))
             <li class="nav-item">
                 <a href="{{ route('trash.index') }}"
@@ -412,13 +386,8 @@
     .offcanvas-body::-webkit-scrollbar { width: 6px; }
     .offcanvas-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 10px; }
 
-    /* --- Baris brand desktop (logo + teks + tombol collapse) ---
-       height:64px SENGAJA presisi sama dengan tinggi navbar (.app-topbar,
-       navbar.blade.php) - lihat komentar panjang di markup-nya. border-
-       bottom di sini MENGGANTIKAN <hr> terpisah (yang sekarang cuma
-       tampil di mobile, d-lg-none) - jadi garis pembatasnya adalah bagian
-       dari box 64px ini sendiri, bukan elemen terpisah dengan margin
-       sendiri yang gampang meleset dari perhitungan tinggi navbar. */
+    /* Baris brand desktop: height 64px sama dengan navbar (.app-topbar); border-bottom di sini menggantikan <hr> terpisah
+       (hanya mobile) agar garisnya tidak meleset dari tinggi navbar. */
     .sidebar-brand-row {
         display: flex;
         align-items: center;
@@ -443,11 +412,8 @@
     .sidebar-collapse-toggle:hover { background: rgba(255,255,255,.16); color: #fff; }
     .sidebar-collapse-toggle i { font-size: .8rem; }
 
-    /* Wrapper logo - relative supaya ikon panah (.sidebar-brand-expand-icon)
-       bisa ditumpuk pas di atasnya lewat position:absolute. Ikon panahnya
-       sendiri baru benar-benar aktif/kelihatan di mode collapsed (lihat
-       blok media query di bawah) - saat expanded, elemen ini selalu
-       disembunyikan total, logo klik = ke Dashboard seperti biasa. */
+    /* Wrapper logo relative agar ikon panah (.sidebar-brand-expand-icon) bisa ditumpuk di atasnya;
+       panah hanya aktif saat collapsed, saat expanded logo = link Dashboard. */
     .sidebar-brand-icon-wrap {
         position: relative;
         display: inline-flex;
@@ -457,33 +423,15 @@
         display: none;
     }
 
-    /* ==========================================================================
-       MODE COLLAPSED (icon-only) - HANYA aktif di desktop (>=992px), lewat
-       class "sidebar-collapsed" yang dipasang di elemen <html> (toggle
-       button + script ada di layouts/app.blade.php, supaya semua LOGIC
-       shell terkumpul di 1 file; style-nya ditaruh di sini karena semua
-       selector yang disentuh basisnya juga didefinisikan di file ini).
-
-       Mobile/tablet (<992px) TIDAK PERNAH kena aturan blok ini - media
-       query di bawah membatasinya secara eksplisit. Di sana "menutup
-       sidebar" sudah difasilitasi offcanvas + tombol X yang sudah ada
-       sejak awal, tidak perlu mode icon-only ini.
-
-       CARA MAINTAIN: kalau nanti menambah menu/link baru di sidebar,
-       teksnya cukup dibungkus <span class="sidebar-link-text">...</span>
-       (sama seperti menu2 yang sudah ada) - otomatis ikut disembunyikan
-       di sini tanpa perlu menambah aturan CSS baru.
-       ========================================================================== */
+    /* Mode collapsed (icon-only), hanya desktop >=992px lewat class sidebar-collapsed di <html> (logic di layouts/app.blade.php).
+       Menu baru cukup membungkus teks dengan <span class="sidebar-link-text"> agar ikut tersembunyi otomatis. */
     @media (min-width: 992px) {
         html.sidebar-collapsed .sidebar-link-text,
         html.sidebar-collapsed .sidebar-collapse-icon {
             display: none !important;
         }
-        /* Submenu (Inventory/Progress Management/dst) tidak ada tempat
-           menampilkan teksnya saat rail sempit - disembunyikan total.
-           JS di app.blade.php juga melepas data-bs-toggle sementara,
-           supaya klik ikon parent tidak diam-diam nge-toggle submenu
-           yang toh disembunyikan ini. */
+        /* Submenu disembunyikan saat rail sempit; JS di app.blade.php melepas data-bs-toggle sementara
+           agar klik ikon tidak meng-toggle submenu yang tersembunyi. */
         html.sidebar-collapsed #sidebarMenuAccordion .collapse {
             display: none !important;
         }
@@ -492,10 +440,7 @@
             padding: .65rem .5rem;
         }
         html.sidebar-collapsed .sidebar-brand-row {
-            /* Cuma tersisa 1 anak (logo) sejak tombol toggle terpisah
-               dihilangkan di collapsed mode (di bawah) - cukup di-center,
-               tidak perlu lagi flex-direction:column/gap seperti waktu
-               masih ada 2 elemen yang ditumpuk. */
+            /* Hanya tersisa 1 anak (logo) saat collapsed; cukup di-center. */
             justify-content: center;
         }
         html.sidebar-collapsed .sidebar-profile {
@@ -503,20 +448,13 @@
             padding: .5rem !important;
         }
 
-        /* Tombol toggle terpisah TIDAK ditampilkan lagi saat collapsed -
-           fungsinya diambil alih logo (elemen id sidebarBrandLink di
-           markup + JS di app.blade.php). Tombol ini cuma relevan saat
-           expanded, untuk MENUTUP - makanya title/aria-label-nya juga
-           cuma pernah bilang "Tutup sidebar", tidak pernah "Buka". */
+        /* Tombol toggle terpisah disembunyikan saat collapsed; fungsinya diambil logo (#sidebarBrandLink + JS app.blade.php). */
         html.sidebar-collapsed .sidebar-collapse-toggle {
             display: none;
         }
 
-        /* Logo jadi tombol buka saat collapsed: hover/focus -> logo asli
-           memudar, ikon panah nongol menimpanya di posisi yang sama
-           (position:absolute, lihat .sidebar-brand-icon-wrap di atas).
-           :focus-visible disertakan supaya pengguna keyboard (Tab) dapat
-           sinyal yang sama, bukan cuma yang pakai mouse. */
+        /* Logo jadi tombol buka saat collapsed: hover/focus memudarkan logo dan memunculkan ikon panah;
+           :focus-visible untuk pengguna keyboard. */
         html.sidebar-collapsed .sidebar-brand-link {
             cursor: pointer;
         }

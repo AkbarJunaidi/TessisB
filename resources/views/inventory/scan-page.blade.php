@@ -43,6 +43,10 @@
                 </button>
 
                 <div id="scanCameraWrapper" class="d-none mb-3">
+                    <div class="btn-group w-100 mb-2" role="group" aria-label="Pilih kamera">
+                        <button type="button" class="btn btn-sm btn-primary" data-facing="environment">Kamera belakang</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-facing="user">Kamera depan</button>
+                    </div>
                     <div id="scanCameraReader" style="width: 100%;"></div>
                     <button type="button" id="btnCloseCamera" class="btn btn-sm btn-outline-danger w-100 mt-2">
                         <i class="bi bi-x-circle me-1"></i> Tutup kamera
@@ -65,8 +69,8 @@
     </div>
 </div>
 
-{{-- Library kamera QR (html5-qrcode 2.3.8), dimuat dari jsDelivr. --}}
-<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+{{-- Library kamera QR (html5-qrcode 2.3.8): lokal bila sudah diunduh, selain itu CDN. --}}
+{{ \App\Support\VendorAsset::script('html5-qrcode') }}
 
 @include('inventory.partials.location-picker')
 
@@ -85,6 +89,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const closeCameraBtn = document.getElementById('btnCloseCamera');
     const cameraWrapper = document.getElementById('scanCameraWrapper');
     let html5QrCode = null;
+    const facingButtons = document.querySelectorAll('[data-facing]');
+    // 'environment' = kamera belakang, 'user' = kamera depan; pilihan terakhir diingat.
+    let cameraFacing = loadFacing();
     let currentMode = null;
     let pinjamData = null;
     let isSubmitting = false;
@@ -98,8 +105,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // Halaman penuh: mulai dari pilihan mode dan cari lokasi saat halaman dibuka.
     resetToModePicker();
     locationPicker.start();
+    setFacing(cameraFacing);
     window.addEventListener('pagehide', stopCamera);
 
+    // Kembali ke pilihan aksi: bersihkan input, hasil, dan matikan kamera.
     function resetToModePicker() {
         currentMode = null;
         pinjamData = null;
@@ -143,11 +152,37 @@ document.addEventListener('DOMContentLoaded', function () {
         cameraWrapper.classList.add('d-none');
     });
 
+    // Baca pilihan kamera tersimpan; mode privat atau storage dimatikan memakai kamera belakang.
+    function loadFacing() {
+        try { return localStorage.getItem('scanCameraFacing') === 'user' ? 'user' : 'environment'; } catch (e) { return 'environment'; }
+    }
+
+    // Tandai tombol kamera aktif dan simpan pilihannya.
+    function setFacing(facing) {
+        cameraFacing = facing;
+        facingButtons.forEach(function (b) {
+            const on = b.dataset.facing === facing;
+            b.classList.toggle('btn-primary', on);
+            b.classList.toggle('btn-outline-primary', !on);
+        });
+        try { localStorage.setItem('scanCameraFacing', facing); } catch (e) { /* tidak disimpan */ }
+    }
+
+    // Ganti kamera: hentikan stream lama dulu supaya perangkat tidak menolak stream baru.
+    facingButtons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            if (btn.dataset.facing === cameraFacing) return;
+            setFacing(btn.dataset.facing);
+            stopCamera().then(startCamera);
+        });
+    });
+
+    // Nyalakan kamera sesuai pilihan; hasil scan masuk ke kolom serial lalu langsung dicari.
     function startCamera() {
         html5QrCode = new Html5Qrcode('scanCameraReader');
 
         html5QrCode.start(
-            { facingMode: 'environment' },
+            { facingMode: cameraFacing },
             { fps: 10, qrbox: { width: 220, height: 220 } },
             function (decodedText) {
                 serialInput.value = decodedText;
@@ -155,20 +190,24 @@ document.addEventListener('DOMContentLoaded', function () {
                 cameraWrapper.classList.add('d-none');
                 doLookup();
             },
-            function () { /* frame tidak kebaca, biarkan - normal, terus coba tiap frame */ }
+            function () { /* frame tanpa QR: normal */ }
         ).catch(function () {
-            resultArea.innerHTML = '<div class="alert alert-warning mb-0">Tidak bisa mengakses kamera. Pastikan browser diberi izin kamera.</div>';
+            const frontFailed = cameraFacing === 'user';
+            if (frontFailed) setFacing('environment');
+            resultArea.innerHTML = '<div class="alert alert-warning mb-0">' +
+                (frontFailed ? 'Kamera depan tidak tersedia.' : 'Tidak bisa mengakses kamera. Pastikan browser diberi izin kamera.') + '</div>';
             cameraWrapper.classList.add('d-none');
         });
     }
 
+    // Hentikan kamera; mengembalikan Promise agar pemanggil bisa menunggu sampai benar-benar mati.
     function stopCamera() {
-        if (html5QrCode) {
-            html5QrCode.stop().catch(() => {});
-            html5QrCode = null;
-        }
+        const active = html5QrCode;
+        html5QrCode = null;
+        return active ? active.stop().catch(function () {}) : Promise.resolve();
     }
 
+    // Cari barang berdasarkan serial number untuk mode aktif lalu tampilkan hasilnya.
     function doLookup() {
         const serial = serialInput.value.trim();
 
@@ -188,12 +227,14 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
+    // Escape teks agar aman disisipkan ke HTML.
     function esc(value) {
         const div = document.createElement('div');
         div.textContent = value == null ? '' : String(value);
         return div.innerHTML;
     }
 
+    // Tampilkan peringatan di atas hasil.
     function showWarning(message) {
         resultArea.insertAdjacentHTML('afterbegin', '<div class="alert alert-warning">' + esc(message) + '</div>');
     }
@@ -210,6 +251,7 @@ document.addEventListener('DOMContentLoaded', function () {
         renderLocationNote();
     }
 
+    // Tampilkan lokasi yang akan dicatat untuk aksi ini.
     function renderLocationNote() {
         const noteEl = document.getElementById('scanActionLocNote');
         if (!noteEl) { return; }
@@ -243,6 +285,7 @@ document.addEventListener('DOMContentLoaded', function () {
         noteEl.className = 'small mb-2 ' + (warn ? 'text-warning-emphasis' : 'text-muted');
     }
 
+    // Render hasil lookup sesuai mode: pinjam atau kembalikan/rusak/hilang.
     function renderResult(data) {
         pinjamData = null;
 
@@ -263,11 +306,7 @@ document.addEventListener('DOMContentLoaded', function () {
         renderUnitPicker(data.inventory.name, data.borrowed_units, data.mode);
     }
 
-    /**
-     * Mode Pinjam - qty maksimal dibatasi ke stok tersedia. Stok 0 -
-     * tampilkan info siapa yang pinjam sekarang (read-only, bukan mode
-     * kembalikan, jadi tidak ada aksi apa pun di sini).
-     */
+    // Mode Pinjam: qty dibatasi ke stok tersedia; stok 0 hanya menampilkan siapa yang sedang meminjam.
     function renderPinjamForm(data) {
         if (data.available_qty === 0) {
             const daftarPeminjam = data.borrowed_units.length
@@ -321,6 +360,7 @@ document.addEventListener('DOMContentLoaded', function () {
         syncActionState();
     }
 
+    // POST JSON dengan CSRF; mengembalikan JSON respons.
     function postJson(url, body) {
         return fetch(url, {
             method: 'POST',
@@ -337,6 +377,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // Kirim pinjam: wajib ada lokasi; servis terlambat dikonfirmasi lebih dulu.
     function submitPinjam(inventoryId, qty, btn) {
         const lokasi = locationPicker.value();
 
@@ -364,12 +405,8 @@ document.addEventListener('DOMContentLoaded', function () {
             .finally(() => { isSubmitting = false; });
     }
 
-    /**
-     * Dipakai bareng untuk mode kembalikan/rusak/hilang - checkbox per
-     * unit (semua KOSONG default), beda cuma di teks & endpoint submit-nya
-     * (lihat submitBatchAction). "referensi" dari server sudah jadi teks
-     * siap-tampil (Project ATAU nama akun - lihat SuratJalan::referensiLabel()).
-     */
+    // Kembalikan/Rusak/Hilang memakai tampilan sama: checkbox per unit (default kosong),
+    // beda di teks dan endpoint submit (lihat submitBatchAction).
     function renderUnitPicker(inventoryName, units, mode) {
         if (units.length === 0) {
             resultArea.innerHTML = `
@@ -437,13 +474,8 @@ document.addEventListener('DOMContentLoaded', function () {
         syncActionState();
     }
 
-    /**
-     * Endpoint-nya beda per mode (lihat routes/web.php inventory.scan.*),
-     * tapi 1x POST saja - TIDAK perlu dikelompokkan per project seperti
-     * fitur Kembalikan di halaman Barang Pinjaman, karena
-     * SuratJalanService::returnUnitsByIds()/returnAndMarkStatus() generik,
-     * langsung terima campuran project apa saja dalam 1 array unit_ids.
-     */
+    // Endpoint beda per mode (inventory.scan.*) tetapi 1x POST; unit_ids boleh campuran project
+    // (ditangani SuratJalanService).
     function submitBatchAction(units, mode) {
         const lokasi = locationPicker.value();
 

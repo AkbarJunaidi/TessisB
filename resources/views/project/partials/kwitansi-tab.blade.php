@@ -1,7 +1,4 @@
-{{-- Partial: Tab Kwitansi (di Project Detail) - isinya dipindah ke
-     project.partials.kwitansi-content supaya bisa dipakai bersama dengan
-     halaman "Detail Keuangan" berdiri sendiri (kwitansi/project-detail.blade.php).
-     Variabel yang dibutuhkan: $project (relasi financeItems & kwitansis sudah di-load) --}}
+{{-- Tab Kwitansi di Project Detail; isinya di project.partials.kwitansi-content (dipakai juga halaman Detail Keuangan). Variabel: $project. --}}
 
 <div class="card border-0 shadow-sm rounded-3">
     <div class="card-body p-4">

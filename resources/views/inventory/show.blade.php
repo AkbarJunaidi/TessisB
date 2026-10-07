@@ -206,26 +206,13 @@
 
 
     <!-- ================= LAYOUT DESKTOP (TAMPIL HANYA DI LAYAR LEBAR / DESKTOP) ================= -->
-    {{-- PENTING: mb-4 ditaruh di SINI (pembungkus paling luar), BUKAN di
-         salah satu row di dalamnya - supaya jaraknya ke "Status Unit
-         Fisik" (section terpisah, di luar grid ini, bukan bagian dari
-         .row g-4) tetap ada TANPA numpuk gutter row lain di dalamnya
-         seperti bug sebelumnya. --}}
+    {{-- mb-4 ada di pembungkus terluar ini (bukan di row dalam) agar jarak ke Status Unit Fisik tidak menumpuk dengan gutter row. --}}
     <div class="d-none d-md-block mb-4">
         <div class="row g-4">
 
-            <!-- BARIS 1 (lebar penuh 12-kol): Foto Fisik Barang (sempit) + Deskripsi Barang
-                 (lebar, bentuk persegi panjang horizontal - menggantikan slot Deskripsi +
-                 Aksi Cepat yang lama sekaligus, sesuai sketsa yang dikirim). -->
+            <!-- Baris 1: Foto Fisik Barang (sempit) dan Deskripsi Barang (lebar). -->
             <div class="col-12">
-                {{-- PENTING: cuma "row g-4", TANPA mb-4 di sini - baris ini
-                     sudah jadi kolom (col-12) langsung di dalam .row g-4
-                     yang membungkusnya (baris 225), jadi jarak vertikal ke
-                     baris berikutnya SUDAH otomatis dari gutter row itu.
-                     Kalau ditambah mb-4 lagi di sini, jaraknya jadi dobel
-                     (gutter row + mb-4 numpuk) - itu penyebab jarak ke
-                     "Informasi Identitas Aset" kelihatan lebih lebar dari
-                     jarak-jarak lain di halaman ini. --}}
+                {{-- Hanya row g-4 tanpa mb-4: jarak vertikal sudah dari gutter row pembungkus; mb-4 menjadikan jarak dobel. --}}
                 <div class="row g-4">
                     <div class="col-lg-4">
                         <div class="card shadow-sm border-0 rounded-3 bg-white h-100">
@@ -582,10 +569,12 @@
                 // Naik setiap deteksi baru / modal ditutup; hasil deteksi yang basi dibuang.
                 let detectToken = 0;
 
+                // Checkbox unit yang dicentang.
                 function selected() {
                     return checkboxes.filter(function (c) { return c.checked; });
                 }
 
+                // Sinkronkan tombol dan jumlah sesuai unit terpilih.
                 function refreshSelection() {
                     const n = selected().length;
                     btnOpen.disabled = n === 0;
@@ -607,12 +596,14 @@
                     gpsText.textContent = text;
                 }
 
+                // Kosongkan koordinat hasil deteksi.
                 function clearCoords() {
                     latEl.value = '';
                     lngEl.value = '';
                     accEl.value = '';
                 }
 
+                // Ambil koordinat GPS lalu minta server mencocokkan lokasi terdekat; token mencegah hasil lama menimpa.
                 function detect() {
                     const token = ++detectToken;
                     clearCoords();
@@ -707,9 +698,7 @@
         </script>
         @endpush
     @endif
-    <!-- CARD BARU: Riwayat Peminjaman (lintas semua Project, sumber: SuratJalanItem -
-         baris ini tidak pernah dihapus saat barang dikembalikan, jadi otomatis
-         jadi riwayat permanen). Dibatasi 20 terbaru - lihat InventoryService::getBorrowHistory(). -->
+    <!-- Riwayat Peminjaman lintas Project dari SuratJalanItem (permanen), 20 terbaru: InventoryService::getBorrowHistory(). -->
     <div class="card shadow-sm border-0 rounded-3 bg-white mb-4">
         <div class="card-body p-4">
             <div class="d-flex justify-content-between align-items-center mb-3">

@@ -228,7 +228,7 @@ class UserController extends Controller
     private function buildPermissionViewData(?User $user = null): array
     {
         $catalog = config('permissions.modules', []);
-        $roleDefaults = config('permissions.role_defaults', []);
+        $roleDefaults = \App\Support\RolePermissions::all();
 
         $effectivePermissions = $user
             ? $user->getEffectivePermissions()

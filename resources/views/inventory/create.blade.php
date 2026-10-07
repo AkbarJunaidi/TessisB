@@ -368,10 +368,10 @@
 
         updateAddButtonState();
 
-        // Counter karakter Deskripsi Barang
         const descriptionField = document.getElementById('description');
         const descriptionCounter = document.getElementById('descriptionCounter');
         if (descriptionField && descriptionCounter) {
+            // Perbarui penghitung karakter deskripsi (maks 500).
             function updateDescriptionCounter() {
                 descriptionCounter.textContent = descriptionField.value.length + '/500';
             }

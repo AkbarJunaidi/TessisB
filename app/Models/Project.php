@@ -238,15 +238,19 @@ class Project extends Model
     }
 
     /**
-     * Total uang yang benar-benar diterima dari 2 sumber sekaligus:
-     * Pendapatan manual di tab Data Keuangan (totalIncome, sudah ada
-     * sebelumnya) + Kwitansi Aktif - dipakai untuk Sisa/Status Pembayaran
-     * supaya kedua sumber itu "terlihat" sebagai satu angka gabungan.
+     * Uang yang sudah diterima: pendapatan di Data Keuangan atau Kwitansi Aktif,
+     * mana yang lebih besar (pembayaran yang sama bisa tercatat di keduanya).
+     * Satu-satunya rumus; dipakai juga oleh Ringkasan Keuangan dan halaman Kwitansi.
      */
+    public static function combinePayments(float $income, float $kwitansi): float
+    {
+        return max($income, $kwitansi);
+    }
+
     protected function totalDiterima(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
         return \Illuminate\Database\Eloquent\Casts\Attribute::get(
-            fn () => $this->total_income + $this->total_dibayar
+            fn () => self::combinePayments((float) $this->total_income, (float) $this->total_dibayar)
         );
     }
 

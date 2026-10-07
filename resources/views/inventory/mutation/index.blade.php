@@ -2,10 +2,7 @@
 
 @section('title', 'Mutasi Aset')
 
-{{-- Label & warna badge per event_type - dipakai di tabel bawah. Untuk
-     status_berubah, labelnya diambil dari status_after ($m->status_after),
-     bukan dari event_type-nya sendiri, supaya lebih gampang dibaca
-     ("Rusak" bukan "Status Berubah"). --}}
+{{-- Label dan warna badge per event_type; status_berubah memakai status_after sebagai label (mis. 'Rusak'). --}}
 @php
     $eventLabels = [
         'ditambahkan'   => ['Ditambahkan', 'success'],

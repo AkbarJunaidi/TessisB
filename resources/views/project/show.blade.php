@@ -253,10 +253,7 @@
                         <form id="financeForm" action="{{ route('projects.finance.update', $project) }}" method="POST">
                             @csrf
 
-                            {{-- ESTIMASI PENDAPATAN - tampilan saja (tidak dihitung di laporan
-                                 bulanan), tapi bisa diedit inline di sini. Input-nya SENGAJA
-                                 dikirim bersama form Data Keuangan (bukan AJAX terpisah) supaya
-                                 tersimpan sekali klik "Simpan Data Keuangan" yang sama. --}}
+                            {{-- Estimasi Pendapatan: tampilan saja (tidak masuk laporan bulanan), diedit inline dan dikirim bersama form Data Keuangan (satu klik Simpan). --}}
                             <div class="p-3 rounded-3 bg-info-subtle d-flex justify-content-between align-items-center mb-3" id="estimatedValueBox">
                                 <span class="fw-bold">Estimasi Pendapatan</span>
 
@@ -487,10 +484,7 @@
 </div>
 
 <script>
-    // "Lihat Surat Jalan" di dropdown header, DAN link "Surat Jalan" di halaman
-    // daftar project (kolom SURAT JALAN): keduanya perlu pindah tab (dengan memicu
-    // tombol tab aslinya secara langsung, supaya Bootstrap benar-benar menonaktifkan
-    // tab yang sedang aktif) + scroll ke section tab-nya.
+    // Pindah ke tab Surat Jalan dengan memicu tombol tab aslinya (agar Bootstrap menonaktifkan tab aktif), lalu scroll.
     function goToSuratJalanTab() {
         const realTabButton = document.querySelector('#projectTabs [data-bs-target="#tab-suratjalan"]');
         if (realTabButton) {
@@ -498,8 +492,7 @@
         }
 
         setTimeout(function () {
-            // Sama seperti di atas - target .tab-content, bukan #projectTabs
-            // yang tersembunyi ("d-none") di mobile.
+            // Target scroll: .tab-content.
             const tabsSection = document.getElementById('projectTabContent');
             if (tabsSection) tabsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 50);
@@ -512,12 +505,8 @@
         });
     });
 
-    // Datang dari halaman lain (mis. link "Surat Jalan" di daftar project) lewat
-    // URL berakhiran #tab-suratjalan: langsung buka tab-nya begitu halaman siap.
-    // PENTING: dibungkus DOMContentLoaded - script bootstrap.bundle.min.js baru
-    // dimuat lebih bawah di layouts/app.blade.php (setelah @yield('content')
-    // tempat blok script ini ikut ter-render), jadi kalau dipanggil langsung di
-    // sini, `bootstrap` masih undefined dan pemanggilannya diam-diam gagal.
+    // Buka tab dari URL #tab-suratjalan. Dibungkus DOMContentLoaded karena bootstrap.bundle.js
+    // dimuat setelah blok ini; tanpa itu `bootstrap` masih undefined dan gagal diam-diam.
     document.addEventListener('DOMContentLoaded', function () {
         if (window.location.hash === '#tab-suratjalan') {
             goToSuratJalanTab();
@@ -536,10 +525,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const incomeRows = document.getElementById('incomeRows');
     const expenseRows = document.getElementById('expenseRows');
 
+    // Format angka ke Rupiah.
     function formatRupiah(value) {
         return 'Rp ' + Math.round(value).toLocaleString('id-ID');
     }
 
+    // HTML satu baris input keuangan (pemasukan/pengeluaran).
     function buildRow(group, index) {
         return `
             <div class="row g-2 mb-2 finance-row">
@@ -555,12 +546,13 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>`;
     }
 
+    // Ubah teks berformat ribuan menjadi angka murni.
     function parseAmount(value) {
-        // Hilangkan semua karakter selain digit (titik ribuan dibuang), baru jadi angka murni
         const digitsOnly = String(value).replace(/\D/g, '');
         return digitsOnly === '' ? 0 : parseInt(digitsOnly, 10);
     }
 
+    // Hitung total pendapatan, pengeluaran, dan laba dari semua baris.
     function recalculate() {
         const sumRows = (container) => Array.from(container.querySelectorAll('.finance-amount-input'))
             .reduce((sum, input) => sum + parseAmount(input.value), 0);
@@ -615,16 +607,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Toggle edit inline untuk "Estimasi Pendapatan" (Edit -> Konfirmasi/Batal).
-    // Input-nya sudah otomatis dapat format titik ribuan dari listener 'input'
-    // di atas (sama class .finance-amount-input), dan tidak ikut terhitung ke
-    // Total Pendapatan/Pengeluaran karena berada di luar #incomeRows/#expenseRows.
+    // Edit inline Estimasi Pendapatan; di luar #incomeRows/#expenseRows sehingga tidak masuk total.
     const estimatedValueDisplay = document.getElementById('estimatedValueDisplay');
     const estimatedValueEditBtn = document.getElementById('estimatedValueEditBtn');
     const estimatedValueInput = document.getElementById('estimatedValueInput');
     const estimatedValueConfirmBtn = document.getElementById('estimatedValueConfirmBtn');
     const estimatedValueCancelBtn = document.getElementById('estimatedValueCancelBtn');
 
+    // Ganti tampilan Estimasi Pendapatan antara mode lihat dan mode edit.
     function toggleEstimatedValueEditMode(isEditing) {
         estimatedValueDisplay.classList.toggle('d-none', isEditing);
         estimatedValueEditBtn.classList.toggle('d-none', isEditing);

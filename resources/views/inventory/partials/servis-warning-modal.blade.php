@@ -1,6 +1,5 @@
-{{-- Popup peringatan servis sebelum barang dipakai. Pemakaian tetap boleh dilanjutkan.
-     Pakai: ServisWarning.confirm([{inventory_id, qty}], preferLocationId, container?).then(ok => ...)
-     Dengan container, peringatan tampil inline di elemen itu (untuk dipakai di dalam modal lain). --}}
+{{-- Peringatan servis sebelum barang dipakai (boleh dilanjutkan). Pakai: ServisWarning.confirm([{inventory_id, qty}], preferLocationId, container?).then(ok => ...);
+     dengan container, peringatan tampil inline di elemen itu (untuk dipakai di dalam modal lain). --}}
 <div class="modal fade" id="servisWarningModal" tabindex="-1" aria-labelledby="servisWarningTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
         <div class="modal-content border-0 shadow">
@@ -27,12 +26,14 @@ window.ServisWarning = (function () {
     const checkUrl = @json(route('inventory.servis-check'));
     const csrf = document.querySelector('meta[name="csrf-token"]')?.content || @json(csrf_token());
 
+    // Escape teks agar aman disisipkan ke HTML.
     function esc(text) {
         const div = document.createElement('div');
         div.textContent = text == null ? '' : String(text);
         return div.innerHTML;
     }
 
+    // Susun HTML daftar barang dan unit yang servisnya terlambat/segera.
     function render(warnings) {
         return warnings.map(function (w) {
             const rows = w.units.map(function (u) {
@@ -48,6 +49,7 @@ window.ServisWarning = (function () {
         }).join('');
     }
 
+    // Minta konfirmasi di dalam container (tanpa modal); resolve true bila lanjut.
     function askInline(warnings, container) {
         return new Promise(function (resolve) {
             container.innerHTML = `<div class="alert alert-warning mb-0">
@@ -64,12 +66,14 @@ window.ServisWarning = (function () {
         });
     }
 
+    // Minta konfirmasi lewat modal; resolve true bila user memilih lanjut.
     function ask(warnings) {
         return new Promise(function (resolve) {
             const el = document.getElementById('servisWarningModal');
             const modal = bootstrap.Modal.getOrCreateInstance(el);
             let decided = false;
 
+            // Selesaikan Promise sekali saja lalu lepas listener.
             function finish(result) {
                 if (decided) return;
                 decided = true;
@@ -77,6 +81,7 @@ window.ServisWarning = (function () {
                 modal.hide();
                 resolve(result);
             }
+            // Modal ditutup tanpa memilih dianggap batal.
             function onHidden() { finish(false); }
 
             document.getElementById('servisWarningList').innerHTML = render(warnings);

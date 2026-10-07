@@ -1,7 +1,4 @@
-/* THEME.CSS — Design System Terpusat
-    Project: TessisB (Management Information System)
-    Dipakai di SELURUH halaman via layouts/app.blade.php & layouts/auth.blade.php.
-    Palet warna & identitas project TIDAK diubah — hanya dirapikan jadi token. */
+/* THEME.CSS - design system terpusat, dipakai semua halaman lewat layouts/app dan layouts/auth. */
 
 :root {
     /* 4 warna utama: navy, biru, biru muda, putih. Warna lain hanya turunan keempatnya. */
@@ -125,10 +122,8 @@ button:focus-visible,
 .border-primary { border-color: var(--c-primary) !important; }
 .bg-primary-subtle { background-color: var(--bg-soft) !important; }
 
-/* .bg-primary di atas pakai !important solid, jadi menimpa mekanisme
-   opacity Bootstrap (.bg-opacity-10 dkk) kalau dipakai bersamaan -
-   akibatnya kotak ikon yang harusnya biru pudar malah jadi biru penuh
-   dan ikonnya (text-primary, warna sama) jadi tidak kelihatan. */
+/* .bg-primary memakai !important sehingga menimpa .bg-opacity-*; tanpa aturan di bawah, kotak ikon yang pudar
+   menjadi biru penuh dan ikon text-primary tidak terlihat. */
 .bg-primary.bg-opacity-10 { background-color: rgba(var(--c-primary-rgb), .1) !important; }
 
 .form-control, .form-select {
@@ -151,11 +146,7 @@ button:focus-visible,
 
 .nav-pills .nav-link.active { background-color: var(--c-primary); }
 
-/* Highlight tipis saat dropdown sidebar sedang DIBUKA (klik toggle), beda
-   dari .active (biru solid) yang artinya "sedang di halaman ini". Dua state
-   ini sengaja dibedakan supaya tidak rancu: dropdown yang terbuka tapi
-   kamu belum pindah ke salah satu halaman di dalamnya cuma dapat tint
-   lembut, bukan blok biru penuh. */
+/* Dropdown sidebar yang terbuka diberi tint lembut; beda dari .active (biru solid = halaman saat ini). */
 .app-sidebar .nav-link[aria-expanded="true"]:not(.active) {
     background-color: rgba(255, 255, 255, .08);
     border-radius: var(--radius-md, .5rem);
@@ -170,9 +161,7 @@ button:focus-visible,
 
 .table > :not(caption) > * > * { vertical-align: middle; }
 
-/* ==========================================================================
-   KOMPONEN REUSABLE (dipakai lintas halaman)
-   ========================================================================== */
+/* === Komponen reusable (lintas halaman) === */
 
 /* --- Kartu statistik (Bento-style, dashboard & index halaman modul) --- */
 .stat-card {
@@ -194,12 +183,8 @@ button:focus-visible,
     flex-shrink: 0;
 }
 
-/* --- Grid statistik Dashboard, auto-reflow (dipakai bersama .stat-card) ---
-   Jumlah kartu yang tampil berbeda-beda per role (permission-aware), jadi
-   grid kolom tetap (row-cols-xl-5 dst) bikin susunan bolong/aneh kalau
-   kartunya cuma 2-3. minmax(200px, 1fr) + auto-fill membiarkan browser
-   menghitung sendiri berapa kolom yang pas di lebar layar manapun, dan
-   kartu yang tersisa tetap mengisi baris secara rapi. */
+/* Grid statistik Dashboard auto-reflow: jumlah kartu berbeda per role, jadi minmax(200px, 1fr) + auto-fill
+   membiarkan browser menentukan jumlah kolom. */
 .dashboard-stat-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -209,11 +194,7 @@ button:focus-visible,
     .dashboard-stat-grid { gap: 1.25rem; }
 }
 
-/* --- Panel list Dashboard - tinggi dibatasi ala ERP (padat, tidak ada
-   card yang membengkak tak terbatas kalau datanya banyak baris). Thead
-   dibuat sticky supaya tetap terbaca saat body-nya di-scroll. Class ini
-   HANYA berlaku di dalam .dashboard-list-panel, tidak menyentuh
-   .table-modern di halaman lain yang memakainya tanpa wrapper ini. */
+/* Panel list Dashboard: tinggi dibatasi dan thead sticky; hanya berlaku di dalam .dashboard-list-panel. */
 .dashboard-list-panel .table-responsive {
     max-height: 300px;
     overflow-y: auto;
@@ -291,21 +272,11 @@ button:focus-visible,
 /* --- Skeleton/soft divider --- */
 .divider-soft { border-color: var(--c-border); opacity: 1; }
 
-/* ==========================================================================
-   SIDEBAR - brand (logo + nama perusahaan), dipakai di mobile header
-   maupun desktop. Sejak diubah dari 1 gambar utuh (logo.png, berisi ikon+
-   teks+tagline dibakar jadi 1 file) menjadi ikon polos (logo1.png) + teks
-   HTML asli "CV Arindra Production" di sampingnya - supaya teksnya benar2
-   teks (bisa di-select, aksesibel ke screen reader, dan bisa disembunyikan
-   terpisah dari ikon saat sidebar di-collapse - lihat sidebar.blade.php).
-   ========================================================================== */
+/* Sidebar brand: ikon polos (logo1.png) + teks HTML asli agar bisa dipilih, aksesibel,
+   dan bisa disembunyikan terpisah saat collapse. */
 .sidebar-logo-mobile {
-    /* logo1.png (dipakai di sini) punya padding transparan di dalam
-       filenya sendiri, sama seperti logo.png dulu (dicek langsung dari
-       piksel file: ukuran file 313x277, tapi konten yang benar2 terisi
-       cuma 304x193 - sisanya transparan). object-fit:cover + aspect-ratio
-       sesuai KONTEN (bukan rasio file aslinya) memaksa browser men-scale &
-       memotong pas di batas konten itu, tanpa perlu edit file gambarnya. */
+    /* logo1.png punya padding transparan (konten 304x193 dari file 313x277); object-fit:cover + aspect-ratio
+       sesuai konten memotong pas tanpa mengedit gambar. */
     height: 40px;
     width: auto;
     aspect-ratio: 304 / 193;
@@ -314,16 +285,8 @@ button:focus-visible,
     flex-shrink: 0;
 }
 
-/* Versi desktop dari ikon yang sama (teknik crop identik dengan mobile).
-   SENGAJA disamakan ukurannya dengan mode collapsed (32px) - dulu pernah
-   beda (42px saat expanded, 32px saat collapsed) tapi kelihatan aneh
-   karena logonya "membesar-mengecil" saat toggle. Sekarang SATU ukuran
-   konstan untuk kedua state, jadi tidak ada override terpisah lagi di
-   sidebar.blade.php untuk mode collapsed. Nilai 24px (kelipatan 8)
-   dipilih supaya seragam dengan tombol toggle di sampingnya (juga 24px)
-   dan dengan sistem ukuran kelipatan 8 yang dipakai di seluruh header
-   sidebar ini (lebar sidebar, tinggi container, dst - lihat komentar di
-   app.blade.php). */
+/* Ikon desktop: teknik crop sama dengan mobile, ukuran konstan 24px (kelipatan 8, sama dengan tombol toggle)
+   untuk state expanded maupun collapsed. */
 .sidebar-brand-icon {
     height: 32px;
     width: auto;
@@ -333,28 +296,8 @@ button:focus-visible,
     flex-shrink: 0;
 }
 
-/* Teks nama perusahaan - dipakai di mobile (dalam .sidebar-logo-wrap) dan
-   desktop (dalam .sidebar-brand-row). text-transform:uppercase dipakai
-   untuk tampilan SAJA (bukan mengubah teks aslinya jadi huruf besar semua
-   di HTML) - lebih ramah screen reader dibanding menulis literal huruf
-   besar semua.
-
-   white-space:nowrap + overflow:hidden + text-overflow:ellipsis WAJIB
-   supaya "CV Arindra Production" tidak pernah pecah jadi 2 baris di
-   sidebar desktop - sebelumnya tidak ada aturan ini sama sekali, jadi
-   teks bebas wrap normal begitu kehabisan tempat.
-   min-width:0 WAJIB juga - tanpa ini, elemen flex child tidak akan mau
-   menyusut di bawah lebar kontennya sendiri (perilaku default flexbox),
-   jadi ellipsis di atas tidak akan pernah kepakai walau sudah ditulis.
-
-   font-size di bawah ini SENGAJA angka presisi 14px (bukan .8rem seperti
-   sempat disebut user - itu sebenarnya 12.8px, beda dari 14px - dipakai
-   14px/.875rem karena itu yang paling akurat sesuai permintaan), dan
-   dipasangkan dengan lebar sidebar 320px di app.blade.php supaya
-   "CV Arindra Production" muat penuh 1 baris tanpa ellipsis di kondisi
-   normal. Kalau nanti nama perusahaan berubah jadi lebih panjang, 2
-   angka ini (font-size di sini + lebar sidebar di app.blade.php) yang
-   perlu disesuaikan bareng. */
+/* Teks nama perusahaan: uppercase hanya tampilan; nowrap + ellipsis + min-width:0 wajib agar tidak pecah baris.
+   font-size 14px berpasangan dengan lebar sidebar 320px di app.blade.php; ubah keduanya bersama bila nama berubah. */
 .sidebar-brand-text {
     color: #fff;
     font-weight: 700;
@@ -368,11 +311,8 @@ button:focus-visible,
     min-width: 0;
 }
 
-/* Wadah <a> brand desktop (logo+teks) - flex:1 supaya dia yang menyusut
-   duluan (bukan tombol collapse di sampingnya) kalau ruang sempit,
-   min-width:0 WAJIB agar span teks di dalamnya bisa ellipsis (lihat
-   komentar .sidebar-brand-text di atas - min-width:0 harus ada di
-   SETIAP level flex container di antara teks & batas terluarnya). */
+/* Wadah brand desktop: flex:1 agar ia menyusut lebih dulu daripada tombol collapse;
+   min-width:0 wajib di setiap flex container agar ellipsis bekerja. */
 .sidebar-brand-link {
     display: flex;
     align-items: center;
@@ -384,9 +324,7 @@ button:focus-visible,
     text-decoration: none;
 }
 
-/* Wadah logo+teks header mobile - flex row, boleh menyusut/truncate kalau
-   nama perusahaan kepanjangan buat layar HP sangat kecil, tapi selalu
-   sisakan ruang tetap untuk tombol tutup (X) di sampingnya., test commit */
+/* Wadah logo+teks header mobile: boleh menyusut/truncate, tetapi selalu menyisakan ruang untuk tombol tutup (X). */
 .sidebar-logo-wrap {
     display: flex;
     align-items: center;
@@ -395,39 +333,21 @@ button:focus-visible,
     max-width: calc(100% - 48px);
 }
 
-/* Garis pembatas di bawah header sidebar. PENTING - kenapa dipisah jadi
-   class sendiri, TIDAK pakai utility Bootstrap (my-2) sama sekali: semua
-   utility spacing Bootstrap (.my-2, .p-3, dst) di-generate dengan
-   !important - kalau class ini ditaruh BERBARENGAN dengan .my-2 di elemen
-   yang sama, override di sini tidak akan pernah menang walau ditulis
-   belakangan (itu penyebab percobaan sebelumnya kelihatan "tidak berubah
-   sama sekali" - bukan cuma kurang, tapi memang tidak pernah kepakai).
-   Makanya .sidebar-divider jadi SATU-SATUNYA sumber margin elemen ini -
-   tidak digabung dengan .my-2 lagi di HTML-nya. */
+/* .sidebar-divider satu-satunya sumber margin garis ini; jangan digabung utility Bootstrap
+   (.my-2 dan sejenisnya !important sehingga selalu menang). */
 .sidebar-divider {
     margin-block: .5rem;
 }
 @media (max-width: 991.98px) {
     .sidebar-divider { margin-block: .25rem !important; }
 
-    /* Sama seperti di atas - override padding atas offcanvas-body ini
-       WAJIB pakai !important & selector class sendiri (bukan gabung
-       dengan p-3/pt-2 di HTML), karena p-3 dari Bootstrap juga
-       !important dan akan selalu menang kalau ditulis campur. */
+    /* Override padding atas offcanvas-body wajib !important dengan selector sendiri (p-3/pt-2 Bootstrap juga !important). */
     .sidebar-body { padding-top: .5rem !important; }
 }
 
-/* ==========================================================================
-   KANBAN BOARD (Detail Project) - satu kolom penuh + tab pemilih di mobile.
-   Desktop TIDAK disentuh - board tetap sejajar ke samping seperti semula
-   (aturan di bawah hanya aktif di <768px, atau menimpa balik ke tampilan
-   asli di >=768px).
-   ========================================================================== */
+/* === Kanban board: satu kolom penuh + tab pemilih di mobile (<768px); desktop tidak disentuh === */
 @media (max-width: 767.98px) {
-    /* Kolom yang lagi aktif (dipilih lewat tab) tampil PENUH LEBAR LAYAR,
-       bukan lagi terjepit 280-300px seperti di desktop. !important WAJIB
-       di sini karena lebar 280-300px aslinya ditulis sebagai inline
-       style="" di HTML (spesifisitasnya lebih tinggi dari class biasa). */
+    /* Kolom aktif tampil penuh lebar; !important wajib karena lebar 280-300px aslinya inline style. */
     .kanban-board .kanban-col {
         min-width: 100% !important;
         max-width: 100% !important;
@@ -439,41 +359,20 @@ button:focus-visible,
 }
 
 @media (min-width: 768px) {
-    /* Desktop: tab pemilih kolom cuma ada di mobile (lihat class
-       d-md-none di HTML), jadi status "aktif" dari tab tidak relevan lagi
-       di sini - SEMUA kolom board harus tetap tampil bersamaan seperti
-       sebelum fitur tab ini ada. Timpa balik display:none bawaan
-       Bootstrap untuk .tab-pane yang tidak "active". */
+    /* Desktop: semua kolom tampil bersamaan; timpa display:none bawaan Bootstrap pada .tab-pane non-aktif. */
     .kanban-board .kanban-col {
         display: block !important;
     }
 }
 
-/* ==========================================================================
-   RESPONSIVE HELPERS
-   ========================================================================== */
+/* === Responsive helpers === */
 @media (max-width: 575.98px) {
     .page-heading h3 { font-size: 1.25rem; }
     .btn { padding-block: .5rem; }
 }
 
-/* ==========================================================================
-   TABEL RESPONSIF — pola "tabel jadi kartu" di bawah 768px.
-   Dipakai di SEMUA tabel data utama (Inventory, Project, User Management,
-   Activity Log, Trash, dst) - satu tempat, dipakai ulang lewat 2 langkah:
-
-   1. Tambahkan class "table-stack" langsung di elemen <table> itu sendiri,
-      sejajar class lain yang sudah ada -> class="table table-hover table-stack"
-   2. Beri atribut data-label="Nama Kolom" di tiap <td> pada <tbody>, isinya
-      sama dengan teks <th> di atasnya (header disembunyikan di mobile,
-      label inilah yang menggantikannya).
-
-   Untuk sel yang "berat" secara visual (foto, grup tombol aksi) dan tidak
-   enak dipaksa sejajar kanan-kiri dengan labelnya, tambahkan class
-   "cell-block" pada <td> tersebut - kontennya jadi block penuh di bawah
-   labelnya. Baris kosong/pesan "belum ada data" (<td colspan>) tidak perlu
-   diberi data-label - otomatis tampil polos tanpa label.
-   ========================================================================== */
+/* Tabel jadi kartu di bawah 768px: tambah class table-stack pada <table> dan data-label="Nama Kolom" pada tiap <td> (sama dengan <th>).
+   Sel berat (foto, tombol aksi) beri class cell-block; baris kosong (<td colspan>) tanpa data-label. */
 @media (max-width: 767.98px) {
     .table-stack thead { display: none; }
 
@@ -494,12 +393,8 @@ button:focus-visible,
     }
     .table-stack tr:last-child { margin-bottom: 0; }
 
-    /* PENTING (pelajaran dari bug sebelumnya): Bootstrap .table-hover dan
-       .table-modern menaruh warna hover-nya di <td>/<th>, BUKAN di <tr>.
-       Kalau ditimpa cuma di <tr>, tidak akan menang lawan aturan aslinya -
-       harus ditimpa langsung di elemen yang sama. Kartu bukan baris tabel
-       yang "dihover" seperti link, jadi efek hover/aksen Bootstrap dan
-       kilatan tap bawaan browser HP dimatikan total di mode kartu ini. */
+    /* Warna hover Bootstrap (.table-hover, .table-modern) ada di <td>/<th>, bukan <tr>, jadi harus ditimpa di elemen yang sama;
+       mode kartu mematikan hover dan kilatan tap. */
     .table-stack.table-hover tbody tr:hover,
     .table-stack.table-hover tbody tr:hover > * {
         --bs-table-accent-bg: transparent;
@@ -538,9 +433,7 @@ button:focus-visible,
         text-align: left;
     }
 
-    /* Label field lepas (bukan tabel) - dipakai di kartu custom seperti tab
-       Surat Jalan mobile, supaya "rasa baca"-nya konsisten dengan label
-       data-label di atas: bold, uppercase, letter-spacing, kecil, muted. */
+    /* Label field lepas (kartu custom, mis. Surat Jalan mobile) memakai gaya sama dengan data-label: bold, uppercase, kecil, muted. */
     .field-label {
         font-weight: 700;
         font-size: .7rem;
@@ -578,10 +471,7 @@ button:focus-visible,
     .table-stack td.cell-block .btn { flex: 1 1 auto; }
 }
 
-/* --------------------------------------------------------------------------
-   TARGET SENTUH - tombol kecil, pagination, dan input kecil dibuat cukup
-   besar untuk jari di tablet/mobile, tanpa mengubah tampilan desktop.
-   -------------------------------------------------------------------------- */
+/* Target sentuh: tombol kecil, pagination, dan input kecil diperbesar untuk jari di tablet/mobile; desktop tidak berubah. */
 @media (max-width: 991.98px) {
     .btn-sm { min-height: 38px; padding-block: .45rem; }
 
@@ -599,9 +489,7 @@ button:focus-visible,
     .form-control-sm { min-height: 36px; }
 }
 
-/* ==========================================================================
-   TAHAP 1 - aksesibilitas, bar bawah HP, label grup sidebar, tab project
-   ========================================================================== */
+/* === Aksesibilitas, bar bawah HP, label grup sidebar, tab project === */
 @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     *, *::before, *::after {
@@ -684,9 +572,7 @@ button:focus-visible,
 .list-group-item.notif-unread { background: var(--bg-soft); box-shadow: inset 3px 0 0 var(--c-primary); }
 .notif-dot { width: .5rem; height: .5rem; border-radius: 50%; background: var(--c-primary); flex-shrink: 0; }
 
-/* ==========================================================================
-   TAHAP 3 - penyeragaman lintas halaman tanpa mengubah banyak view
-   ========================================================================== */
+/* === Penyeragaman lintas halaman tanpa mengubah banyak view === */
 /* Kartu: satu bentuk, satu bayangan, satu garis tepi. */
 .card.rounded-2, .card.rounded-3, .card.rounded-4 { border-radius: var(--radius-lg) !important; }
 .card.shadow-sm { box-shadow: var(--shadow-xs) !important; }

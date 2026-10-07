@@ -36,11 +36,8 @@
     <div class="tab-content">
         <div class="tab-pane fade show active" id="tab-pending">
 
-            {{-- "Lupa Password" adalah alur LAMA yang terpisah dari tabel
-                 approval_requests (lihat komentar di ApprovalController) -
-                 ditampilkan di sini, dan bisa langsung direset lewat modal
-                 (memakai endpoint users.reset-password yang sama dengan
-                 halaman Detail User) - khusus Super Admin. --}}
+            {{-- Lupa Password: alur lama di luar approval_requests (lihat ApprovalController);
+                 reset lewat modal memakai users.reset-password, khusus Super Admin. --}}
             @if($pendingPasswordResets->isNotEmpty())
                 <div class="card border-0 shadow-sm rounded-3 mb-3">
                     <div class="card-header bg-white fw-semibold small text-muted">Permintaan Lupa Password</div>
@@ -187,9 +184,8 @@
             </div>
         </div>
     @endforeach
-    {{-- Modal Reset Password per user (khusus Super Admin). reset_user_id
-         ikut ter-flash saat validasi gagal, dipakai script di bawah untuk
-         membuka ulang modal yang sama. --}}
+    {{-- Modal Reset Password (Super Admin); reset_user_id ter-flash saat validasi gagal
+         agar script membuka ulang modal yang sama. --}}
     @if(auth()->user()->isSuperAdmin())
         @foreach($pendingPasswordResets as $pr)
             @if($pr->user)

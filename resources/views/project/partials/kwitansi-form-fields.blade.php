@@ -1,7 +1,4 @@
-{{-- Partial kecil - field kategori pembayaran (radio, cuma boleh 1) +
-     pilih tanda tangan. Dipakai 2x di kwitansi-content.blade.php (form
-     "Tambah Kwitansi" & modal "Cetak Kwitansi dari Pendapatan") supaya
-     tidak ada markup yang sama diketik ulang. Variabel: $userSignatures --}}
+{{-- Field kategori pembayaran (radio) dan pilih tanda tangan; dipakai 2x di kwitansi-content. Variabel: $userSignatures. --}}
 
 <div class="col-12">
     <label class="form-label small d-block">Untuk Pembayaran</label>

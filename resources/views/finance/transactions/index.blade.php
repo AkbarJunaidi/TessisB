@@ -358,11 +358,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const field = (id) => document.getElementById(id);
 
+    // Format angka dengan pemisah ribuan id-ID; hanya digit yang dipakai.
     function formatAmount(value) {
         const digits = String(value).replace(/\D/g, '');
         return digits === '' ? '' : parseInt(digits, 10).toLocaleString('id-ID');
     }
 
+    // Isi pilihan kategori sesuai jenis (pemasukan/pengeluaran).
     function fillCategories(type, selected) {
         const select = field('tCategory');
         select.innerHTML = (categories[type] || []).map(function (name) {
@@ -371,6 +373,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (selected) select.value = selected;
     }
 
+    // Buka modal transaksi: mode tambah (editId kosong) atau ubah (method PUT).
     function openForm(data, editId) {
         form.action = editId ? updateUrlTemplate.replace('__ID__', editId) : storeUrl;
         field('tMethod').value = editId ? 'PUT' : 'POST';

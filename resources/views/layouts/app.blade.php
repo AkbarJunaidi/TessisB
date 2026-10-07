@@ -6,8 +6,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') - Management Information System</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" integrity="sha384-XGjxtQfXaH2tnPFa9x+ruJTuLE3Aa6LhHSWRr1XeTyhezb4abCG4ccI5AkVDxqC+" crossorigin="anonymous">
+    {{ \App\Support\VendorAsset::style('bootstrap-css') }}
+    {{ \App\Support\VendorAsset::style('bootstrap-icons') }}
     {{-- Design system terpusat: token warna, radius, shadow, komponen reusable --}}
     <link href="{{ asset('css/theme.css') }}" rel="stylesheet">
 
@@ -17,23 +17,15 @@
 
     <a class="skip-link" href="#mainContent">Lewati ke konten</a>
 
-    {{-- Terapkan status collapse sidebar SEBELUM sisa halaman digambar,
-         biar tidak ada kedipan "kebuka dulu baru collapse" (FOUC) saat
-         reload/pindah halaman. Cuma berpengaruh ke tampilan >=992px lewat
-         CSS media query di app-sidebar/sidebar.blade.php - di HP/tablet
-         localStorage ini tidak pernah dibaca sama sekali (sidebar di sana
-         selalu pakai mekanisme offcanvas normal). --}}
+    {{-- Terapkan status collapse sidebar sebelum halaman digambar (cegah kedipan); hanya berefek di >=992px,
+         HP/tablet memakai offcanvas normal. --}}
     <script>
         if (localStorage.getItem('sidebarCollapsed') === '1') {
             document.documentElement.classList.add('sidebar-collapsed');
         }
     </script>
 
-    {{-- ==========================================================
-         APP SHELL: sidebar statis di desktop (>=992px), berubah
-         jadi offcanvas asli Bootstrap di layar sempit (aksesibel,
-         keyboard-friendly, ada focus-trap otomatis dari Bootstrap).
-         ========================================================== --}}
+    {{-- App shell: sidebar statis di desktop (>=992px), offcanvas Bootstrap di layar sempit. --}}
     <div class="app-shell">
 
         {{-- SIDEBAR --}}
@@ -55,9 +47,7 @@
         @include('layouts.bottom-nav')
     @endauth
 
-    {{-- Toast notifikasi global (auto-hilang, mengambang, tidak mendorong konten halaman).
-         Dipakai di SELURUH halaman - jangan tambahkan alert session('success')/session('error')
-         lokal lagi di masing-masing view, cukup andalkan ini. --}}
+    {{-- Toast global (auto-hilang); jangan tambah alert session('success'/'error') lokal di view, andalkan ini. --}}
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
         @if(session('success'))
             <div class="toast align-items-center text-bg-success border-0 shadow" role="alert" data-bs-autohide="true" data-bs-delay="4000" id="globalToastSuccess">
@@ -181,7 +171,7 @@
         }
     </style>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    {{ \App\Support\VendorAsset::script('bootstrap-js') }}
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             // Tampilkan toast notifikasi global (kalau ada) - auto-hilang sendiri
@@ -189,26 +179,8 @@
                 new bootstrap.Toast(toastEl).show();
             });
 
-            // ==================================================================
-            // Sidebar collapse (icon-only) - HANYA berefek di desktop >=992px
-            // lewat CSS (lihat .app-sidebar & html.sidebar-collapsed di atas +
-            // di sidebar.blade.php). Ada 2 cara sidebar bisa expand:
-            //   1. Manual (PERMANEN, disimpan ke localStorage, tetap expand
-            //      setelah reload/pindah halaman) - lewat 2 pemicu:
-            //      a. Tombol chevron - HANYA muncul saat sudah expanded,
-            //         untuk menutup.
-            //      b. Klik logo - HANYA aktif saat collapsed (tombol
-            //         terpisah sengaja tidak ada lagi di kondisi ini,
-            //         logo yang ambil alih fungsinya - hover/fokus logo
-            //         menampilkan ikon panah, lihat CSS di sidebar.blade.php).
-            //         Saat sudah expanded, logo balik jadi link biasa ke
-            //         Dashboard.
-            //   2. Peek - klik salah satu ikon dropdown (Inventory/Progress
-            //      Management/dst) SAAT sedang collapsed, SEMENTARA saja
-            //      (tidak disimpan ke localStorage) - begitu klik di luar
-            //      sidebar atau kursor keluar dari area sidebar, otomatis
-            //      balik collapsed lagi seperti semula.
-            // ==================================================================
+            // Sidebar collapse (ikon saja, hanya desktop): permanen lewat localStorage (chevron/klik logo),
+            // atau peek sementara saat klik ikon dropdown; menutup lagi saat klik di luar sidebar.
             var sidebarEl = document.querySelector('.app-sidebar');
             var sidebarToggleBtn = document.getElementById('sidebarCollapseToggle');
             var sidebarBrandLink = document.getElementById('sidebarBrandLink');
@@ -217,11 +189,7 @@
                 var accordionToggles = document.querySelectorAll('#sidebarMenuAccordion [data-bs-toggle="collapse"]');
                 var peekExpanded = false; // true = sidebar kebuka gara-gara peek, bukan preferensi permanen
 
-                // Submenu tidak ada tempat menampilkan teksnya saat rail
-                // collapsed - data-bs-toggle Bootstrap dilepas sementara
-                // supaya klik ikon parent tidak diam-diam nge-toggle submenu
-                // yang toh disembunyikan CSS. Dipasang lagi begitu interaktif
-                // (baik lewat toggle manual maupun peek).
+                // Saat rail collapsed submenu tak punya ruang: data-bs-toggle dilepas dan dipasang lagi saat interaktif.
                 function setAccordionInteractive(interactive) {
                     accordionToggles.forEach(function (link) {
                         if (interactive && link.dataset.bsToggleBackup) {
@@ -234,18 +202,12 @@
                     });
                 }
 
-                // Status collapsed dibaca dari <html> yang sudah diset lebih
-                // dulu di FOUC-prevention script (paling atas <body>) - kalau
-                // memang mulai dalam kondisi collapsed, non-aktifkan accordion
-                // dari awal juga (bukan cuma setelah toggle manual pertama).
+                // Status awal dibaca dari <html> (diset skrip FOUC di atas <body>), jadi accordion nonaktif sejak awal.
                 if (document.documentElement.classList.contains('sidebar-collapsed')) {
                     setAccordionInteractive(false);
                 }
 
-                // Satu fungsi bersama untuk perubahan PERMANEN (disimpan ke
-                // localStorage) - dipakai baik oleh tombol chevron maupun
-                // klik logo, supaya logic-nya (class, localStorage,
-                // aria-label, accordion) tidak dobel ditulis di 2 tempat.
+                // Satu fungsi untuk perubahan permanen (chevron dan klik logo): class, localStorage, aria-label, accordion.
                 function setSidebarCollapsed(collapsed) {
                     peekExpanded = false;
                     document.documentElement.classList.toggle('sidebar-collapsed', collapsed);
@@ -254,6 +216,7 @@
                     setAccordionInteractive(!collapsed);
                 }
 
+                // Tutup peek: kembalikan sidebar ke mode collapsed.
                 function collapseBackFromPeek() {
                     if (!peekExpanded) {
                         return;
@@ -268,11 +231,7 @@
                     setSidebarCollapsed(!document.documentElement.classList.contains('sidebar-collapsed'));
                 });
 
-                // 1b. Klik logo SAAT collapsed & desktop -> expand permanen
-                //     (BUKAN peek - ini menggantikan tombol chevron yang
-                //     sengaja disembunyikan di kondisi ini). Saat sudah
-                //     expanded, klik logo dibiarkan jalan normal (navigasi
-                //     ke Dashboard via href aslinya, tidak di-preventDefault).
+                // 1b. Klik logo saat collapsed di desktop: expand permanen; saat expanded biarkan link ke Dashboard jalan.
                 if (sidebarBrandLink) {
                     sidebarBrandLink.addEventListener('click', function (e) {
                         var isCollapsed = document.documentElement.classList.contains('sidebar-collapsed');
@@ -284,9 +243,7 @@
                     });
                 }
 
-                // 2. Peek - klik ikon dropdown SAAT collapsed & desktop, buka
-                //    sementara + langsung tampilkan submenu yang diklik (biar
-                //    tidak perlu klik 2x: sekali buka rail, sekali lagi buka submenu).
+                // 2. Peek: klik ikon dropdown saat collapsed membuka rail sementara dan langsung menampilkan submenunya.
                 accordionToggles.forEach(function (link) {
                     link.addEventListener('click', function (e) {
                         var isCollapsed = document.documentElement.classList.contains('sidebar-collapsed');
@@ -320,20 +277,12 @@
         });
     </script>
 
-    {{-- Registrasi Service Worker untuk Web Push - PASIF, tidak meminta izin
-         apa pun ke user (browser mengizinkan register tanpa gesture user).
-         Permintaan izin notifikasi yang sungguhan (Notification.
-         requestPermission(), butuh klik user) ada di halaman Notifikasi
-         (resources/views/notification/index.blade.php), bukan di sini -
-         supaya tidak muncul popup izin browser tiba-tiba di halaman
-         manapun tanpa user memintanya. --}}
+    {{-- Registrasi Service Worker Web Push (pasif, tanpa meminta izin); permintaan izin ada di halaman Notifikasi. --}}
     @auth
         <script>
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('/sw.js').catch(function () {
-                    // Diamkan saja kalau gagal (misal browser lama yang tidak
-                    // support, atau diakses lewat http:// bukan https://) -
-                    // seluruh aplikasi tetap harus jalan normal tanpa fitur ini.
+                    // Abaikan bila gagal (browser lama atau bukan https); aplikasi tetap jalan tanpa fitur ini.
                 });
             }
         </script>
@@ -442,6 +391,7 @@
                 }
             };
 
+            // Beri aria-label "Tutup" pada tombol tutup yang belum punya.
             function labelCloseButtons() {
                 document.querySelectorAll('.btn-close:not([aria-label])').forEach(function (b) { b.setAttribute('aria-label', 'Tutup'); });
             }

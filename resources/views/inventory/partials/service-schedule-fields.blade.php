@@ -1,7 +1,4 @@
-{{--
-    Card "Jadwal Servis" untuk form Create & Edit inventory (opsional).
-    Isi salah satu atau keduanya: interval hari dan/atau interval pemakaian (per peminjaman).
---}}
+{{-- Card Jadwal Servis (opsional) untuk form inventory: isi interval hari dan/atau interval pemakaian (per peminjaman). --}}
 @php
     $servisSource = $inventory ?? null;
     $servisHari   = old('servis_interval_hari', $servisSource?->servis_interval_hari);

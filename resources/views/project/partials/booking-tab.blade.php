@@ -1,6 +1,4 @@
-{{-- Partial: Tab Booking Alat
-     Variabel yang dibutuhkan saat di-include: $project (dengan relasi bookings.inventory sudah di-load),
-     $bookableInventories --}}
+{{-- Tab Booking Alat. Variabel: $project (relasi bookings.inventory sudah di-load), $bookableInventories. --}}
 
 @php
     $canBook = auth()->user()->hasPermission('inventory', 'booking');

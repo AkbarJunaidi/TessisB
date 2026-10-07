@@ -129,6 +129,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const totalEl = document.getElementById('purchaseTotal');
     let nextIndex = {{ $nextIndex }};
 
+    // Ubah teks berformat ribuan menjadi angka murni.
     const toNumber = (value) => {
         const digits = String(value).replace(/\D/g, '');
         return digits === '' ? 0 : parseInt(digits, 10);
@@ -188,6 +189,7 @@ document.addEventListener('DOMContentLoaded', function () {
         box.classList.remove('d-none');
     }
 
+    // Hitung subtotal tiap item dan total pembelian.
     function recalculate() {
         let total = 0;
         list.querySelectorAll('.purchase-item').forEach(function (row) {
@@ -209,6 +211,7 @@ document.addEventListener('DOMContentLoaded', function () {
         nameInput.placeholder = existing ? 'Otomatis dari barang Inventory' : '';
     }
 
+    // Isi nama item dari barang inventory yang dipilih.
     function fillNameFromInventory(row) {
         const selected = row.querySelector('.item-inventory').selectedOptions[0];
         if (selected && selected.dataset.name) {
@@ -216,6 +219,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Tampilkan field sesuai mode item (stok yang ada atau barang baru).
     function syncMode(row) {
         const mode = row.querySelector('.item-mode').value;
         row.querySelector('.item-existing').classList.toggle('d-none', mode !== 'existing');

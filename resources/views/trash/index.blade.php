@@ -229,6 +229,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let activeId = null;
     let activeRow = null;
 
+    // Tampilkan alert Bootstrap di atas halaman.
     function showAlert(type, message) {
         const alertEl = document.createElement('div');
         alertEl.className = `alert alert-${type} alert-dismissible fade show mb-4`;
@@ -238,6 +239,7 @@ document.addEventListener('DOMContentLoaded', function () {
         alertPlaceholder.appendChild(alertEl);
     }
 
+    // Kurangi badge total setelah satu item diproses.
     function decrementTotalBadge() {
         if (!totalBadge) return;
         const current = parseInt(totalBadge.textContent, 10) || 0;
@@ -245,6 +247,7 @@ document.addEventListener('DOMContentLoaded', function () {
         totalBadge.textContent = `${next} Total Data`;
     }
 
+    // Hapus baris dari tabel; tampilkan pesan kosong bila tabel habis.
     function removeRowAndCheckEmpty(row) {
         if (row) row.remove();
 
@@ -259,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // --- Buka modal Pulihkan ---
+    // Buka modal Pulihkan.
     restoreModalEl.addEventListener('show.bs.modal', function (event) {
         const button = event.relatedTarget;
         activeType = button.getAttribute('data-type');
@@ -270,7 +273,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('restore-item-type').textContent = button.getAttribute('data-type-label');
     });
 
-    // --- Buka modal Hapus Permanen ---
+    // Buka modal Hapus Permanen.
     forceDeleteModalEl.addEventListener('show.bs.modal', function (event) {
         const button = event.relatedTarget;
         activeType = button.getAttribute('data-type');
@@ -281,6 +284,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('force-delete-item-type').textContent = button.getAttribute('data-type-label');
     });
 
+    // Kirim aksi pulihkan/hapus permanen lewat fetch lalu perbarui UI tanpa reload.
     function submitAction(url, method, submitBtn, modal, successPrefix) {
         const btnText = submitBtn.querySelector('.btn-text');
         const spinner = submitBtn.querySelector('.spinner-border');

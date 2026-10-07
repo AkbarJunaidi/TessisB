@@ -11,11 +11,7 @@
                 </span>
             </div>
 
-            {{-- Ticker notifikasi, sumber data sama dengan dropdown lonceng.
-                 Dibuka untuk SEMUA role (sebelumnya cuma super_admin/admin) -
-                 Employee sekarang juga bisa menerima pengumuman lewat sini,
-                 walau 4 jenis notifikasi otomatis lain tetap cuma dihitung
-                 untuk super_admin/admin (lihat NotificationService). --}}
+            {{-- Ticker notifikasi (sumber sama dengan lonceng) untuk semua role; jenis yang tampil disaring per user di NotificationService. --}}
                 <div class="rounded-pill" id="navbarNotifTicker">
                     <div class="d-flex align-items-center gap-2" id="navbarNotifTickerContent"></div>
                 </div>
@@ -23,10 +19,7 @@
 
         <div class="ms-auto d-flex align-items-center gap-2 gap-md-3 flex-shrink-0">
 
-            {{-- Ikon pencarian global - klik untuk buka/tutup kolom
-                 pencarian yang muncul di baris baru TEPAT DI BAWAH navbar
-                 (bukan dropdown/menyatu di dalam baris navbar ini), lihat
-                 <div id="navbarSearchBar"> setelah tag </nav> di bawah. --}}
+            {{-- Ikon pencarian global: membuka baris pencarian tepat di bawah navbar (#navbarSearchBar). --}}
                 <button type="button" class="btn btn-light border rounded-circle d-flex align-items-center justify-content-center navbar-search-btn"
                         style="width: 38px; height: 38px;"
                         id="navbarSearchToggle"
@@ -36,10 +29,7 @@
                     <i class="bi bi-search fs-6"></i>
                 </button>
 
-            {{-- Notifikasi navbar - SEMUA role (sebelumnya cuma Super Admin
-                 & Admin). Employee cuma akan lihat jenis "announcement" di
-                 sini (4 jenis lain tetap difilter Super Admin/Admin saja
-                 di NotificationService, tidak pantas dilihat Employee). --}}
+            {{-- Notifikasi navbar untuk semua role; jenis yang tampil disaring per user di NotificationService. --}}
                 <div class="dropdown">
                     <button type="button" class="btn btn-light border rounded-circle position-relative d-flex align-items-center justify-content-center navbar-notif-btn"
                             style="width: 38px; height: 38px;"
@@ -68,15 +58,8 @@
     </div>
 </nav>
 
-{{-- Baris pencarian global - collapse Bootstrap biasa (bukan dropdown),
-     jadi posisinya selalu di bawah navbar & full-width. Perilaku mirip
-     autocomplete Client di form Project (lihat
-     project/partials/form.blade.php): user mengetik -> fetch saran
-     module/halaman terkait (Project/Inventory/Kontak/Surat Jalan) lewat
-     search.suggest -> klik saran langsung ke halaman detailnya.
-     TIDAK ada navigasi ke halaman hasil manapun kalau tidak ada saran
-     yang cocok - Enter/klik tombol Cari saat itu cuma menandai kolom
-     "invalid" (sesuai permintaan), bukan pindah halaman. --}}
+{{-- Baris pencarian global (collapse di bawah navbar): ketik -> saran Project/Inventory/Kontak/Surat Jalan (search.suggest) -> klik ke detail.
+     Tanpa saran cocok, Enter/Cari hanya menandai kolom invalid dan tidak pindah halaman. --}}
 <div class="collapse" id="navbarSearchBar">
     <div class="border-bottom bg-white px-3 px-md-4 py-2">
         <div class="position-relative" style="max-width: 480px;">
@@ -105,15 +88,8 @@
 </div>
 
 <style>
-    /* Tinggi navbar dibuat eksplisit (bukan dibiarkan organik dari padding+
-       konten) supaya PERSIS sama dengan tinggi container brand di sidebar
-       desktop (.sidebar-brand-row, lihat sidebar.blade.php) - dua-duanya
-       64px. Efeknya: garis border-bottom navbar & garis pembatas di bawah
-       logo sidebar jadi sejajar dalam satu baris lurus, bukan beda tinggi
-       seperti sebelumnya. min-height (bukan height) supaya tetap aman
-       kalau suatu saat kontennya butuh lebih tinggi (misal judul halaman
-       yang sangat panjang di layar sempit), navbar boleh tumbuh, cuma
-       tidak akan pernah LEBIH PENDEK dari 64px. */
+    /* Tinggi navbar eksplisit 64px = tinggi .sidebar-brand-row di sidebar agar garis border sejajar;
+       min-height (bukan height) supaya boleh tumbuh bila konten lebih tinggi. */
     .app-topbar {
         min-height: 64px;
     }
@@ -122,10 +98,7 @@
     .app-topbar { position: sticky; top: 0; z-index: 1030; }
     .text-navy { color: var(--c-navy); }
 
-    /* Judul halaman di navbar: kalau nama project/barang bikin teks
-       kepanjangan untuk lebar layar yang tersedia, potong dengan "...".
-       Prefiks ("Detail Project - ", dst) tetap dipertahankan selama
-       muat; hanya bagian yang kelebihan yang dipotong. */
+    /* Judul halaman navbar dipotong dengan '...' bila terlalu panjang; prefiks tetap dipertahankan selama muat. */
     .navbar-page-title {
         white-space: nowrap;
         overflow: hidden;
@@ -180,10 +153,7 @@
     }
 </style>
 
-{{-- Ikon search navbar: typeahead saran modul/halaman terkait, dan
-     penanda "invalid" kalau Enter/klik Cari ditekan tanpa ada saran yang
-     cocok - pola & endpoint dijelaskan di komentar <div id="navbarSearchBar">
-     di atas. --}}
+{{-- Typeahead dan penanda invalid pencarian: lihat komentar #navbarSearchBar di atas. --}}
 <script>
     (function () {
         const searchBar        = document.getElementById('navbarSearchBar');
@@ -200,33 +170,39 @@
         let debounceTimer = null;
         let currentSuggestions = [];
 
+        // Escape teks agar aman disisipkan ke HTML.
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text ?? '';
             return div.innerHTML;
         }
 
+        // Sembunyikan saran pencarian.
         function hideSuggestions() {
             suggestionBox.classList.add('d-none');
             suggestionBox.innerHTML = '';
             currentSuggestions = [];
         }
 
+        // Hapus tanda kolom pencarian tidak valid.
         function clearInvalid() {
             input.classList.remove('is-invalid');
             invalidBox.classList.add('d-none');
         }
 
+        // Tandai kolom pencarian tidak valid beserta katanya.
         function showInvalid(keyword) {
             input.classList.add('is-invalid');
             invalidKeywordEl.textContent = keyword;
             invalidBox.classList.remove('d-none');
         }
 
+        // Pindah halaman.
         function goTo(url) {
             window.location.href = url;
         }
 
+        // Tampilkan saran pencarian dan simpan untuk Enter.
         function renderSuggestions(items) {
             currentSuggestions = items;
 
@@ -256,11 +232,7 @@
             });
         }
 
-        // Dipanggil saat Enter ditekan atau tombol "Cari" diklik. Kalau
-        // sedang ada saran tampil, anggap saran teratas itu yang dimaksud
-        // (langsung diarahkan ke sana). Kalau tidak ada saran sama sekali
-        // untuk keyword ini, tandai kolom invalid - TIDAK pindah ke
-        // halaman apa pun.
+        // Enter/tombol Cari: pakai saran teratas bila ada; bila tidak ada saran, tandai kolom invalid dan tetap di halaman.
         function attemptSearch() {
             const keyword = input.value.trim();
 
@@ -330,6 +302,7 @@
 
 {{-- Waktu nyata --}}
 <script>
+    // Perbarui tanggal dan jam di navbar.
     function updateDateTime() {
         const now = new Date();
         const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -358,12 +331,14 @@
         let tickerIndex = 0;
         let tickerData = [];
 
+        // Escape teks agar aman disisipkan ke HTML.
         function escapeHtml(str) {
             const div = document.createElement('div');
             div.textContent = str == null ? '' : String(str);
             return div.innerHTML;
         }
 
+        // Samakan badge notifikasi di bar bawah HP dengan jumlah di lonceng.
         function syncBottomBadge(count) {
             document.querySelectorAll('[data-notif-badge]').forEach(function (el) {
                 el.textContent = count > 9 ? '9+' : count;
@@ -371,6 +346,7 @@
             });
         }
 
+        // Render daftar notifikasi di dropdown lonceng dan perbarui badge.
         function renderNotifications(notifications) {
             syncBottomBadge(notifications.length);
             if (!notifications.length) {
@@ -398,11 +374,7 @@
             }).join('');
         }
 
-        // Notifikasi jenis "announcement" (pengumuman Super Admin) SUNGGUH
-        // tersimpan di database (beda dari 4 jenis lain yang dihitung ulang
-        // dari data tiap saat) - begitu diklik, tandai dibaca dulu (fire-
-        // and-forget, TIDAK menghalangi link-nya membuka halaman
-        // /announcements seperti biasa).
+        // Pengumuman tersimpan di database: tandai dibaca dulu (tanpa menunggu), link tetap terbuka normal.
         listEl.addEventListener('click', function (e) {
             const link = e.target.closest('[data-notif-type="announcement"]');
             if (!link) return;
@@ -416,10 +388,12 @@
             });
         });
 
+        // Tampilkan satu notifikasi di ticker.
         function paintTickerItem(n) {
             tickerContentEl.innerHTML = `<i class="bi ${n.icon}"></i><span>${escapeHtml(n.title)}: ${escapeHtml(n.message)}</span>`;
         }
 
+        // Tampilkan notifikasi ticker ke-index dengan transisi.
         function showTickerItem(index) {
             if (!tickerContentEl || !tickerData.length) return;
             const n = tickerData[index];
@@ -437,6 +411,7 @@
             }, 300);
         }
 
+        // Mulai ticker bergilir bila ada notifikasi; ulang timer lama.
         function setupTicker(notifications) {
             if (!tickerEl || !tickerContentEl) return;
 
@@ -467,6 +442,7 @@
             }
         }
 
+        // Ambil notifikasi aktif dari server lalu render dropdown dan ticker.
         function loadNotifications() {
             fetch(notifUrl, { headers: { 'Accept': 'application/json' } })
                 .then((res) => {

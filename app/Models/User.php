@@ -163,7 +163,7 @@ class User extends Authenticatable
     public function getEffectivePermissions(): array
     {
         return $this->permission_overrides
-            ?? config("permissions.role_defaults.{$this->role}", []);
+            ?? \App\Support\RolePermissions::defaultsFor($this->role);
     }
 
     /**

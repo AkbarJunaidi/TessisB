@@ -500,10 +500,10 @@
 
         updateAddButtonState();
 
-        // Counter karakter Deskripsi Barang
         const descriptionField = document.getElementById('description');
         const descriptionCounter = document.getElementById('descriptionCounter');
         if (descriptionField && descriptionCounter) {
+            // Perbarui penghitung karakter deskripsi (maks 500).
             function updateDescriptionCounter() {
                 descriptionCounter.textContent = descriptionField.value.length + '/500';
             }
@@ -518,6 +518,7 @@
         const alertBox = document.getElementById('unitStatusAlert');
         const badgeClassMap = @json($statusBadgeMap);
 
+        // Tampilkan pesan sukses/gagal di kotak alert halaman.
         function showAlert(message, isError) {
             alertBox.textContent = message;
             alertBox.classList.remove('d-none', 'alert-success', 'alert-danger');

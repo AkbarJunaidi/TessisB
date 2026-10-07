@@ -231,6 +231,7 @@
         const deleteRangeModal = new bootstrap.Modal(deleteRangeModalEl);
         const errorBox = document.getElementById('deleteRangeError');
 
+        // Tampilkan alert Bootstrap di atas halaman.
         function showAlert(type, message) {
             const alertEl = document.createElement('div');
             alertEl.className = `alert alert-${type} alert-dismissible fade show mb-4`;
@@ -240,6 +241,7 @@
             alertPlaceholder.appendChild(alertEl);
         }
 
+        // Kosongkan input dan error modal hapus rentang.
         function resetModalState() {
             document.getElementById('deleteRangeFrom').value = '';
             document.getElementById('deleteRangeTo').value = '';

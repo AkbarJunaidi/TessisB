@@ -29,7 +29,7 @@
         <input type="text" name="name" id="name" autocomplete="off"
                class="form-control @error('name') is-invalid @enderror"
                placeholder="Contoh: Wedding Arnold & Gita"
-               value="{{ $old('name') }}" required autofocus maxlength="100">
+               value="{{ $old('name') }}" required autofocus maxlength="25">
         @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 
@@ -189,9 +189,7 @@
 </div>
 
 <script>
-    // Tanggal Acara Selesai tidak boleh lebih awal dari Tanggal Acara Mulai -
-    // batas "min" disinkronkan di sisi client supaya user tidak salah pilih
-    // (validasi sesungguhnya tetap di server lewat ProjectRequest).
+    // Batas min Tanggal Selesai disinkronkan dengan Tanggal Mulai; validasi sebenarnya di ProjectRequest.
     document.addEventListener('DOMContentLoaded', function () {
         const startInput = document.getElementById('event_date');
         const endInput   = document.getElementById('event_end_date');
@@ -200,6 +198,7 @@
             return;
         }
 
+        // Set batas minimum Tanggal Selesai mengikuti Tanggal Mulai.
         function syncEndDateMin() {
             if (!startInput.value) {
                 return;
@@ -218,12 +217,8 @@
 </script>
 
 <script>
-    // Autocomplete field Client - cari dari daftar Kontak (lihat
-    // ContactController::search()). Kalau user pilih salah satu saran,
-    // field Client/Email/No. Telepon otomatis terisi DAN project ini
-    // benar-benar ter-link ke Kontak itu (contact_id, bukan cuma tebak
-    // nama - lihat Contact::matchedProjects() & ContactService::
-    // attachTotalIncome() yang sekarang mengutamakan link ini).
+    // Autocomplete Client dari Kontak (ContactController::search): memilih saran mengisi
+    // Client/Email/Telepon dan menyimpan contact_id.
     document.addEventListener('DOMContentLoaded', function () {
         const clientInput   = document.getElementById('client');
         const contactIdInput = document.getElementById('contact_id');
@@ -247,11 +242,13 @@
             linkStatus.classList.remove('d-none');
         }
 
+        // Sembunyikan saran kontak.
         function hideSuggestions() {
             suggestionBox.classList.add('d-none');
             suggestionBox.innerHTML = '';
         }
 
+        // Tampilkan saran kontak; memilih satu mengisi field Client.
         function renderSuggestions(contacts) {
             if (contacts.length === 0) {
                 hideSuggestions();
@@ -288,6 +285,7 @@
             });
         }
 
+        // Escape teks agar aman disisipkan ke HTML.
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text ?? '';
@@ -297,9 +295,7 @@
         clientInput.addEventListener('input', function () {
             const keyword = this.value.trim();
 
-            // Nama diketik ulang beda dari yang terakhir dipilih -> link lama
-            // sudah tidak relevan lagi, lepas (biar tidak salah nyambung ke
-            // Kontak yang sebenarnya beda).
+            // Nama diketik ulang berbeda dari pilihan terakhir: lepas link Kontak agar tidak salah sambung.
             if (keyword !== lastSelectedName) {
                 contactIdInput.value = '';
                 linkStatus.classList.add('d-none');

@@ -171,9 +171,7 @@
             this.style.color = type === 'text' ? '#0b6fd6' : '#9ca3af';
         });
 
-        // Saat akun/perangkat sedang terkunci (rate limit login aktif),
-        // form dikunci total dan dihitung mundur otomatis - bukan cuma
-        // menampilkan teks statis sementara form tetap bisa disubmit.
+        // Akun/perangkat terkunci (rate limit): form dikunci dan dihitung mundur otomatis.
         @if(session('lockout_seconds'))
             (function () {
                 let remaining = {{ (int) session('lockout_seconds') }};
@@ -187,6 +185,7 @@
                     ? errorMessageEl.textContent.split('Silakan coba lagi')[0].trim()
                     : '';
 
+                // Nonaktifkan seluruh input login saat terkunci.
                 function lockForm() {
                     emailInput.disabled = true;
                     passwordInput.disabled = true;
@@ -196,6 +195,7 @@
                     submitBtn.style.cursor = 'not-allowed';
                 }
 
+                // Aktifkan kembali input login setelah hitung mundur selesai.
                 function unlockForm() {
                     emailInput.disabled = false;
                     passwordInput.disabled = false;

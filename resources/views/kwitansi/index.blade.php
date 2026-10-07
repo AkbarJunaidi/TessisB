@@ -54,7 +54,7 @@
                         @php
                             $pendapatanTercatat = (float) ($project->pendapatan_tercatat ?? 0);
                             $kwitansiDibayar = (float) ($project->kwitansi_total_dibayar ?? 0);
-                            $totalDiterima = $pendapatanTercatat + $kwitansiDibayar;
+                            $totalDiterima = \App\Models\Project::combinePayments($pendapatanTercatat, $kwitansiDibayar);
                             $estimasi = (float) ($project->estimated_value ?? 0);
                             $sisa = max(0, $estimasi - $totalDiterima);
                             $statusPembayaran = $estimasi <= 0

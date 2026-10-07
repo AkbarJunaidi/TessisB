@@ -1,7 +1,4 @@
-{{-- Partial: Tab Kanban
-     Variabel yang dibutuhkan saat di-include: $project, $groupedTasks
-     List/kolom board bersifat dinamis (custom per project via Add List),
-     mendukung drag & drop AJAX untuk pindah status task. --}}
+{{-- Tab Kanban. Variabel: $project, $groupedTasks; list dinamis per project, drag-drop AJAX memindahkan status task. --}}
 
 <div class="card border-0 shadow-sm rounded-3">
     <div class="card-body p-4">
@@ -41,14 +38,8 @@
     $boardLists = $project->getBoardLists();
 @endphp
 
-{{-- Tab pemilih kolom - HANYA muncul di mobile/tablet (<768px), dan
-     SENGAJA DI LUAR div .kanban-board (yang display:flex/nowrap) - kalau
-     ditaruh di dalam, tab-nya ikut jadi "anak flex" board dan dipaksa
-     sejajar SATU BARIS dengan board itu sendiri (persis bug yang kemarin
-     kelihatan: tab numpuk vertikal sempit di kiri, board tetap kejepit
-     di kanan, keduanya berbagi 1 area scroll horizontal). Di luar sini,
-     tab jadi elemen block biasa, full-width, baris tersendiri di atas
-     board - baru board-nya sendiri yang scroll/flex di dalam wadahnya. --}}
+{{-- Tab pemilih kolom (mobile/tablet <768px) harus DI LUAR .kanban-board (flex/nowrap);
+     di dalamnya tab ikut menjadi anak flex dan sejajar satu baris dengan board. --}}
 <ul class="nav nav-pills flex-nowrap overflow-auto gap-1 mb-3 d-md-none kanban-tab-selector" role="tablist">
     @foreach($boardLists as $list)
         <li class="nav-item" role="presentation">
@@ -146,10 +137,7 @@
                                     </a>
                                 </div>
 
-                                {{-- Pengganti drag & drop di mobile (drag bawaan browser tidak
-                                     berfungsi di layar sentuh) - dropdown "Pindahkan ke..." tap
-                                     untuk pindah task ke list lain, pakai endpoint yang SAMA
-                                     dengan drag-drop di desktop, tidak ada perubahan backend. --}}
+                                {{-- Dropdown 'Pindahkan ke...' pengganti drag-drop di layar sentuh; endpoint sama dengan desktop. --}}
                                 <div class="dropdown mt-2 d-md-none" onclick="event.stopPropagation();">
                                     <button type="button" class="btn btn-sm btn-outline-secondary w-100 dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                                         <i class="bi bi-arrow-left-right me-1"></i> Pindahkan ke...
@@ -240,10 +228,7 @@
 
     });
 
-    // Tombol "Pindahkan ke..." (dropdown) - pengganti drag & drop khusus
-    // mobile, karena drag bawaan browser tidak berfungsi di layar sentuh.
-    // Pakai fungsi moveTask() yang SAMA dengan drag-drop desktop di atas -
-    // satu jalur logic, satu endpoint backend, tidak ada duplikasi.
+    // Dropdown 'Pindahkan ke...' pengganti drag-drop di layar sentuh; memakai moveTask() yang sama.
     document.querySelectorAll('#tab-kanban .kanban-move-btn').forEach((btn) => {
         btn.addEventListener('click', function (e) {
             e.stopPropagation();
@@ -253,6 +238,7 @@
         });
     });
 
+    // Ubah status task lewat PATCH; kartu baru pindah di UI setelah server sukses.
     function moveTask(cardEl, targetList) {
         const originZone = cardEl.closest('.board-list-dropzone');
         if (!originZone || originZone.dataset.list === targetList) return;
@@ -298,16 +284,16 @@
             });
     }
 
+    // Perbarui jumlah task pada header kolom.
     function updateColumnCount(zone) {
         const count = zone.querySelectorAll('.card-task').length;
         const listLabel = zone.dataset.list;
 
-        // Badge jumlah di header kolom (desktop & mobile, sama seperti sebelumnya)
+        // Badge jumlah di header kolom (desktop dan mobile).
         const headerBadge = zone.closest('.card').querySelector('.board-list-count');
         if (headerBadge) headerBadge.textContent = count;
 
-        // Badge jumlah di tab pemilih kolom (khusus mobile) - elemen baru,
-        // disinkronkan juga supaya tidak basi begitu task dipindah.
+        // Badge jumlah di tab pemilih kolom (mobile); ikut diperbarui saat task dipindah.
         const tabBadge = document.querySelector('#tab-kanban [data-list-count-for="' + CSS.escape(listLabel) + '"]');
         if (tabBadge) tabBadge.textContent = count;
     }

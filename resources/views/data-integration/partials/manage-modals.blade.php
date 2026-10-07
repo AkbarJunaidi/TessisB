@@ -1,7 +1,5 @@
-{{--
-    Modal & JS bersama untuk kelola file/folder (dipakai My Files dan Folder Management).
-    Variabel: $moveSets (FolderService::moveSets). Tombol memanggil diOpenRename/diOpenMove/diOpenDelete.
---}}
+{{-- Modal dan JS bersama kelola file/folder (My Files, Folder Management); variabel $moveSets (FolderService::moveSets).
+     Pemicu: diOpenRename / diOpenMove / diOpenDelete. --}}
 <div class="modal fade" id="diRenameModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <form id="diRenameForm" method="POST" class="modal-content border-0 shadow">
@@ -76,10 +74,8 @@
         const moveSets = {{ \Illuminate\Support\Js::from($moveSets) }};
         const show = function (id) { bootstrap.Modal.getOrCreateInstance(document.getElementById(id)).show(); };
 
-        /**
-         * Rename. name = nilai awal (tanpa ekstensi untuk file), field = nama input di request,
-         * lockedExt = ekstensi yang ditambahkan ulang server (kosong untuk folder).
-         */
+        // Rename: name = nilai awal (tanpa ekstensi untuk file), field = nama input di request.
+        // lockedExt = ekstensi yang ditambahkan ulang server (kosong untuk folder).
         window.diOpenRename = function (url, name, field, title, lockedExt) {
             document.getElementById('diRenameForm').action = url;
             document.getElementById('diRenameTitle').textContent = title;
@@ -90,10 +86,8 @@
             show('diRenameModal');
         };
 
-        /**
-         * Move. setKey = kunci di moveSets; excludeId = id folder yang dipindah (opsi dirinya
-         * dan turunannya dinonaktifkan; server tetap memvalidasi).
-         */
+        // Move: setKey = kunci di moveSets, excludeId = folder yang dipindah (dirinya dan turunannya nonaktif).
+        // Server tetap memvalidasi.
         window.diOpenMove = function (url, setKey, title, excludeId) {
             const set = moveSets[setKey];
             const select = document.getElementById('diMoveSelect');

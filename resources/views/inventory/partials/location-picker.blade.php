@@ -1,8 +1,5 @@
-{{--
-    Komponen "Lokasi saat ini" (deteksi GPS + pilihan manual) untuk aksi pinjam/kembali/rusak/hilang.
-    Pakai: LocationPicker.mount(el, { detectUrl, locations: [{id, name}] }) lalu .start() / .value().
-    Server menghitung ulang metode lokasi dari koordinat, jadi nilai di sini hanya masukan.
---}}
+{{-- Komponen Lokasi saat ini (GPS + pilihan manual). Pakai: LocationPicker.mount(el, { detectUrl, locations: [{id, name}] }) lalu .start() / .value().
+     Server menghitung ulang metode lokasi dari koordinat; nilai di sini hanya masukan. --}}
 <script>
 (function () {
     'use strict';
@@ -11,6 +8,7 @@
 
     const ALERT_CLASS = { info: 'alert-info', success: 'alert-success', warning: 'alert-warning', muted: 'alert-secondary' };
 
+    // Pasang pemilih lokasi di root: deteksi GPS plus pilihan manual; hasilnya dibaca lewat value().
     function mount(root, options) {
         const state = { busy: false, lat: null, lng: null, accuracy: null, token: 0, listeners: [] };
 
@@ -28,6 +26,7 @@
         const selectEl = root.querySelector('.lp-select');
         const retryEl  = root.querySelector('.lp-retry');
 
+        // Kosongkan pilihan manual kembali ke placeholder.
         function resetSelect() {
             selectEl.replaceChildren();
             const placeholder = new Option('-- Pilih lokasi manual --', '', true, true);
@@ -38,10 +37,12 @@
             });
         }
 
+        // Beri tahu semua listener bahwa status lokasi berubah.
         function emit() {
             state.listeners.forEach(function (fn) { fn(); });
         }
 
+        // Tampilkan status deteksi dengan gaya sesuai jenisnya.
         function setStatus(kind, text, spinning) {
             statusEl.className = 'alert py-2 px-3 mb-2 small d-flex align-items-center gap-2 lp-status ' + ALERT_CLASS[kind];
             statusEl.replaceChildren();
@@ -57,6 +58,7 @@
             statusEl.appendChild(span);
         }
 
+        // Akhiri deteksi: lepas status sibuk dan tampilkan hasil.
         function finish(kind, text) {
             state.busy = false;
             retryEl.disabled = false;
@@ -64,6 +66,7 @@
             emit();
         }
 
+        // Mulai deteksi GPS; token mencegah hasil deteksi lama menimpa yang baru.
         function start() {
             const token = ++state.token;
 
@@ -75,6 +78,7 @@
             emit();
 
             return new Promise(function (resolve) {
+                // Selesaikan Promise deteksi bila token masih berlaku.
                 function done(kind, text) {
                     if (token !== state.token) { return resolve(); }
                     finish(kind, text);

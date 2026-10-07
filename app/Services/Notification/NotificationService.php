@@ -12,7 +12,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * Notifikasi ringkas untuk navbar (Super Admin & Admin saja).
+ * Notifikasi ringkas untuk navbar. Super Admin/Admin melihat semua jenis; Employee hanya Pengumuman dan Project Baru.
  *
  * Sebagian besar (4 dari 5 jenis) dihitung LANGSUNG dari data (bukan
  * disimpan di tabel tersendiri) - selalu akurat, tidak perlu mekanisme
@@ -44,8 +44,11 @@ class NotificationService
     /** Notifikasi "pendapatan belum diisi" hanya tampil H-5 menjelang akhir bulan. */
     private const MONTH_END_WARNING_DAYS = 5;
 
+    /** Barang/project dianggap "baru" selama N hari sejak dibuat. */
+    private const NEW_ITEM_WINDOW_DAYS = 3;
+
     /** Batas maksimum notifikasi yang ditampilkan per jenis, supaya navbar tidak banjir. */
-    private const MAX_PER_TYPE = 10;
+    public const MAX_PER_TYPE = 10;
 
     /**
      * Lama cache notifikasi (detik). Endpoint ini di-poll browser tiap 60
@@ -70,6 +73,8 @@ class NotificationService
         'approval_pending'       => 'Permintaan Approval Menunggu',
         'schedule_conflict'      => 'Bentrok Jadwal Alat Antar Project',
         'servis_jatuh_tempo'     => 'Servis Alat Jatuh Tempo / Segera',
+        'inventory_new'          => 'Barang Baru',
+        'project_new'            => 'Project Baru',
         'announcement'           => 'Pengumuman dari Super Admin',
     ];
 
@@ -114,6 +119,8 @@ class NotificationService
                 'approval_pending'       => $this->getPendingApprovalNotifications(),
                 'schedule_conflict'      => $this->getScheduleConflictNotifications(),
                 'servis_jatuh_tempo'     => $this->getServiceDueNotifications(),
+                'inventory_new'          => $this->getNewInventoryNotifications(),
+                'project_new'            => $this->getNewProjectNotifications(),
             ]
         );
 
@@ -128,7 +135,16 @@ class NotificationService
         // 4 jenis itu apa pun settingnya).
         $user = \App\Models\User::find($userId);
         if (!$user?->hasRole('super_admin', 'admin')) {
-            $grouped = array_intersect_key($grouped, ['announcement' => true]);
+            $grouped = array_intersect_key($grouped, ['announcement' => true, 'project_new' => true]);
+        }
+
+        // Barang/Project Baru mengikuti akses modulnya: Project = izin Progress
+        // Management, Barang = izin Inventory (modul ini khusus Super Admin/Admin).
+        if (!$user?->hasPermission('tracking_progress', 'view')) {
+            unset($grouped['project_new']);
+        }
+        if (!($user?->hasRole('super_admin', 'admin') && $user?->hasPermission('inventory', 'view'))) {
+            unset($grouped['inventory_new']);
         }
 
         // "approval_pending" digating PERMISSION (bukan cuma role) - beda
@@ -324,6 +340,46 @@ class NotificationService
                 ];
             })
             ->values()
+            ->all();
+    }
+
+    /** Barang yang baru ditambahkan dalam NEW_ITEM_WINDOW_DAYS hari terakhir. */
+    private function getNewInventoryNotifications(): array
+    {
+        return \App\Models\Inventory::query()
+            ->select(['id', 'name', 'created_at'])
+            ->where('created_at', '>=', now()->subDays(self::NEW_ITEM_WINDOW_DAYS))
+            ->latest()
+            ->limit(self::MAX_PER_TYPE)
+            ->get()
+            ->map(fn ($inventory) => [
+                'id'      => "inventory-new-{$inventory->id}",
+                'type'    => 'inventory_new',
+                'icon'    => 'bi-box-seam text-primary',
+                'title'   => 'Barang Baru',
+                'message' => "{$inventory->name} ditambahkan " . $inventory->created_at->diffForHumans(),
+                'url'     => route('inventory.show', $inventory),
+            ])
+            ->all();
+    }
+
+    /** Project yang baru dibuat dalam NEW_ITEM_WINDOW_DAYS hari terakhir. */
+    private function getNewProjectNotifications(): array
+    {
+        return Project::query()
+            ->select(['id', 'name', 'client', 'created_at'])
+            ->where('created_at', '>=', now()->subDays(self::NEW_ITEM_WINDOW_DAYS))
+            ->latest()
+            ->limit(self::MAX_PER_TYPE)
+            ->get()
+            ->map(fn (Project $project) => [
+                'id'      => "project-new-{$project->id}",
+                'type'    => 'project_new',
+                'icon'    => 'bi-kanban text-primary',
+                'title'   => 'Project Baru',
+                'message' => "{$project->name} ({$project->client}) dibuat " . $project->created_at->diffForHumans(),
+                'url'     => route('projects.show', $project),
+            ])
             ->all();
     }
 

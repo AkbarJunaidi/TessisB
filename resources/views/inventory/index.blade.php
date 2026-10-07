@@ -304,13 +304,12 @@
         const cancelBtn = document.getElementById('generateReportCancelBtn');
         const closeBtn = document.getElementById('generateReportCloseBtn');
 
-        // ID laporan yang sedang aktif diproses, dan penanda kalau user
-        // menekan Batal - dipakai processBatch() untuk berhenti mengirim
-        // request lanjutan begitu dibatalkan.
+        // ID laporan yang sedang diproses dan penanda Batal; processBatch() berhenti kirim request bila dibatalkan.
         let activeReportExportId = null;
         let cancelled = false;
         let activeAbortController = null;
 
+        // Update progress bar proses laporan massal.
         function setProgress(processed, total) {
             const percent = total > 0 ? Math.round((processed / total) * 100) : 100;
             progressBar.style.width = percent + '%';
@@ -318,11 +317,13 @@
             statusText.textContent = `Memproses ${processed} dari ${total} barang...`;
         }
 
+        // Ganti tombol Batal menjadi Tutup saat proses selesai.
         function showFinishedState() {
             cancelBtn.classList.add('d-none');
             closeBtn.classList.remove('d-none');
         }
 
+        // Proses laporan per batch lewat request berulang sampai selesai atau dibatalkan.
         function processBatch(reportExportId) {
             if (cancelled) {
                 return;
@@ -377,6 +378,7 @@
                 });
         }
 
+        // Batalkan proses aktif: hentikan request berjalan dan beri tahu server.
         function cancelActiveReport() {
             cancelled = true;
 

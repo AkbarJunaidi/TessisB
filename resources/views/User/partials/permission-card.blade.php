@@ -145,10 +145,12 @@
     const roleBadge = document.getElementById('summary-role-badge');
     const resetBtn = document.getElementById('btn-reset-permission');
 
+    // Ambil checkbox izin untuk satu modul dan aksi.
     function checkbox(module, action) {
         return document.getElementById(`perm-${module}-${action}`);
     }
 
+    // Centang ulang semua izin sesuai bawaan role yang dipilih.
     function applyDefaultsForRole(role) {
         const defaults = roleDefaults[role] || {};
 
@@ -162,6 +164,7 @@
         recalculateSummary();
     }
 
+    // Hitung ringkasan akses dan tandai "custom" bila berbeda dari bawaan role.
     function recalculateSummary() {
         let granted = 0, readOnly = 0, noAccess = 0, isCustom = false;
         const role = roleSelect ? roleSelect.value : '';

@@ -151,12 +151,8 @@ class KwitansiService
     }
 
     /**
-     * Ringkasan tagihan/pembayaran semua project untuk halaman "Keuangan" -
-     * SEKARANG termasuk Pendapatan dari tab Data Keuangan (bukan cuma
-     * Kwitansi), supaya kedua sumber uang yang sudah diterima "kelihatan"
-     * di sini. Keduanya dihitung sebagai SQL SUM (withSum) supaya tidak
-     * N+1. Alias SENGAJA dibuat beda dari nama accessor Project (lihat
-     * Project::totalDibayar()/totalDiterima()) supaya tidak bentrok.
+     * Ringkasan tagihan semua project: kwitansi aktif dan pendapatan tercatat
+     * dihitung dengan withSum (tanpa N+1); alias beda dari accessor Project.
      */
     public function getProjectPaymentSummaries(?string $search = null): LengthAwarePaginator
     {

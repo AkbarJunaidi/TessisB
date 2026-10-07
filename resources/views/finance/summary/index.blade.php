@@ -253,7 +253,7 @@
 </div>
 
 @if($hasTrendData || count($categories) > 0)
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+{{ \App\Support\VendorAsset::script('chartjs') }}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const rp = (v) => 'Rp ' + Math.round(v).toLocaleString('id-ID');

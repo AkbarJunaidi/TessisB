@@ -1,20 +1,5 @@
-{{--
-    Partial: modal Rename / Move / Delete untuk file DAN folder (dipakai My Files & Folder Management).
-
-    Cara pakai:
-      @include('data-integration.partials.item-action-modals', [
-          'moveGroups'    => $moveGroups,          // [['label' => .., 'warn' => bool, 'options' => [id => path]], ...]
-          'moveRootLabel' => 'My Files (tingkat atas)',   // label opsi "tingkat atas" (value kosong)
-      ])
-
-    Lalu panggil dari menu baris (pakai \Illuminate\Support\Js::from agar nama file aman dari tanda petik):
-      openRenameModal(url, namaTanpaEkstensi, 'file_name' | 'name', ekstensiTerkunci, 'file' | 'folder')
-      openMoveModal(url, bolehKeTingkatAtas, 'file' | 'folder')
-      openDeleteModal(url, nama, 'file' | 'folder')
-
-    "warn" pada grup tujuan: bila true, peringatan "akan terlihat oleh rekan kerja" muncul saat
-    tujuan dari grup itu dipilih (dipakai untuk Ruang bersama).
---}}
+{{-- Modal Rename/Move/Delete file dan folder. Pakai: @include('data-integration.partials.item-action-modals', ['moveGroups' => $moveGroups, 'moveRootLabel' => '...'])
+     Pemicu: openRenameModal(url, nama, field, extKunci, tipe), openMoveModal(url, bolehRoot, tipe), openDeleteModal(url, nama, tipe); grup 'warn' = peringatan ruang bersama. --}}
 <div class="modal fade" id="dynamicRenameModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <form id="dynamicRenameForm" method="POST" class="modal-content border-0 shadow">

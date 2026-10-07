@@ -154,10 +154,7 @@
 @include('surat-jalan.partials.return-location-modal')
 
 <script>
-    // Putar ikon chevron saat baris/kartu Surat Jalan di-expand/collapse.
-    // Selector ini otomatis mencakup dua bentuk id ("#sjDetail123" milik
-    // tabel desktop, dan "#sjDetailMobile123" milik kartu mobile) karena
-    // keduanya sama-sama diawali "#sjDetail".
+    // Putar chevron saat Surat Jalan di-expand/collapse; selector '#sjDetail' mencakup tabel desktop dan kartu mobile.
     document.querySelectorAll('[data-bs-target^="#sjDetail"]').forEach(function (row) {
         const targetId = row.getAttribute('data-bs-target');
         const collapseEl = document.querySelector(targetId);

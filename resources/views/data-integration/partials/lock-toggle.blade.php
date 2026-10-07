@@ -1,11 +1,5 @@
-{{--
-    Partial: item menu "Kunci" / "Buka Kunci" (gembok) untuk file atau folder di ruang bersama.
-
-    Cara pakai (di dalam <ul class="dropdown-menu">), hanya untuk user dengan permission `lock`:
-      @include('data-integration.partials.lock-toggle', ['item' => $folder, 'kind' => 'folder'])   {{-- atau 'file' --}}
-
-    Item harus punya method isLocked() (model File / Folder).
---}}
+{{-- Item menu Kunci/Buka Kunci (gembok) untuk file atau folder di ruang bersama; hanya untuk user dengan permission `lock`, di dalam <ul class="dropdown-menu">.
+     Pakai: @include('data-integration.partials.lock-toggle', ['item' => $folder, 'kind' => 'folder' atau 'file']); item harus punya isLocked(). --}}
 @php
     $lockBase   = $kind === 'folder' ? 'folders' : 'files';
     $itemLocked = $item->isLocked();

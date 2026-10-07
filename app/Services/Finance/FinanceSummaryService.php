@@ -256,7 +256,7 @@ class FinanceSummaryService
                 'id'     => $p->id,
                 'name'   => $p->name,
                 'client' => $p->client,
-                'sisa'   => max(0, (float) $p->estimated_value - (float) $p->income_total - (float) $p->kwitansi_total),
+                'sisa'   => max(0, (float) $p->estimated_value - Project::combinePayments((float) $p->income_total, (float) $p->kwitansi_total)),
             ])
             ->where('sisa', '>', 0);
 

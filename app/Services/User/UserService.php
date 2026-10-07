@@ -223,7 +223,7 @@ class UserService
      */
     public function getDefaultPermissions(string $role): array
     {
-        return config("permissions.role_defaults.{$role}", []);
+        return \App\Support\RolePermissions::defaultsFor($role);
     }
 
     /**

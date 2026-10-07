@@ -24,11 +24,7 @@
 
     <div class="row g-4">
 
-        {{-- FORM KIRIM PENGUMUMAN - tampil kalau punya permission
-             notifikasi_sistem.kirim (default cuma Super Admin, bisa
-             didelegasikan ke Admin lewat Permission Override). Matriks
-             izin per-user lain ("user A boleh X, user B tidak") di luar
-             kirim/hapus masih belum didesain, belum ada di versi ini. --}}
+        {{-- Form kirim pengumuman: butuh permission notifikasi_sistem.kirim (default Super Admin, bisa didelegasikan lewat Permission Override). --}}
         @if($canKirimPengumuman)
             <div class="col-lg-4">
                 <div class="app-panel">
@@ -63,15 +59,8 @@
             </div>
         @endif
 
-        {{-- SEMUA NOTIFIKASI - gabungan Pengumuman (dulu bernama "Kotak
-             Masuk", punya baris tersimpan, SEMUA role lihat punyanya
-             sendiri) DAN Notifikasi Sistem otomatis (4 jenis dihitung
-             dari data saat ini, HANYA tampil untuk Admin/Super Admin,
-             ditaruh duluan di daftar - lihat NotificationService).
-             Sematkan Notifikasi Sistem = preferensi pribadi, siapa saja
-             boleh. Hapus Notifikasi Sistem = GLOBAL untuk semua user,
-             tombol cuma muncul kalau $canDeleteSystemNotification
-             (default hanya Super Admin, Admin lewat Permission Override). --}}
+        {{-- Semua notifikasi: Pengumuman (tersimpan, tiap user melihat miliknya) dan Notifikasi Sistem (dihitung dari data, disaring per user).
+             Sematkan = pribadi; hapus Notifikasi Sistem = global untuk semua user, hanya bila $canDeleteSystemNotification. --}}
         <div class="{{ $canKirimPengumuman ? 'col-lg-8' : 'col-12' }}">
             <div class="app-panel">
                 <div class="app-panel-header">
@@ -100,12 +89,11 @@
                         <button type="button" class="btn btn-sm btn-outline-primary" data-filter="unread">Belum dibaca</button>
                     </div>
                     <div class="list-group list-group-flush" id="notificationInboxList">
-                        {{-- Notifikasi Sistem dulu (butuh tindakan admin -
-                             reset password, deadline, dst), baru Pengumuman
-                             di bawahnya. --}}
-                        @if($isAdminOrSuperAdmin)
+                        {{-- Notifikasi Sistem (butuh tindakan) ditampilkan sebelum Pengumuman. --}}
+                        @if(!empty($systemNotifications))
                             @foreach($systemNotifications as $item)
-                                <div class="list-group-item p-3 system-notif-item" data-notif-key="{{ $item['id'] }}" data-important="1" data-unread="0">
+                                @php $isNewType = in_array($item['type'], ['inventory_new', 'project_new'], true); @endphp
+                                <div class="list-group-item p-3 system-notif-item" data-notif-key="{{ $item['id'] }}" data-important="{{ $isNewType ? '0' : '1' }}" data-unread="0">
                                     <div class="d-flex justify-content-between align-items-start gap-3">
                                         <a href="{{ $item['url'] }}" class="d-flex align-items-start gap-3 text-decoration-none text-reset flex-grow-1">
                                             <i class="bi {{ $item['icon'] }} mt-1"></i>
@@ -115,11 +103,12 @@
                                                         <i class="bi bi-pin-angle-fill text-primary" title="Disematkan"></i>
                                                     @endif
                                                     <span class="fw-semibold">{{ $item['title'] }}</span>
-                                                    <span class="badge-soft-primary">Penting</span>
+                                                    <span class="badge-soft-primary">{{ $isNewType ? 'Baru' : 'Penting' }}</span>
                                                 </div>
                                                 <div class="text-secondary small">{{ $item['message'] }}</div>
                                             </div>
                                         </a>
+                                        @if($isAdminOrSuperAdmin)
                                         <div class="btn-group btn-group-sm flex-shrink-0">
                                             <button type="button"
                                                     class="btn btn-outline-secondary btn-toggle-system-pin" aria-label="Sematkan atau lepas sematan"
@@ -133,6 +122,7 @@
                                                 </button>
                                             @endif
                                         </div>
+                                        @endif
                                     </div>
                                 </div>
                             @endforeach
@@ -253,9 +243,7 @@
 
 @push('scripts')
 <script>
-    // Konversi VAPID public key (base64url, dari server) ke Uint8Array -
-    // format yang dibutuhkan PushManager.subscribe(). Boilerplate standar,
-    // sama di semua implementasi Web Push (tidak spesifik TessisB).
+    // Konversi VAPID public key (base64url) ke Uint8Array untuk PushManager.subscribe() (boilerplate Web Push).
     function urlBase64ToUint8Array(base64String) {
         const padding = '='.repeat((4 - base64String.length % 4) % 4);
         const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -267,6 +255,7 @@
         return outputArray;
     }
 
+    // Token CSRF dari meta tag.
     function csrfToken() {
         return document.querySelector('meta[name="csrf-token"]').content;
     }
@@ -276,6 +265,7 @@
         let activeFilter = 'all';
         const filterBox = document.getElementById('notifFilters');
 
+        // Tampilkan item sesuai filter aktif; munculkan pesan kosong bila tidak ada.
         function applyFilter() {
             const items = document.querySelectorAll('#notificationInboxList > [data-important]');
             let shown = 0;
@@ -372,14 +362,8 @@
             });
         });
 
-        // --- Notifikasi Sistem (otomatis) - pola sama persis dengan 2
-        // handler Pengumuman di atas, cuma endpoint & data attribute-nya
-        // beda (data-notif-key, bukan data-notif-id, dan URL-nya
-        // /system-notifications/... bukan /announcements/...). Sengaja
-        // ditulis sejajar (bukan digabung jadi 1 fungsi generik) supaya
-        // gampang dibandingkan baris-per-baris kalau salah satunya nanti
-        // perlu diubah - dua sumber data ini memang beda mekanisme
-        // (lihat komentar di NotificationService/AnnouncementService).
+        // Notifikasi sistem: pola sama dengan handler Pengumuman, beda di data-notif-key dan URL /system-notifications.
+        // Sengaja tidak digabung agar mudah dibandingkan; mekanisme kedua sumber memang berbeda.
         document.querySelectorAll('.btn-toggle-system-pin').forEach(function (btn) {
             btn.addEventListener('click', function () {
                 const item = btn.closest('.system-notif-item');
@@ -421,17 +405,13 @@
             });
         });
 
-        // --- Tombol "Aktifkan Notifikasi Browser" ---
-        const vapidPublicKey = @json($vapidPublicKey);
+                const vapidPublicKey = @json($vapidPublicKey);
         const btnEnablePush = document.getElementById('btnEnablePush');
 
         if (btnEnablePush) {
             const pushSupported = 'serviceWorker' in navigator && 'PushManager' in window;
 
-            // Tombol HANYA dimunculkan kalau browser mendukung Push API DAN
-            // server sudah punya VAPID key (paket webpush sudah di-setup) DAN
-            // user belum pernah mengizinkan sebelumnya (Notification.permission
-            // !== 'granted') - kalau sudah granted, tidak perlu tombol lagi.
+            // Tombol muncul hanya bila browser mendukung Push API, server punya VAPID key, dan izin belum 'granted'.
             if (pushSupported && vapidPublicKey && Notification.permission !== 'granted') {
                 btnEnablePush.classList.remove('d-none');
             }
@@ -468,7 +448,7 @@
             });
         }
 
-        // --- Panel Kelola Notifikasi Otomatis: reorder + submit AJAX ---
+        // Panel Kelola Notifikasi Otomatis: reorder + submit AJAX.
         const notifTypeList = document.getElementById('notifTypeList');
         const notifSettingsForm = document.getElementById('notifSettingsForm');
         const orderedTypeInputs = document.getElementById('orderedTypeInputs');
@@ -492,9 +472,7 @@
             const btnSaveNotifSettings = document.getElementById('btnSaveNotifSettings');
             const notifSettingsStatus = document.getElementById('notifSettingsStatus');
 
-            // Urutan DOM saat ini (setelah user pakai tombol naik/turun) ditulis
-            // ke hidden input tepat sebelum submit, LALU dikirim lewat fetch
-            // (bukan submit form native) - supaya halaman tidak reload.
+            // Urutan DOM terkini ditulis ke hidden input lalu dikirim lewat fetch (tanpa reload halaman).
             notifSettingsForm.addEventListener('submit', function (e) {
                 e.preventDefault();
 

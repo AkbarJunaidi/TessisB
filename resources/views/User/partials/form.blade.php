@@ -134,10 +134,8 @@
             </div>
         @enderror
         @else
-        {{-- Hanya Super Admin yang boleh mengubah role user. Field tetap
-             dikirim (readonly) supaya validasi 'role required' tetap lolos,
-             tapi nilainya tidak akan diproses jika bukan Super Admin yang
-             mengirim (lihat UserService::updateUser). --}}
+        {{-- Hanya Super Admin yang boleh mengubah role; field readonly tetap dikirim agar validasi lolos,
+             nilainya diabaikan server bila pengirim bukan Super Admin (UserService::updateUser). --}}
         <input type="text" class="form-control" value="{{ ucwords(str_replace('_', ' ', $user->role ?? '')) }}" disabled>
         <input type="hidden" name="role" value="{{ $user->role ?? '' }}">
         <small class="text-muted">Hanya Super Admin yang dapat mengubah role.</small>

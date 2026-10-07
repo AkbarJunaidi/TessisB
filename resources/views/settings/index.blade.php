@@ -296,6 +296,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     const list = document.getElementById('categoryList');
 
+    // HTML satu baris kategori project.
     function rowHtml() {
         return '<div class="input-group category-row">'
             + '<input type="text" name="project_categories[]" maxlength="100" autocomplete="off" class="form-control">'

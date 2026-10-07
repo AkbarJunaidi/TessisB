@@ -116,9 +116,8 @@ return [
             ],
         ],
 
-        // 1 aksi saja ('view') - siapa yang punya ini bisa pakai SEMUA mode
-        // di dalam fitur Scan (Pinjam/Kembalikan/Rusak/Hilang), sengaja
-        // TIDAK ikut/turunan dari permission modul 'inventory'.
+        // 1 aksi ('view') untuk semua mode Scan. Nilai bawaan role dihitung
+        // App\Support\RolePermissions (ikut akses Inventory/Project); Super Admin bisa menimpa.
         'scan_barang' => [
             'label' => 'Scan Barang',
             'icon'  => 'bi-upc-scan',

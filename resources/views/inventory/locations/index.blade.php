@@ -361,6 +361,7 @@
                 return node;
             }
 
+            // Sembunyikan daftar saran alamat.
             function hideSuggestions() {
                 suggestBox.classList.add('d-none');
                 suggestBox.replaceChildren();
@@ -373,6 +374,7 @@
                 canStoreEl.checked = (jenisEl.value === 'kantor' || jenisEl.value === 'gudang');
             }
 
+            // Isi form lokasi dari data yang dipilih.
             function fill(data) {
                 nameEl.value     = data.name || '';
                 jenisEl.value    = data.jenis || 'kantor';
@@ -385,6 +387,7 @@
                 activeEl.checked   = data.is_active !== false;
             }
 
+            // Siapkan modal untuk menambah lokasi baru.
             function openCreate() {
                 mode = 'create';
                 storeTouched = false;
@@ -398,6 +401,7 @@
                 modal.show();
             }
 
+            // Siapkan modal untuk mengubah lokasi yang ada.
             function openEdit(data) {
                 mode = 'edit';
                 storeTouched = true;
@@ -411,7 +415,7 @@
                 modal.show();
             }
 
-            // ---- tombol Tambah / Ubah / Hapus ----
+            // Tombol Tambah / Ubah / Hapus.
             const addBtn = document.getElementById('btnAddLocation');
             if (addBtn) addBtn.addEventListener('click', openCreate);
 
@@ -429,11 +433,11 @@
                 });
             });
 
-            // ---- jenis -> default kotak "menyimpan unit" ----
+            // Jenis lokasi menentukan default kotak "menyimpan unit".
             jenisEl.addEventListener('change', applyJenisDefault);
             canStoreEl.addEventListener('change', function () { storeTouched = true; });
 
-            // ---- autocomplete nama (mode Tambah): tampilkan lokasi yang sudah ada ----
+            // Autocomplete nama (mode Tambah): tampilkan lokasi yang sudah ada.
             nameEl.addEventListener('input', function () {
                 if (mode !== 'create') return;
 
@@ -477,7 +481,7 @@
                 if (!suggestBox.contains(e.target) && e.target !== nameEl) hideSuggestions();
             });
 
-            // ---- tombol "Pakai lokasi saya" (GPS perangkat) ----
+            // Tombol "Pakai lokasi saya" (GPS perangkat).
             document.getElementById('btnUseMyLocation').addEventListener('click', function () {
                 if (!('geolocation' in navigator)) {
                     gpsStatus.textContent = 'GPS tidak tersedia di perangkat ini. Isi koordinat secara manual.';
@@ -502,7 +506,7 @@
                 }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
             });
 
-            // ---- validasi server gagal: buka kembali modal dengan input sebelumnya ----
+            // Validasi server gagal: buka kembali modal dengan input sebelumnya.
             @if($errors->any() || old('name') !== null)
                 document.addEventListener('DOMContentLoaded', function () {
                     const editId = editIdEl.value;

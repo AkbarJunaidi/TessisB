@@ -1,6 +1,4 @@
-{{-- Partial: Crew / Tim Project
-     Variabel yang dibutuhkan saat di-include: $project
-     Crew berupa nama teks bebas - TIDAK perlu punya akun user. --}}
+{{-- Crew/Tim Project: nama teks bebas, tidak perlu akun user. Variabel: $project. --}}
 
 <div class="card border-0 shadow-sm rounded-3">
     <div class="card-body">

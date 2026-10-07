@@ -1,8 +1,5 @@
-{{-- Partial: Konten Kwitansi & ringkasan keuangan project - dipakai BERSAMA
-     oleh project/partials/kwitansi-tab.blade.php (tab di Project Detail)
-     DAN kwitansi/project-detail.blade.php (halaman "Detail Keuangan"
-     berdiri sendiri) - supaya tidak ada 2 salinan markup yang sama.
-     Variabel yang dibutuhkan: $project (relasi financeItems & kwitansis sudah di-load) --}}
+{{-- Konten Kwitansi dan ringkasan keuangan project; dipakai bersama kwitansi-tab dan kwitansi/project-detail.
+     Variabel: $project (relasi financeItems dan kwitansis sudah di-load). --}}
 
 @php
     $canCreateKwitansi = auth()->user()->hasPermission('finance', 'create_kwitansi');
@@ -54,10 +51,7 @@
     </div>
 </div>
 
-{{-- ===== PENDAPATAN TERCATAT (dari tab Data Keuangan) - tiap baris bisa
-     langsung "Cetak Kwitansi" tanpa isi ulang nominal/keterangan. Ini
-     TIDAK mengedit/menghapus baris Data Keuangan, cuma referensi buat
-     ngisi form Kwitansi baru (independen, lihat KwitansiService). ===== --}}
+{{-- Pendapatan tercatat (Data Keuangan): tiap baris bisa langsung Cetak Kwitansi; hanya referensi, tidak mengubah baris (lihat KwitansiService). --}}
 <h6 class="fw-bold mb-2">Pendapatan Tercatat (Data Keuangan)</h6>
 <div class="table-responsive mb-4">
     <table class="table table-sm align-middle mb-0">
@@ -205,10 +199,8 @@
     </table>
 </div>
 
-{{-- ===== Modal "Cetak Kwitansi" dari baris Pendapatan - prefill nominal &
-     keterangan dari baris Data Keuangan, tanggal default hari ini (baris
-     Data Keuangan tidak punya kolom tanggal sendiri). Submit -> langsung
-     ke preview PDF (print_after=1), BUKAN kembali ke halaman ini. ===== --}}
+{{-- Modal Cetak Kwitansi dari baris Pendapatan: nominal dan keterangan terisi dari baris itu, tanggal default hari ini;
+     submit langsung ke preview PDF (print_after=1). --}}
 @if($canCreateKwitansi)
     @foreach($incomeItems as $item)
         <div class="modal fade" id="cetakDariPendapatan{{ $item->id }}" tabindex="-1">

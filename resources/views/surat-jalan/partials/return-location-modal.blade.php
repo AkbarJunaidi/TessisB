@@ -1,8 +1,5 @@
-{{--
-    Modal "Lokasi pengembalian" untuk form Kembalikan Barang Surat Jalan.
-    Pakai: tandai form dengan data-sj-return, lalu sertakan partial ini sekali per halaman ($storageLocations wajib ada).
-    Tanpa lokasi penyimpanan aktif, form tetap dikirim langsung tanpa lokasi.
---}}
+{{-- Modal Lokasi pengembalian untuk form Kembalikan Surat Jalan: beri data-sj-return pada form, sertakan partial sekali per halaman ($storageLocations wajib);
+     tanpa lokasi penyimpanan aktif form dikirim langsung. --}}
 @include('inventory.partials.location-picker')
 
 <div class="modal fade" id="sjReturnLocationModal" tabindex="-1" aria-hidden="true">
@@ -43,6 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
         locations: locations,
     });
 
+    // Aktifkan tombol Kembalikan hanya bila lokasi sudah ada.
     function sync() {
         const name = picker.name();
         submitBtn.disabled = picker.value() === null;

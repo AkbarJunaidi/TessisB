@@ -18,7 +18,12 @@ class ProjectRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'        => ['required', 'string', 'max:100'],
+            // Maks 25 karakter; nama lama yang lebih panjang boleh tetap selama tidak diubah.
+            'name'        => ['required', 'string', function ($attribute, $value, $fail) {
+                if (mb_strlen($value) > 25 && $value !== $this->route('project')?->name) {
+                    $fail('Nama project maksimal 25 karakter.');
+                }
+            }],
             'client'      => ['required', 'string', 'max:255'],
             'contact_id'  => ['nullable', 'integer', 'exists:contacts,id'],
             'pic'         => ['required', 'string', 'max:255'],

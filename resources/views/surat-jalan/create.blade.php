@@ -141,6 +141,7 @@
     const rowsWrapper = document.getElementById('itemRows');
     const noItemMsg = document.getElementById('noItemMsg');
 
+    // Opsi barang; stok habis dinonaktifkan.
     function buildOptions(selectedId) {
         return INVENTORY_OPTIONS.map(inv => {
             const disabled = inv.available <= 0 ? 'disabled' : '';
@@ -149,6 +150,7 @@
         }).join('');
     }
 
+    // Tambah satu baris barang pada form Surat Jalan.
     function addRow() {
         const html = `
             <div class="row g-2 mb-2 align-items-center item-row" data-index="${rowIndex}">
@@ -173,6 +175,7 @@
         toggleEmptyMsg();
     }
 
+    // Tampilkan pesan kosong bila belum ada baris barang.
     function toggleEmptyMsg() {
         noItemMsg.style.display = rowsWrapper.children.length ? 'none' : 'block';
     }

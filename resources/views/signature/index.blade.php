@@ -121,9 +121,7 @@
     </div>
 </div>
 
-{{-- Kanvas gambar tanda tangan - vanilla JS, tanpa library eksternal.
-     Mendukung mouse & touch. Saat submit, canvas dikonversi ke PNG
-     base64 dan dikirim lewat input hidden #signatureCanvasData. --}}
+{{-- Kanvas tanda tangan (vanilla JS, mouse dan sentuh); saat submit dikonversi ke PNG base64 lewat #signatureCanvasData. --}}
 <script>
     (function () {
         const canvas = document.getElementById('signatureCanvas');
@@ -136,6 +134,7 @@
         let isDrawing = false;
         let hasDrawn = false;
 
+        // Kosongkan kanvas tanda tangan dan atur gaya goresan.
         function resetCanvas() {
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -147,6 +146,7 @@
         }
         resetCanvas();
 
+        // Koordinat pointer dalam skala kanvas (mouse dan sentuh).
         function getPoint(e) {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
@@ -159,6 +159,7 @@
             };
         }
 
+        // Mulai goresan.
         function startDraw(e) {
             e.preventDefault();
             isDrawing = true;
@@ -168,6 +169,7 @@
             ctx.moveTo(p.x, p.y);
         }
 
+        // Lanjutkan goresan selama pointer ditekan.
         function moveDraw(e) {
             if (!isDrawing) return;
             e.preventDefault();
@@ -176,6 +178,7 @@
             ctx.stroke();
         }
 
+        // Akhiri goresan.
         function endDraw() {
             isDrawing = false;
         }
