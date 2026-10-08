@@ -39,7 +39,7 @@
             @if($suratJalan->keperluan)
                 <p class="text-muted small mb-3">Keperluan: <span class="fw-semibold text-dark">{{ $suratJalan->keperluan }}</span></p>
             @endif
-            <div class="table-responsive">
+            <div class="table-responsive table-bleed-4">
                 <table class="table table-sm align-middle">
                     <thead>
                         <tr class="text-muted small">

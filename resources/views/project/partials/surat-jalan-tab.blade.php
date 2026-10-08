@@ -64,7 +64,7 @@
         </div>
 
         {{-- ===== DESKTOP: tabel ===== --}}
-        <div class="table-responsive d-none d-md-block">
+        <div class="table-responsive table-bleed-4 d-none d-md-block">
             <table class="table align-middle">
                 <thead>
                     <tr class="text-muted small">

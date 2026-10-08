@@ -22,7 +22,7 @@
             </div>
         @endif
 
-        <div class="table-responsive mb-3">
+        <div class="table-responsive table-bleed mb-3">
             <table class="table table-sm align-middle mb-0">
                 <thead>
                     <tr class="text-muted small">

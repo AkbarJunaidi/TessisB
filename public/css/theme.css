@@ -33,7 +33,7 @@
     /* Jembatan ke variabel Bootstrap supaya komponen bawaan ikut palet. */
     --bs-body-color: #0b2447;
     --bs-body-color-rgb: 11, 36, 71;
-    --bs-body-bg: #eef6ff;
+    --bs-body-bg: #ffffff;
     --bs-secondary-color: #546680;
     --bs-border-color: #dbe7f5;
     --bs-primary: #0b6fd6;
@@ -604,3 +604,54 @@ button:focus-visible,
 .icon-tile { background: rgba(var(--c-primary-rgb), .12); color: var(--c-primary); }
 .icon-tile-danger { background: rgba(var(--bs-danger-rgb), .12); color: var(--bs-danger); }
 .icon-tile-navy { background: rgba(11, 36, 71, .1); color: var(--c-navy); }
+
+/* Latar halaman biru muda ada di body; komponen Bootstrap (kartu, tabel, modal) tetap putih. */
+.table, .table-modern { --bs-table-bg: var(--bg-white); }
+
+/* Semua tabel data: header biru muda kapital kecil, seperti Inventory. Tabel borderless (info) tidak punya header, jadi aman. */
+.table:not(.table-borderless) > thead > tr > th {
+    background: var(--bg-soft);
+    color: var(--c-navy);
+    text-transform: uppercase;
+    font-size: .72rem;
+    letter-spacing: .04em;
+    font-weight: 700;
+    border-bottom: none;
+    padding-block: .85rem;
+}
+
+/* Sudut tabel mengikuti kartu: pembungkus tabel di dalam kartu/panel ikut membulat dan memotong isinya. */
+.card > .table-responsive:only-child,
+.app-panel > .table-responsive:only-child { border-radius: var(--radius-lg); }
+.card > .table-responsive:first-child:not(:only-child),
+.app-panel > .table-responsive:first-child:not(:only-child) { border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+.card > .table-responsive:last-child:not(:only-child),
+.app-panel > .table-responsive:last-child:not(:only-child) { border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+
+/* Tabel di dalam wadah ber-padding: header penuh dari tepi kiri ke kanan seperti Inventory (-4 untuk padding 1.5rem). */
+.table-bleed { --bleed: 1rem; }
+.table-bleed-4 { --bleed: 1.5rem; }
+.table-bleed, .table-bleed-4 { margin-inline: calc(-1 * var(--bleed)); }
+.table-bleed:last-child, .table-bleed-4:last-child {
+    margin-bottom: calc(-1 * var(--bleed));
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+/* Mode kartu di HP (table-stack) tetap memakai padding wadah. */
+@media (max-width: 767.98px) {
+    .table-bleed:has(> .table-stack), .table-bleed-4:has(> .table-stack) {
+        margin-inline: 0; margin-bottom: 0; border-radius: 0;
+    }
+}
+
+/* Kartu dengan card-body tanpa padding: isi tabel terpotong mengikuti sudut kartu. */
+.card > .card-body.p-0:only-child { border-radius: var(--radius-lg); overflow: hidden; }
+.card > .card-body.p-0:last-child:not(:only-child) { border-radius: 0 0 var(--radius-lg) var(--radius-lg); overflow: hidden; }
+
+/* Sel pertama dan terakhir tabel penuh-lebar diberi ruang 1.5rem, sama dengan Inventory (ps-4/pe-4). */
+:is(.table-bleed, .table-bleed-4, .card > .table-responsive, .card > .card-body.p-0 > .table-responsive, .app-panel > .table-responsive) > .table:not(.table-stack) > :is(thead, tbody, tfoot) > tr > :is(th, td):first-child { padding-left: 1.5rem; }
+:is(.table-bleed, .table-bleed-4, .card > .table-responsive, .card > .card-body.p-0 > .table-responsive, .app-panel > .table-responsive) > .table:not(.table-stack) > :is(thead, tbody, tfoot) > tr > :is(th, td):last-child { padding-right: 1.5rem; }
+/* Tabel mode kartu (table-stack) baru memakai ruang itu di layar tablet ke atas. */
+@media (min-width: 768px) {
+    :is(.table-bleed, .table-bleed-4, .card > .table-responsive, .card > .card-body.p-0 > .table-responsive, .app-panel > .table-responsive) > .table.table-stack > :is(thead, tbody, tfoot) > tr > :is(th, td):first-child { padding-left: 1.5rem; }
+    :is(.table-bleed, .table-bleed-4, .card > .table-responsive, .card > .card-body.p-0 > .table-responsive, .app-panel > .table-responsive) > .table.table-stack > :is(thead, tbody, tfoot) > tr > :is(th, td):last-child { padding-right: 1.5rem; }
+}

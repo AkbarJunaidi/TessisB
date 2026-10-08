@@ -377,7 +377,7 @@
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="fw-bold m-0">Pendapatan</h6>
                         </div>
-                        <div class="table-responsive mb-3">
+                        <div class="table-responsive table-bleed mb-3">
                             <table class="table table-sm align-middle mb-0">
                                 <tbody>
                                     @forelse($project->financeItems->where('type', 'income') as $item)
@@ -399,7 +399,7 @@
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <h6 class="fw-bold m-0">Pengeluaran</h6>
                         </div>
-                        <div class="table-responsive mb-3">
+                        <div class="table-responsive table-bleed mb-3">
                             <table class="table table-sm align-middle mb-0">
                                 <tbody>
                                     @forelse($project->financeItems->where('type', 'expense') as $item)

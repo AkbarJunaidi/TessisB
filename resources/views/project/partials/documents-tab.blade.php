@@ -12,7 +12,7 @@
         </div>
 
         @if($project->folder)
-            <div class="table-responsive">
+            <div class="table-responsive table-bleed">
                 <table class="table table-sm align-middle">
                     <thead>
                         <tr class="text-muted small">

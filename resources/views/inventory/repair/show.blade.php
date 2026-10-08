@@ -119,7 +119,7 @@
             <div class="card shadow-sm border-0 rounded-3 h-100">
                 <div class="card-body p-4">
                     <h6 class="fw-bold mb-3">Unit ({{ $repair->items->count() }})</h6>
-                    <div class="table-responsive">
+                    <div class="table-responsive table-bleed-4">
                         <table class="table table-stack align-middle mb-0">
                             <thead class="table-light text-secondary small text-uppercase">
                                 <tr>

@@ -66,7 +66,7 @@
             </div>
 
             <div class="col-12 col-md-2 col-lg-2 d-flex gap-2">
-                <button type="submit" class="btn btn-secondary w-100">Filter</button>
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
                 @if(request('search') || (request('status') && request('status') !== 'Semua Status'))
                     <a href="{{ route('inventory.index') }}" class="btn btn-outline-secondary" title="Reset Filter" aria-label="Reset filter">
                         <i class="bi bi-arrow-counterclockwise"></i>

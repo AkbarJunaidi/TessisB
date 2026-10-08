@@ -19,7 +19,7 @@
     <div class="card-body">
         <h6 class="fw-bold mb-3">Barang yang Dipakai pada Project Ini</h6>
 
-        <div class="table-responsive">
+        <div class="table-responsive table-bleed">
             <table class="table table-sm align-middle">
                 <thead>
                     <tr class="text-muted small">

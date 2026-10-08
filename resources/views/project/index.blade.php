@@ -34,7 +34,7 @@
         <div class="col-6 col-lg-3">
             <div class="card border-0 shadow-sm rounded-3 h-100">
                 <div class="card-body d-flex align-items-center gap-3">
-                    <div class="rounded-3 bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center" style="width:44px;height:44px;">
+                    <div class="icon-tile">
                         <i class="bi bi-folder2 fs-5"></i>
                     </div>
                     <div>
@@ -47,7 +47,7 @@
         <div class="col-6 col-lg-3">
             <div class="card border-0 shadow-sm rounded-3 h-100">
                 <div class="card-body d-flex align-items-center gap-3">
-                    <div class="rounded-3 bg-success bg-opacity-10 text-success d-flex align-items-center justify-content-center" style="width:44px;height:44px;">
+                    <div class="icon-tile">
                         <i class="bi bi-calendar-event fs-5"></i>
                     </div>
                     <div>
@@ -60,7 +60,7 @@
         <div class="col-6 col-lg-3">
             <div class="card border-0 shadow-sm rounded-3 h-100">
                 <div class="card-body d-flex align-items-center gap-3">
-                    <div class="rounded-3 bg-warning bg-opacity-10 text-warning d-flex align-items-center justify-content-center" style="width:44px;height:44px;">
+                    <div class="icon-tile">
                         <i class="bi bi-activity fs-5"></i>
                     </div>
                     <div>
@@ -73,7 +73,7 @@
         <div class="col-6 col-lg-3">
             <div class="card border-0 shadow-sm rounded-3 h-100">
                 <div class="card-body d-flex align-items-center gap-3">
-                    <div class="rounded-3 bg-secondary bg-opacity-10 text-secondary d-flex align-items-center justify-content-center" style="width:44px;height:44px;">
+                    <div class="icon-tile">
                         <i class="bi bi-check-circle fs-5"></i>
                     </div>
                     <div>
@@ -195,110 +195,134 @@
         </div>
     </div>
 
-    {{-- Tabel Semua Project + Filter --}}
-    <div class="card shadow-sm border-0 rounded-3 bg-white">
-        <div class="card-body">
-            <h6 class="fw-bold mb-3">Semua Project ({{ $projects->total() }})</h6>
-
-            <form method="GET" class="row g-2 mb-3">
-                <div class="col-md-4">
-                    <input type="text" name="search" class="form-control form-control-sm" placeholder="Cari nama project, PIC, lokasi..." value="{{ $filters['search'] ?? '' }}">
+    {{-- Form Search & Filter --}}
+    <div class="app-panel mb-4">
+        <div class="p-3 p-md-4">
+            <form method="GET" class="row g-3 align-items-center">
+                <div class="col-12 col-lg-4">
+                    <label for="search" class="visually-hidden">Cari project</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" id="search" name="search" class="form-control bg-light border-start-0 ps-0"
+                               placeholder="Cari nama project, PIC, lokasi..." value="{{ $filters['search'] ?? '' }}">
+                    </div>
                 </div>
-                <div class="col-md-2">
-                    <select name="status" class="form-select form-select-sm">
+                <div class="col-6 col-lg-2">
+                    <label for="status" class="visually-hidden">Filter status</label>
+                    <select name="status" id="status" class="form-select bg-light">
                         <option value="">Semua Status</option>
                         @foreach(\App\Models\Project::STATUS_LABELS as $s => $label)
                             <option value="{{ $s }}" @selected(($filters['status'] ?? '') === $s)>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <select name="pic" class="form-select form-select-sm">
+                <div class="col-6 col-lg-2">
+                    <label for="pic" class="visually-hidden">Filter PIC</label>
+                    <select name="pic" id="pic" class="form-select bg-light">
                         <option value="">Semua PIC</option>
                         @foreach($pics as $p)
                             <option value="{{ $p }}" @selected(($filters['pic'] ?? '') === $p)>{{ $p }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <select name="month" class="form-select form-select-sm">
+                <div class="col-6 col-lg-2">
+                    <label for="month" class="visually-hidden">Filter bulan</label>
+                    <select name="month" id="month" class="form-select bg-light">
                         <option value="">Semua Bulan</option>
                         @for($m = 1; $m <= 12; $m++)
                             <option value="{{ $m }}" @selected((string)($filters['month'] ?? '') === (string)$m)>{{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}</option>
                         @endfor
                     </select>
                 </div>
-                <div class="col-md-2 d-flex gap-2">
-                    <button type="submit" class="btn btn-sm btn-primary w-100">Filter</button>
-                    <a href="{{ route('projects.index') }}" class="btn btn-sm btn-light w-100">Reset</a>
+                <div class="col-6 col-lg-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    @if(collect($filters ?? [])->filter()->isNotEmpty())
+                        <a href="{{ route('projects.index') }}" class="btn btn-outline-secondary" title="Reset Filter" aria-label="Reset filter">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </a>
+                    @endif
                 </div>
             </form>
+        </div>
+    </div>
 
-            <div class="table-responsive">
-                <table class="table table-hover table-stack align-middle mb-0">
-                    <thead class="table-light text-secondary small text-uppercase">
+    {{-- Tabel Semua Project --}}
+    <div class="app-panel overflow-hidden">
+        <div class="px-3 px-md-4 pt-3 pt-md-4">
+            <h6 class="fw-bold mb-3">Semua Project ({{ $projects->total() }})</h6>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover table-modern table-stack align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4 py-3">No</th>
+                        <th class="py-3">Nama Project</th>
+                        <th class="py-3">PIC</th>
+                        <th class="py-3">Tanggal</th>
+                        <th class="py-3">Lokasi</th>
+                        <th class="py-3">Status</th>
+                        <th class="py-3">Surat Jalan</th>
+                        <th class="py-3 text-center pe-4">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="small">
+                    @forelse($projects as $index => $project)
                         <tr>
-                            <th class="ps-3 py-3">No</th>
-                            <th class="py-3">Nama Project</th>
-                            <th class="py-3">PIC</th>
-                            <th class="py-3">Tanggal</th>
-                            <th class="py-3">Lokasi</th>
-                            <th class="py-3">Status</th>
-                            <th class="py-3">Surat Jalan</th>
-                            <th class="py-3 text-center pe-3">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="small text-dark">
-                        @forelse($projects as $index => $project)
-                            <tr>
-                                <td class="ps-3 py-3 fw-semibold text-secondary" data-label="No">{{ $projects->firstItem() + $index }}</td>
-                                <td class="py-3 fw-semibold" data-label="Nama Project">
-                                    <div class="text-truncate" style="max-width: 260px;" title="{{ $project->name }}">
-                                        {{ $project->name }}
-                                    </div>
-                                </td>
-                                <td class="py-3" data-label="PIC">{{ $project->pic }}</td>
-                                <td class="py-3" data-label="Tanggal">{{ optional($project->event_date)->translatedFormat('d M Y') }}</td>
-                                <td class="py-3" data-label="Lokasi">{{ $project->location }}</td>
-                                <td class="py-3" data-label="Status">
-                                    <span class="badge bg-light text-dark border">{{ \App\Models\Project::STATUS_LABELS[$project->status] ?? $project->status }}</span>
-                                </td>
-                                <td class="py-3" data-label="Surat Jalan">
-                                    @if($project->suratJalans->isNotEmpty())
-                                        <a href="{{ route('projects.show', $project) }}#tab-suratjalan" class="text-primary">{{ $project->suratJalans->first()->nomor }}</a>
-                                    @else
-                                        <span class="text-muted">-</span>
+                            <td class="ps-4 py-3 fw-semibold text-secondary" data-label="No">{{ $projects->firstItem() + $index }}</td>
+                            <td class="py-3 fw-semibold" data-label="Nama Project">
+                                <div class="text-truncate" style="max-width: 260px;" title="{{ $project->name }}">
+                                    {{ $project->name }}
+                                </div>
+                            </td>
+                            <td class="py-3" data-label="PIC">{{ $project->pic }}</td>
+                            <td class="py-3" data-label="Tanggal">{{ optional($project->event_date)->translatedFormat('d M Y') }}</td>
+                            <td class="py-3" data-label="Lokasi">{{ $project->location }}</td>
+                            <td class="py-3" data-label="Status">
+                                <span class="badge bg-light text-dark border">{{ \App\Models\Project::STATUS_LABELS[$project->status] ?? $project->status }}</span>
+                            </td>
+                            <td class="py-3" data-label="Surat Jalan">
+                                @if($project->suratJalans->isNotEmpty())
+                                    <a href="{{ route('projects.show', $project) }}#tab-suratjalan" class="text-primary">{{ $project->suratJalans->first()->nomor }}</a>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            <td class="py-3 text-center pe-3 cell-block" data-label="Aksi">
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a href="{{ route('projects.show', $project) }}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-eye"></i> Detail
+                                    </a>
+                                    @if(auth()->user()->hasPermission('tracking_progress', 'delete_project'))
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-danger"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#deleteProjectModal"
+                                                data-id="{{ $project->id }}"
+                                                data-name="{{ $project->name }}"
+                                                title="Hapus Project">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
                                     @endif
-                                </td>
-                                <td class="py-3 text-center pe-3 cell-block" data-label="Aksi">
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <a href="{{ route('projects.show', $project) }}" class="btn btn-sm btn-outline-secondary">
-                                            <i class="bi bi-eye"></i> Detail
-                                        </a>
-                                        @if(auth()->user()->hasPermission('tracking_progress', 'delete_project'))
-                                            <button type="button"
-                                                    class="btn btn-sm btn-outline-danger"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#deleteProjectModal"
-                                                    data-id="{{ $project->id }}"
-                                                    data-name="{{ $project->name }}"
-                                                    title="Hapus Project">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        @endif
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="8" class="text-center text-muted py-4">Belum ada project.</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="8" class="text-center text-muted py-4">Belum ada project.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-            <div class="mt-3">
-                {{ $projects->links() }}
-            </div>
+    <div class="mt-4 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2">
+        <div class="text-muted small">
+            Menampilkan {{ $projects->firstItem() ?? 0 }} - {{ $projects->lastItem() ?? 0 }} dari {{ $projects->total() }} project
+        </div>
+        <div>
+            {{ $projects->links('pagination::bootstrap-5') }}
         </div>
     </div>
 

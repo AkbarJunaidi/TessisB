@@ -221,7 +221,7 @@
             </div>
             <div class="p-4">
                 <div id="unitStatusAlert" class="alert d-none" role="alert"></div>
-                <div class="table-responsive">
+                <div class="table-responsive table-bleed-4">
                     <table class="table align-middle">
                         <thead>
                             <tr class="text-uppercase text-secondary small">

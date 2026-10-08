@@ -711,7 +711,7 @@
             @if($borrowHistory->isEmpty())
                 <p class="text-muted small m-0">Barang ini belum pernah dipinjam lewat Surat Jalan manapun.</p>
             @else
-                <div class="table-responsive">
+                <div class="table-responsive table-bleed-4">
                     <table class="table table-hover align-middle mb-0">
                         <thead>
                             <tr class="text-muted small text-uppercase">

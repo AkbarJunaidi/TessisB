@@ -34,7 +34,7 @@
 
         <div class="card-body">
 
-            <div class="table-responsive">
+            <div class="table-responsive table-bleed">
 
                 <table class="table table-hover table-stack align-middle">
 
