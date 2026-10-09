@@ -305,14 +305,14 @@
     <div class="mb-3">
         <div class="d-flex align-items-center p-2 rounded-4 sidebar-profile">
             @auth
-                <div class="avatar-initial flex-shrink-0" style="width:40px;height:40px;font-size:1.05rem;background:rgba(255,255,255,.12);color:#fff;">
+                <div class="avatar-initial flex-shrink-0 u-w-40px u-h-40px u-fs-1p05rem u-bg-rgba255-255-255-p12 u-c-fff">
                     {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                 </div>
                 <div class="ms-3 overflow-hidden sidebar-link-text">
-                    <div class="text-white fw-semibold text-truncate mb-0 lh-sm" style="font-size:.9rem;">
+                    <div class="text-white fw-semibold text-truncate mb-0 lh-sm u-fs-p9rem">
                         {{ Auth::user()->name }}
                     </div>
-                    <small class="text-white-50 text-truncate d-block" style="font-size:.72rem;">
+                    <small class="text-white-50 text-truncate d-block u-fs-p72rem">
                         {{ Auth::user()->email ?? 'Administrator' }}
                     </small>
                 </div>
@@ -329,155 +329,3 @@
     </form>
 </div>
 
-<style>
-    /* Warna & hover disesuaikan token theme.css (var(--c-primary) dsb.) via inline karena
-       sidebar punya latar gelap khusus (navy gradient) - style ini scoped di file ini saja. */
-    .sidebar-link {
-        border-radius: .65rem;
-        padding: .65rem .85rem;
-        font-size: .9rem;
-        font-weight: 500;
-        opacity: .85;
-        transition: all .2s ease;
-        display: flex;
-        align-items: center;
-        gap: .65rem;
-    }
-    .sidebar-link i { font-size: 1.05rem; width: 1.1rem; text-align: center; }
-    .sidebar-link:hover { background: rgba(255,255,255,.08); opacity: 1; }
-    .sidebar-link.active {
-        background: var(--c-primary, #0b6fd6);
-        opacity: 1;
-        font-weight: 600;
-        box-shadow: 0 6px 16px -4px rgba(11,111,214,.55);
-    }
-
-    .sidebar-collapse-icon { font-size: .75rem; transition: transform .25s ease; }
-    [aria-expanded="true"] .sidebar-collapse-icon { transform: rotate(180deg); }
-
-    .sidebar-submenu {
-        background: rgba(255,255,255,.05);
-        border-radius: .65rem;
-        margin: .25rem .25rem 0;
-        padding: .35rem;
-        gap: .1rem;
-    }
-    .sidebar-sublink {
-        color: rgba(255,255,255,.75);
-        font-size: .84rem;
-        padding: .55rem .7rem;
-        border-radius: .5rem;
-        display: flex;
-        align-items: center;
-        gap: .6rem;
-        transition: all .15s ease;
-    }
-    .sidebar-sublink i { font-size: .95rem; width: 1rem; text-align: center; }
-    .sidebar-sublink:hover { background: rgba(255,255,255,.1); color: #fff; }
-    .sidebar-sublink.active {
-        background: #fff;
-        color: var(--c-accent, #0a5cb0);
-        font-weight: 700;
-    }
-
-    .sidebar-profile { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); }
-
-    /* Scrollbar tipis untuk sidebar (khusus WebKit, degradasi aman di browser lain) */
-    .offcanvas-body::-webkit-scrollbar { width: 6px; }
-    .offcanvas-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 10px; }
-
-    /* Baris brand desktop: height 64px sama dengan navbar (.app-topbar); border-bottom di sini menggantikan <hr> terpisah
-       (hanya mobile) agar garisnya tidak meleset dari tinggi navbar. */
-    .sidebar-brand-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        height: 64px;
-        border-bottom: 1px solid rgba(255,255,255,.1);
-    }
-    .sidebar-collapse-toggle {
-        color: rgba(255,255,255,.7);
-        background: rgba(255,255,255,.08);
-        border: 1px solid rgba(255,255,255,.1);
-        width: 24px;
-        height: 24px;
-        padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: .5rem;
-        flex-shrink: 0;
-        transition: background .2s ease, color .2s ease;
-    }
-    .sidebar-collapse-toggle:hover { background: rgba(255,255,255,.16); color: #fff; }
-    .sidebar-collapse-toggle i { font-size: .8rem; }
-
-    /* Wrapper logo relative agar ikon panah (.sidebar-brand-expand-icon) bisa ditumpuk di atasnya;
-       panah hanya aktif saat collapsed, saat expanded logo = link Dashboard. */
-    .sidebar-brand-icon-wrap {
-        position: relative;
-        display: inline-flex;
-        flex-shrink: 0;
-    }
-    .sidebar-brand-expand-icon {
-        display: none;
-    }
-
-    /* Mode collapsed (icon-only), hanya desktop >=992px lewat class sidebar-collapsed di <html> (logic di layouts/app.blade.php).
-       Menu baru cukup membungkus teks dengan <span class="sidebar-link-text"> agar ikut tersembunyi otomatis. */
-    @media (min-width: 992px) {
-        html.sidebar-collapsed .sidebar-link-text,
-        html.sidebar-collapsed .sidebar-collapse-icon {
-            display: none !important;
-        }
-        /* Submenu disembunyikan saat rail sempit; JS di app.blade.php melepas data-bs-toggle sementara
-           agar klik ikon tidak meng-toggle submenu yang tersembunyi. */
-        html.sidebar-collapsed #sidebarMenuAccordion .collapse {
-            display: none !important;
-        }
-        html.sidebar-collapsed .sidebar-link {
-            justify-content: center !important;
-            padding: .65rem .5rem;
-        }
-        html.sidebar-collapsed .sidebar-brand-row {
-            /* Hanya tersisa 1 anak (logo) saat collapsed; cukup di-center. */
-            justify-content: center;
-        }
-        html.sidebar-collapsed .sidebar-profile {
-            justify-content: center;
-            padding: .5rem !important;
-        }
-
-        /* Tombol toggle terpisah disembunyikan saat collapsed; fungsinya diambil logo (#sidebarBrandLink + JS app.blade.php). */
-        html.sidebar-collapsed .sidebar-collapse-toggle {
-            display: none;
-        }
-
-        /* Logo jadi tombol buka saat collapsed: hover/focus memudarkan logo dan memunculkan ikon panah;
-           :focus-visible untuk pengguna keyboard. */
-        html.sidebar-collapsed .sidebar-brand-link {
-            cursor: pointer;
-        }
-        html.sidebar-collapsed .sidebar-brand-expand-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            color: #fff;
-            font-size: 1rem;
-            background: var(--c-navy-2);
-            border-radius: .35rem;
-            transition: opacity .15s ease;
-        }
-        html.sidebar-collapsed .sidebar-brand-link:hover .sidebar-brand-icon,
-        html.sidebar-collapsed .sidebar-brand-link:focus-visible .sidebar-brand-icon {
-            opacity: 0;
-        }
-        html.sidebar-collapsed .sidebar-brand-link:hover .sidebar-brand-expand-icon,
-        html.sidebar-collapsed .sidebar-brand-link:focus-visible .sidebar-brand-expand-icon {
-            opacity: 1;
-        }
-    }
-</style>

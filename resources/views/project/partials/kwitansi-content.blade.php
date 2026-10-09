@@ -58,9 +58,9 @@
         <tbody>
             @forelse($incomeItems as $item)
                 <tr>
-                    <td class="fw-semibold text-success" style="width: 30%;">{{ \App\Support\Money::formatRupiah($item->amount) }}</td>
+                    <td class="fw-semibold text-success u-w-30pct">{{ \App\Support\Money::formatRupiah($item->amount) }}</td>
                     <td class="text-muted">{{ $item->description ?: '-' }}</td>
-                    <td class="text-end" style="width: 160px;">
+                    <td class="text-end u-w-160px">
                         @if($canCreateKwitansi)
                             <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#cetakDariPendapatan{{ $item->id }}">
                                 <i class="bi bi-printer"></i> Cetak Kwitansi
@@ -82,7 +82,7 @@
         <tbody>
             @forelse($expenseItems as $item)
                 <tr>
-                    <td class="fw-semibold text-danger" style="width: 30%;">{{ \App\Support\Money::formatRupiah($item->amount) }}</td>
+                    <td class="fw-semibold text-danger u-w-30pct">{{ \App\Support\Money::formatRupiah($item->amount) }}</td>
                     <td class="text-muted">{{ $item->description ?: '-' }}</td>
                 </tr>
             @empty

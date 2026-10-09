@@ -110,7 +110,7 @@
                 <div class="card-body p-3">
                     <h6 class="fw-bold mb-3">Tren 12 Bulan</h6>
                     @if($hasTrendData)
-                        <div style="position: relative; height: 300px;"><canvas id="trendChart" aria-label="Grafik tren pemasukan, pengeluaran, dan laba 12 bulan"></canvas></div>
+                        <div class="u-pos-relative u-h-300px"><canvas id="trendChart" aria-label="Grafik tren pemasukan, pengeluaran, dan laba 12 bulan"></canvas></div>
                     @else
                         <div class="text-center text-muted py-5"><i class="bi bi-bar-chart fs-3 d-block mb-2 opacity-50"></i>Belum ada transaksi pada 12 bulan ini.</div>
                     @endif
@@ -122,11 +122,11 @@
                 <div class="card-body p-3">
                     <h6 class="fw-bold mb-3">Komposisi Pengeluaran</h6>
                     @if(count($categories) > 0)
-                        <div style="position: relative; height: 200px;"><canvas id="categoryChart" aria-label="Grafik komposisi pengeluaran per kategori"></canvas></div>
+                        <div class="u-pos-relative u-h-200px"><canvas id="categoryChart" aria-label="Grafik komposisi pengeluaran per kategori"></canvas></div>
                         <ul class="list-unstyled small mt-3 mb-0">
                             @foreach($categories as $i => $c)
                                 <li class="d-flex justify-content-between gap-2 py-1 border-top">
-                                    <span><span class="category-dot d-inline-block rounded-circle me-2" data-index="{{ $i }}" style="width: 10px; height: 10px;"></span>{{ $c['name'] }}</span>
+                                    <span><span class="category-dot d-inline-block rounded-circle me-2 u-w-10px u-h-10px" data-index="{{ $i }}"></span>{{ $c['name'] }}</span>
                                     <span class="text-nowrap">{{ $rp($c['total']) }} <span class="text-muted">({{ number_format($c['percent'], 0) }}%)</span></span>
                                 </li>
                             @endforeach

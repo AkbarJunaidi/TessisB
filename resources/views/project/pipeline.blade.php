@@ -23,7 +23,7 @@
 
     <div id="pipelineAlertPlaceholder"></div>
 
-    <div class="row g-3 flex-nowrap overflow-auto pb-2" id="pipelineBoard" style="min-height: 65vh;">
+    <div class="row g-3 flex-nowrap overflow-auto pb-2 u-minh-65vh" id="pipelineBoard">
 
         @foreach($board as $status => $data)
             @php
@@ -31,14 +31,14 @@
                 $statusLabel = \App\Models\Project::STATUS_LABELS[$status] ?? $status;
             @endphp
 
-            <div class="col-12" style="min-width: 280px; max-width: 300px;">
+            <div class="col-12 u-minw-280px u-maxw-300px">
                 <div class="card bg-light border-0 shadow-sm h-100 rounded-3">
 
                     <div class="card-header bg-transparent border-0 pt-3 pb-2">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <div class="d-flex align-items-center gap-2">
-                                <span class="rounded-circle bg-{{ $color }}" style="width: 10px; height: 10px; display: inline-block;"></span>
-                                <h6 class="fw-bold text-dark m-0 text-uppercase" style="letter-spacing: 0.5px; font-size: 0.8rem;">{{ $statusLabel }}</h6>
+                                <span class="rounded-circle bg-{{ $color }} u-w-10px u-h-10px u-d-inline-block"></span>
+                                <h6 class="fw-bold text-dark m-0 text-uppercase u-ls-0p5px u-fs-0p8rem">{{ $statusLabel }}</h6>
                             </div>
                             <span class="badge bg-white text-dark border rounded-pill px-2 py-1 font-monospace fw-bold shadow-sm pipeline-col-count">
                                 {{ $data['projects']->count() }}
@@ -50,23 +50,23 @@
                     </div>
 
                     <div
-                        class="card-body p-2 d-flex flex-column gap-2 pipeline-dropzone"
+                        class="card-body p-2 d-flex flex-column gap-2 pipeline-dropzone u-maxh-60vh u-oy-auto u-minh-120px"
                         data-status="{{ $status }}"
-                        style="max-height: 60vh; overflow-y: auto; min-height: 120px;"
+                       
                     >
 
                         @forelse($data['projects'] as $project)
                             <div
-                                class="card border-0 shadow-sm rounded-2 bg-white card-pipeline"
+                                class="card border-0 shadow-sm rounded-2 bg-white card-pipeline u-cur-grab"
                                 draggable="true"
                                 data-project-id="{{ $project->id }}"
                                 data-value="{{ (float) ($project->estimated_value ?? 0) }}"
                                 onclick="if(!window.__pipelineWasDragging){ window.location='{{ route('projects.show', $project->id) }}'; }"
-                                style="cursor: grab;"
+                               
                             >
                                 <div class="card-body p-3">
 
-                                    <h6 class="fw-bold text-dark mb-2 text-wrap" style="line-height: 1.4; font-size: 0.9rem;">
+                                    <h6 class="fw-bold text-dark mb-2 text-wrap u-lh-1p4 u-fs-0p9rem">
                                         {{ $project->name }}
                                     </h6>
 
@@ -88,7 +88,7 @@
                                     @endif
 
                                     @if($project->estimated_value)
-                                        <div class="d-flex align-items-center gap-2 pt-2 border-top border-light fw-semibold" style="font-size: 0.8rem;">
+                                        <div class="d-flex align-items-center gap-2 pt-2 border-top border-light fw-semibold u-fs-0p8rem">
                                             <i class="bi bi-cash-coin text-success"></i>
                                             <span>{{ \App\Support\Money::formatRupiah($project->estimated_value) }}</span>
                                         </div>
@@ -117,7 +117,7 @@
                         @empty
                             <div class="text-center py-4 text-muted border border-dashed rounded-3 bg-white bg-opacity-50 pipeline-empty-placeholder">
                                 <i class="bi bi-inbox opacity-25 d-block mb-1 fs-4"></i>
-                                <small style="font-size: 0.75rem;">Belum ada project di tahap ini.</small>
+                                <small class="u-fs-0p75rem">Belum ada project di tahap ini.</small>
                             </div>
                         @endforelse
 

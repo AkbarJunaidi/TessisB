@@ -20,14 +20,14 @@
     @if($keyword === '')
 
         <div class="text-center text-muted py-5">
-            <i class="bi bi-search" style="font-size: 2.5rem;"></i>
+            <i class="bi bi-search u-fs-2p5rem"></i>
             <p class="mt-3 mb-0">Belum ada kata kunci yang dicari.</p>
         </div>
 
     @elseif(empty($results))
 
         <div class="text-center text-muted py-5">
-            <i class="bi bi-search" style="font-size: 2.5rem;"></i>
+            <i class="bi bi-search u-fs-2p5rem"></i>
             <p class="mt-3 mb-0">Tidak ditemukan hasil untuk "{{ $keyword }}".</p>
         </div>
 

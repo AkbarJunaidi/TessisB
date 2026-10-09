@@ -131,12 +131,12 @@
                                     @endphp
                                     <td class="p-1">
                                         <a href="{{ request()->fullUrlWithQuery(['date' => $dateStr]) }}"
-                                           class="d-inline-flex flex-column align-items-center justify-content-center rounded-circle {{ $isToday ? 'bg-primary text-white' : ($count > 0 ? 'bg-light fw-semibold' : '') }}"
-                                           style="width:32px;height:32px; text-decoration:none; color:inherit;">
+                                           class="d-inline-flex flex-column align-items-center justify-content-center rounded-circle {{ $isToday ? 'bg-primary text-white' : ($count > 0 ? 'bg-light fw-semibold' : '') }} u-w-32px u-h-32px u-td-none u-c-inherit"
+                                          >
                                             {{ $day }}
                                         </a>
                                         @if($count > 0)
-                                            <div class="{{ $count > 4 ? 'text-danger' : ($count >= 3 ? 'text-warning' : 'text-primary') }}" style="font-size:8px;">&#9679;</div>
+                                            <div class="{{ $count > 4 ? 'text-danger' : ($count >= 3 ? 'text-warning' : 'text-primary') }} u-fs-8px">&#9679;</div>
                                         @endif
                                     </td>
                                     @if(($startWeekday + $day) % 7 === 0 && $day !== $daysInMonth)
@@ -178,7 +178,7 @@
 
                     @forelse($projects->take(5) as $project)
                         <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
-                            <div class="flex-grow-1" style="min-width: 0;">
+                            <div class="flex-grow-1 u-minw-0">
                                 <div class="fw-semibold small text-truncate">{{ $project->name }}</div>
                                 <div class="text-muted small text-truncate">
                                     <i class="bi bi-calendar-event"></i> {{ optional($project->event_date)->translatedFormat('d M Y') }}
@@ -273,7 +273,7 @@
                         <tr>
                             <td class="ps-4 py-3 fw-semibold text-secondary" data-label="No">{{ $projects->firstItem() + $index }}</td>
                             <td class="py-3 fw-semibold" data-label="Nama Project">
-                                <div class="text-truncate" style="max-width: 260px;" title="{{ $project->name }}">
+                                <div class="text-truncate u-maxw-260px" title="{{ $project->name }}">
                                     {{ $project->name }}
                                 </div>
                             </td>
@@ -350,7 +350,7 @@
                     <p class="text-dark fw-medium mb-3">Apakah Anda yakin ingin menghapus project ini?</p>
 
                     <div class="bg-light p-3 rounded-3 border">
-                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem;">NAMA PROJECT:</small>
+                        <small class="text-muted d-block text-uppercase fw-bold u-fs-0p7rem">NAMA PROJECT:</small>
                         <span id="modal-project-name" class="fw-bold text-dark fs-6">-</span>
                     </div>
 
@@ -383,56 +383,7 @@
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const deleteModal = document.getElementById('deleteProjectModal');
-        if (deleteModal) {
-            const loadingEl  = document.getElementById('return-status-loading');
-            const okEl       = document.getElementById('return-status-ok');
-            const warningEl  = document.getElementById('return-status-warning');
-            const listEl     = document.getElementById('return-status-list');
-
-            deleteModal.addEventListener('show.bs.modal', function (event) {
-                const button = event.relatedTarget;
-
-                const id = button.getAttribute('data-id');
-                const name = button.getAttribute('data-name');
-
-                document.getElementById('modal-project-name').textContent = name;
-                document.getElementById('deleteProjectForm').action = `/projects/${id}`;
-
-                // Reset & cek status pengembalian barang setiap kali modal dibuka
-                okEl.classList.add('d-none');
-                warningEl.classList.add('d-none');
-                listEl.innerHTML = '';
-                loadingEl.classList.remove('d-none');
-
-                fetch(`/projects/${id}/return-status`, {
-                    headers: { 'Accept': 'application/json' },
-                })
-                    .then((response) => response.json())
-                    .then((data) => {
-                        loadingEl.classList.add('d-none');
-
-                        if (data.fully_returned) {
-                            okEl.classList.remove('d-none');
-                            return;
-                        }
-
-                        data.items.forEach((item) => {
-                            const li = document.createElement('li');
-                            li.textContent = `${item.inventory_name} - ${item.qty_belum_kembali} unit (Surat Jalan ${item.surat_jalan_nomor})`;
-                            listEl.appendChild(li);
-                        });
-                        warningEl.classList.remove('d-none');
-                    })
-                    .catch(() => {
-                        loadingEl.classList.add('d-none');
-                    });
-            });
-        }
-    });
-</script>
+<script src="{{ \App\Support\AppAsset::url('js/project/index.js') }}"></script>
 @endif
 
 {{-- Modal pilih project untuk Buat Surat Jalan langsung dari halaman index --}}

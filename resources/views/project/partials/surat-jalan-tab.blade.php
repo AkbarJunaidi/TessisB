@@ -39,7 +39,7 @@
                                 @if($sisa > 0 && auth()->user()->hasPermission('borrowed_items', 'process_return'))
                                     <form action="{{ route('surat-jalan.items.return', $item) }}" method="POST" data-sj-return class="d-flex gap-1 mt-1 mb-2">
                                         @csrf
-                                        <input type="number" name="qty" min="1" max="{{ $sisa }}" value="{{ $sisa }}" class="form-control form-control-sm" style="width:70px;">
+                                        <input type="number" name="qty" min="1" max="{{ $sisa }}" value="{{ $sisa }}" class="form-control form-control-sm u-w-70px">
                                         <button type="submit" class="btn btn-sm btn-outline-secondary flex-fill">Kembalikan</button>
                                     </form>
                                 @endif
@@ -68,7 +68,7 @@
             <table class="table align-middle">
                 <thead>
                     <tr class="text-muted small">
-                        <th style="width:30px;"></th>
+                        <th class="u-w-30px"></th>
                         <th>Nomor</th>
                         <th>Keperluan</th>
                         <th>Tanggal Terbit</th>
@@ -129,7 +129,7 @@
                                                             @if($sisa > 0 && auth()->user()->hasPermission('borrowed_items', 'process_return'))
                                                                 <form action="{{ route('surat-jalan.items.return', $item) }}" method="POST" data-sj-return class="d-inline-flex gap-1 justify-content-end">
                                                                     @csrf
-                                                                    <input type="number" name="qty" min="1" max="{{ $sisa }}" value="{{ $sisa }}" class="form-control form-control-sm" style="width:70px;">
+                                                                    <input type="number" name="qty" min="1" max="{{ $sisa }}" value="{{ $sisa }}" class="form-control form-control-sm u-w-70px">
                                                                     <button type="submit" class="btn btn-sm btn-outline-secondary">Kembalikan</button>
                                                                 </form>
                                                             @endif
@@ -153,20 +153,5 @@
 
 @include('surat-jalan.partials.return-location-modal')
 
-<script>
-    // Putar chevron saat Surat Jalan di-expand/collapse; selector '#sjDetail' mencakup tabel desktop dan kartu mobile.
-    document.querySelectorAll('[data-bs-target^="#sjDetail"]').forEach(function (row) {
-        const targetId = row.getAttribute('data-bs-target');
-        const collapseEl = document.querySelector(targetId);
-        const chevron = row.querySelector('.bi-chevron-down');
+<script src="{{ \App\Support\AppAsset::url('js/project/partials/surat-jalan-tab.js') }}"></script>
 
-        if (!collapseEl || !chevron) return;
-
-        collapseEl.addEventListener('show.bs.collapse', () => chevron.classList.add('rotate-180'));
-        collapseEl.addEventListener('hide.bs.collapse', () => chevron.classList.remove('rotate-180'));
-    });
-</script>
-
-<style>
-    .rotate-180 { transform: rotate(180deg); transition: transform .2s ease; display: inline-block; }
-</style>

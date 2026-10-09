@@ -178,7 +178,7 @@
                                                 default => 'bg-white',
                                             };
                                         @endphp
-                                        <label class="border rounded-3 px-3 py-2 d-flex align-items-center gap-2 {{ $tone }}" style="cursor:pointer;">
+                                        <label class="border rounded-3 px-3 py-2 d-flex align-items-center gap-2 {{ $tone }} u-cur-pointer">
                                             <input type="checkbox" class="form-check-input m-0 unit-check" name="unit_ids[]"
                                                    value="{{ $unit->id }}"
                                                    data-inventory="{{ $inventory->id }}"
@@ -229,11 +229,6 @@
         </div>
     </form>
 </div>
-
-<style>
-    .inventory-group .bi-chevron-down { transition: transform .15s; }
-    .inventory-group button:not(.collapsed) .bi-chevron-down { transform: rotate(180deg); }
-</style>
 
 <script>
 (function () {

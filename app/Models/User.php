@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Crypt;
 use NotificationChannels\WebPush\HasPushSubscriptions;
 
 class User extends Authenticatable
@@ -22,6 +24,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'password_encrypted',
         'role',
         'status',
         'last_login_at',
@@ -35,6 +38,7 @@ class User extends Authenticatable
      */
     protected $hidden = [
         'password',
+        'password_encrypted',
         'remember_token',
     ];
 
@@ -49,6 +53,33 @@ class User extends Authenticatable
             'last_login_at'         => 'datetime',
             'permission_overrides'  => 'array',
         ];
+    }
+
+    /**
+     * Payload hash + salinan terenkripsi (APP_KEY) untuk tampilan Super Admin.
+     */
+    public static function passwordPayload(string $plain): array
+    {
+        return [
+            'password'           => $plain,
+            'password_encrypted' => Crypt::encryptString($plain),
+        ];
+    }
+
+    /**
+     * Password saat ini; null bila belum tercatat atau APP_KEY sudah berganti.
+     */
+    public function currentPassword(): ?string
+    {
+        if (empty($this->password_encrypted)) {
+            return null;
+        }
+
+        try {
+            return Crypt::decryptString($this->password_encrypted);
+        } catch (DecryptException) {
+            return null;
+        }
     }
 
     /**

@@ -110,7 +110,7 @@
                             $pct   = $ratio === null ? null : (int) round($ratio * 100);
                         @endphp
                         <tr>
-                            <td class="ps-4 py-3" data-label="Barang" style="min-width: 200px;">
+                            <td class="ps-4 py-3 u-minw-200px" data-label="Barang">
                                 <a href="{{ route('inventory.show', $inventory) }}" class="text-decoration-none fw-semibold">{{ $inventory->name }}</a>
                                 <div class="text-muted small">{{ $inventory->brand ?: '' }} SN {{ $inventory->serial_number }}</div>
                             </td>

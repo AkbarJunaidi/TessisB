@@ -9,14 +9,14 @@
         <span class="fw-semibold text-dark">{{ $item->name }}</span>
     </td>
     <td data-label="Tipe">
-        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle px-2 py-2 fw-medium" style="font-size: 0.8rem;">
+        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle px-2 py-2 fw-medium u-fs-0p8rem">
             {{ $item->type_label }}
         </span>
     </td>
     <td data-label="Dihapus Oleh">
         @if($item->deleted_by_name)
             <div class="d-flex align-items-center gap-2">
-                <div class="bg-light text-primary rounded-circle d-flex align-items-center justify-content-center fw-semibold" style="width: 28px; height: 28px; font-size: 0.75rem; border: 1px solid #e2e8f0;">
+                <div class="bg-light text-primary rounded-circle d-flex align-items-center justify-content-center fw-semibold u-w-28px u-h-28px u-fs-0p75rem u-bd-1px-solid-e2e8f0">
                     {{ strtoupper(substr($item->deleted_by_name, 0, 2)) }}
                 </div>
                 <span class="fw-semibold">{{ $item->deleted_by_name }}</span>

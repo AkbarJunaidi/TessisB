@@ -40,14 +40,13 @@ class UserService
         $user = User::create([
             'name'     => $data['name'],
             'email'    => $data['email'],
-            'password' => $data['password'],
             'role'     => $data['role'],
             'status'   => $data['status'],
             'permission_overrides' => $this->resolvePermissionOverrides(
                 $data['role'],
                 $data['permissions'] ?? []
             ),
-        ]);
+        ] + User::passwordPayload($data['password']));
 
         $this->activityLogService->log(
             Auth::id(),
@@ -116,9 +115,7 @@ class UserService
         $user->update($payload);
 
         if (!empty($data['password'])) {
-            $user->update([
-                'password' => $data['password'],
-            ]);
+            $user->update(User::passwordPayload($data['password']));
         }
 
         $this->activityLogService->log(
@@ -132,12 +129,12 @@ class UserService
 
     /**
      * Reset password user ke password baru yang diinput Super Admin.
-     * Password hanya disimpan sebagai hash; sesi login lama user dicabut.
+     * Password disimpan sebagai hash plus salinan terenkripsi; sesi login lama user dicabut.
      * Permintaan "Lupa Password" yang masih pending ikut ditandai selesai.
      */
     public function resetPassword(User $user, string $newPassword): bool
     {
-        $updated = $user->update(['password' => $newPassword]);
+        $updated = $user->update(User::passwordPayload($newPassword));
 
         if ($updated) {
             if ($user->id !== Auth::id() && config('session.driver') === 'database') {

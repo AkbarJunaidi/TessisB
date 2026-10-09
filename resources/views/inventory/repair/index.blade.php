@@ -130,12 +130,12 @@
                         @endphp
                         <tr>
                             <td class="ps-4 py-3 fw-semibold" data-label="Kode">{{ $repair->code }}</td>
-                            <td data-label="Barang" style="min-width: 200px;">
+                            <td class="u-minw-200px" data-label="Barang">
                                 @foreach($summary as $line)
                                     <div>{{ $line }}</div>
                                 @endforeach
                             </td>
-                            <td data-label="Tempat Servis" style="min-width: 160px;">
+                            <td class="u-minw-160px" data-label="Tempat Servis">
                                 <div class="fw-semibold">{{ $repair->tempat_nama }}</div>
                                 @if($repair->vendor && $canContact)
                                     <a href="{{ route('contacts.show', $repair->vendor) }}" class="text-decoration-none small">

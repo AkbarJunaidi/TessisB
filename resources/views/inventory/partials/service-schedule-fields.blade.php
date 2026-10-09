@@ -21,11 +21,11 @@
             <input type="hidden" name="use_servis" id="use_servis_hidden" value="{{ $servisOn }}">
 
             <div class="form-check form-switch">
-                <input class="form-check-input"
+                <input class="form-check-input u-w-2p75em u-h-1p5em"
                        type="checkbox"
                        role="switch"
                        id="use_servis_toggle"
-                       style="width: 2.75em; height: 1.5em;"
+                      
                        {{ $servisOn == '1' ? 'checked' : '' }}>
                 <label class="form-check-label fw-medium text-dark" for="use_servis_toggle">
                     <span id="use_servis_label">{{ $servisOn == '1' ? 'Ya' : 'Tidak' }}</span>
@@ -81,17 +81,4 @@
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const toggle = document.getElementById('use_servis_toggle');
-        const hidden = document.getElementById('use_servis_hidden');
-        const label  = document.getElementById('use_servis_label');
-        const fields = document.getElementById('servisFields');
-
-        toggle.addEventListener('change', function () {
-            hidden.value = toggle.checked ? '1' : '0';
-            label.textContent = toggle.checked ? 'Ya' : 'Tidak';
-            fields.classList.toggle('d-none', !toggle.checked);
-        });
-    });
-</script>
+<script src="{{ \App\Support\AppAsset::url('js/inventory/partials/service-schedule-fields.js') }}"></script>

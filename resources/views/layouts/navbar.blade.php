@@ -1,12 +1,12 @@
 <nav class="app-topbar navbar navbar-expand-lg border-bottom bg-white px-3 px-md-4 py-2">
     <div class="container-fluid p-0 flex-nowrap">
 
-        <div class="d-flex align-items-center gap-4" style="min-width:0;">
-            <div style="min-width:0;">
-                <span class="fw-semibold text-navy d-block navbar-page-title" style="font-size:.95rem;">
+        <div class="d-flex align-items-center gap-4 u-minw-0">
+            <div class="u-minw-0">
+                <span class="fw-semibold text-navy d-block navbar-page-title u-fs-p95rem">
                     @yield('title', 'Dashboard')
                 </span>
-                <span class="text-muted d-none d-sm-block" style="font-size:.72rem;">
+                <span class="text-muted d-none d-sm-block u-fs-p72rem">
                     Sistem Informasi Manajemen
                 </span>
             </div>
@@ -20,8 +20,8 @@
         <div class="ms-auto d-flex align-items-center gap-2 gap-md-3 flex-shrink-0">
 
             {{-- Ikon pencarian global: membuka baris pencarian tepat di bawah navbar (#navbarSearchBar). --}}
-                <button type="button" class="btn btn-light border rounded-circle d-flex align-items-center justify-content-center navbar-search-btn"
-                        style="width: 38px; height: 38px;"
+                <button type="button" class="btn btn-light border rounded-circle d-flex align-items-center justify-content-center navbar-search-btn u-w-38px u-h-38px"
+                       
                         id="navbarSearchToggle"
                         data-bs-toggle="collapse" data-bs-target="#navbarSearchBar"
                         aria-expanded="false" aria-controls="navbarSearchBar"
@@ -31,16 +31,16 @@
 
             {{-- Notifikasi navbar untuk semua role; jenis yang tampil disaring per user di NotificationService. --}}
                 <div class="dropdown">
-                    <button type="button" class="btn btn-light border rounded-circle position-relative d-flex align-items-center justify-content-center navbar-notif-btn"
-                            style="width: 38px; height: 38px;"
+                    <button type="button" class="btn btn-light border rounded-circle position-relative d-flex align-items-center justify-content-center navbar-notif-btn u-w-38px u-h-38px"
+                           
                             id="navbarNotifBtn"
                             data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifikasi">
                         <i class="bi bi-bell fs-6"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="navbarNotifBadge" style="font-size: .6rem;"></span>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none u-fs-p6rem" id="navbarNotifBadge"></span>
                     </button>
-                    <div class="dropdown-menu dropdown-menu-end shadow-sm p-0" style="width: 320px; max-width: 90vw;">
+                    <div class="dropdown-menu dropdown-menu-end shadow-sm p-0 u-w-320px u-maxw-90vw">
                         <div class="px-3 py-2 border-bottom fw-semibold small text-dark">Notifikasi</div>
-                        <div id="navbarNotifList" style="max-height: 360px; overflow-y: auto;">
+                        <div class="u-maxh-360px u-oy-auto" id="navbarNotifList">
                             <div class="text-center text-muted small py-4" id="navbarNotifLoading">Memuat notifikasi...</div>
                         </div>
                     </div>
@@ -50,8 +50,8 @@
             <div class="d-none d-sm-flex align-items-center bg-light border rounded-pill px-3 py-1 gap-2">
                 <i class="bi bi-clock text-primary"></i>
                 <div class="d-flex flex-column text-end lh-sm">
-                    <span class="fw-semibold text-dark" style="font-size:.8rem;" id="realtime-date">Memuat tanggal...</span>
-                    <span class="text-muted fw-medium" style="font-size:.72rem;" id="realtime-clock">--:--:--</span>
+                    <span class="fw-semibold text-dark u-fs-p8rem" id="realtime-date">Memuat tanggal...</span>
+                    <span class="text-muted fw-medium u-fs-p72rem" id="realtime-clock">--:--:--</span>
                 </div>
             </div>
         </div>
@@ -62,7 +62,7 @@
      Tanpa saran cocok, Enter/Cari hanya menandai kolom invalid dan tidak pindah halaman. --}}
 <div class="collapse" id="navbarSearchBar">
     <div class="border-bottom bg-white px-3 px-md-4 py-2">
-        <div class="position-relative" style="max-width: 480px;">
+        <div class="position-relative u-maxw-480px">
             <div class="d-flex align-items-center gap-2">
                 <i class="bi bi-search text-muted"></i>
                 <input
@@ -82,76 +82,10 @@
                 Tidak ada modul/halaman yang cocok dengan "<span id="navbarSearchInvalidKeyword"></span>".
             </div>
 
-            <div id="navbarSearchSuggestions" class="list-group position-absolute w-100 shadow-sm d-none" style="z-index: 1050; top: 100%;"></div>
+            <div id="navbarSearchSuggestions" class="list-group position-absolute w-100 shadow-sm d-none u-z-1050 u-top-100pct"></div>
         </div>
     </div>
 </div>
-
-<style>
-    /* Tinggi navbar eksplisit 64px = tinggi .sidebar-brand-row di sidebar agar garis border sejajar;
-       min-height (bukan height) supaya boleh tumbuh bila konten lebih tinggi. */
-    .app-topbar {
-        min-height: 64px;
-    }
-
-
-    .app-topbar { position: sticky; top: 0; z-index: 1030; }
-    .text-navy { color: var(--c-navy); }
-
-    /* Judul halaman navbar dipotong dengan '...' bila terlalu panjang; prefiks tetap dipertahankan selama muat. */
-    .navbar-page-title {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 100%;
-    }
-
-    #navbarNotifTicker {
-        height: 40px;
-        padding: 0 8px;
-        display: none;
-        align-items: center;
-        white-space: nowrap;
-        margin-right: 1.5rem; /* jarak tetap ke ikon lonceng, tidak bergantung sisa ruang flex */
-    }
-    @media (min-width: 1156px) {
-        #navbarNotifTicker.has-notif { display: flex; }
-    }
-    #navbarNotifTicker #navbarNotifTickerContent {
-        font-size: .78rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 360px;
-        transition: opacity .3s ease, transform .3s ease;
-    }
-    #navbarNotifTicker.has-notif {
-        background-color: #fff1f0;
-        border: 1px solid #ffd4d1;
-        border-radius: 999px;
-    }
-    #navbarNotifTicker.has-notif #navbarNotifTickerContent {
-        color: #b02a37;
-    }
-    #navbarNotifTicker.has-notif #navbarNotifTickerContent i {
-        color: #dc3545;
-    }
-
-    #navbarSearchBar #navbarSearchInput:focus {
-        box-shadow: none;
-    }
-
-    .navbar-notif-btn.has-notif {
-        background-color: #fff1f0 !important;
-        border-color: #ffb3ae !important;
-        color: #dc3545;
-        animation: navbarNotifPulse 2s ease-in-out infinite;
-    }
-    @keyframes navbarNotifPulse {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, .25); }
-        50% { box-shadow: 0 0 0 5px rgba(220, 53, 69, 0); }
-    }
-</style>
 
 {{-- Typeahead dan penanda invalid pencarian: lihat komentar #navbarSearchBar di atas. --}}
 <script>
@@ -301,18 +235,7 @@
 </script>
 
 {{-- Waktu nyata --}}
-<script>
-    // Perbarui tanggal dan jam di navbar.
-    function updateDateTime() {
-        const now = new Date();
-        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-        document.getElementById('realtime-date').textContent = now.toLocaleDateString('id-ID', dateOptions);
-        document.getElementById('realtime-clock').textContent = now.toLocaleTimeString('id-ID', timeOptions) + ' WIB';
-    }
-    updateDateTime();
-    setInterval(updateDateTime, 1000);
-</script>
+<script src="{{ \App\Support\AppAsset::url('js/layouts/navbar.js') }}"></script>
 
 {{-- Script lonceng notifikasi - dijalankan untuk SEMUA role yang login
      (sebelumnya cuma super_admin/admin). --}}

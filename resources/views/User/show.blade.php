@@ -218,6 +218,53 @@
 
             </div>
 
+            @if(auth()->user()->isSuperAdmin())
+
+                @php($currentPassword = $user->currentPassword())
+
+                <hr>
+
+                <div class="row mb-3 align-items-center">
+
+                    <div class="col-md-3 fw-semibold">
+                        Password Saat Ini
+                    </div>
+
+                    <div class="col-md-9">
+
+                        @if($currentPassword !== null)
+
+                            <div class="input-group user-password-group">
+                                <input
+                                    type="password"
+                                    id="currentPasswordField"
+                                    class="form-control"
+                                    value="{{ $currentPassword }}"
+                                    readonly
+                                    autocomplete="off"
+                                >
+                                <button
+                                    type="button"
+                                    class="btn btn-outline-secondary"
+                                    id="currentPasswordToggle"
+                                    aria-label="Tampilkan password"
+                                >
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+
+                        @else
+
+                            <span class="text-muted">Belum tercatat</span>
+
+                        @endif
+
+                    </div>
+
+                </div>
+
+            @endif
+
             <hr>
 
             <div class="row mb-3">
@@ -266,13 +313,27 @@
 
 </div>
 
-@if(auth()->user()->isSuperAdmin() && $errors->has('password'))
+@if(auth()->user()->isSuperAdmin())
     @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                var resetModalEl = document.getElementById('resetPasswordModal');
-                if (resetModalEl) {
-                    new bootstrap.Modal(resetModalEl).show();
+                @if($errors->has('password'))
+                    var resetModalEl = document.getElementById('resetPasswordModal');
+                    if (resetModalEl) {
+                        new bootstrap.Modal(resetModalEl).show();
+                    }
+                @endif
+
+                // Tampilkan atau sembunyikan password saat ini.
+                var field = document.getElementById('currentPasswordField');
+                var toggle = document.getElementById('currentPasswordToggle');
+                if (field && toggle) {
+                    toggle.addEventListener('click', function () {
+                        var show = field.type === 'password';
+                        field.type = show ? 'text' : 'password';
+                        toggle.querySelector('i').className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+                        toggle.setAttribute('aria-label', show ? 'Sembunyikan password' : 'Tampilkan password');
+                    });
                 }
             });
         </script>

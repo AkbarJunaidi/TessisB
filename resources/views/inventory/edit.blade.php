@@ -170,12 +170,12 @@
                         <label class="form-label fw-semibold small text-secondary d-block text-start mb-2">Foto Saat Ini</label>
                         @if($inventory->image)
                             <div class="p-2 bg-light rounded border border-dashed d-inline-block">
-                                <img src="{{ asset('storage/' . $inventory->image) }}" alt="Foto {{ $inventory->name }}" class="img-thumbnail img-fluid" style="max-height: 160px;">
+                                <img src="{{ asset('storage/' . $inventory->image) }}" alt="Foto {{ $inventory->name }}" class="img-thumbnail img-fluid u-maxh-160px">
                                 <small class="text-muted d-block mt-1"><i class="bi bi-info-circle me-1"></i>Gambar Terpasang</small>
                             </div>
                         @else
                             <div class="p-4 bg-light rounded border border-dashed text-muted">
-                                <i class="bi bi-image opacity-25 d-block mb-1" style="font-size: 2.5rem;"></i>
+                                <i class="bi bi-image opacity-25 d-block mb-1 u-fs-2p5rem"></i>
                                 <span class="small d-block">Belum ada foto fisik</span>
                             </div>
                         @endif
@@ -230,7 +230,7 @@
                                 @if($inventory->punyaJadwalServis())
                                     <th>Servis</th>
                                 @endif
-                                <th style="width:260px;">Ubah Status</th>
+                                <th class="u-w-260px">Ubah Status</th>
                             </tr>
                         </thead>
                         @php
@@ -334,11 +334,11 @@
                     <input type="hidden" name="use_attributes" id="use_attributes_hidden" value="{{ $useAttributesDefault }}">
 
                     <div class="form-check form-switch">
-                        <input class="form-check-input"
+                        <input class="form-check-input u-w-2p75em u-h-1p5em"
                                type="checkbox"
                                role="switch"
                                id="use_attr_toggle"
-                               style="width: 2.75em; height: 1.5em;"
+                              
                                {{ $useAttributesDefault == '1' ? 'checked' : '' }}>
                         <label class="form-check-label fw-medium text-dark ms-2" for="use_attr_toggle">
                             <span id="use_attr_label">{{ $useAttributesDefault == '1' ? 'Ya' : 'Tidak' }}</span>
@@ -352,9 +352,9 @@
                         <table class="table table-bordered align-middle" id="attributesTable">
                             <thead class="table-light small text-uppercase text-secondary">
                                 <tr>
-                                    <th style="width: 45%;">Nama Informasi</th>
-                                    <th style="width: 45%;">Nilai</th>
-                                    <th class="text-center" style="width: 10%;">Aksi</th>
+                                    <th class="u-w-45pct">Nama Informasi</th>
+                                    <th class="u-w-45pct">Nilai</th>
+                                    <th class="text-center u-w-10pct">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="attributesBody">

@@ -57,7 +57,7 @@
     @endforeach
 </ul>
 
-<div class="row g-3 flex-nowrap overflow-auto pb-2 kanban-board" style="min-height: 60vh;">
+<div class="row g-3 flex-nowrap overflow-auto pb-2 kanban-board u-minh-60vh">
 
     <div class="tab-content w-100 d-flex flex-nowrap overflow-auto gap-3">
     @foreach($boardLists as $list)
@@ -66,13 +66,13 @@
             $currentTasks = isset($groupedTasks[$statusKey]) ? $groupedTasks[$statusKey] : collect();
         @endphp
 
-        <div class="col-12 tab-pane kanban-col {{ $loop->first ? 'show active' : '' }}" id="kanban-col-{{ $loop->index }}" style="min-width: 280px; max-width: 300px;">
+        <div class="col-12 tab-pane kanban-col {{ $loop->first ? 'show active' : '' }} u-minw-280px u-maxw-300px" id="kanban-col-{{ $loop->index }}">
             <div class="card bg-light border-0 shadow-sm h-100 rounded-3">
 
                 <div class="card-header bg-transparent border-0 pt-3 pb-2 d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center gap-2">
-                        <span class="rounded-circle bg-{{ $list['color'] }}" style="width: 10px; height: 10px; display: inline-block;"></span>
-                        <h6 class="fw-bold text-dark m-0 text-uppercase" style="letter-spacing: 0.5px;">{{ $statusKey }}</h6>
+                        <span class="rounded-circle bg-{{ $list['color'] }} u-w-10px u-h-10px u-d-inline-block"></span>
+                        <h6 class="fw-bold text-dark m-0 text-uppercase u-ls-0p5px">{{ $statusKey }}</h6>
                     </div>
                     <span class="badge bg-white text-dark border rounded-pill px-2 py-1 font-monospace fw-bold shadow-sm board-list-count">
                         {{ $currentTasks->count() }}
@@ -80,18 +80,18 @@
                 </div>
 
                 <div
-                    class="card-body p-2 d-flex flex-column gap-2 board-list-dropzone"
+                    class="card-body p-2 d-flex flex-column gap-2 board-list-dropzone u-maxh-55vh u-oy-auto u-minh-120px"
                     data-list="{{ $statusKey }}"
-                    style="max-height: 55vh; overflow-y: auto; min-height: 120px;"
+                   
                 >
 
                     @forelse($currentTasks as $task)
                         <div
-                            class="card border-0 shadow-sm rounded-2 bg-white card-task"
+                            class="card border-0 shadow-sm rounded-2 bg-white card-task u-cur-grab"
                             draggable="true"
                             data-task-id="{{ $task->id }}"
                             onclick="if(!window.__wasDragging){ window.location='{{ route('tasks.show', $task->id) }}'; }"
-                            style="cursor: grab;"
+                           
                         >
                             <div class="card-body p-3">
 
@@ -104,12 +104,12 @@
                                         <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 rounded">Low</span>
                                     @endif
 
-                                    <small class="text-muted font-monospace" style="font-size: 0.75rem;">
+                                    <small class="text-muted font-monospace u-fs-0p75rem">
                                         <i class="bi bi-calendar3 me-1"></i>{{ $task->deadline }}
                                     </small>
                                 </div>
 
-                                <h6 class="fw-bold text-dark mb-2 text-wrap" style="line-height: 1.4;">
+                                <h6 class="fw-bold text-dark mb-2 text-wrap u-lh-1p4">
                                     {{ $task->title }}
                                 </h6>
 
@@ -117,7 +117,7 @@
                                     $lastComment = $task->comments ? $task->comments->sortByDesc('created_at')->first() : null;
                                 @endphp
                                 @if($lastComment)
-                                    <div class="bg-light p-2 rounded small text-secondary my-2 border-start border-primary border-3" style="font-size: 0.75rem;">
+                                    <div class="bg-light p-2 rounded small text-secondary my-2 border-start border-primary border-3 u-fs-0p75rem">
                                         <i class="bi bi-chat-text text-primary me-1"></i>
                                         <strong class="text-dark">{{ $lastComment->user->name }}:</strong>
                                         <span class="fst-italic">"{{ Str::limit($lastComment->comment, 40) }}"</span>
@@ -126,13 +126,13 @@
 
                                 <div class="d-flex align-items-center justify-content-between pt-2 border-top border-light mt-3">
                                     <div class="d-flex align-items-center gap-1.5 text-secondary">
-                                        <i class="bi bi-person-circle text-primary" style="font-size: 0.9rem;"></i>
-                                        <span class="small fw-medium" style="font-size: 0.8rem;">
+                                        <i class="bi bi-person-circle text-primary u-fs-0p9rem"></i>
+                                        <span class="small fw-medium u-fs-0p8rem">
                                             {{ $task->assignee ? $task->assignee->name : 'Unassigned' }}
                                         </span>
                                     </div>
 
-                                    <a href="{{ route('tasks.show', $task->id) }}" class="btn btn-sm btn-link p-0 text-decoration-none fw-bold" style="font-size: 0.8rem;" onclick="event.stopPropagation();">
+                                    <a href="{{ route('tasks.show', $task->id) }}" class="btn btn-sm btn-link p-0 text-decoration-none fw-bold u-fs-0p8rem" onclick="event.stopPropagation();">
                                         Detail <i class="bi bi-chevron-right small"></i>
                                     </a>
                                 </div>
@@ -160,7 +160,7 @@
                     @empty
                         <div class="text-center py-4 text-muted border border-dashed rounded-3 bg-white bg-opacity-50 board-empty-placeholder">
                             <i class="bi bi-inbox opacity-25 d-block mb-1 fs-4"></i>
-                            <small style="font-size: 0.75rem;">Belum ada task di list ini.</small>
+                            <small class="u-fs-0p75rem">Belum ada task di list ini.</small>
                         </div>
                     @endforelse
 

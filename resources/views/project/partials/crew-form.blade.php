@@ -13,8 +13,8 @@
 
         @forelse($project->crews as $crew)
             <div class="d-flex align-items-center gap-2 mb-2">
-                <div class="rounded-circle bg-primary bg-opacity-10 text-primary fw-bold d-flex align-items-center justify-content-center"
-                     style="width:32px;height:32px;font-size:.8rem;">
+                <div class="rounded-circle bg-primary bg-opacity-10 text-primary fw-bold d-flex align-items-center justify-content-center u-w-32px u-h-32px u-fs-p8rem"
+                    >
                     {{ strtoupper(substr($crew->name, 0, 1)) }}
                 </div>
                 <div>

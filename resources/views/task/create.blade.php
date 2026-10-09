@@ -64,7 +64,7 @@
                     </div>
                 </div>
 
-                <div class="mb-4" style="max-width: 400px;">
+                <div class="mb-4 u-maxw-400px">
                     <label for="assigned_to" class="form-label fw-semibold small text-secondary">Assigned User (Delegasikan Kepada)</label>
                     <select name="assigned_to" id="assigned_to" class="form-select">
                         <option value="">-- Pilih Anggota Tim (Unassigned) --</option>

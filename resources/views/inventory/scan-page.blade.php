@@ -9,7 +9,7 @@
         <h3>Scan Barang</h3>
     </div>
 
-    <div class="app-panel mx-auto" style="max-width: 560px;">
+    <div class="app-panel mx-auto u-maxw-560px">
         <div class="p-3 p-md-4">
 
             <div id="scanLocationBar" class="mb-3"></div>
@@ -47,7 +47,7 @@
                         <button type="button" class="btn btn-sm btn-primary" data-facing="environment">Kamera belakang</button>
                         <button type="button" class="btn btn-sm btn-outline-primary" data-facing="user">Kamera depan</button>
                     </div>
-                    <div id="scanCameraReader" style="width: 100%;"></div>
+                    <div class="u-w-100pct" id="scanCameraReader"></div>
                     <button type="button" id="btnCloseCamera" class="btn btn-sm btn-outline-danger w-100 mt-2">
                         <i class="bi bi-x-circle me-1"></i> Tutup kamera
                     </button>

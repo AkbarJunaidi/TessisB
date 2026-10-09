@@ -26,7 +26,7 @@
                                 <a href="{{ route($card['route']) }}" class="stat-card p-3 p-md-4 d-block text-decoration-none">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
-                                            <span class="text-muted text-uppercase fw-bold" style="font-size:.7rem; letter-spacing:.06em;">{{ $card['label'] }}</span>
+                                            <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">{{ $card['label'] }}</span>
                                             <h3 class="fw-bolder text-navy mt-2 mb-0">{{ $card['text'] }}</h3>
                                         </div>
                                         <div class="icon-tile {{ $card['count'] > 0 ? 'icon-tile-danger' : '' }}">
@@ -80,7 +80,7 @@
             <div class="stat-card p-3 p-md-4">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <span class="text-muted text-uppercase fw-bold" style="font-size:.7rem; letter-spacing:.06em;">Inventory</span>
+                        <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">Inventory</span>
                         <h3 class="fw-bolder text-navy mt-2 mb-0">{{ $statistics['total_inventory'] }}</h3>
                         @if($statistics['new_inventory_this_month'] > 0)
                             <span class="badge-soft-success mt-2 d-inline-block">+{{ $statistics['new_inventory_this_month'] }} barang baru</span>
@@ -97,7 +97,7 @@
             <div class="stat-card p-3 p-md-4">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <span class="text-muted text-uppercase fw-bold" style="font-size:.7rem; letter-spacing:.06em;">Project</span>
+                        <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">Project</span>
                         <h3 class="fw-bolder text-navy mt-2 mb-0">{{ $statistics['total_project'] }}</h3>
                         @if($statistics['new_projects_this_month'] > 0)
                             <span class="badge-soft-success mt-2 d-inline-block">+{{ $statistics['new_projects_this_month'] }} project baru</span>
@@ -112,7 +112,7 @@
             <div class="stat-card p-3 p-md-4">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <span class="text-muted text-uppercase fw-bold" style="font-size:.7rem; letter-spacing:.06em;">Task</span>
+                        <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">Task</span>
                         <h3 class="fw-bolder text-navy mt-2 mb-0">{{ $statistics['total_task'] }}</h3>
                     </div>
                     <div class="icon-tile">
@@ -126,7 +126,7 @@
             <div class="stat-card p-3 p-md-4">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <span class="text-muted text-uppercase fw-bold" style="font-size:.7rem; letter-spacing:.06em;">Files</span>
+                        <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">Files</span>
                         <h3 class="fw-bolder text-navy mt-2 mb-0">{{ $statistics['total_files'] }}</h3>
                     </div>
                     <div class="icon-tile">
@@ -140,7 +140,7 @@
         <div class="stat-card p-3 p-md-4">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <span class="text-muted text-uppercase fw-bold" style="font-size:.7rem; letter-spacing:.06em;">Kontak</span>
+                    <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">Kontak</span>
                     <h3 class="fw-bolder text-navy mt-2 mb-0">{{ $statistics['total_contact'] }}</h3>
                     @if($statistics['new_contacts_this_month'] > 0)
                         <span class="badge-soft-success mt-2 d-inline-block">+{{ $statistics['new_contacts_this_month'] }} kontak baru</span>
@@ -156,7 +156,7 @@
             <div class="stat-card p-3 p-md-4">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <span class="text-muted text-uppercase fw-bold" style="font-size:.7rem; letter-spacing:.06em;">Belum Dikembalikan</span>
+                        <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">Belum Dikembalikan</span>
                         <h3 class="fw-bolder text-navy mt-2 mb-0">{{ $borrowedUnitsCount }}</h3>
                     </div>
                     <div class="icon-tile icon-tile-danger">
@@ -170,7 +170,7 @@
             <div class="stat-card p-3 p-md-4">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <span class="text-muted text-uppercase fw-bold" style="font-size:.7rem; letter-spacing:.06em;">Users</span>
+                        <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">Users</span>
                         <h3 class="fw-bolder text-navy mt-2 mb-0">{{ $statistics['total_user'] }}</h3>
                         @if($statistics['new_users_this_month'] > 0)
                             <span class="badge-soft-success mt-2 d-inline-block">+{{ $statistics['new_users_this_month'] }} bulan ini</span>
@@ -213,9 +213,9 @@
                             <table class="table table-hover table-modern align-middle mb-0">
                                 <thead>
                                     <tr>
-                                        <th class="ps-4" style="width:40%;">Task</th>
-                                        <th style="width:30%;">Project</th>
-                                        <th class="pe-4" style="width:30%;">Deadline</th>
+                                        <th class="ps-4 u-w-40pct">Task</th>
+                                        <th class="u-w-30pct">Project</th>
+                                        <th class="pe-4 u-w-30pct">Deadline</th>
                                     </tr>
                                 </thead>
                                 <tbody class="small">
@@ -266,9 +266,9 @@
                             <table class="table table-hover table-modern align-middle mb-0">
                                 <thead>
                                     <tr>
-                                        <th class="ps-4" style="width:40%;">Project</th>
-                                        <th style="width:30%;">Client</th>
-                                        <th class="pe-4" style="width:30%;">Tanggal Acara</th>
+                                        <th class="ps-4 u-w-40pct">Project</th>
+                                        <th class="u-w-30pct">Client</th>
+                                        <th class="pe-4 u-w-30pct">Tanggal Acara</th>
                                     </tr>
                                 </thead>
                                 <tbody class="small">
@@ -321,11 +321,11 @@
                         <div class="p-3 p-md-4">
                             <div class="row g-3">
                                 <div class="col-sm-6">
-                                    <span class="text-muted text-uppercase fw-bold" style="font-size:.7rem; letter-spacing:.06em;">Pendapatan Bulan Ini</span>
+                                    <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">Pendapatan Bulan Ini</span>
                                     <h3 class="fw-bolder text-navy mt-2 mb-0">{{ \App\Support\Money::formatRupiah($financeSummary['revenue_this_month']) }}</h3>
                                 </div>
                                 <div class="col-sm-6">
-                                    <span class="text-muted text-uppercase fw-bold" style="font-size:.7rem; letter-spacing:.06em;">Estimasi Pipeline</span>
+                                    <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">Estimasi Pipeline</span>
                                     <h3 class="fw-bolder text-navy mt-2 mb-0">{{ \App\Support\Money::formatRupiah($financeSummary['pipeline_estimated_value']) }}</h3>
                                     <small class="text-muted">Estimasi project berjalan, bukan pendapatan riil.</small>
                                 </div>
@@ -357,10 +357,10 @@
                                 <table class="table table-hover table-modern align-middle mb-0">
                                     <thead>
                                         <tr>
-                                            <th class="ps-4" style="width:25%;">Nomor</th>
-                                            <th style="width:30%;">Project</th>
-                                            <th style="width:25%;">Tanggal Acara</th>
-                                            <th class="pe-4" style="width:20%;">Status</th>
+                                            <th class="ps-4 u-w-25pct">Nomor</th>
+                                            <th class="u-w-30pct">Project</th>
+                                            <th class="u-w-25pct">Tanggal Acara</th>
+                                            <th class="pe-4 u-w-20pct">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody class="small">
@@ -418,10 +418,10 @@
             <table class="table table-hover table-modern align-middle mb-0">
                 <thead>
                     <tr>
-                        <th class="ps-4" style="width:20%;">Waktu</th>
-                        <th style="width:25%;">User</th>
-                        <th style="width:30%;">Modul</th>
-                        <th class="pe-4" style="width:25%;">Aksi</th>
+                        <th class="ps-4 u-w-20pct">Waktu</th>
+                        <th class="u-w-25pct">User</th>
+                        <th class="u-w-30pct">Modul</th>
+                        <th class="pe-4 u-w-25pct">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="small">
@@ -432,7 +432,7 @@
                             </td>
                             <td class="py-2">
                                 <div class="d-flex align-items-center gap-2">
-                                    <div class="avatar-initial" style="width:30px;height:30px;font-size:.75rem;">
+                                    <div class="avatar-initial u-w-30px u-h-30px u-fs-p75rem">
                                         {{ strtoupper(substr($activity->user->name ?? 'SY', 0, 2)) }}
                                     </div>
                                     <span class="fw-semibold text-dark">{{ $activity->user->name ?? 'System / Deleted User' }}</span>

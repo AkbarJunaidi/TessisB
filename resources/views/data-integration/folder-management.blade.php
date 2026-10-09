@@ -70,11 +70,11 @@
             <table class="table table-hover table-modern align-middle mb-0">
                 <thead>
                     <tr>
-                        <th scope="col" class="ps-4 py-3" style="width: 40%;">Nama</th>
+                        <th scope="col" class="ps-4 py-3 u-w-40pct">Nama</th>
                         <th scope="col" class="py-3">Tipe</th>
                         <th scope="col" class="py-3">Pemilik</th>
                         <th scope="col" class="py-3">Dibuat</th>
-                        <th scope="col" class="pe-4 py-3 text-center" style="width: 10%;">Aksi</th>
+                        <th scope="col" class="pe-4 py-3 text-center u-w-10pct">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -196,7 +196,7 @@
                                     @endif
                                 </div>
                             </td>
-                            <td><span class="badge bg-secondary text-uppercase small" style="font-size: 0.75rem;">{{ $file->file_type }}</span></td>
+                            <td><span class="badge bg-secondary text-uppercase small u-fs-0p75rem">{{ $file->file_type }}</span></td>
                             <td><span class="badge bg-light text-dark border">{{ $file->user->name ?? 'System' }}</span></td>
                             <td><span class="text-secondary small">{{ $file->created_at->format('Y-m-d H:i') }}</span></td>
                             <td class="pe-4 text-center">

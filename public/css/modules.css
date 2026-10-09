@@ -1,0 +1,62 @@
+/* Style khusus halaman/modul. Dimuat setelah theme.css dan layout.css. */
+
+/* ===== Data Integration: My Files ===== */
+/* ===== My Files: tampilan daftar bergaya Drive ===== */
+.drv-tabs .nav-link { border-radius: 50rem; padding: .4rem 1rem; font-size: .875rem; color: var(--bs-secondary-color, #6c757d); }
+.drv-tabs .nav-link.active { background: var(--bs-primary-bg-subtle, #cfe2ff); color: var(--bs-primary-text-emphasis, #052c65); font-weight: 600; }
+
+.drv-search { position: relative; max-width: 420px; flex: 1 1 260px; }
+.drv-search i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--bs-secondary-color, #6c757d); pointer-events: none; }
+.drv-search input { border-radius: 50rem; padding-left: 2.6rem; background: var(--bs-tertiary-bg, #f1f3f5); border-color: transparent; }
+.drv-search input:focus { background: #fff; border-color: var(--bs-primary, #0d6efd); }
+
+.drv-chip { border-radius: .5rem; font-size: .8125rem; padding: .3rem .75rem; }
+.drv-chip.is-active { background: var(--bs-primary-bg-subtle, #cfe2ff); border-color: transparent; color: var(--bs-primary-text-emphasis, #052c65); }
+
+.drv-list { width: 100%; border-collapse: collapse; }
+.drv-list thead th { font-size: .8125rem; font-weight: 600; color: var(--bs-secondary-color, #6c757d);
+                     padding: .75rem .75rem; border-bottom: 1px solid var(--bs-border-color, #dee2e6); white-space: nowrap; }
+.drv-list tbody td { padding: .7rem .75rem; border-bottom: 1px solid var(--bs-border-color-translucent, rgba(0,0,0,.1)); vertical-align: middle; }
+.drv-list tbody tr.drv-row:hover { background: var(--bs-tertiary-bg, #f1f3f5); }
+.drv-group td { padding: 1rem .75rem .35rem !important; border-bottom: 0 !important; font-size: .8125rem; font-weight: 600; color: var(--bs-secondary-color, #6c757d); }
+.drv-name { display: flex; align-items: center; gap: .85rem; min-width: 0; }
+.drv-name .drv-ico { font-size: 1.35rem; flex: 0 0 auto; }
+.drv-name .drv-title { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.drv-loc { color: var(--bs-secondary-color, #6c757d); font-size: .8125rem; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: bottom; }
+.drv-meta-mobile { color: var(--bs-secondary-color, #6c757d); font-size: .75rem; }
+
+/* Mobile (< md): kolom sekunder disembunyikan; lokasi/sumber/tanggal pindah ke baris kecil di bawah nama. */
+@media (max-width: 767.98px) {
+    .drv-name .drv-title { max-width: 55vw; }
+}
+
+/* ===== Perbaikan: grup inventory ===== */
+.inventory-group .bi-chevron-down { transition: transform .15s; }
+.inventory-group button:not(.collapsed) .bi-chevron-down { transform: rotate(180deg); }
+
+/* ===== Project: tab Surat Jalan ===== */
+.rotate-180 { transform: rotate(180deg); transition: transform .2s ease; display: inline-block; }
+
+/* ===== Tracking: kartu unit peminjaman ===== */
+.unit-card {
+    cursor: pointer;
+    background-color: #e7f1ff;
+    border-color: #b6d4fe !important;
+    transition: background-color .15s ease, border-color .15s ease;
+    user-select: none;
+}
+.unit-card.unit-selected {
+    background-color: #d1e7dd;
+    border-color: #a3cfbb !important;
+}
+.unit-card.status-rusak {
+    background-color: #f8d7da;
+    border-color: #f1aeb5 !important;
+}
+.unit-card.status-hilang {
+    background-color: #e2e3e5;
+    border-color: #c4c8cb !important;
+}
+
+/* ===== User: Detail ===== */
+.user-password-group { max-width: 22rem; }

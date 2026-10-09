@@ -5,7 +5,7 @@
     <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
 
         {{-- Zona toggle accordion - TERPISAH dari tombol Konfirmasi supaya tidak bentrok --}}
-        <div class="d-flex align-items-center gap-2 flex-grow-1" style="cursor:pointer;" data-bs-toggle="collapse" data-bs-target="#borrowedProject{{ $project->id }}">
+        <div class="d-flex align-items-center gap-2 flex-grow-1 u-cur-pointer" data-bs-toggle="collapse" data-bs-target="#borrowedProject{{ $project->id }}">
             <i class="bi bi-chevron-down text-muted"></i>
             <div>
                 <div class="fw-bold">{{ $project->name }}</div>

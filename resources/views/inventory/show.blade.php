@@ -10,7 +10,7 @@
         <div>
             <h3 class="fw-bold text-dark m-0 d-flex align-items-center gap-2">
                 {{ $inventory->name }}
-                <span class="badge {{ \App\Support\InventoryStatus::subtleClass($inventory->display_status) }} px-2 py-1 rounded-pill fw-semibold" style="font-size: 0.65rem;"><i class="bi bi-circle-fill me-1" style="font-size: 0.45rem;"></i>{{ strtoupper($inventory->display_status ?? 'TERSEDIA') }}</span>
+                <span class="badge {{ \App\Support\InventoryStatus::subtleClass($inventory->display_status) }} px-2 py-1 rounded-pill fw-semibold u-fs-0p65rem"><i class="bi bi-circle-fill me-1 u-fs-0p45rem"></i>{{ strtoupper($inventory->display_status ?? 'TERSEDIA') }}</span>
             </h3>
             <p class="text-muted small m-0">Menampilkan informasi lengkap dan identitas aset barang.</p>
         </div>
@@ -42,7 +42,7 @@
     <div class="d-md-none mb-3 px-1">
         <div class="d-flex align-items-center justify-content-between gap-2">
             <h4 class="fw-bold text-dark m-0">{{ $inventory->name }}</h4>
-            <span class="badge {{ \App\Support\InventoryStatus::subtleClass($inventory->display_status) }} px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> {{ strtoupper($inventory->display_status ?? 'TERSEDIA') }}</span>
+            <span class="badge {{ \App\Support\InventoryStatus::subtleClass($inventory->display_status) }} px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1 u-fs-0p5rem"></i> {{ strtoupper($inventory->display_status ?? 'TERSEDIA') }}</span>
         </div>
         <p class="text-muted small mb-2">Informasi lengkap aset barang</p>
         <div class="d-flex flex-wrap gap-2">
@@ -88,11 +88,11 @@
                     @if($inventory->image)
                         <img src="{{ asset('storage/' . $inventory->image) }}"
                              alt="Foto {{ $inventory->name }}"
-                             class="img-fluid rounded-3"
-                             style="max-height: 220px; width: 100%; object-fit: contain;">
+                             class="img-fluid rounded-3 u-maxh-220px u-w-100pct u-of-contain"
+                            >
                     @else
                         <div class="text-center py-5 text-muted border border-dashed rounded-3 bg-light">
-                            <i class="bi bi-image opacity-25 d-block mb-2" style="font-size: 3rem;"></i>
+                            <i class="bi bi-image opacity-25 d-block mb-2 u-fs-3rem"></i>
                             <span class="small fw-medium">Foto barang belum diunggah</span>
                         </div>
                     @endif
@@ -114,11 +114,11 @@
                     <table class="table table-borderless table-sm small align-middle mb-0">
                         <tbody>
                             <tr>
-                                <td class="text-muted py-2 ps-0" style="width: 40%;"><i class="bi bi-tag text-secondary me-2"></i>Brand</td>
+                                <td class="text-muted py-2 ps-0 u-w-40pct"><i class="bi bi-tag text-secondary me-2"></i>Brand</td>
                                 <td class="fw-bold text-dark py-2 text-end">{{ $inventory->brand ?: '-' }}</td>
                             </tr>
                             <tr>
-                                <td class="text-muted py-2 ps-0" style="width: 40%;"><i class="bi bi-hash text-secondary me-2"></i>Serial Number</td>
+                                <td class="text-muted py-2 ps-0 u-w-40pct"><i class="bi bi-hash text-secondary me-2"></i>Serial Number</td>
                                 <td class="fw-bold text-dark py-2 text-end font-monospace">{{ $inventory->serial_number }}</td>
                             </tr>
                             <tr>
@@ -141,7 +141,7 @@
                         <i class="bi bi-file-text text-primary"></i> Deskripsi Barang
                     </h6>
                     @if(!empty($inventory->description))
-                        <p class="text-dark small mb-0" style="white-space: pre-line; line-height: 1.6;">
+                        <p class="text-dark small mb-0 u-ws-pre-line u-lh-1p6">
                             {{ $inventory->description }}
                         </p>
                     @else
@@ -179,9 +179,9 @@
                         <div class="col-6">
                             <div class="p-2 bg-white rounded-3 border d-inline-block">
                                 @if($inventory->qr_code_url)
-                                    <img src="{{ $inventory->qr_code_url }}" alt="QR Code Label {{ $inventory->serial_number }}" class="img-fluid" style="width: 130px; height: 130px; object-fit: contain;">
+                                    <img src="{{ $inventory->qr_code_url }}" alt="QR Code Label {{ $inventory->serial_number }}" class="img-fluid u-w-130px u-h-130px u-of-contain">
                                 @else
-                                    <div class="d-flex align-items-center justify-content-center text-muted small" style="width: 130px; height: 130px;">Belum tersedia</div>
+                                    <div class="d-flex align-items-center justify-content-center text-muted small u-w-130px u-h-130px">Belum tersedia</div>
                                 @endif
                             </div>
                             <div class="fw-semibold small mt-2">QR Label</div>
@@ -190,9 +190,9 @@
                         <div class="col-6">
                             <div class="p-2 bg-white rounded-3 border d-inline-block">
                                 @if($inventory->qr_code_report_url)
-                                    <img src="{{ $inventory->qr_code_report_url }}" alt="QR Code Report {{ $inventory->serial_number }}" class="img-fluid" style="width: 130px; height: 130px; object-fit: contain;">
+                                    <img src="{{ $inventory->qr_code_report_url }}" alt="QR Code Report {{ $inventory->serial_number }}" class="img-fluid u-w-130px u-h-130px u-of-contain">
                                 @else
-                                    <div class="d-flex align-items-center justify-content-center text-muted small" style="width: 130px; height: 130px;">Belum tersedia</div>
+                                    <div class="d-flex align-items-center justify-content-center text-muted small u-w-130px u-h-130px">Belum tersedia</div>
                                 @endif
                             </div>
                             <div class="fw-semibold small mt-2">QR Report</div>
@@ -223,11 +223,11 @@
                                 @if($inventory->image)
                                     <img src="{{ asset('storage/' . $inventory->image) }}"
                                          alt="Foto {{ $inventory->name }}"
-                                         class="img-fluid rounded"
-                                         style="max-height: 240px; width: 100%; object-fit: contain;">
+                                         class="img-fluid rounded u-maxh-240px u-w-100pct u-of-contain"
+                                        >
                                 @else
                                     <div class="text-center py-5 text-muted border border-dashed rounded w-100 bg-light">
-                                        <i class="bi bi-image opacity-25 d-block mb-2" style="font-size: 3rem;"></i>
+                                        <i class="bi bi-image opacity-25 d-block mb-2 u-fs-3rem"></i>
                                         <span class="small fw-medium">Foto barang belum diunggah</span>
                                     </div>
                                 @endif
@@ -242,7 +242,7 @@
                             </div>
                             <div class="card-body p-4">
                                 @if(!empty($inventory->description))
-                                    <p class="text-dark small mb-0" style="white-space: pre-line; line-height: 1.6;">
+                                    <p class="text-dark small mb-0 u-ws-pre-line u-lh-1p6">
                                         {{ $inventory->description }}
                                     </p>
                                 @else
@@ -270,7 +270,7 @@
                                 <table class="table table-borderless table-sm align-middle small mb-0">
                                     <tbody>
                                         <tr>
-                                            <td class="text-muted py-2" style="width: 40%;">Nama Barang</td>
+                                            <td class="text-muted py-2 u-w-40pct">Nama Barang</td>
                                             <td class="fw-bold text-dark py-2">: {{ $inventory->name }}</td>
                                         </tr>
                                         <tr>
@@ -318,7 +318,7 @@
                                         <tbody>
                                             @foreach($inventory->attributes as $attr)
                                                 <tr>
-                                                    <td class="text-muted py-2" style="width: 45%;"><i class="bi bi-tag text-primary me-2"></i>{{ $attr->attribute_name }}</td>
+                                                    <td class="text-muted py-2 u-w-45pct"><i class="bi bi-tag text-primary me-2"></i>{{ $attr->attribute_name }}</td>
                                                     <td class="fw-semibold text-dark py-2">: {{ $attr->attribute_value }}</td>
                                                 </tr>
                                             @endforeach
@@ -341,9 +341,9 @@
                     <div class="card-body p-4 text-center">
                         <div class="p-3 bg-white rounded-3 border d-inline-block shadow-sm mb-3">
                             @if($inventory->qr_code_url)
-                                <img src="{{ $inventory->qr_code_url }}" alt="QR Code {{ $inventory->serial_number }}" class="img-fluid" style="width: 180px; height: 180px; object-fit: contain;">
+                                <img src="{{ $inventory->qr_code_url }}" alt="QR Code {{ $inventory->serial_number }}" class="img-fluid u-w-180px u-h-180px u-of-contain">
                             @else
-                                <div class="d-flex flex-column align-items-center justify-content-center text-muted" style="width: 180px; height: 180px;">
+                                <div class="d-flex flex-column align-items-center justify-content-center text-muted u-w-180px u-h-180px">
                                     <i class="bi bi-qr-code opacity-25 fs-1 mb-2"></i>
                                     <span class="small">QR Code belum tersedia</span>
                                 </div>
@@ -361,9 +361,9 @@
                     <div class="card-body p-4 text-center">
                         <div class="p-3 bg-white rounded-3 border d-inline-block shadow-sm mb-3">
                             @if($inventory->qr_code_report_url)
-                                <img src="{{ $inventory->qr_code_report_url }}" alt="QR Code Report {{ $inventory->serial_number }}" class="img-fluid" style="width: 180px; height: 180px; object-fit: contain;">
+                                <img src="{{ $inventory->qr_code_report_url }}" alt="QR Code Report {{ $inventory->serial_number }}" class="img-fluid u-w-180px u-h-180px u-of-contain">
                             @else
-                                <div class="d-flex flex-column align-items-center justify-content-center text-muted" style="width: 180px; height: 180px;">
+                                <div class="d-flex flex-column align-items-center justify-content-center text-muted u-w-180px u-h-180px">
                                     <i class="bi bi-qr-code opacity-25 fs-1 mb-2"></i>
                                     <span class="small">QR Code belum tersedia</span>
                                 </div>
@@ -448,28 +448,28 @@
                             <div class="fw-bold">#{{ $unit->unit_number }}</div>
                             <div class="small">{{ $unit->display_status }}</div>
                             @if($onLoan)
-                                <div class="small text-truncate" style="font-size:.65rem;"><i class="bi bi-truck me-1"></i>Di lapangan</div>
-                                <div class="small text-truncate" style="font-size:.65rem;">{{ $unit->suratJalanItem->suratJalan->nomor ?? '' }}</div>
+                                <div class="small text-truncate u-fs-p65rem"><i class="bi bi-truck me-1"></i>Di lapangan</div>
+                                <div class="small text-truncate u-fs-p65rem">{{ $unit->suratJalanItem->suratJalan->nomor ?? '' }}</div>
                             @elseif($unit->isInRepair())
                                 @php $repair = $unit->repairItem->repair ?? null; @endphp
-                                <div class="small fw-semibold" style="font-size:.65rem; line-height:1.2;" title="Perbaikan di {{ $repair->tempat_nama ?? '-' }}">
+                                <div class="small fw-semibold u-fs-p65rem u-lh-1p2" title="Perbaikan di {{ $repair->tempat_nama ?? '-' }}">
                                     <i class="bi bi-wrench-adjustable me-1"></i>Perbaikan di {{ $repair->tempat_nama ?? '-' }}
                                 </div>
                                 @if($repair)
-                                    <a href="{{ route('inventory.repairs.show', $repair) }}" class="small text-decoration-none d-block" style="font-size:.6rem;">{{ $repair->code }}</a>
+                                    <a href="{{ route('inventory.repairs.show', $repair) }}" class="small text-decoration-none d-block u-fs-p6rem">{{ $repair->code }}</a>
                                 @endif
                             @elseif($unit->lokasiSekarang)
-                                <div class="small text-truncate" style="font-size:.65rem;" title="Lokasi sekarang: {{ $unit->lokasiSekarang->name }}">
+                                <div class="small text-truncate u-fs-p65rem" title="Lokasi sekarang: {{ $unit->lokasiSekarang->name }}">
                                     <i class="bi bi-geo-alt me-1"></i>{{ $unit->lokasiSekarang->name }}
                                 </div>
                                 @if($unit->isOffHome())
-                                    <div class="small text-truncate fw-semibold" style="font-size:.6rem;"
+                                    <div class="small text-truncate fw-semibold u-fs-p6rem"
                                          title="Lokasi utama: {{ $unit->lokasiUtama->name ?? '-' }}">Belum di lokasi utama</div>
                                 @endif
                             @endif
                             @php $servis = $inventory->servisStatusFor($unit); @endphp
                             @if($servis && $servis['state'] !== 'ok')
-                                <div class="small fw-semibold {{ $servis['state'] === 'terlambat' ? 'text-danger' : '' }}" style="font-size:.6rem; line-height:1.2;" title="{{ implode(' / ', $servis['pesan']) }}">
+                                <div class="small fw-semibold {{ $servis['state'] === 'terlambat' ? 'text-danger' : '' }} u-fs-p6rem u-lh-1p2" title="{{ implode(' / ', $servis['pesan']) }}">
                                     <i class="bi bi-tools me-1"></i>{{ $servis['state'] === 'terlambat' ? 'Servis terlewat' : 'Segera servis' }}
                                     <span class="d-block fw-normal">{{ implode(' / ', $servis['pesan']) }}</span>
                                 </div>
@@ -543,159 +543,7 @@
 
         {{-- Dimuat lewat stack agar berjalan SETELAH Bootstrap JS (layout memuatnya di akhir body). --}}
         @push('scripts')
-        <script>
-            (function () {
-                'use strict';
-
-                const modalEl   = document.getElementById('moveLocationModal');
-                const form      = document.getElementById('moveLocationForm');
-                const btnOpen   = document.getElementById('btnMoveLocation');
-                const selectAll = document.getElementById('unitSelectAll');
-                const countEl   = document.getElementById('unitSelectedCount');
-                const inputsBox = document.getElementById('moveUnitInputs');
-                const listEl    = document.getElementById('moveUnitList');
-                const targetEl  = document.getElementById('moveTarget');
-                const gpsBox    = document.getElementById('moveGpsBox');
-                const gpsText   = document.getElementById('moveGpsText');
-                const latEl     = document.getElementById('moveLat');
-                const lngEl     = document.getElementById('moveLng');
-                const accEl     = document.getElementById('moveAcc');
-
-                if (!btnOpen) return;
-
-                const checkboxes = Array.from(document.querySelectorAll('.unit-select'));
-                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-
-                // Naik setiap deteksi baru / modal ditutup; hasil deteksi yang basi dibuang.
-                let detectToken = 0;
-
-                // Checkbox unit yang dicentang.
-                function selected() {
-                    return checkboxes.filter(function (c) { return c.checked; });
-                }
-
-                // Sinkronkan tombol dan jumlah sesuai unit terpilih.
-                function refreshSelection() {
-                    const n = selected().length;
-                    btnOpen.disabled = n === 0;
-                    countEl.textContent = n > 0 ? '(' + n + ')' : '';
-                    selectAll.checked = n > 0 && n === checkboxes.length;
-                    selectAll.indeterminate = n > 0 && n < checkboxes.length;
-                }
-
-                checkboxes.forEach(function (c) { c.addEventListener('change', refreshSelection); });
-                selectAll.addEventListener('change', function () {
-                    checkboxes.forEach(function (c) { c.checked = selectAll.checked; });
-                    refreshSelection();
-                });
-
-                /** Tampilan status deteksi: kind = info | success | warning | muted. */
-                function setStatus(kind, text) {
-                    const cls = { info: 'alert-info', success: 'alert-success', warning: 'alert-warning', muted: 'alert-light border' };
-                    gpsBox.className = 'alert ' + (cls[kind] || cls.muted) + ' small py-2 d-flex justify-content-between align-items-center gap-2';
-                    gpsText.textContent = text;
-                }
-
-                // Kosongkan koordinat hasil deteksi.
-                function clearCoords() {
-                    latEl.value = '';
-                    lngEl.value = '';
-                    accEl.value = '';
-                }
-
-                // Ambil koordinat GPS lalu minta server mencocokkan lokasi terdekat; token mencegah hasil lama menimpa.
-                function detect() {
-                    const token = ++detectToken;
-                    clearCoords();
-                    targetEl.selectedIndex = 0;
-
-                    if (!('geolocation' in navigator)) {
-                        setStatus('muted', 'GPS tidak tersedia di perangkat ini. Pilih lokasi secara manual.');
-                        return;
-                    }
-                    if (!window.isSecureContext) {
-                        setStatus('muted', 'GPS hanya bisa dipakai lewat HTTPS. Pilih lokasi secara manual.');
-                        return;
-                    }
-
-                    setStatus('info', 'Mendeteksi lokasi...');
-
-                    navigator.geolocation.getCurrentPosition(function (pos) {
-                        if (token !== detectToken) return;
-
-                        const c = pos.coords;
-                        latEl.value = c.latitude;
-                        lngEl.value = c.longitude;
-                        accEl.value = Math.round(c.accuracy);
-
-                        const query = new URLSearchParams({ lat: c.latitude, lng: c.longitude, accuracy: c.accuracy });
-
-                        fetch(form.dataset.detectUrl + '?' + query.toString(), {
-                            headers: { 'Accept': 'application/json' },
-                            credentials: 'same-origin'
-                        })
-                            .then(function (res) {
-                                if (!res.ok) throw new Error('detect failed');
-                                return res.json();
-                            })
-                            .then(function (data) {
-                                if (token !== detectToken) return;
-
-                                if (data.status === 'terdeteksi' && data.location) {
-                                    const option = Array.from(targetEl.options).find(function (o) {
-                                        return o.value === String(data.location.id);
-                                    });
-                                    if (option) {
-                                        targetEl.value = option.value;
-                                        setStatus('success', 'Terdeteksi: ' + data.location.name + ' (sekitar ' + data.distance_m + ' m)');
-                                        return;
-                                    }
-                                }
-
-                                if (data.status === 'akurasi_rendah') {
-                                    setStatus('warning', 'Akurasi GPS rendah (sekitar ' + data.accuracy_m + ' m). Pilih lokasi secara manual.');
-                                    return;
-                                }
-
-                                setStatus('warning', 'Di luar jangkauan. Pilih lokasi secara manual.');
-                            })
-                            .catch(function () {
-                                if (token !== detectToken) return;
-                                setStatus('muted', 'Gagal mendeteksi lokasi. Pilih lokasi secara manual.');
-                            });
-                    }, function (err) {
-                        if (token !== detectToken) return;
-                        clearCoords();
-                        setStatus('muted', err.code === 1
-                            ? 'Izin lokasi ditolak. Pilih lokasi secara manual.'
-                            : 'Lokasi tidak dapat dibaca. Pilih lokasi secara manual.');
-                    }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
-                }
-
-                btnOpen.addEventListener('click', function () {
-                    const chosen = selected();
-                    if (chosen.length === 0) return;
-
-                    // Isi id unit terpilih ke form + ringkasan nomor unit.
-                    inputsBox.replaceChildren();
-                    chosen.forEach(function (c) {
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = 'unit_ids[]';
-                        input.value = c.value;
-                        inputsBox.appendChild(input);
-                    });
-                    listEl.textContent = chosen.map(function (c) { return '#' + c.dataset.number; }).join(', ');
-                    document.getElementById('moveMakeHome').checked = false;
-
-                    modal.show();
-                    detect();
-                });
-
-                document.getElementById('moveGpsRetry').addEventListener('click', detect);
-                modalEl.addEventListener('hidden.bs.modal', function () { detectToken++; });
-            })();
-        </script>
+        <script src="{{ \App\Support\AppAsset::url('js/inventory/show.js') }}"></script>
         @endpush
     @endif
     <!-- Riwayat Peminjaman lintas Project dari SuratJalanItem (permanen), 20 terbaru: InventoryService::getBorrowHistory(). -->
@@ -748,7 +596,7 @@
                                     <td class="text-center">{{ $item->qty_dipakai }}</td>
                                     <td>{{ \Carbon\Carbon::parse($item->suratJalan->tanggal_terbit)->format('d/m/Y') }}</td>
                                     <td>
-                                        <span class="badge {{ $statusBadge[1] }} border px-2 py-1 rounded-pill fw-semibold" style="font-size:.7rem;">{{ $statusBadge[0] }}</span>
+                                        <span class="badge {{ $statusBadge[1] }} border px-2 py-1 rounded-pill fw-semibold u-fs-p7rem">{{ $statusBadge[0] }}</span>
                                     </td>
                                 </tr>
                             @endforeach

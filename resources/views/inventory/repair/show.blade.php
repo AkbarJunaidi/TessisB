@@ -103,13 +103,13 @@
                     @if($repair->keluhan)
                         <hr>
                         <div class="small text-muted mb-1">Keluhan / Kerusakan</div>
-                        <div class="small" style="white-space: pre-line;">{{ $repair->keluhan }}</div>
+                        <div class="small u-ws-pre-line">{{ $repair->keluhan }}</div>
                     @endif
 
                     @if($repair->catatan_hasil)
                         <hr>
                         <div class="small text-muted mb-1">Catatan Hasil</div>
-                        <div class="small" style="white-space: pre-line;">{{ $repair->catatan_hasil }}</div>
+                        <div class="small u-ws-pre-line">{{ $repair->catatan_hasil }}</div>
                     @endif
                 </div>
             </div>

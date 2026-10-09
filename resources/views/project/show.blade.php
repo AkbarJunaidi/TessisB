@@ -28,7 +28,7 @@
                     <form action="{{ route('projects.update-status', $project) }}" method="POST" class="d-inline">
                         @csrf
                         @method('PATCH')
-                        <select name="status" class="form-select form-select-sm border-0 bg-light fw-semibold" onchange="this.form.submit()" style="width:auto;">
+                        <select name="status" class="form-select form-select-sm border-0 bg-light fw-semibold u-w-auto" onchange="this.form.submit()">
                             @foreach(\App\Models\Project::STATUS_LABELS as $s => $label)
                                 <option value="{{ $s }}" @selected($project->status === $s)>{{ $label }}</option>
                             @endforeach
@@ -134,11 +134,11 @@
                         <table class="table table-borderless table-sm small align-middle mb-3">
                             <tbody>
                                 <tr>
-                                    <td class="text-muted py-2 ps-0" style="width: 40%;">Kategori</td>
+                                    <td class="text-muted py-2 ps-0 u-w-40pct">Kategori</td>
                                     <td class="fw-bold text-dark py-2 text-end">{{ $project->category ?: '-' }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="text-muted py-2 ps-0" style="width: 40%;">Client</td>
+                                    <td class="text-muted py-2 ps-0 u-w-40pct">Client</td>
                                     <td class="fw-bold text-dark py-2 text-end">{{ $project->client }}</td>
                                 </tr>
                                 <tr>
@@ -225,10 +225,10 @@
                             $iconInfo = $fileIconMap[strtolower($file->file_type)] ?? ['bg-light', 'text-secondary', 'bi-file-earmark-text'];
                         @endphp
                         <div class="d-flex align-items-center gap-2 mb-3">
-                            <div class="rounded {{ $iconInfo[0] }} {{ $iconInfo[1] }} d-flex align-items-center justify-content-center flex-shrink-0" style="width:36px;height:36px;">
+                            <div class="rounded {{ $iconInfo[0] }} {{ $iconInfo[1] }} d-flex align-items-center justify-content-center flex-shrink-0 u-w-36px u-h-36px">
                                 <i class="bi {{ $iconInfo[2] }}"></i>
                             </div>
-                            <div class="flex-grow-1" style="min-width:0;">
+                            <div class="flex-grow-1 u-minw-0">
                                 <div class="small fw-semibold text-truncate">{{ $file->file_name }}</div>
                                 <div class="small text-muted">{{ strtoupper($file->file_type) }} &middot; {{ optional($file->created_at)->translatedFormat('d M Y') }} &middot; {{ $file->readable_size }}</div>
                             </div>
@@ -265,8 +265,8 @@
                                     </button>
 
                                     <input type="text" inputmode="numeric" name="estimated_value" id="estimatedValueInput"
-                                           class="form-control form-control-sm finance-amount-input d-none"
-                                           style="width: 140px;"
+                                           class="form-control form-control-sm finance-amount-input d-none u-w-140px"
+                                          
                                            value="{{ $project->estimated_value ? number_format((float) $project->estimated_value, 0, ',', '.') : '' }}">
 
                                     <button type="button" class="btn btn-sm btn-primary d-none" id="estimatedValueConfirmBtn" title="Konfirmasi">
@@ -285,15 +285,31 @@
                                 $budgetPct = $budget > 0 ? min(100, round($spent / $budget * 100)) : 0;
                                 $overBudget = $budget > 0 && $spent > $budget;
                             @endphp
-                            <div class="p-3 rounded-3 bg-light mb-3">
-                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-                                    <label for="budgetInput" class="fw-bold mb-0">Anggaran Biaya</label>
-                                    <input type="text" inputmode="numeric" name="budget" id="budgetInput"
-                                           class="form-control form-control-sm finance-amount-input" style="width: 160px;" placeholder="0"
-                                           value="{{ $project->budget ? number_format($budget, 0, ',', '.') : '' }}">
+                            <div class="p-3 rounded-3 bg-info-subtle mb-3" id="budgetBox">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold">Anggaran Biaya</span>
+
+                                    <div class="d-flex align-items-center gap-2 flex-shrink-0 ms-2">
+                                        <span class="fw-bold fs-5 text-info" id="budgetDisplay">{{ \App\Support\Money::formatRupiah($budget) }}</span>
+
+                                        <button type="button" class="btn btn-sm btn-outline-primary" id="budgetEditBtn" title="Edit Anggaran Biaya">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+
+                                        <input type="text" inputmode="numeric" name="budget" id="budgetInput"
+                                               class="form-control form-control-sm finance-amount-input d-none u-w-140px" placeholder="0"
+                                               value="{{ $project->budget ? number_format($budget, 0, ',', '.') : '' }}">
+
+                                        <button type="button" class="btn btn-sm btn-primary d-none" id="budgetConfirmBtn" title="Konfirmasi">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary d-none" id="budgetCancelBtn" title="Batal">
+                                            <i class="bi bi-arrow-counterclockwise"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 @if($budget > 0)
-                                    <div class="progress mt-2" style="height: 8px;">
+                                    <div class="progress mt-2 u-h-8px">
                                         <div class="progress-bar {{ $overBudget ? 'bg-danger' : 'bg-success' }}" style="width: {{ $budgetPct }}%"></div>
                                     </div>
                                     <div class="small mt-1 {{ $overBudget ? 'text-danger fw-semibold' : 'text-muted' }}">
@@ -382,7 +398,7 @@
                                 <tbody>
                                     @forelse($project->financeItems->where('type', 'income') as $item)
                                         <tr>
-                                            <td class="fw-semibold text-success" style="width: 35%;">{{ \App\Support\Money::formatRupiah($item->amount) }}</td>
+                                            <td class="fw-semibold text-success u-w-35pct">{{ \App\Support\Money::formatRupiah($item->amount) }}</td>
                                             <td class="text-muted">{{ $item->description ?: '-' }}</td>
                                         </tr>
                                     @empty
@@ -404,7 +420,7 @@
                                 <tbody>
                                     @forelse($project->financeItems->where('type', 'expense') as $item)
                                         <tr>
-                                            <td class="fw-semibold text-danger" style="width: 35%;">{{ \App\Support\Money::formatRupiah($item->amount) }}</td>
+                                            <td class="fw-semibold text-danger u-w-35pct">{{ \App\Support\Money::formatRupiah($item->amount) }}</td>
                                             <td class="text-muted">{{ $item->description ?: '-' }}</td>
                                         </tr>
                                     @empty
@@ -483,37 +499,7 @@
 
 </div>
 
-<script>
-    // Pindah ke tab Surat Jalan dengan memicu tombol tab aslinya (agar Bootstrap menonaktifkan tab aktif), lalu scroll.
-    function goToSuratJalanTab() {
-        const realTabButton = document.querySelector('#projectTabs [data-bs-target="#tab-suratjalan"]');
-        if (realTabButton) {
-            bootstrap.Tab.getOrCreateInstance(realTabButton).show();
-        }
-
-        setTimeout(function () {
-            // Target scroll: .tab-content.
-            const tabsSection = document.getElementById('projectTabContent');
-            if (tabsSection) tabsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 50);
-    }
-
-    document.querySelectorAll('.go-to-surat-jalan-tab').forEach(function (link) {
-        link.addEventListener('click', function (e) {
-            e.preventDefault();
-            goToSuratJalanTab();
-        });
-    });
-
-    // Buka tab dari URL #tab-suratjalan. Dibungkus DOMContentLoaded karena bootstrap.bundle.js
-    // dimuat setelah blok ini; tanpa itu `bootstrap` masih undefined dan gagal diam-diam.
-    document.addEventListener('DOMContentLoaded', function () {
-        if (window.location.hash === '#tab-suratjalan') {
-            goToSuratJalanTab();
-        }
-    });
-
-</script>
+<script src="{{ \App\Support\AppAsset::url('js/project/show.js') }}"></script>
 
 {{-- Script Data Keuangan: tambah/hapus baris + kalkulasi total live (client-side) --}}
 @if(auth()->user()->hasPermission('finance', 'manage'))
@@ -607,37 +593,42 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Edit inline Estimasi Pendapatan; di luar #incomeRows/#expenseRows sehingga tidak masuk total.
-    const estimatedValueDisplay = document.getElementById('estimatedValueDisplay');
-    const estimatedValueEditBtn = document.getElementById('estimatedValueEditBtn');
-    const estimatedValueInput = document.getElementById('estimatedValueInput');
-    const estimatedValueConfirmBtn = document.getElementById('estimatedValueConfirmBtn');
-    const estimatedValueCancelBtn = document.getElementById('estimatedValueCancelBtn');
+    // Edit inline Estimasi Pendapatan dan Anggaran Biaya; di luar #incomeRows/#expenseRows sehingga tidak masuk total.
+    function setupInlineAmountEditor(prefix) {
+        const display = document.getElementById(prefix + 'Display');
+        const editBtn = document.getElementById(prefix + 'EditBtn');
+        const input = document.getElementById(prefix + 'Input');
+        const confirmBtn = document.getElementById(prefix + 'ConfirmBtn');
+        const cancelBtn = document.getElementById(prefix + 'CancelBtn');
 
-    // Ganti tampilan Estimasi Pendapatan antara mode lihat dan mode edit.
-    function toggleEstimatedValueEditMode(isEditing) {
-        estimatedValueDisplay.classList.toggle('d-none', isEditing);
-        estimatedValueEditBtn.classList.toggle('d-none', isEditing);
-        estimatedValueInput.classList.toggle('d-none', !isEditing);
-        estimatedValueConfirmBtn.classList.toggle('d-none', !isEditing);
-        estimatedValueCancelBtn.classList.toggle('d-none', !isEditing);
+        // Ganti tampilan antara mode lihat dan mode edit.
+        function toggleEditMode(isEditing) {
+            display.classList.toggle('d-none', isEditing);
+            editBtn.classList.toggle('d-none', isEditing);
+            input.classList.toggle('d-none', !isEditing);
+            confirmBtn.classList.toggle('d-none', !isEditing);
+            cancelBtn.classList.toggle('d-none', !isEditing);
+        }
+
+        editBtn.addEventListener('click', function () {
+            input.dataset.lastConfirmed = input.value;
+            toggleEditMode(true);
+            input.focus();
+        });
+
+        confirmBtn.addEventListener('click', function () {
+            display.textContent = formatRupiah(parseAmount(input.value));
+            toggleEditMode(false);
+        });
+
+        cancelBtn.addEventListener('click', function () {
+            input.value = input.dataset.lastConfirmed || '';
+            toggleEditMode(false);
+        });
     }
 
-    estimatedValueEditBtn.addEventListener('click', function () {
-        estimatedValueInput.dataset.lastConfirmed = estimatedValueInput.value;
-        toggleEstimatedValueEditMode(true);
-        estimatedValueInput.focus();
-    });
-
-    estimatedValueConfirmBtn.addEventListener('click', function () {
-        estimatedValueDisplay.textContent = formatRupiah(parseAmount(estimatedValueInput.value));
-        toggleEstimatedValueEditMode(false);
-    });
-
-    estimatedValueCancelBtn.addEventListener('click', function () {
-        estimatedValueInput.value = estimatedValueInput.dataset.lastConfirmed || '';
-        toggleEstimatedValueEditMode(false);
-    });
+    setupInlineAmountEditor('estimatedValue');
+    setupInlineAmountEditor('budget');
 });
 </script>
 @endif

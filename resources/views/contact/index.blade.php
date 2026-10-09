@@ -124,8 +124,8 @@
                     @foreach(range('A', 'Z') as $letter)
                         <a
                             href="{{ route('contacts.index', array_merge($filters, ['letter' => $letter])) }}"
-                            class="btn btn-sm {{ ($filters['letter'] ?? '') === $letter ? 'btn-primary' : 'btn-outline-secondary' }}"
-                            style="min-width: 32px;"
+                            class="btn btn-sm {{ ($filters['letter'] ?? '') === $letter ? 'btn-primary' : 'btn-outline-secondary' }} u-minw-32px"
+                           
                         >{{ $letter }}</a>
                     @endforeach
                 </div>
@@ -167,17 +167,17 @@
 
                     <div class="col-md-6 col-lg-4">
                         <div
-                            class="card border-0 shadow-sm rounded-3 h-100 contact-card"
-                            style="cursor: pointer;"
+                            class="card border-0 shadow-sm rounded-3 h-100 contact-card u-cur-pointer"
+                           
                             onclick="window.location='{{ route('contacts.show', $contact) }}'"
                         >
                             <div class="card-body">
 
                                 <div class="d-flex align-items-start gap-2 mb-2">
-                                    <div class="rounded-circle bg-{{ $contact->avatar_color }}-subtle text-{{ $contact->avatar_color }} d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 42px; height: 42px; font-size: 0.85rem;">
+                                    <div class="rounded-circle bg-{{ $contact->avatar_color }}-subtle text-{{ $contact->avatar_color }} d-flex align-items-center justify-content-center fw-bold flex-shrink-0 u-w-42px u-h-42px u-fs-0p85rem">
                                         {{ $contact->initials }}
                                     </div>
-                                    <div class="flex-grow-1" style="min-width: 0;">
+                                    <div class="flex-grow-1 u-minw-0">
                                         <h6 class="fw-bold text-dark mb-0 text-truncate">
                                             {{ $contact->name }}
                                         </h6>

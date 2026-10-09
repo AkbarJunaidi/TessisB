@@ -251,25 +251,4 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-<style>
-    .unit-card {
-        cursor: pointer;
-        background-color: #e7f1ff;
-        border-color: #b6d4fe !important;
-        transition: background-color .15s ease, border-color .15s ease;
-        user-select: none;
-    }
-    .unit-card.unit-selected {
-        background-color: #d1e7dd;
-        border-color: #a3cfbb !important;
-    }
-    .unit-card.status-rusak {
-        background-color: #f8d7da;
-        border-color: #f1aeb5 !important;
-    }
-    .unit-card.status-hilang {
-        background-color: #e2e3e5;
-        border-color: #c4c8cb !important;
-    }
-</style>
 @endsection

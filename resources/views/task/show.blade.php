@@ -22,7 +22,7 @@
 
                     <h4 class="fw-bold text-dark mb-3">{{ $task->title }}</h4>
 
-                    <div class="p-3 bg-light rounded-3 text-secondary mb-4" style="min-height: 120px; white-space: pre-line;">
+                    <div class="p-3 bg-light rounded-3 text-secondary mb-4 u-minh-120px u-ws-pre-line">
                         {{ $task->description ?? 'Tidak ada deskripsi teknis yang ditambahkan pada tugas ini.' }}
                     </div>
 
@@ -57,24 +57,24 @@
                                 <div class="p-3 rounded-3 bg-light border border-light shadow-sm">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <div class="d-flex align-items-center gap-2">
-                                            <div class="bg-primary text-white rounded-circle small d-flex align-items-center justify-content-center fw-bold" style="width: 28px; height: 28px; font-size: 0.75rem;">
+                                            <div class="bg-primary text-white rounded-circle small d-flex align-items-center justify-content-center fw-bold u-w-28px u-h-28px u-fs-0p75rem">
                                                 {{ strtoupper(substr($comment->user->name, 0, 2)) }}
                                             </div>
                                             <span class="fw-bold text-dark small">{{ $comment->user->name }}</span>
-                                            <span class="badge bg-secondary text-white" style="font-size: 0.65rem;">{{ $comment->user->role }}</span>
+                                            <span class="badge bg-secondary text-white u-fs-0p65rem">{{ $comment->user->role }}</span>
                                         </div>
-                                        <small class="text-muted font-monospace" style="font-size: 0.7rem;">
+                                        <small class="text-muted font-monospace u-fs-0p7rem">
                                             <i class="bi bi-clock me-1"></i>{{ $comment->created_at->diffForHumans() }}
                                         </small>
                                     </div>
-                                    <p class="text-secondary small m-0 text-wrap" style="white-space: pre-line; line-height: 1.5;">
+                                    <p class="text-secondary small m-0 text-wrap u-ws-pre-line u-lh-1p5">
                                         {{ $comment->comment }}
                                     </p>
                                 </div>
                             @empty
                                 <div class="text-center py-4 text-muted bg-light rounded-3 border border-dashed">
                                     <i class="bi bi-chat-square-dots opacity-25 d-block mb-1 fs-4"></i>
-                                    <small style="font-size: 0.75rem;">Belum ada riwayat catatan progress pada task ini.</small>
+                                    <small class="u-fs-0p75rem">Belum ada riwayat catatan progress pada task ini.</small>
                                 </div>
                             @endforelse
                         </div>
@@ -107,7 +107,7 @@
                     </form>
 
                     <div class="mb-3">
-                        <small class="text-muted d-block font-monospace mb-1" style="font-size: 0.7rem;">URGENSI PRIORITAS:</small>
+                        <small class="text-muted d-block font-monospace mb-1 u-fs-0p7rem">URGENSI PRIORITAS:</small>
                         @if($task->priority === 'High')
                             <span class="badge bg-danger fs-6 px-3 py-1.5 w-100 rounded-2">High Priority</span>
                         @elseif($task->priority === 'Medium')
@@ -118,14 +118,14 @@
                     </div>
 
                     <div class="mb-3 border-top pt-3">
-                        <small class="text-muted d-block font-monospace" style="font-size: 0.7rem;">DIDELEGASIKAN KEPADA:</small>
+                        <small class="text-muted d-block font-monospace u-fs-0p7rem">DIDELEGASIKAN KEPADA:</small>
                         <span class="fw-bold text-dark d-block mt-1">
                             <i class="bi bi-person-circle text-primary me-2"></i>{{ $task->assignee ? $task->assignee->name : 'Unassigned' }}
                         </span>
                     </div>
 
                     <div class="mb-4 border-top pt-3">
-                        <small class="text-muted d-block font-monospace" style="font-size: 0.7rem;">BATAS WAKTU (DEADLINE):</small>
+                        <small class="text-muted d-block font-monospace u-fs-0p7rem">BATAS WAKTU (DEADLINE):</small>
                         <span class="fw-bold text-danger d-block mt-1">
                             <i class="bi bi-calendar-x me-2"></i>{{ $task->deadline }}
                         </span>

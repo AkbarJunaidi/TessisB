@@ -89,7 +89,7 @@
     <div class="card shadow-sm border-0 rounded-3 bg-white">
         <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
             <h6 class="m-0 fw-bold text-dark"><i class="bi bi-journal-text me-2"></i>Riwayat Mutasi</h6>
-            <span class="badge bg-secondary text-white fw-medium rounded-pill px-3 py-1.5" style="font-size: 0.8rem;">
+            <span class="badge bg-secondary text-white fw-medium rounded-pill px-3 py-1.5 u-fs-0p8rem">
                 {{ $mutations->total() }} Baris
             </span>
         </div>
@@ -119,12 +119,12 @@
                                 <td data-label="Kejadian">
                                     @if($m->event_type === 'status_berubah')
                                         @php $color = $statusLabels[$m->status_after] ?? 'secondary'; @endphp
-                                        <span class="badge bg-{{ $color }} bg-opacity-10 text-{{ $color }} border border-{{ $color }}-subtle px-2 py-2 fw-medium" style="font-size: 0.8rem;">
+                                        <span class="badge bg-{{ $color }} bg-opacity-10 text-{{ $color }} border border-{{ $color }}-subtle px-2 py-2 fw-medium u-fs-0p8rem">
                                             {{ $m->status_after }}
                                         </span>
                                     @else
                                         @php [$label, $color] = $eventLabels[$m->event_type] ?? [$m->event_type, 'secondary']; @endphp
-                                        <span class="badge bg-{{ $color }} bg-opacity-10 text-{{ $color }} border border-{{ $color }}-subtle px-2 py-2 fw-medium" style="font-size: 0.8rem;">
+                                        <span class="badge bg-{{ $color }} bg-opacity-10 text-{{ $color }} border border-{{ $color }}-subtle px-2 py-2 fw-medium u-fs-0p8rem">
                                             {{ $label }}
                                         </span>
                                     @endif
@@ -150,7 +150,7 @@
                                             $lokasiNama = $m->event_type === 'dipinjam' ? $m->lokasiAsal?->name : $m->lokasiTujuan?->name;
                                             $lokasiNama ??= $m->lokasiAsal?->name;
                                         @endphp
-                                        <div class="text-muted" style="font-size: 0.75rem;">
+                                        <div class="text-muted u-fs-0p75rem">
                                             <i class="bi bi-geo-alt me-1"></i>{{ $lokasiNama ?? '-' }}
                                             ({{ \App\Services\Inventory\LocationService::metodeLabel($m->lokasi_metode) }}@if($m->lokasi_akurasi_m), sekitar {{ $m->lokasi_akurasi_m }} m @endif)
                                         </div>

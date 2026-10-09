@@ -114,7 +114,7 @@
     <div class="card shadow-sm border-0 rounded-3 bg-white">
         <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
             <h6 class="m-0 fw-bold text-dark"><i class="bi bi-list-ul me-2"></i>Data Audit Trail Logs</h6>
-            <span class="badge bg-secondary text-white fw-medium rounded-pill px-3 py-1.5" style="font-size: 0.8rem;">
+            <span class="badge bg-secondary text-white fw-medium rounded-pill px-3 py-1.5 u-fs-0p8rem">
                 {{ $logs->total() }} Total Logs
             </span>
         </div>
@@ -123,10 +123,10 @@
                 <table class="table table-hover table-stack align-middle mb-0 text-nowrap">
                     <thead class="table-light text-secondary small text-uppercase">
                         <tr>
-                            <th class="ps-4 py-3" style="width: 20%">Waktu</th>
-                            <th style="width: 25%">User</th>
-                            <th style="width: 30%">Modul</th>
-                            <th class="pe-4" style="width: 25%">Aksi</th>
+                            <th class="ps-4 py-3 u-w-20pct">Waktu</th>
+                            <th class="u-w-25pct">User</th>
+                            <th class="u-w-30pct">Modul</th>
+                            <th class="pe-4 u-w-25pct">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="small text-dark">
@@ -137,25 +137,25 @@
                                 </td>
                                 <td data-label="User">
                                     <div class="d-flex align-items-center gap-2">
-                                        <div class="bg-light text-primary rounded-circle d-flex align-items-center justify-content-center fw-semibold" style="width: 28px; height: 28px; font-size: 0.75rem; border: 1px solid #e2e8f0;">
+                                        <div class="bg-light text-primary rounded-circle d-flex align-items-center justify-content-center fw-semibold u-w-28px u-h-28px u-fs-0p75rem u-bd-1px-solid-e2e8f0">
                                             {{ strtoupper(substr($log->user->name ?? 'SY', 0, 2)) }}
                                         </div>
                                         <span class="fw-semibold">{{ $log->user->name ?? 'System / Deleted User' }}</span>
                                     </div>
                                 </td>
                                 <td data-label="Modul">
-                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle px-2 py-2 fw-medium" style="font-size: 0.8rem;">
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle px-2 py-2 fw-medium u-fs-0p8rem">
                                         {{ class_basename($log->module) }}
                                     </span>
                                 </td>
                                 <td data-label="Aksi">
                                     @php $lowerAction = strtolower($log->action); @endphp
                                     @if(in_array($lowerAction, ['delete', 'deleted', 'logout']))
-                                        <span class="text-danger fw-semibold"><i class="bi bi-circle-fill me-1 small" style="font-size: 0.5rem;"></i>{{ ucfirst($log->action) }}</span>
+                                        <span class="text-danger fw-semibold"><i class="bi bi-circle-fill me-1 small u-fs-0p5rem"></i>{{ ucfirst($log->action) }}</span>
                                     @elseif(in_array($lowerAction, ['create', 'created', 'login', 'upload']))
-                                        <span class="text-success fw-semibold"><i class="bi bi-circle-fill me-1 small" style="font-size: 0.5rem;"></i>{{ ucfirst($log->action) }}</span>
+                                        <span class="text-success fw-semibold"><i class="bi bi-circle-fill me-1 small u-fs-0p5rem"></i>{{ ucfirst($log->action) }}</span>
                                     @else
-                                        <span class="text-warning fw-semibold"><i class="bi bi-circle-fill me-1 small" style="font-size: 0.5rem;"></i>{{ ucfirst($log->action) }}</span>
+                                        <span class="text-warning fw-semibold"><i class="bi bi-circle-fill me-1 small u-fs-0p5rem"></i>{{ ucfirst($log->action) }}</span>
                                     @endif
                                 </td>
                             </tr>

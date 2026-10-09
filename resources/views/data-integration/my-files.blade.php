@@ -1,38 +1,5 @@
 @extends('layouts.app') {{-- Sesuai layout dashboard asli sistem Anda --}}
 
-@push('styles')
-<style>
-    /* ===== My Files: tampilan daftar bergaya Drive ===== */
-    .drv-tabs .nav-link { border-radius: 50rem; padding: .4rem 1rem; font-size: .875rem; color: var(--bs-secondary-color, #6c757d); }
-    .drv-tabs .nav-link.active { background: var(--bs-primary-bg-subtle, #cfe2ff); color: var(--bs-primary-text-emphasis, #052c65); font-weight: 600; }
-
-    .drv-search { position: relative; max-width: 420px; flex: 1 1 260px; }
-    .drv-search i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--bs-secondary-color, #6c757d); pointer-events: none; }
-    .drv-search input { border-radius: 50rem; padding-left: 2.6rem; background: var(--bs-tertiary-bg, #f1f3f5); border-color: transparent; }
-    .drv-search input:focus { background: #fff; border-color: var(--bs-primary, #0d6efd); }
-
-    .drv-chip { border-radius: .5rem; font-size: .8125rem; padding: .3rem .75rem; }
-    .drv-chip.is-active { background: var(--bs-primary-bg-subtle, #cfe2ff); border-color: transparent; color: var(--bs-primary-text-emphasis, #052c65); }
-
-    .drv-list { width: 100%; border-collapse: collapse; }
-    .drv-list thead th { font-size: .8125rem; font-weight: 600; color: var(--bs-secondary-color, #6c757d);
-                         padding: .75rem .75rem; border-bottom: 1px solid var(--bs-border-color, #dee2e6); white-space: nowrap; }
-    .drv-list tbody td { padding: .7rem .75rem; border-bottom: 1px solid var(--bs-border-color-translucent, rgba(0,0,0,.1)); vertical-align: middle; }
-    .drv-list tbody tr.drv-row:hover { background: var(--bs-tertiary-bg, #f1f3f5); }
-    .drv-group td { padding: 1rem .75rem .35rem !important; border-bottom: 0 !important; font-size: .8125rem; font-weight: 600; color: var(--bs-secondary-color, #6c757d); }
-    .drv-name { display: flex; align-items: center; gap: .85rem; min-width: 0; }
-    .drv-name .drv-ico { font-size: 1.35rem; flex: 0 0 auto; }
-    .drv-name .drv-title { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .drv-loc { color: var(--bs-secondary-color, #6c757d); font-size: .8125rem; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: bottom; }
-    .drv-meta-mobile { color: var(--bs-secondary-color, #6c757d); font-size: .75rem; }
-
-    /* Mobile (< md): kolom sekunder disembunyikan; lokasi/sumber/tanggal pindah ke baris kecil di bawah nama. */
-    @media (max-width: 767.98px) {
-        .drv-name .drv-title { max-width: 55vw; }
-    }
-</style>
-@endpush
-
 @section('content')
 @php
     // Permission dihitung sekali di atas, dipakai berulang di tiap baris.
@@ -179,7 +146,7 @@
                     <th scope="col" class="ps-3">Nama</th>
                     <th scope="col" class="d-none d-md-table-cell">Ukuran</th>
                     <th scope="col" class="d-none d-md-table-cell">Dibuat</th>
-                    <th scope="col" class="text-end pe-3" style="width: 64px;"><span class="visually-hidden">Aksi</span></th>
+                    <th scope="col" class="text-end pe-3 u-w-64px"><span class="visually-hidden">Aksi</span></th>
                 </tr>
             </thead>
             <tbody>
@@ -309,7 +276,7 @@
                     <th scope="col" class="d-none d-md-table-cell">Lokasi</th>
                     <th scope="col" class="d-none d-md-table-cell">Sumber</th>
                     <th scope="col" class="d-none d-md-table-cell">Tanggal</th>
-                    <th scope="col" class="text-end pe-3" style="width: 64px;"><span class="visually-hidden">Aksi</span></th>
+                    <th scope="col" class="text-end pe-3 u-w-64px"><span class="visually-hidden">Aksi</span></th>
                 </tr>
             </thead>
             <tbody>
@@ -410,42 +377,7 @@
 </div>
 
 {{-- Pencarian sisi-klien: menyaring baris yang sudah tampil, tanpa reload. --}}
-<script>
-    (function () {
-        'use strict';
-
-        const input    = document.getElementById('drvSearch');
-        const noResult = document.getElementById('drvNoResult');
-        if (!input) return;
-
-        const rows   = Array.from(document.querySelectorAll('[data-drv-row]'));
-        const groups = Array.from(document.querySelectorAll('[data-drv-group]'));
-
-        input.addEventListener('input', function () {
-            const q = input.value.trim().toLowerCase();
-            let visible = 0;
-
-            rows.forEach(function (row) {
-                const match = q === '' || (row.dataset.search || '').indexOf(q) !== -1;
-                row.classList.toggle('d-none', !match);
-                if (match) visible++;
-            });
-
-            // Sembunyikan judul kelompok yang seluruh barisnya tersaring.
-            groups.forEach(function (group) {
-                let next = group.nextElementSibling;
-                let hasVisible = false;
-                while (next && !next.hasAttribute('data-drv-group')) {
-                    if (next.hasAttribute('data-drv-row') && !next.classList.contains('d-none')) hasVisible = true;
-                    next = next.nextElementSibling;
-                }
-                group.classList.toggle('d-none', !hasVisible);
-            });
-
-            noResult.classList.toggle('d-none', !(q !== '' && rows.length > 0 && visible === 0));
-        });
-    })();
-</script>
+<script src="{{ \App\Support\AppAsset::url('js/data-integration/my-files.js') }}"></script>
 
 <div class="modal fade" id="createPrivateFolderModal" tabindex="-1" aria-labelledby="createPrivateFolderLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">

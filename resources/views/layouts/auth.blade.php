@@ -8,7 +8,7 @@
     {{ \App\Support\VendorAsset::style('bootstrap-icons') }}
     <link href="{{ asset('css/theme.css') }}" rel="stylesheet">
 </head>
-<body class="d-flex align-items-center py-4" style="min-height:100vh; background: var(--bg-page);">
+<body class="d-flex align-items-center py-4 u-minh-100vh u-bg-var--bg-page">
 
     <main class="container">
         @yield('content')

@@ -64,7 +64,7 @@
                                     @if($sisa > 0 && auth()->user()->hasPermission('borrowed_items', 'process_return'))
                                         <form action="{{ route('surat-jalan.items.return', $item) }}" method="POST" data-sj-return class="d-inline-flex gap-1">
                                             @csrf
-                                            <input type="number" name="qty" min="1" max="{{ $sisa }}" value="{{ $sisa }}" class="form-control form-control-sm" style="width:70px;">
+                                            <input type="number" name="qty" min="1" max="{{ $sisa }}" value="{{ $sisa }}" class="form-control form-control-sm u-w-70px">
                                             <button type="submit" class="btn btn-sm btn-outline-secondary">Kembalikan</button>
                                         </form>
                                     @endif

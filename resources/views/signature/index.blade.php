@@ -55,7 +55,7 @@
                         <div class="tab-content">
                             <div class="tab-pane fade show active" id="src-draw">
                                 <label class="form-label small">Gambar di sini pakai mouse / jari</label>
-                                <canvas id="signatureCanvas" width="500" height="180" class="border rounded-3 w-100" style="touch-action: none; cursor: crosshair;"></canvas>
+                                <canvas id="signatureCanvas" width="500" height="180" class="border rounded-3 w-100 u-ta-none u-cur-crosshair"></canvas>
                                 <input type="hidden" name="canvas_data" id="signatureCanvasData">
                                 <button type="button" id="signatureClearBtn" class="btn btn-sm btn-outline-secondary mt-2">
                                     <i class="bi bi-eraser"></i> Hapus Coretan
@@ -85,7 +85,7 @@
                     @forelse($signatures as $sig)
                         <div class="d-flex align-items-center justify-content-between border rounded-3 p-2 mb-2">
                             <div class="d-flex align-items-center gap-3">
-                                <img src="{{ asset('storage/' . $sig->file_path) }}" alt="{{ $sig->label }}" style="height: 40px; max-width: 120px; object-fit: contain; background: #fff;">
+                                <img class="u-h-40px u-maxw-120px u-of-contain u-bg-fff" src="{{ asset('storage/' . $sig->file_path) }}" alt="{{ $sig->label }}">
                                 <div>
                                     <div class="fw-semibold small">{{ $sig->label }}</div>
                                     @if($sig->is_default)
@@ -122,88 +122,6 @@
 </div>
 
 {{-- Kanvas tanda tangan (vanilla JS, mouse dan sentuh); saat submit dikonversi ke PNG base64 lewat #signatureCanvasData. --}}
-<script>
-    (function () {
-        const canvas = document.getElementById('signatureCanvas');
-        const ctx = canvas.getContext('2d');
-        const clearBtn = document.getElementById('signatureClearBtn');
-        const hiddenInput = document.getElementById('signatureCanvasData');
-        const form = document.getElementById('signatureForm');
-        const fileInput = document.getElementById('signatureFileInput');
-
-        let isDrawing = false;
-        let hasDrawn = false;
-
-        // Kosongkan kanvas tanda tangan dan atur gaya goresan.
-        function resetCanvas() {
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = '#1a1a1a';
-            ctx.lineWidth = 2.5;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            hasDrawn = false;
-        }
-        resetCanvas();
-
-        // Koordinat pointer dalam skala kanvas (mouse dan sentuh).
-        function getPoint(e) {
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            return {
-                x: (clientX - rect.left) * scaleX,
-                y: (clientY - rect.top) * scaleY,
-            };
-        }
-
-        // Mulai goresan.
-        function startDraw(e) {
-            e.preventDefault();
-            isDrawing = true;
-            hasDrawn = true;
-            const p = getPoint(e);
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-        }
-
-        // Lanjutkan goresan selama pointer ditekan.
-        function moveDraw(e) {
-            if (!isDrawing) return;
-            e.preventDefault();
-            const p = getPoint(e);
-            ctx.lineTo(p.x, p.y);
-            ctx.stroke();
-        }
-
-        // Akhiri goresan.
-        function endDraw() {
-            isDrawing = false;
-        }
-
-        canvas.addEventListener('mousedown', startDraw);
-        canvas.addEventListener('mousemove', moveDraw);
-        canvas.addEventListener('mouseup', endDraw);
-        canvas.addEventListener('mouseleave', endDraw);
-        canvas.addEventListener('touchstart', startDraw);
-        canvas.addEventListener('touchmove', moveDraw);
-        canvas.addEventListener('touchend', endDraw);
-
-        clearBtn.addEventListener('click', resetCanvas);
-
-        form.addEventListener('submit', function () {
-            const drawTabActive = document.getElementById('src-draw').classList.contains('active');
-
-            if (drawTabActive && hasDrawn) {
-                hiddenInput.value = canvas.toDataURL('image/png');
-                fileInput.value = '';
-            } else {
-                hiddenInput.value = '';
-            }
-        });
-    })();
-</script>
+<script src="{{ \App\Support\AppAsset::url('js/signature/index.js') }}"></script>
 
 @endsection

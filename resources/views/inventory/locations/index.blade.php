@@ -126,7 +126,7 @@
                             <td data-label="Jenis">
                                 <span class="badge bg-{{ $color }} bg-opacity-10 text-{{ $color }} border border-{{ $color }}-subtle px-2 py-2 fw-medium">{{ $loc->jenis_label }}</span>
                             </td>
-                            <td data-label="Alamat" class="text-wrap" style="min-width: 180px;">{{ $loc->address ?: '-' }}</td>
+                            <td data-label="Alamat" class="text-wrap u-minw-180px">{{ $loc->address ?: '-' }}</td>
                             <td data-label="Koordinat">
                                 @if($loc->hasCoordinates())
                                     <a href="{{ $loc->mapsUrl() }}" target="_blank" rel="noopener" class="text-decoration-none">
@@ -224,7 +224,7 @@
                             <input type="text" class="form-control" id="locName" name="name" value="{{ old('name') }}"
                                    required maxlength="150" autocomplete="off" placeholder="Mis. Kantor A, Gedung Serbaguna X">
                             {{-- Saran lokasi yang sudah ada (pola sama dengan autocomplete Client) --}}
-                            <div id="locSuggestions" class="list-group position-absolute w-100 shadow-sm d-none" style="z-index: 1056; max-height: 240px; overflow-y: auto;"></div>
+                            <div id="locSuggestions" class="list-group position-absolute w-100 shadow-sm d-none u-z-1056 u-maxh-240px u-oy-auto"></div>
                             <div class="form-text small d-none" id="locSuggestHint">Sudah ada lokasi serupa. Pilih salah satu untuk mengubahnya, atau lanjut mengetik untuk menambah lokasi baru.</div>
                         </div>
 

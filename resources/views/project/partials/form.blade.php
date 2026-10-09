@@ -60,7 +60,7 @@
         </small>
 
         {{-- Dropdown saran autocomplete, muncul saat mengetik min. 2 huruf --}}
-        <div id="clientSuggestions" class="list-group position-absolute w-100 shadow-sm d-none" style="z-index: 1050; top: 100%;"></div>
+        <div id="clientSuggestions" class="list-group position-absolute w-100 shadow-sm d-none u-z-1050 u-top-100pct"></div>
     </div>
 
     <div class="col-md-6">
@@ -188,33 +188,7 @@
 
 </div>
 
-<script>
-    // Batas min Tanggal Selesai disinkronkan dengan Tanggal Mulai; validasi sebenarnya di ProjectRequest.
-    document.addEventListener('DOMContentLoaded', function () {
-        const startInput = document.getElementById('event_date');
-        const endInput   = document.getElementById('event_end_date');
-
-        if (!startInput || !endInput) {
-            return;
-        }
-
-        // Set batas minimum Tanggal Selesai mengikuti Tanggal Mulai.
-        function syncEndDateMin() {
-            if (!startInput.value) {
-                return;
-            }
-
-            endInput.min = startInput.value;
-
-            if (endInput.value && endInput.value < startInput.value) {
-                endInput.value = startInput.value;
-            }
-        }
-
-        syncEndDateMin();
-        startInput.addEventListener('change', syncEndDateMin);
-    });
-</script>
+<script src="{{ \App\Support\AppAsset::url('js/project/partials/form.js') }}"></script>
 
 <script>
     // Autocomplete Client dari Kontak (ContactController::search): memilih saran mengisi

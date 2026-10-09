@@ -81,7 +81,7 @@
                         <div class="col-12 col-lg-4">
                             <label for="{{ $key }}" class="form-label fw-semibold small text-secondary">{{ $meta['label'] }}</label>
                             <div class="border rounded-3 bg-light p-2 mb-2 text-center">
-                                <img src="{{ $images[$key]['url'] }}" alt="{{ $meta['label'] }}" class="img-fluid" style="max-height: 110px; object-fit: contain;">
+                                <img src="{{ $images[$key]['url'] }}" alt="{{ $meta['label'] }}" class="img-fluid u-maxh-110px u-of-contain">
                             </div>
                             <input type="file" name="{{ $key }}" id="{{ $key }}" accept=".png,.jpg,.jpeg"
                                    class="form-control form-control-sm @error($key) is-invalid @enderror">
