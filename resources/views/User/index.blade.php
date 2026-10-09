@@ -30,134 +30,139 @@
 
     </div>
 
-    <div class="card shadow-sm border-0">
+    <div class="app-panel overflow-hidden">
 
-        <div class="card-body">
+        <div class="px-3 px-md-4 pt-3 pt-md-4">
+            <h6 class="fw-bold mb-3">Semua User</h6>
+        </div>
 
-            <div class="table-responsive table-bleed">
+        <div class="table-responsive">
 
-                <table class="table table-hover table-stack align-middle">
+            <table class="table table-hover table-modern table-stack align-middle mb-0">
 
-                    <thead class="table-light">
+                <thead>
+
+                    <tr>
+
+                        <th width="60" class="ps-4">#</th>
+
+                        <th>Nama</th>
+
+                        <th>Email</th>
+
+                        <th>Role</th>
+
+                        <th>Status</th>
+
+                        <th>Login Terakhir</th>
+
+                        <th>Info</th>
+
+                        <th class="text-center pe-4">
+                            Aksi
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @forelse($users as $user)
 
                         <tr>
 
-                            <th width="60">#</th>
+                            <td class="ps-4" data-label="#">
+                                {{ $loop->iteration + ($users->firstItem() - 1) }}
+                            </td>
 
-                            <th>Nama</th>
+                            <td data-label="Nama">
 
-                            <th>Email</th>
+                                <strong>
+                                    {{ $user->name }}
+                                </strong>
 
-                            <th>Role</th>
+                            </td>
 
-                            <th>Status</th>
+                            <td data-label="Email">
 
-                            <th>Last Login</th>
+                                {{ $user->email }}
 
-                            <th>Info</th>
+                            </td>
 
-                            <th width="220" class="text-center">
-                                Action
-                            </th>
+                            <td data-label="Role">
 
-                        </tr>
+                                @switch($user->role)
 
-                    </thead>
-
-                    <tbody>
-
-                        @forelse($users as $user)
-
-                            <tr>
-
-                                <td data-label="#">
-                                    {{ $loop->iteration + ($users->firstItem() - 1) }}
-                                </td>
-
-                                <td data-label="Nama">
-
-                                    <strong>
-                                        {{ $user->name }}
-                                    </strong>
-
-                                </td>
-
-                                <td data-label="Email">
-
-                                    {{ $user->email }}
-
-                                </td>
-
-                                <td data-label="Role">
-
-                                    @switch($user->role)
-
-                                        @case('super_admin')
-
-                                            <span class="badge bg-danger">
-                                                Super Admin
-                                            </span>
-
-                                            @break
-
-                                        @case('admin')
-
-                                            <span class="badge bg-primary">
-                                                Admin
-                                            </span>
-
-                                            @break
-
-                                        @default
-
-                                            <span class="badge bg-secondary">
-                                                Employee
-                                            </span>
-
-                                    @endswitch
-
-                                </td>
-
-                                <td data-label="Status">
-
-                                    @if($user->status == 'active')
-
-                                        <span class="badge bg-success">
-                                            Active
-                                        </span>
-
-                                    @else
+                                    @case('super_admin')
 
                                         <span class="badge bg-danger">
-                                            Inactive
+                                            Super Admin
                                         </span>
 
-                                    @endif
+                                        @break
 
-                                </td>
+                                    @case('admin')
 
-                                <td data-label="Last Login">
-
-                                    {{ $user->last_login_at?->format('d M Y H:i') ?? '-' }}
-
-                                </td>
-
-                                <td data-label="Info">
-
-                                    @if(in_array($user->id, $pendingPasswordResetUserIds, true))
-                                        <span class="badge bg-warning text-dark">
-                                            <i class="bi bi-key me-1"></i>
-                                            Lupa Password
+                                        <span class="badge bg-primary">
+                                            Admin
                                         </span>
-                                    @endif
 
-                                </td>
+                                        @break
 
-                                <td class="text-center cell-block" data-label="Action">
+                                    @default
+
+                                        <span class="badge bg-secondary">
+                                            Employee
+                                        </span>
+
+                                @endswitch
+
+                            </td>
+
+                            <td data-label="Status">
+
+                                @if($user->status == 'active')
+
+                                    <span class="badge bg-success">
+                                        Active
+                                    </span>
+
+                                @else
+
+                                    <span class="badge bg-danger">
+                                        Inactive
+                                    </span>
+
+                                @endif
+
+                            </td>
+
+                            <td data-label="Login Terakhir">
+
+                                {{ $user->last_login_at?->format('d M Y H:i') ?? '-' }}
+
+                            </td>
+
+                            <td data-label="Info">
+
+                                @if(in_array($user->id, $pendingPasswordResetUserIds, true))
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="bi bi-key me-1"></i>
+                                        Lupa Password
+                                    </span>
+                                @endif
+
+                            </td>
+
+                            <td class="text-center pe-4 cell-block" data-label="Aksi">
+
+                                <div class="d-flex justify-content-center gap-2">
 
                                     <a
                                         href="{{ route('users.show', $user) }}"
                                         class="btn btn-sm btn-outline-primary"
+                                        title="Lihat Detail" aria-label="Lihat detail {{ $user->name }}"
                                     >
                                         <i class="bi bi-eye"></i>
                                     </a>
@@ -165,9 +170,10 @@
                                     @if(auth()->user()->hasPermission('user_management', 'edit_user'))
                                     <a
                                         href="{{ route('users.edit', $user) }}"
-                                        class="btn btn-sm btn-warning"
+                                        class="btn btn-sm btn-outline-secondary"
+                                        title="Ubah" aria-label="Ubah user {{ $user->name }}"
                                     >
-                                        <i class="bi bi-pencil-square"></i>
+                                        <i class="bi bi-pencil"></i>
                                     </a>
                                     @endif
 
@@ -184,7 +190,8 @@
 
                                         <button
                                             type="submit"
-                                            class="btn btn-sm btn-danger"
+                                            class="btn btn-sm btn-outline-danger"
+                                            title="Hapus" aria-label="Hapus user {{ $user->name }}"
                                         >
                                             <i class="bi bi-trash"></i>
                                         </button>
@@ -192,46 +199,40 @@
                                     </form>
                                     @endif
 
-                                </td>
+                                </div>
 
-                            </tr>
+                            </td>
 
-                        @empty
+                        </tr>
 
-                            <tr>
+                    @empty
 
-                                <td
-                                    colspan="8"
-                                    class="text-center text-muted py-5"
-                                >
+                        <tr>
 
-                                    Belum ada data user.
+                            <td
+                                colspan="8"
+                                class="text-center text-muted py-5"
+                            >
 
-                                </td>
+                                Belum ada data user.
 
-                            </tr>
+                            </td>
 
-                        @endforelse
+                        </tr>
 
-                    </tbody>
+                    @endforelse
 
-                </table>
+                </tbody>
 
-            </div>
+            </table>
 
         </div>
 
-        @if($users->hasPages())
-
-            <div class="card-footer bg-white">
-
-                {{ $users->links() }}
-
-            </div>
-
-        @endif
-
     </div>
+
+    @if($users->hasPages())
+        <div class="mt-3">{{ $users->links('pagination::bootstrap-5') }}</div>
+    @endif
 
 </div>
 

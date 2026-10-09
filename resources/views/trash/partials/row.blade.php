@@ -37,8 +37,8 @@
                         data-type="{{ $item->type }}"
                         data-type-label="{{ $item->type_label }}"
                         data-name="{{ $item->name }}"
-                        title="Pulihkan Data">
-                    <i class="bi bi-arrow-counterclockwise"></i> Pulihkan
+                        title="Pulihkan Data" aria-label="Pulihkan data {{ $item->name }}">
+                    <i class="bi bi-arrow-counterclockwise"></i>
                 </button>
             @endif
 
@@ -52,7 +52,7 @@
                         data-type="{{ $item->type }}"
                         data-type-label="{{ $item->type_label }}"
                         data-name="{{ $item->name }}"
-                        title="Hapus Permanen">
+                        title="Hapus Permanen" aria-label="Hapus permanen {{ $item->name }}">
                     <i class="bi bi-trash3"></i>
                 </button>
             @endif

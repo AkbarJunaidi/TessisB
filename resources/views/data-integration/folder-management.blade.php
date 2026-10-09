@@ -62,191 +62,192 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-3">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light text-secondary">
+    <div class="app-panel overflow-hidden">
+        <div class="px-3 px-md-4 pt-3 pt-md-4">
+            <h6 class="fw-bold mb-3">Isi Folder</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover table-modern align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col" class="ps-4 py-3" style="width: 40%;">Nama</th>
+                        <th scope="col" class="py-3">Tipe</th>
+                        <th scope="col" class="py-3">Pemilik</th>
+                        <th scope="col" class="py-3">Dibuat</th>
+                        <th scope="col" class="pe-4 py-3 text-center" style="width: 10%;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{-- Tampilkan Tombol Kembali Jika Sedang Berada di dalam Sub-Folder --}}
+                    @if(isset($current_folder) && $current_folder)
                         <tr>
-                            <th scope="col" class="ps-4 py-3" style="width: 40%;">Name</th>
-                            <th scope="col" class="py-3">Type</th>
-                            <th scope="col" class="py-3">Owner</th>
-                            <th scope="col" class="py-3">Created At</th>
-                            <th scope="col" class="pe-4 py-3 text-end" style="width: 10%;">Action</th>
+                            <td colspan="5" class="ps-4 py-3">
+                                <a href="{{ $current_folder->parent_id ? route('folders.show', $current_folder->parent_id) : route('folders.index') }}" class="text-decoration-none text-secondary">
+                                    <i class="bi bi-arrow-90deg-up me-2"></i> <span class="fw-medium">.. (Kembali ke folder induk)</span>
+                                </a>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {{-- Tampilkan Tombol Kembali Jika Sedang Berada di dalam Sub-Folder --}}
-                        @if(isset($current_folder) && $current_folder)
-                            <tr>
-                                <td colspan="5" class="ps-4 py-3">
-                                    <a href="{{ $current_folder->parent_id ? route('folders.show', $current_folder->parent_id) : route('folders.index') }}" class="text-decoration-none text-secondary">
-                                        <i class="bi bi-arrow-90deg-up me-2"></i> <span class="fw-medium">.. (Kembali ke folder induk)</span>
-                                    </a>
-                                </td>
-                            </tr>
-                        @endif
+                    @endif
 
-                        {{-- Kosong State --}}
-                        @if($folders->isEmpty() && $files->isEmpty())
-                            <tr>
-                                <td colspan="5" class="text-center py-5 text-muted">
-                                    <i class="bi bi-folder2-open display-6 mb-2 d-block"></i>
-                                    Folder ini masih kosong.
-                                </td>
-                            </tr>
-                        @endif
+                    {{-- Kosong State --}}
+                    @if($folders->isEmpty() && $files->isEmpty())
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <i class="bi bi-folder2-open display-6 mb-2 d-block"></i>
+                                Folder ini masih kosong.
+                            </td>
+                        </tr>
+                    @endif
 
-                        {{-- Iterasi Render Folder --}}
-                        @foreach($folders as $folder)
-                            @php
-                                $isSystem        = in_array($folder->id, $systemFolderIds, true);
-                                $ownLocked       = $folder->isLocked();
-                                $protected       = $ownLocked || $parentProtected;
-                                $hasLockedInside = in_array($folder->id, $lockedContentIds, true);
-                            @endphp
-                            <tr>
-                                <td class="ps-4 py-3">
-                                    <a href="{{ route('folders.show', $folder->id) }}" class="text-decoration-none text-dark fw-medium d-flex align-items-center">
-                                        <i class="bi bi-folder-fill text-warning fs-4 me-3"></i>
-                                        <span class="text-truncate">{{ $folder->name }}</span>
-                                        @if($isSystem)
-                                            <span class="badge bg-light text-secondary border ms-2 fw-normal">Sistem</span>
-                                        @endif
-                                        @if($ownLocked)
-                                            <i class="bi bi-lock-fill text-warning ms-2"
-                                               title="Dikunci oleh {{ $folder->lockedBy->name ?? 'pengguna yang sudah dihapus' }} pada {{ $folder->locked_at->format('d M Y H:i') }}"></i>
-                                        @endif
-                                    </a>
-                                </td>
-                                <td><span class="text-muted small">Folder</span></td>
-                                <td><span class="badge bg-light text-dark border">{{ $folder->user->name ?? 'System' }}</span></td>
-                                <td><span class="text-secondary small">{{ $folder->created_at->format('Y-m-d H:i') }}</span></td>
-                                <td class="pe-4 text-end">
-                                    <div class="dropdown">
-                                        <button class="btn btn-link text-secondary p-1 m-0 border-0 shadow-none" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Aksi folder">
-                                            <i class="bi bi-three-dots-vertical fs-5"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                            <li><a class="dropdown-item small py-2" href="{{ route('folders.show', $folder->id) }}"><i class="bi bi-folder2-open me-2 text-muted"></i> Buka</a></li>
+                    {{-- Iterasi Render Folder --}}
+                    @foreach($folders as $folder)
+                        @php
+                            $isSystem        = in_array($folder->id, $systemFolderIds, true);
+                            $ownLocked       = $folder->isLocked();
+                            $protected       = $ownLocked || $parentProtected;
+                            $hasLockedInside = in_array($folder->id, $lockedContentIds, true);
+                        @endphp
+                        <tr>
+                            <td class="ps-4 py-3">
+                                <a href="{{ route('folders.show', $folder->id) }}" class="text-decoration-none text-dark fw-medium d-flex align-items-center">
+                                    <i class="bi bi-folder-fill text-warning fs-4 me-3"></i>
+                                    <span class="text-truncate">{{ $folder->name }}</span>
+                                    @if($isSystem)
+                                        <span class="badge bg-light text-secondary border ms-2 fw-normal">Sistem</span>
+                                    @endif
+                                    @if($ownLocked)
+                                        <i class="bi bi-lock-fill text-warning ms-2"
+                                           title="Dikunci oleh {{ $folder->lockedBy->name ?? 'pengguna yang sudah dihapus' }} pada {{ $folder->locked_at->format('d M Y H:i') }}"></i>
+                                    @endif
+                                </a>
+                            </td>
+                            <td><span class="text-muted small">Folder</span></td>
+                            <td><span class="badge bg-light text-dark border">{{ $folder->user->name ?? 'System' }}</span></td>
+                            <td><span class="text-secondary small">{{ $folder->created_at->format('Y-m-d H:i') }}</span></td>
+                            <td class="pe-4 text-center">
+                                <div class="dropdown">
+                                    <button class="btn btn-link text-secondary p-1 m-0 border-0 shadow-none" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Aksi folder">
+                                        <i class="bi bi-three-dots-vertical fs-5"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                        <li><a class="dropdown-item small py-2" href="{{ route('folders.show', $folder->id) }}"><i class="bi bi-folder2-open me-2 text-muted"></i> Buka</a></li>
 
-                                            {{-- Folder sistem (Document Center project dan induknya) tidak dapat diubah/dipindah/dihapus --}}
-                                            @unless($isSystem)
-                                                @if($protected)
-                                                    <li><span class="dropdown-item-text small text-muted"><i class="bi bi-lock-fill me-2"></i> Terkunci</span></li>
-                                                @else
-                                                    @if($canRename)
-                                                        <li>
-                                                            <a class="dropdown-item small py-2" href="#"
-                                                               onclick="openRenameModal({{ \Illuminate\Support\Js::from(route('folders.rename', $folder->id)) }}, {{ \Illuminate\Support\Js::from($folder->name) }}, 'name', '', 'folder'); return false;">
-                                                                <i class="bi bi-pencil me-2 text-muted"></i> Rename
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a class="dropdown-item small py-2" href="#"
-                                                               onclick="openMoveModal({{ \Illuminate\Support\Js::from(route('folders.move', $folder->id)) }}, true, 'folder'); return false;">
-                                                                <i class="bi bi-folder-symlink me-2 text-muted"></i> Move
-                                                            </a>
-                                                        </li>
-                                                    @endif
-                                                @endif
-                                            @endunless
-
-                                            @if($canLock)
-                                                @include('data-integration.partials.lock-toggle', ['item' => $folder, 'kind' => 'folder'])
-                                            @endif
-
-                                            @unless($isSystem || $protected)
-                                                @if($canDelete)
-                                                    <li><hr class="dropdown-divider"></li>
-                                                    @if($hasLockedInside)
-                                                        <li><span class="dropdown-item-text small text-muted"><i class="bi bi-lock me-2"></i> Berisi item terkunci</span></li>
-                                                    @else
-                                                        <li>
-                                                            <a class="dropdown-item small py-2 text-danger" href="#"
-                                                               onclick="openDeleteModal({{ \Illuminate\Support\Js::from(route('folders.destroy', $folder->id)) }}, {{ \Illuminate\Support\Js::from($folder->name) }}, 'folder'); return false;">
-                                                                <i class="bi bi-trash me-2"></i> Delete
-                                                            </a>
-                                                        </li>
-                                                    @endif
-                                                @endif
-                                            @endunless
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
-
-                        {{-- Iterasi Render Berkas Berbagi --}}
-                        @foreach($files as $file)
-                            @php
-                                $fileLocked    = $file->isLocked();
-                                $fileProtected = $fileLocked || $parentProtected;
-                            @endphp
-                            <tr>
-                                <td class="ps-4 py-3">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi {{ $file->icon_class }} fs-4 me-3"></i>
-                                        <span class="fw-medium text-truncate">{{ $file->file_name }}</span>
-                                        @if($fileLocked)
-                                            <i class="bi bi-lock-fill text-warning ms-2"
-                                               title="Dikunci oleh {{ $file->lockedBy->name ?? 'pengguna yang sudah dihapus' }} pada {{ $file->locked_at->format('d M Y H:i') }}"></i>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td><span class="badge bg-secondary text-uppercase small" style="font-size: 0.75rem;">{{ $file->file_type }}</span></td>
-                                <td><span class="badge bg-light text-dark border">{{ $file->user->name ?? 'System' }}</span></td>
-                                <td><span class="text-secondary small">{{ $file->created_at->format('Y-m-d H:i') }}</span></td>
-                                <td class="pe-4 text-end">
-                                    <div class="dropdown">
-                                        <button class="btn btn-link text-secondary p-1 m-0 border-0 shadow-none" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Aksi file">
-                                            <i class="bi bi-three-dots-vertical fs-5"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                            @if($file->preview_type && auth()->user()->hasPermission('data_integration', 'download'))
-                                                <li><a class="dropdown-item small py-2" href="{{ route('files.preview', $file) }}" target="_blank" rel="noopener"><i class="bi bi-eye me-2 text-muted"></i> Preview</a></li>
-                                            @endif
-                                            <li><a class="dropdown-item small py-2" href="{{ route('files.download', $file->id) }}"><i class="bi bi-download me-2 text-muted"></i> Download</a></li>
-
-                                            @if($fileProtected)
+                                        {{-- Folder sistem (Document Center project dan induknya) tidak dapat diubah/dipindah/dihapus --}}
+                                        @unless($isSystem)
+                                            @if($protected)
                                                 <li><span class="dropdown-item-text small text-muted"><i class="bi bi-lock-fill me-2"></i> Terkunci</span></li>
-                                            @elseif($canRename)
-                                                <li>
-                                                    <a class="dropdown-item small py-2" href="#"
-                                                       onclick="openRenameModal({{ \Illuminate\Support\Js::from(route('files.rename', $file->id)) }}, {{ \Illuminate\Support\Js::from($file->base_name) }}, 'file_name', {{ \Illuminate\Support\Js::from($file->locked_extension) }}, 'file'); return false;">
-                                                        <i class="bi bi-pencil me-2 text-muted"></i> Rename
-                                                    </a>
-                                                </li>
-                                                <li>
-                                                    {{-- File bersama wajib berada di sebuah folder: opsi "tingkat atas" disembunyikan --}}
-                                                    <a class="dropdown-item small py-2" href="#"
-                                                       onclick="openMoveModal({{ \Illuminate\Support\Js::from(route('files.move', $file->id)) }}, false, 'file'); return false;">
-                                                        <i class="bi bi-folder-symlink me-2 text-muted"></i> Move
-                                                    </a>
-                                                </li>
+                                            @else
+                                                @if($canRename)
+                                                    <li>
+                                                        <a class="dropdown-item small py-2" href="#"
+                                                           onclick="openRenameModal({{ \Illuminate\Support\Js::from(route('folders.rename', $folder->id)) }}, {{ \Illuminate\Support\Js::from($folder->name) }}, 'name', '', 'folder'); return false;">
+                                                            <i class="bi bi-pencil me-2 text-muted"></i> Rename
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item small py-2" href="#"
+                                                           onclick="openMoveModal({{ \Illuminate\Support\Js::from(route('folders.move', $folder->id)) }}, true, 'folder'); return false;">
+                                                            <i class="bi bi-folder-symlink me-2 text-muted"></i> Move
+                                                        </a>
+                                                    </li>
+                                                @endif
                                             @endif
+                                        @endunless
 
-                                            @if($canLock)
-                                                @include('data-integration.partials.lock-toggle', ['item' => $file, 'kind' => 'file'])
-                                            @endif
+                                        @if($canLock)
+                                            @include('data-integration.partials.lock-toggle', ['item' => $folder, 'kind' => 'folder'])
+                                        @endif
 
-                                            @if($canDelete && !$fileProtected)
+                                        @unless($isSystem || $protected)
+                                            @if($canDelete)
                                                 <li><hr class="dropdown-divider"></li>
-                                                <li>
-                                                    <a class="dropdown-item small py-2 text-danger" href="#"
-                                                       onclick="openDeleteModal({{ \Illuminate\Support\Js::from(route('files.destroy', $file->id)) }}, {{ \Illuminate\Support\Js::from($file->file_name) }}, 'file'); return false;">
-                                                        <i class="bi bi-trash me-2"></i> Delete
-                                                    </a>
-                                                </li>
+                                                @if($hasLockedInside)
+                                                    <li><span class="dropdown-item-text small text-muted"><i class="bi bi-lock me-2"></i> Berisi item terkunci</span></li>
+                                                @else
+                                                    <li>
+                                                        <a class="dropdown-item small py-2 text-danger" href="#"
+                                                           onclick="openDeleteModal({{ \Illuminate\Support\Js::from(route('folders.destroy', $folder->id)) }}, {{ \Illuminate\Support\Js::from($folder->name) }}, 'folder'); return false;">
+                                                            <i class="bi bi-trash me-2"></i> Delete
+                                                        </a>
+                                                    </li>
+                                                @endif
                                             @endif
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+                                        @endunless
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+
+                    {{-- Iterasi Render Berkas Berbagi --}}
+                    @foreach($files as $file)
+                        @php
+                            $fileLocked    = $file->isLocked();
+                            $fileProtected = $fileLocked || $parentProtected;
+                        @endphp
+                        <tr>
+                            <td class="ps-4 py-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi {{ $file->icon_class }} fs-4 me-3"></i>
+                                    <span class="fw-medium text-truncate">{{ $file->file_name }}</span>
+                                    @if($fileLocked)
+                                        <i class="bi bi-lock-fill text-warning ms-2"
+                                           title="Dikunci oleh {{ $file->lockedBy->name ?? 'pengguna yang sudah dihapus' }} pada {{ $file->locked_at->format('d M Y H:i') }}"></i>
+                                    @endif
+                                </div>
+                            </td>
+                            <td><span class="badge bg-secondary text-uppercase small" style="font-size: 0.75rem;">{{ $file->file_type }}</span></td>
+                            <td><span class="badge bg-light text-dark border">{{ $file->user->name ?? 'System' }}</span></td>
+                            <td><span class="text-secondary small">{{ $file->created_at->format('Y-m-d H:i') }}</span></td>
+                            <td class="pe-4 text-center">
+                                <div class="dropdown">
+                                    <button class="btn btn-link text-secondary p-1 m-0 border-0 shadow-none" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Aksi file">
+                                        <i class="bi bi-three-dots-vertical fs-5"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                        @if($file->preview_type && auth()->user()->hasPermission('data_integration', 'download'))
+                                            <li><a class="dropdown-item small py-2" href="{{ route('files.preview', $file) }}" target="_blank" rel="noopener"><i class="bi bi-eye me-2 text-muted"></i> Preview</a></li>
+                                        @endif
+                                        <li><a class="dropdown-item small py-2" href="{{ route('files.download', $file->id) }}"><i class="bi bi-download me-2 text-muted"></i> Download</a></li>
+
+                                        @if($fileProtected)
+                                            <li><span class="dropdown-item-text small text-muted"><i class="bi bi-lock-fill me-2"></i> Terkunci</span></li>
+                                        @elseif($canRename)
+                                            <li>
+                                                <a class="dropdown-item small py-2" href="#"
+                                                   onclick="openRenameModal({{ \Illuminate\Support\Js::from(route('files.rename', $file->id)) }}, {{ \Illuminate\Support\Js::from($file->base_name) }}, 'file_name', {{ \Illuminate\Support\Js::from($file->locked_extension) }}, 'file'); return false;">
+                                                    <i class="bi bi-pencil me-2 text-muted"></i> Rename
+                                                </a>
+                                            </li>
+                                            <li>
+                                                {{-- File bersama wajib berada di sebuah folder: opsi "tingkat atas" disembunyikan --}}
+                                                <a class="dropdown-item small py-2" href="#"
+                                                   onclick="openMoveModal({{ \Illuminate\Support\Js::from(route('files.move', $file->id)) }}, false, 'file'); return false;">
+                                                    <i class="bi bi-folder-symlink me-2 text-muted"></i> Move
+                                                </a>
+                                            </li>
+                                        @endif
+
+                                        @if($canLock)
+                                            @include('data-integration.partials.lock-toggle', ['item' => $file, 'kind' => 'file'])
+                                        @endif
+
+                                        @if($canDelete && !$fileProtected)
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a class="dropdown-item small py-2 text-danger" href="#"
+                                                   onclick="openDeleteModal({{ \Illuminate\Support\Js::from(route('files.destroy', $file->id)) }}, {{ \Illuminate\Support\Js::from($file->file_name) }}, 'file'); return false;">
+                                                    <i class="bi bi-trash me-2"></i> Delete
+                                                </a>
+                                            </li>
+                                        @endif
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

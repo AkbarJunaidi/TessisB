@@ -100,25 +100,28 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-3">
+    <div class="app-panel overflow-hidden">
+        <div class="px-3 px-md-4 pt-3 pt-md-4">
+            <h6 class="fw-bold mb-3">Semua Pembelian</h6>
+        </div>
         <div class="table-responsive">
-            <table class="table align-middle mb-0">
+            <table class="table table-hover table-modern align-middle mb-0">
                 <thead>
-                    <tr class="text-muted small">
-                        <th>Kode</th>
+                    <tr>
+                        <th class="ps-4">Kode</th>
                         <th>Tanggal</th>
                         <th>Vendor</th>
                         <th>Project</th>
                         <th class="text-end">Total</th>
                         <th>Status</th>
                         <th>Pembayaran</th>
-                        <th class="text-end">Aksi</th>
+                        <th class="text-center pe-4">Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="small">
                     @forelse($purchases as $purchase)
-                        <tr class="border-top">
-                            <td class="fw-semibold">{{ $purchase->code }}</td>
+                        <tr>
+                            <td class="ps-4 fw-semibold">{{ $purchase->code }}</td>
                             <td>{{ $purchase->purchase_date->format('d/m/Y') }}</td>
                             <td>{{ $purchase->vendor_name }}</td>
                             <td>{{ $purchase->project?->name ?? '-' }}</td>
@@ -127,10 +130,13 @@
                             <td>
                                 <span class="badge {{ $purchase->payment_status === \App\Models\Purchase::PAYMENT_PAID ? 'bg-success' : 'bg-warning text-dark' }}">{{ $purchase->payment_status }}</span>
                             </td>
-                            <td class="text-end">
-                                <a href="{{ route('purchases.show', $purchase) }}" class="btn btn-sm btn-outline-secondary">
-                                    <i class="bi bi-eye"></i> Detail
-                                </a>
+                            <td class="pe-4 text-center">
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a href="{{ route('purchases.show', $purchase) }}" class="btn btn-sm btn-outline-primary"
+                                       title="Lihat Detail" aria-label="Lihat detail pembelian {{ $purchase->code }}">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -139,10 +145,11 @@
                 </tbody>
             </table>
         </div>
-        @if($purchases->hasPages())
-            <div class="card-body">{{ $purchases->links() }}</div>
-        @endif
     </div>
+
+    @if($purchases->hasPages())
+        <div class="mt-3">{{ $purchases->links('pagination::bootstrap-5') }}</div>
+    @endif
 
 </div>
 @endsection

@@ -238,7 +238,7 @@
                     <table class="table align-middle mb-0">
                         <thead>
                             <tr class="text-muted small">
-                                <th>Item</th>
+                                <th>Barang</th>
                                 <th class="text-end">Jumlah</th>
                                 <th class="text-end">Harga Satuan</th>
                                 <th class="text-end">Subtotal</th>

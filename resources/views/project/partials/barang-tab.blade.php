@@ -24,10 +24,10 @@
                 <thead>
                     <tr class="text-muted small">
                         <th>Barang</th>
-                        <th class="text-center">Qty Dipakai</th>
-                        <th class="text-center">Sudah Dikembalikan</th>
+                        <th class="text-center">Dipakai</th>
+                        <th class="text-center">Dikembalikan</th>
                         <th class="text-center">Status</th>
-                        <th class="text-center">Ketersediaan Stok Saat Ini</th>
+                        <th class="text-center">Stok Saat Ini</th>
                     </tr>
                 </thead>
                 <tbody>

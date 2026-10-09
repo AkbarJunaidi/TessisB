@@ -101,22 +101,25 @@
         </div>
 
         <div class="tab-pane fade" id="tab-riwayat">
-            <div class="card border-0 shadow-sm rounded-3">
+            <div class="app-panel overflow-hidden">
+                <div class="px-3 px-md-4 pt-3 pt-md-4">
+                    <h6 class="fw-bold mb-3">Riwayat Approval</h6>
+                </div>
                 <div class="table-responsive">
-                    <table class="table align-middle mb-0">
+                    <table class="table table-hover table-modern align-middle mb-0">
                         <thead>
-                            <tr class="text-muted small">
-                                <th>Permintaan</th>
+                            <tr>
+                                <th class="ps-4">Permintaan</th>
                                 <th>Diajukan Oleh</th>
                                 <th>Diputuskan Oleh</th>
                                 <th>Status</th>
-                                <th>Catatan</th>
+                                <th class="pe-4">Catatan</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="small">
                             @forelse($history as $req)
-                                <tr class="border-top">
-                                    <td>
+                                <tr>
+                                    <td class="ps-4">
                                         <div class="fw-semibold">{{ $req->display_title }}</div>
                                         <div class="text-muted small">{{ $req->display_detail }}</div>
                                     </td>
@@ -126,7 +129,7 @@
                                         <span class="text-muted small d-block">{{ $req->decided_at?->translatedFormat('d M Y H:i') }}</span>
                                     </td>
                                     <td><span class="badge {{ $req->status === 'approved' ? 'bg-success' : 'bg-secondary' }}">{{ $req->status === 'approved' ? 'Disetujui' : 'Ditolak' }}</span></td>
-                                    <td>{{ $req->decision_note ?: '-' }}</td>
+                                    <td class="pe-4">{{ $req->decision_note ?: '-' }}</td>
                                 </tr>
                             @empty
                                 <tr><td colspan="5" class="text-center text-muted py-4">Belum ada riwayat.</td></tr>
@@ -134,8 +137,11 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="card-body">{{ $history->links() }}</div>
             </div>
+
+            @if($history->hasPages())
+                <div class="mt-3">{{ $history->links('pagination::bootstrap-5') }}</div>
+            @endif
         </div>
     </div>
 

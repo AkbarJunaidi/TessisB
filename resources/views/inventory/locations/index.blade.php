@@ -89,79 +89,82 @@
     </div>
 
     {{-- Daftar --}}
-    <div class="card shadow-sm border-0 rounded-3 bg-white">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover table-stack align-middle mb-0 text-nowrap">
-                    <thead class="table-light text-secondary small text-uppercase">
+    <div class="app-panel overflow-hidden">
+        <div class="px-3 px-md-4 pt-3 pt-md-4">
+            <h6 class="fw-bold mb-3">Semua Lokasi</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover table-modern table-stack align-middle mb-0 text-nowrap">
+                <thead>
+                    <tr>
+                        <th class="ps-4 py-3">Lokasi</th>
+                        <th>Jenis</th>
+                        <th>Alamat</th>
+                        <th>Koordinat</th>
+                        <th>Radius</th>
+                        <th class="text-center">Unit di Lokasi</th>
+                        <th class="text-center">Belum di Lokasi Utama</th>
+                        <th>Status</th>
+                        @if($canManage)
+                            <th class="text-center pe-4">Aksi</th>
+                        @endif
+                    </tr>
+                </thead>
+                <tbody class="small">
+                    @forelse($locations as $loc)
+                        @php
+                            $st = $stats['per_location'][$loc->id] ?? ['di_lokasi' => 0, 'tersedia' => 0, 'utama' => 0, 'perlu_kembali' => 0];
+                            $color = $jenisColor[$loc->jenis] ?? 'secondary';
+                        @endphp
                         <tr>
-                            <th class="ps-4 py-3">Lokasi</th>
-                            <th>Jenis</th>
-                            <th>Alamat</th>
-                            <th>Koordinat</th>
-                            <th>Radius</th>
-                            <th class="text-center">Unit di Lokasi</th>
-                            <th class="text-center">Belum di Lokasi Utama</th>
-                            <th>Status</th>
+                            <td class="ps-4 py-3 fw-semibold" data-label="Lokasi">
+                                <i class="bi bi-geo-alt me-1 text-secondary"></i>{{ $loc->name }}
+                                @if($loc->is_default)
+                                    <span class="badge bg-light text-dark border ms-1 fw-normal">Lokasi awal</span>
+                                @endif
+                            </td>
+                            <td data-label="Jenis">
+                                <span class="badge bg-{{ $color }} bg-opacity-10 text-{{ $color }} border border-{{ $color }}-subtle px-2 py-2 fw-medium">{{ $loc->jenis_label }}</span>
+                            </td>
+                            <td data-label="Alamat" class="text-wrap" style="min-width: 180px;">{{ $loc->address ?: '-' }}</td>
+                            <td data-label="Koordinat">
+                                @if($loc->hasCoordinates())
+                                    <a href="{{ $loc->mapsUrl() }}" target="_blank" rel="noopener" class="text-decoration-none">
+                                        <i class="bi bi-map me-1"></i>{{ $loc->coordinateText() }}
+                                    </a>
+                                @else
+                                    <span class="text-muted">Belum diisi</span>
+                                @endif
+                            </td>
+                            <td data-label="Radius">{{ $loc->hasCoordinates() ? $loc->radius_m . ' m' : '-' }}</td>
+                            <td class="text-center" data-label="Unit di Lokasi">
+                                @if($loc->can_store_units)
+                                    {{ $st['di_lokasi'] }}
+                                    <span class="text-muted">({{ $st['tersedia'] }} tersedia)</span>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            <td class="text-center" data-label="Belum di Lokasi Utama">
+                                @if($loc->can_store_units && $st['perlu_kembali'] > 0)
+                                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning-subtle px-2 py-2">{{ $st['perlu_kembali'] }} unit</span>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            <td data-label="Status">
+                                @if($loc->is_active)
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle px-2 py-2">Aktif</span>
+                                @else
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle px-2 py-2">Nonaktif</span>
+                                @endif
+                                @if($loc->can_store_units)
+                                    <span class="badge bg-light text-dark border ms-1 fw-normal">Penyimpanan unit</span>
+                                @endif
+                            </td>
                             @if($canManage)
-                                <th class="pe-4 text-end">Aksi</th>
-                            @endif
-                        </tr>
-                    </thead>
-                    <tbody class="small text-dark">
-                        @forelse($locations as $loc)
-                            @php
-                                $st = $stats['per_location'][$loc->id] ?? ['di_lokasi' => 0, 'tersedia' => 0, 'utama' => 0, 'perlu_kembali' => 0];
-                                $color = $jenisColor[$loc->jenis] ?? 'secondary';
-                            @endphp
-                            <tr>
-                                <td class="ps-4 py-3 fw-semibold" data-label="Lokasi">
-                                    <i class="bi bi-geo-alt me-1 text-secondary"></i>{{ $loc->name }}
-                                    @if($loc->is_default)
-                                        <span class="badge bg-light text-dark border ms-1 fw-normal">Lokasi awal</span>
-                                    @endif
-                                </td>
-                                <td data-label="Jenis">
-                                    <span class="badge bg-{{ $color }} bg-opacity-10 text-{{ $color }} border border-{{ $color }}-subtle px-2 py-2 fw-medium">{{ $loc->jenis_label }}</span>
-                                </td>
-                                <td data-label="Alamat" class="text-wrap" style="min-width: 180px;">{{ $loc->address ?: '-' }}</td>
-                                <td data-label="Koordinat">
-                                    @if($loc->hasCoordinates())
-                                        <a href="{{ $loc->mapsUrl() }}" target="_blank" rel="noopener" class="text-decoration-none">
-                                            <i class="bi bi-map me-1"></i>{{ $loc->coordinateText() }}
-                                        </a>
-                                    @else
-                                        <span class="text-muted">Belum diisi</span>
-                                    @endif
-                                </td>
-                                <td data-label="Radius">{{ $loc->hasCoordinates() ? $loc->radius_m . ' m' : '-' }}</td>
-                                <td class="text-center" data-label="Unit di Lokasi">
-                                    @if($loc->can_store_units)
-                                        {{ $st['di_lokasi'] }}
-                                        <span class="text-muted">({{ $st['tersedia'] }} tersedia)</span>
-                                    @else
-                                        <span class="text-muted">-</span>
-                                    @endif
-                                </td>
-                                <td class="text-center" data-label="Belum di Lokasi Utama">
-                                    @if($loc->can_store_units && $st['perlu_kembali'] > 0)
-                                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning-subtle px-2 py-2">{{ $st['perlu_kembali'] }} unit</span>
-                                    @else
-                                        <span class="text-muted">-</span>
-                                    @endif
-                                </td>
-                                <td data-label="Status">
-                                    @if($loc->is_active)
-                                        <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle px-2 py-2">Aktif</span>
-                                    @else
-                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle px-2 py-2">Nonaktif</span>
-                                    @endif
-                                    @if($loc->can_store_units)
-                                        <span class="badge bg-light text-dark border ms-1 fw-normal">Penyimpanan unit</span>
-                                    @endif
-                                </td>
-                                @if($canManage)
-                                    <td class="pe-4 text-end" data-label="Aksi">
+                                <td class="pe-4 text-center cell-block" data-label="Aksi">
+                                    <div class="d-flex justify-content-center gap-2">
                                         <button type="button" class="btn btn-sm btn-outline-secondary btn-edit-location"
                                                 data-location="{{ json_encode($loc->toFormArray()) }}"
                                                 title="Ubah" aria-label="Ubah lokasi">
@@ -175,20 +178,20 @@
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         @endunless
-                                    </td>
-                                @endif
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="{{ $canManage ? 9 : 8 }}" class="text-center py-5 text-muted">
-                                    <i class="bi bi-geo-alt fs-2 d-block mb-2 text-secondary opacity-50"></i>
-                                    Belum ada lokasi yang cocok dengan filter.
+                                    </div>
                                 </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                            @endif
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="{{ $canManage ? 9 : 8 }}" class="text-center py-5 text-muted">
+                                <i class="bi bi-geo-alt fs-2 d-block mb-2 text-secondary opacity-50"></i>
+                                Belum ada lokasi yang cocok dengan filter.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

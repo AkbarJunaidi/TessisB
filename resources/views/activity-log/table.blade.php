@@ -8,10 +8,10 @@
             <table class="table table-hover align-middle mb-0 text-nowrap">
                 <thead class="table-light">
                     <tr>
-                        <th class="ps-4" style="width: 20%">Date Time</th>
+                        <th class="ps-4" style="width: 20%">Waktu</th>
                         <th style="width: 25%">User</th>
-                        <th style="width: 30%">Module</th>
-                        <th class="pe-4" style="width: 25%">Action</th>
+                        <th style="width: 30%">Modul</th>
+                        <th class="pe-4" style="width: 25%">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>

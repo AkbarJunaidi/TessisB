@@ -163,20 +163,23 @@
     </div>
 
     {{-- Tabel transaksi --}}
-    <div class="card border-0 shadow-sm rounded-3">
+    <div class="app-panel overflow-hidden">
+        <div class="px-3 px-md-4 pt-3 pt-md-4">
+            <h6 class="fw-bold mb-3">Semua Transaksi</h6>
+        </div>
         <div class="table-responsive">
-            <table class="table align-middle mb-0">
+            <table class="table table-hover table-modern align-middle mb-0">
                 <thead>
-                    <tr class="text-muted small">
-                        <th class="text-nowrap">Tanggal</th>
+                    <tr>
+                        <th class="ps-4 text-nowrap">Tanggal</th>
                         <th>Keterangan</th>
                         <th>Kategori</th>
                         <th class="text-end">Masuk</th>
                         <th class="text-end">Keluar</th>
-                        <th class="text-end">Aksi</th>
+                        <th class="text-center pe-4">Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="small">
                     @forelse($transactions as $t)
                         @php
                             $meta = collect([
@@ -186,8 +189,8 @@
                                 $t->payment_method,
                             ])->filter()->implode(' - ');
                         @endphp
-                        <tr class="border-top">
-                            <td class="text-nowrap">{{ $t->tanggal?->format('d/m/Y') }}</td>
+                        <tr>
+                            <td class="ps-4 text-nowrap">{{ $t->tanggal?->format('d/m/Y') }}</td>
                             <td>
                                 <div class="fw-semibold">{{ $t->description ?: '-' }}</div>
                                 @if($meta !== '')
@@ -197,28 +200,32 @@
                             <td><span class="badge bg-light text-dark border">{{ $t->category }}</span></td>
                             <td class="text-end text-nowrap text-success fw-semibold">{{ $t->type === 'income' ? $rp($t->amount) : '' }}</td>
                             <td class="text-end text-nowrap text-danger fw-semibold">{{ $t->type === 'expense' ? $rp($t->amount) : '' }}</td>
-                            <td class="text-end text-nowrap">
-                                @if($t->isAuto())
-                                    @if($t->source_type === \App\Models\ProjectFinanceItem::SOURCE_PURCHASE)
-                                        <a href="{{ route('purchases.show', $t->source_id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-box-arrow-up-right me-1"></i> Pembelian</a>
-                                    @elseif($t->source_type === \App\Models\ProjectFinanceItem::SOURCE_REPAIR)
-                                        <a href="{{ route('inventory.repairs.show', $t->source_id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-box-arrow-up-right me-1"></i> Perbaikan</a>
+                            <td class="pe-4 text-center text-nowrap">
+                                <div class="d-flex justify-content-center gap-2">
+                                    @if($t->isAuto())
+                                        @if($t->source_type === \App\Models\ProjectFinanceItem::SOURCE_PURCHASE)
+                                            <a href="{{ route('purchases.show', $t->source_id) }}" class="btn btn-sm btn-outline-secondary"
+                                               title="Buka Pembelian" aria-label="Buka pembelian"><i class="bi bi-box-arrow-up-right"></i></a>
+                                        @elseif($t->source_type === \App\Models\ProjectFinanceItem::SOURCE_REPAIR)
+                                            <a href="{{ route('inventory.repairs.show', $t->source_id) }}" class="btn btn-sm btn-outline-secondary"
+                                               title="Buka Perbaikan" aria-label="Buka perbaikan"><i class="bi bi-box-arrow-up-right"></i></a>
+                                        @endif
+                                    @elseif($lockDate && $t->tanggal && $t->tanggal->lte($lockDate))
+                                        <span class="text-muted" title="Periode ditutup"><i class="bi bi-lock"></i></span>
+                                    @elseif($canManage)
+                                        <button type="button" class="btn btn-sm btn-outline-primary btn-edit-transaction"
+                                                data-url="{{ route('finance.transactions.update', $t) }}"
+                                                data-item="{{ json_encode($editPayload($t)) }}" title="Ubah" aria-label="Ubah">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <form method="POST" action="{{ route('finance.transactions.destroy', $t) }}" class="d-inline"
+                                              data-confirm="Hapus transaksi ini?" data-confirm-label="Hapus" data-confirm-danger>
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus" aria-label="Hapus"><i class="bi bi-trash"></i></button>
+                                        </form>
                                     @endif
-                                @elseif($lockDate && $t->tanggal && $t->tanggal->lte($lockDate))
-                                    <span class="text-muted" title="Periode ditutup"><i class="bi bi-lock"></i></span>
-                                @elseif($canManage)
-                                    <button type="button" class="btn btn-sm btn-outline-primary btn-edit-transaction"
-                                            data-url="{{ route('finance.transactions.update', $t) }}"
-                                            data-item="{{ json_encode($editPayload($t)) }}" aria-label="Ubah">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <form method="POST" action="{{ route('finance.transactions.destroy', $t) }}" class="d-inline"
-                                          data-confirm="Hapus transaksi ini?" data-confirm-label="Hapus" data-confirm-danger>
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Hapus"><i class="bi bi-trash"></i></button>
-                                    </form>
-                                @endif
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -232,10 +239,11 @@
                 </tbody>
             </table>
         </div>
-        @if($transactions->hasPages())
-            <div class="card-footer bg-white border-0 py-3">{{ $transactions->links() }}</div>
-        @endif
     </div>
+
+    @if($transactions->hasPages())
+        <div class="mt-3">{{ $transactions->links('pagination::bootstrap-5') }}</div>
+    @endif
 </div>
 
 @if($canManage)

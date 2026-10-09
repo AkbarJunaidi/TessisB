@@ -292,8 +292,10 @@
                             </td>
                             <td class="py-3 text-center pe-3 cell-block" data-label="Aksi">
                                 <div class="d-flex justify-content-center gap-2">
-                                    <a href="{{ route('projects.show', $project) }}" class="btn btn-sm btn-outline-secondary">
-                                        <i class="bi bi-eye"></i> Detail
+                                    <a href="{{ route('projects.show', $project) }}"
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="Lihat Detail" aria-label="Lihat detail {{ $project->name }}">
+                                        <i class="bi bi-eye"></i>
                                     </a>
                                     @if(auth()->user()->hasPermission('tracking_progress', 'delete_project'))
                                         <button type="button"
@@ -302,7 +304,7 @@
                                                 data-bs-target="#deleteProjectModal"
                                                 data-id="{{ $project->id }}"
                                                 data-name="{{ $project->name }}"
-                                                title="Hapus Project">
+                                                title="Hapus Project" aria-label="Hapus project {{ $project->name }}">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     @endif

@@ -88,7 +88,7 @@
                 <tr>
                     <th class="ps-4" style="width: 10%;">Foto</th>
                     <th style="width: 25%;">Nama Barang</th>
-                    <th style="width: 20%;">Serial Number</th>
+                    <th style="width: 20%;">No. Seri</th>
                     <th style="width: 15%;">Status</th>
                     <th style="width: 15%;">Tanggal Input</th>
                     <th class="text-center pe-4" style="width: 15%;">Aksi</th>
@@ -113,7 +113,7 @@
 
                         <td class="py-3 fw-bold text-dark" data-label="Nama Barang">{{ $item->name }}</td>
 
-                        <td class="py-3 text-secondary" data-label="Serial Number">
+                        <td class="py-3 text-secondary" data-label="No. Seri">
                             <span class="badge bg-light text-dark border px-2 py-1 font-monospace fw-medium">
                                 {{ $item->serial_number }}
                             </span>
@@ -138,9 +138,9 @@
                         <td class="py-3 text-center pe-4 cell-block" data-label="Aksi">
                             <div class="d-flex justify-content-center gap-2">
                                 <a href="{{ route('inventory.show', $item->id) }}"
-                                   class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1"
-                                   title="Lihat Detail">
-                                    <i class="bi bi-eye"></i> <span class="d-none d-xl-inline">View</span>
+                                   class="btn btn-sm btn-outline-primary"
+                                   title="Lihat Detail" aria-label="Lihat detail {{ $item->name }}">
+                                    <i class="bi bi-eye"></i>
                                 </a>
                                 <a href="{{ route('inventory.download-pdf', $item->id) }}"
                                    class="btn btn-sm btn-outline-danger"
@@ -209,7 +209,7 @@
                             <span id="modal-inventory-name" class="fw-bold text-dark fs-6">-</span>
                         </div>
                         <div>
-                            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem;">Serial Number</small>
+                            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem;">No. Seri</small>
                             <span id="modal-inventory-sn" class="font-monospace fw-semibold text-secondary">-</span>
                         </div>
                     </div>

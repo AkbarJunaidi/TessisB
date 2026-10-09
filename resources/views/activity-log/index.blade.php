@@ -123,16 +123,16 @@
                 <table class="table table-hover table-stack align-middle mb-0 text-nowrap">
                     <thead class="table-light text-secondary small text-uppercase">
                         <tr>
-                            <th class="ps-4 py-3" style="width: 20%">Date Time</th>
+                            <th class="ps-4 py-3" style="width: 20%">Waktu</th>
                             <th style="width: 25%">User</th>
-                            <th style="width: 30%">Module</th>
-                            <th class="pe-4" style="width: 25%">Action</th>
+                            <th style="width: 30%">Modul</th>
+                            <th class="pe-4" style="width: 25%">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="small text-dark">
                         @forelse($logs as $log)
                             <tr>
-                                <td class="ps-4 py-3 text-secondary fw-medium" data-label="Date Time">
+                                <td class="ps-4 py-3 text-secondary fw-medium" data-label="Waktu">
                                     <i class="bi bi-calendar-event me-2"></i>{{ $log->created_at->format('d/m/Y H:i') }}
                                 </td>
                                 <td data-label="User">
@@ -143,12 +143,12 @@
                                         <span class="fw-semibold">{{ $log->user->name ?? 'System / Deleted User' }}</span>
                                     </div>
                                 </td>
-                                <td data-label="Module">
+                                <td data-label="Modul">
                                     <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary-subtle px-2 py-2 fw-medium" style="font-size: 0.8rem;">
                                         {{ class_basename($log->module) }}
                                     </span>
                                 </td>
-                                <td data-label="Action">
+                                <td data-label="Aksi">
                                     @php $lowerAction = strtolower($log->action); @endphp
                                     @if(in_array($lowerAction, ['delete', 'deleted', 'logout']))
                                         <span class="text-danger fw-semibold"><i class="bi bi-circle-fill me-1 small" style="font-size: 0.5rem;"></i>{{ ucfirst($log->action) }}</span>

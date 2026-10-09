@@ -34,22 +34,25 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-3">
+    <div class="app-panel overflow-hidden">
+        <div class="px-3 px-md-4 pt-3 pt-md-4">
+            <h6 class="fw-bold mb-3">Semua Project</h6>
+        </div>
         <div class="table-responsive">
-            <table class="table align-middle mb-0">
+            <table class="table table-hover table-modern align-middle mb-0">
                 <thead>
-                    <tr class="text-muted small">
-                        <th>Project</th>
+                    <tr>
+                        <th class="ps-4">Project</th>
                         <th>Estimasi</th>
                         <th>Pendapatan Tercatat</th>
                         <th>Kwitansi</th>
                         <th>Total Diterima</th>
                         <th>Sisa</th>
                         <th>Status</th>
-                        <th class="text-end">Aksi</th>
+                        <th class="text-center pe-4">Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="small">
                     @forelse($projects as $project)
                         @php
                             $pendapatanTercatat = (float) ($project->pendapatan_tercatat ?? 0);
@@ -66,8 +69,8 @@
                                 default => 'bg-secondary',
                             };
                         @endphp
-                        <tr class="border-top">
-                            <td>
+                        <tr>
+                            <td class="ps-4">
                                 <div class="fw-semibold">{{ $project->name }}</div>
                                 <div class="text-muted small">{{ $project->client ?: $project->company ?: '-' }}</div>
                             </td>
@@ -77,15 +80,19 @@
                             <td class="text-success fw-semibold">{{ \App\Support\Money::formatRupiah($totalDiterima) }}</td>
                             <td class="{{ $sisa > 0 ? 'text-danger' : 'text-muted' }}">{{ \App\Support\Money::formatRupiah($sisa) }}</td>
                             <td><span class="badge {{ $badgeClass }}">{{ $statusPembayaran }}</span></td>
-                            <td class="text-end">
-                                <a href="{{ route('kwitansi.show-project', $project) }}" class="btn btn-sm btn-outline-secondary">
-                                    <i class="bi bi-eye"></i> Detail
-                                </a>
-                                @if($canCreate)
-                                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#kwitansiModal{{ $project->id }}">
-                                        <i class="bi bi-plus-lg"></i> Kwitansi
-                                    </button>
-                                @endif
+                            <td class="pe-4 text-center">
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a href="{{ route('kwitansi.show-project', $project) }}" class="btn btn-sm btn-outline-primary"
+                                       title="Lihat Detail" aria-label="Lihat detail kwitansi {{ $project->name }}">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    @if($canCreate)
+                                        <button type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#kwitansiModal{{ $project->id }}"
+                                                title="Tambah Kwitansi" aria-label="Tambah kwitansi {{ $project->name }}">
+                                            <i class="bi bi-plus-lg"></i>
+                                        </button>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -94,10 +101,11 @@
                 </tbody>
             </table>
         </div>
-        <div class="card-body">
-            {{ $projects->links() }}
-        </div>
     </div>
+
+    @if($projects->hasPages())
+        <div class="mt-3">{{ $projects->links('pagination::bootstrap-5') }}</div>
+    @endif
 
     {{-- Modal "Tambah Kwitansi" per project - entry point ke-2 (selain tab
          Kwitansi di Project Detail), mirip pola Barang Pinjaman. --}}

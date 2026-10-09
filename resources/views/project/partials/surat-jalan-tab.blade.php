@@ -109,7 +109,7 @@
                                             <thead>
                                                 <tr class="text-muted small">
                                                     <th>Barang</th>
-                                                    <th class="text-center">Qty Dipakai</th>
+                                                    <th class="text-center">Dipakai</th>
                                                     <th class="text-center">Dikembalikan</th>
                                                     <th class="text-center">Sisa</th>
                                                     <th class="text-end">Aksi</th>
