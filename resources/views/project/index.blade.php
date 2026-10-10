@@ -156,7 +156,7 @@
                         <hr class="my-3">
                         <button type="button" id="exportMonthlyReportBtn" class="btn btn-outline-primary btn-sm w-100 d-flex align-items-center justify-content-center gap-2"
                                 data-month="{{ $calendarMonth }}" data-year="{{ $calendarYear }}">
-                            <span class="btn-text"><i class="bi bi-file-earmark-pdf me-1"></i> Export Laporan Bulanan</span>
+                            <span class="btn-text"><i class="bi bi-file-earmark-pdf me-1"></i> Ekspor Laporan Bulanan</span>
                             <span class="spinner-border spinner-border-sm d-none" role="status"></span>
                         </button>
                     @endif
@@ -339,7 +339,7 @@
                 <h5 class="modal-title fw-bold" id="deleteProjectModalLabel">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i>Konfirmasi Hapus Project
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
 
             <form id="deleteProjectForm" method="POST">

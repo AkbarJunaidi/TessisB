@@ -8,7 +8,7 @@
         const input = document.getElementById('dynamicRenameInput');
 
         document.getElementById('dynamicRenameForm').action = actionUrl;
-        document.getElementById('dynamicRenameTitle').textContent = 'Rename ' + (kindLabel[kind] || '');
+        document.getElementById('dynamicRenameTitle').textContent = 'Ganti Nama ' + (kindLabel[kind] || '');
         input.name  = inputFieldName;
         input.value = currentName;
         document.getElementById('dynamicRenameExtHint').textContent =
@@ -23,7 +23,7 @@
         const root   = document.getElementById('dynamicMoveRootOption');
 
         document.getElementById('dynamicMoveForm').action = actionUrl;
-        document.getElementById('dynamicMoveTitle').textContent = 'Move ' + (kindLabel[kind] || '');
+        document.getElementById('dynamicMoveTitle').textContent = 'Pindahkan ' + (kindLabel[kind] || '');
 
         root.hidden   = !allowRoot;
         root.disabled = !allowRoot;

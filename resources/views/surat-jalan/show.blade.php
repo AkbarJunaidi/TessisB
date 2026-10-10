@@ -17,10 +17,10 @@
         <div class="d-flex flex-wrap gap-2">
             @if(auth()->user()->hasPermission('surat_jalan', 'print'))
                 <a href="{{ route('surat-jalan.preview', $suratJalan) }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                    <i class="bi bi-eye"></i> Preview PDF
+                    <i class="bi bi-eye"></i> Pratinjau PDF
                 </a>
                 <a href="{{ route('surat-jalan.download', $suratJalan) }}" class="btn btn-sm btn-primary">
-                    <i class="bi bi-download"></i> Download
+                    <i class="bi bi-download"></i> Unduh
                 </a>
             @endif
         </div>

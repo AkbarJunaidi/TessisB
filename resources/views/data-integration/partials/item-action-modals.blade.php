@@ -6,8 +6,8 @@
             @csrf
             @method('PATCH')
             <div class="modal-header border-0 bg-light py-3">
-                <h5 class="modal-title fw-semibold" id="dynamicRenameTitle">Rename</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title fw-semibold" id="dynamicRenameTitle">Ganti Nama</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
             <div class="modal-body py-4">
                 <div class="mb-3">
@@ -17,8 +17,8 @@
                 </div>
             </div>
             <div class="modal-footer border-0 bg-light py-2">
-                <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary px-4">Save</button>
+                <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-primary px-4">Simpan</button>
             </div>
         </form>
     </div>
@@ -30,8 +30,8 @@
             @csrf
             @method('PATCH')
             <div class="modal-header border-0 bg-light py-3">
-                <h5 class="modal-title fw-semibold" id="dynamicMoveTitle">Move</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title fw-semibold" id="dynamicMoveTitle">Pindahkan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
             <div class="modal-body py-4">
                 <div class="mb-3">
@@ -58,8 +58,8 @@
                 </div>
             </div>
             <div class="modal-footer border-0 bg-light py-2">
-                <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary px-4">Move</button>
+                <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-primary px-4">Pindahkan</button>
             </div>
         </form>
     </div>
@@ -71,8 +71,8 @@
             @csrf
             @method('DELETE')
             <div class="modal-header border-0 bg-light py-3">
-                <h5 class="modal-title fw-semibold text-danger">Confirm Delete</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title fw-semibold text-danger">Konfirmasi Hapus</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
             <div class="modal-body py-4">
                 <p class="mb-3" id="dynamicDeleteMessage">Apakah Anda yakin ingin menghapus item ini?</p>
@@ -83,8 +83,8 @@
                 <div class="form-text small mt-2">Item dipindahkan ke Sampah dan masih dapat dipulihkan.</div>
             </div>
             <div class="modal-footer border-0 bg-light py-2">
-                <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-danger px-4">Delete</button>
+                <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-danger px-4">Hapus</button>
             </div>
         </form>
     </div>

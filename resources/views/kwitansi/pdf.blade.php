@@ -127,7 +127,7 @@
          Kwitansi (bukan tebak-tebak dari teks Keterangan lagi). --}}
     <div class="checkbox-row">
         <span class="checkbox-item"><span class="box">{{ $kwitansi->kategori_pembayaran === 'booking_fee' ? '[X]' : '[ ]' }}</span> Booking Fee</span>
-        <span class="checkbox-item"><span class="box">{{ $kwitansi->kategori_pembayaran === 'dp' ? '[X]' : '[ ]' }}</span> Down Payment (DP)</span>
+        <span class="checkbox-item"><span class="box">{{ $kwitansi->kategori_pembayaran === 'dp' ? '[X]' : '[ ]' }}</span> Uang Muka (DP)</span>
         <span class="checkbox-item"><span class="box">{{ $kwitansi->kategori_pembayaran === 'pelunasan' ? '[X]' : '[ ]' }}</span> Pelunasan</span>
     </div>
 

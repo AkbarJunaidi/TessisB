@@ -7,7 +7,7 @@
                 <h5 class="modal-title fw-semibold" id="servisWarningTitle">
                     <i class="bi bi-exclamation-triangle text-warning me-1"></i>Perhatian: Servis Barang
                 </h5>
-                <button type="button" class="btn-close" data-servis-cancel aria-label="Close"></button>
+                <button type="button" class="btn-close" data-servis-cancel aria-label="Tutup"></button>
             </div>
             <div class="modal-body py-4">
                 <p class="small text-muted mb-3">Unit berikut akan dipakai dan servisnya sudah dekat atau terlewat. Barang tetap bisa dipakai bila diperlukan.</p>

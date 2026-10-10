@@ -1,7 +1,7 @@
 <div class="card shadow-sm border-0">
     <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-        <h6 class="m-0 fw-bold text-dark"><i class="fas fa-list me-2"></i>Data Audit Trail Logs</h6>
-        <span class="badge bg-secondary text-white">{{ $logs->total() }} Total Logs</span>
+        <h6 class="m-0 fw-bold text-dark"><i class="fas fa-list me-2"></i>Data Log Aktivitas</h6>
+        <span class="badge bg-secondary text-white">{{ $logs->total() }} Total Log</span>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -35,7 +35,7 @@
                             <td>
                                 <span class="badge bg-info-soft text-info rounded-pill px-3 py-1.5 border border-info-subtle u-bgc-e0f7fa u-fs-12px">
                                     {{-- DIPERBAIKI: Memotong FQDN App\Models\Inventory menjadi Inventory --}}
-                                    {{ class_basename($log->module) }}
+                                    {{ \App\Support\LogLabel::module($log->module) }}
                                 </span>
                             </td>
                             <td class="pe-4">
@@ -44,15 +44,15 @@
 
                                 @if(str_contains($lowerAction, 'delete') || str_contains($lowerAction, 'logout'))
                                     <span class="text-danger fw-medium">
-                                        <i class="fas fa-circle text-danger me-1 u-fs-7px"></i>{{ ucfirst($log->action) }}
+                                        <i class="fas fa-circle text-danger me-1 u-fs-7px"></i>{{ \App\Support\LogLabel::action($log->action) }}
                                     </span>
                                 @elseif(str_contains($lowerAction, 'create') || str_contains($lowerAction, 'login') || str_contains($lowerAction, 'upload'))
                                     <span class="text-success fw-medium">
-                                        <i class="fas fa-circle text-success me-1 u-fs-7px"></i>{{ ucfirst($log->action) }}
+                                        <i class="fas fa-circle text-success me-1 u-fs-7px"></i>{{ \App\Support\LogLabel::action($log->action) }}
                                     </span>
                                 @else
                                     <span class="text-warning fw-medium">
-                                        <i class="fas fa-circle text-warning me-1 u-fs-7px"></i>{{ ucfirst($log->action) }}
+                                        <i class="fas fa-circle text-warning me-1 u-fs-7px"></i>{{ \App\Support\LogLabel::action($log->action) }}
                                     </span>
                                 @endif
                             </td>

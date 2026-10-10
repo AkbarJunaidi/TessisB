@@ -19,14 +19,14 @@
                 <div class="col-md-6">
 
                     <label class="form-label small fw-semibold text-muted">
-                        Search
+                        Cari
                     </label>
 
                     <input
                         type="text"
                         name="search"
                         class="form-control @error('search') is-invalid @enderror"
-                        placeholder="Search user, module, action..."
+                        placeholder="Cari user, modul, aksi..."
                         value="{{ request('search') }}">
 
                 </div>
@@ -35,7 +35,7 @@
                 <div class="col-md-4">
 
                     <label class="form-label small fw-semibold text-muted">
-                        Module
+                        Modul
                     </label>
 
                     <select
@@ -43,7 +43,7 @@
                         name="module">
 
                         <option value="">
-                            All Modules
+                            Semua Modul
                         </option>
 
                         {{-- Menggunakan $value => $label untuk mendukung associative array --}}
@@ -53,7 +53,7 @@
                                 value="{{ $value }}"
                                 @selected(request('module') == $value)>
 
-                                {{ $label }}
+                                {{ \App\Support\LogLabel::module($label) }}
                             </option>
                         @endforeach
                     </select>
@@ -71,7 +71,7 @@
                         name="user_id">
 
                         <option value="">
-                            All Users
+                            Semua User
                         </option>
 
                         @foreach($users as $user)
@@ -88,7 +88,7 @@
                 <div class="col-md-4">
 
                     <label class="form-label small fw-semibold text-muted">
-                        Action
+                        Aksi
                     </label>
 
                     <select
@@ -96,7 +96,7 @@
                         name="action">
 
                         <option value="">
-                            All Actions
+                            Semua Aksi
                         </option>
 
                         @foreach($actions as $group => $items)
@@ -107,7 +107,7 @@
                                         value="{{ $action }}"
                                         @selected(request('action') == $action)>
 
-                                        {{ $action }}
+                                        {{ \App\Support\LogLabel::action($action) }}
                                     </option>
                                 @endforeach
                             </optgroup>
@@ -119,7 +119,7 @@
                 <div class="col-md-6">
 
                     <label class="form-label small fw-semibold text-muted">
-                        Date From
+                        Dari Tanggal
                     </label>
 
                     <input
@@ -133,7 +133,7 @@
                 <div class="col-md-6">
 
                     <label class="form-label small fw-semibold text-muted">
-                        Date To
+                        Sampai Tanggal
                     </label>
 
                     <input
@@ -157,7 +157,7 @@
                 <button
                     type="submit"
                     class="btn btn-primary px-4">
-                    Search
+                    Cari
                 </button>
             </div>
         </form>

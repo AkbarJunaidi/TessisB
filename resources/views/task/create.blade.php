@@ -24,7 +24,7 @@
                 <input type="hidden" name="project_id" value="{{ $project->id }}">
 
                 <div class="mb-3">
-                    <label for="title" class="form-label fw-semibold small text-secondary">Task Title (Judul Tugas) <span class="text-danger">*</span></label>
+                    <label for="title" class="form-label fw-semibold small text-secondary">Judul Task <span class="text-danger">*</span></label>
                     <input type="text" name="title" id="title" class="form-control @error('title') is-invalid @enderror" placeholder="Contoh: Implementasi Form Validasi Input Gambar" value="{{ old('title') }}" required autofocus>
                     @error('title')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -32,7 +32,7 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="description" class="form-label fw-semibold small text-secondary">Description (Rincian Teknis Tugas)</label>
+                    <label for="description" class="form-label fw-semibold small text-secondary">Rincian Task</label>
                     <textarea name="description" id="description" rows="4" class="form-control" placeholder="Tuliskan catatan instruksi kerja di sini...">{{ old('description') }}</textarea>
                 </div>
 
@@ -47,7 +47,7 @@
                     </div>
 
                     <div class="col-md-4 mb-3">
-                        <label for="status" class="form-label fw-semibold small text-secondary">Initial Status (Status Awal) <span class="text-danger">*</span></label>
+                        <label for="status" class="form-label fw-semibold small text-secondary">Status Awal <span class="text-danger">*</span></label>
                         <select name="status" id="status" class="form-select" required>
                             @foreach($project->getBoardLists() as $list)
                                 <option value="{{ $list['label'] }}" {{ old('status') == $list['label'] ? 'selected' : '' }}>{{ $list['label'] }}</option>
@@ -56,7 +56,7 @@
                     </div>
 
                     <div class="col-md-4 mb-3">
-                        <label for="deadline" class="form-label fw-semibold small text-secondary">Task Deadline <span class="text-danger">*</span></label>
+                        <label for="deadline" class="form-label fw-semibold small text-secondary">Deadline Task <span class="text-danger">*</span></label>
                         <input type="date" name="deadline" id="deadline" class="form-control @error('deadline') is-invalid @enderror" value="{{ old('deadline', $project->deadline) }}" required>
                         @error('deadline')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -65,7 +65,7 @@
                 </div>
 
                 <div class="mb-4 u-maxw-400px">
-                    <label for="assigned_to" class="form-label fw-semibold small text-secondary">Assigned User (Delegasikan Kepada)</label>
+                    <label for="assigned_to" class="form-label fw-semibold small text-secondary">Ditugaskan Kepada</label>
                     <select name="assigned_to" id="assigned_to" class="form-select">
                         <option value="">-- Pilih Anggota Tim (Unassigned) --</option>
                         @foreach($users as $user)
@@ -78,7 +78,7 @@
 
                 <div class="d-flex justify-content-end gap-2">
                     <button type="submit" class="btn btn-primary px-4 fw-medium shadow-sm">
-                        <i class="bi bi-plus-circle-fill me-1"></i> Submit Task
+                        <i class="bi bi-plus-circle-fill me-1"></i> Simpan Task
                     </button>
                 </div>
 

@@ -1,6 +1,6 @@
 <div class="page-bundle">
 
-    <p class="doc-title">INVENTORY REPORT</p>
+    <p class="doc-title">LAPORAN INVENTARIS</p>
 
     <!-- Bagian 1: Foto Barang & Informasi Identitas -->
     <table class="section-table">
@@ -27,7 +27,7 @@
                         <td class="identity-value">{{ $inventory->quantity_total ?? '-' }}</td>
                     </tr>
                     <tr>
-                        <td class="identity-label">Brand</td>
+                        <td class="identity-label">Merek</td>
                         <td class="identity-value">{{ $inventory->brand ?: '-' }}</td>
                     </tr>
                     <tr>
@@ -35,7 +35,7 @@
                         <td class="identity-value">{{ $inventory->created_at ? $inventory->created_at->translatedFormat('d F Y') : '-' }}</td>
                     </tr>
                     <tr>
-                        <td class="identity-label">Terakhir Update</td>
+                        <td class="identity-label">Terakhir Diperbarui</td>
                         <td class="identity-value">{{ $inventory->updated_at ? $inventory->updated_at->translatedFormat('d F Y') : '-' }}</td>
                     </tr>
                 </table>

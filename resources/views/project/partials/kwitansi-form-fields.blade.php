@@ -8,7 +8,7 @@
     </div>
     <div class="form-check form-check-inline">
         <input class="form-check-input" type="radio" name="kategori_pembayaran" id="kp_dp_{{ $uniqueId }}" value="dp">
-        <label class="form-check-label small" for="kp_dp_{{ $uniqueId }}">Down Payment (DP)</label>
+        <label class="form-check-label small" for="kp_dp_{{ $uniqueId }}">Uang Muka (DP)</label>
     </div>
     <div class="form-check form-check-inline">
         <input class="form-check-input" type="radio" name="kategori_pembayaran" id="kp_lunas_{{ $uniqueId }}" value="pelunasan">

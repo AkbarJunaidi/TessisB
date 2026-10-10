@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>All Inventory Asset Report Bundle</title>
+    <title>Laporan Seluruh Aset Inventaris</title>
     @include('inventory.pdf.partials.all-head')
 </head>
 <body>

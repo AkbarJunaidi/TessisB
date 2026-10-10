@@ -126,7 +126,7 @@
                             @if($inventory->qr_code && file_exists(storage_path('app/public/' . $inventory->qr_code)))
                                 <img src="{{ storage_path('app/public/' . $inventory->qr_code) }}" class="qr-image">
                             @else
-                                <div style="color: red; font-size: 10px; font-weight: bold;">QR NOT FOUND</div>
+                                <div style="color: red; font-size: 10px; font-weight: bold;">QR TIDAK DITEMUKAN</div>
                             @endif
                         </td>
 

@@ -24,7 +24,7 @@
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
         </div>
     @endif
 
@@ -113,7 +113,7 @@
                     </div>
 
                     <div class="col-12 col-md-6">
-                        <label for="brand" class="form-label fw-semibold small text-secondary">Brand</label>
+                        <label for="brand" class="form-label fw-semibold small text-secondary">Merek</label>
                         <input type="text"
                                name="brand"
                                id="brand"

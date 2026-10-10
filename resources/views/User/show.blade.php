@@ -203,13 +203,13 @@
                     @if($user->status === 'active')
 
                         <span class="badge bg-success">
-                            Active
+                            Aktif
                         </span>
 
                     @else
 
                         <span class="badge bg-danger">
-                            Inactive
+                            Nonaktif
                         </span>
 
                     @endif
@@ -270,7 +270,7 @@
             <div class="row mb-3">
 
                 <div class="col-md-3 fw-semibold">
-                    Last Login
+                    Login Terakhir
                 </div>
 
                 <div class="col-md-9">

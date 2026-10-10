@@ -7,7 +7,7 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h6 class="fw-bold m-0">Dokumen Project</h6>
             <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#uploadDocModal">
-                <i class="bi bi-upload"></i> Upload Dokumen
+                <i class="bi bi-upload"></i> Unggah Dokumen
             </button>
         </div>
 
@@ -39,11 +39,11 @@
                                 <td class="text-end text-nowrap">
                                     @if($file->preview_type && auth()->user()->hasPermission('data_integration', 'download'))
                                         <a href="{{ route('files.preview', $file) }}" target="_blank" rel="noopener"
-                                           class="btn btn-sm btn-outline-secondary" title="Preview" aria-label="Preview">
+                                           class="btn btn-sm btn-outline-secondary" title="Pratinjau" aria-label="Pratinjau">
                                             <i class="bi bi-eye"></i>
                                         </a>
                                     @endif
-                                    <a href="{{ route('files.download', $file) }}" class="btn btn-sm btn-outline-secondary" title="Download" aria-label="Download">
+                                    <a href="{{ route('files.download', $file) }}" class="btn btn-sm btn-outline-secondary" title="Unduh" aria-label="Unduh">
                                         <i class="bi bi-download"></i>
                                     </a>
                                     {{-- Kunci / Buka Kunci: hanya untuk pemegang hak `lock` --}}
@@ -78,7 +78,7 @@
             <form action="{{ route('files.store') }}" method="POST" enctype="multipart/form-data" data-ajax data-ajax-progress data-ajax-hash="#tab-dokumen">
                 @csrf
                 <div class="modal-header">
-                    <h6 class="modal-title fw-bold">Upload Dokumen</h6>
+                    <h6 class="modal-title fw-bold">Unggah Dokumen</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">

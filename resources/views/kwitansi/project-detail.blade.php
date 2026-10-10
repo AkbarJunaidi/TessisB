@@ -14,7 +14,7 @@
             <p class="text-muted mb-0">{{ $project->client ?: $project->company ?: '-' }}</p>
         </div>
         <a href="{{ route('projects.show', $project) }}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-kanban"></i> Buka Project Detail
+            <i class="bi bi-kanban"></i> Buka Detail Project
         </a>
     </div>
 

@@ -19,20 +19,20 @@
                 <i class="bi bi-arrow-left"></i> Kembali ke Daftar
             </a>
             <a href="{{ route('inventory.preview-qr', $inventory->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 fw-medium">
-                <i class="bi bi-printer"></i> Print QR Label
+                <i class="bi bi-printer"></i> Cetak Label QR
             </a>
             <div class="dropdown">
                 <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-2 fw-medium" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-file-earmark-text"></i> Report
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                    <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('inventory.preview', $inventory->id) }}" target="_blank"><i class="bi bi-eye"></i> Preview</a></li>
-                    <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('inventory.download', $inventory->id) }}"><i class="bi bi-download"></i> Download</a></li>
+                    <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('inventory.preview', $inventory->id) }}" target="_blank"><i class="bi bi-eye"></i> Pratinjau</a></li>
+                    <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('inventory.download', $inventory->id) }}"><i class="bi bi-download"></i> Unduh</a></li>
                 </ul>
             </div>
             @if(auth()->user()->hasPermission('inventory', 'edit'))
             <a href="{{ route('inventory.edit', $inventory->id) }}" class="btn btn-sm btn-primary d-flex align-items-center gap-2 fw-medium">
-                <i class="bi bi-pencil"></i> Edit Aset
+                <i class="bi bi-pencil"></i> Edit Barang
             </a>
             @endif
         </div>
@@ -62,8 +62,8 @@
                     <i class="bi bi-file-earmark-text"></i> Report
                 </button>
                 <ul class="dropdown-menu shadow-sm">
-                    <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('inventory.preview', $inventory->id) }}" target="_blank"><i class="bi bi-eye"></i> Preview</a></li>
-                    <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('inventory.download', $inventory->id) }}"><i class="bi bi-download"></i> Download</a></li>
+                    <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('inventory.preview', $inventory->id) }}" target="_blank"><i class="bi bi-eye"></i> Pratinjau</a></li>
+                    <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('inventory.download', $inventory->id) }}"><i class="bi bi-download"></i> Unduh</a></li>
                 </ul>
             </div>
         </div>
@@ -107,7 +107,7 @@
                     <table class="table table-borderless table-sm small align-middle mb-0">
                         <tbody>
                             <tr>
-                                <td class="text-muted py-2 ps-0 u-w-40pct"><i class="bi bi-tag text-secondary me-2"></i>Brand</td>
+                                <td class="text-muted py-2 ps-0 u-w-40pct"><i class="bi bi-tag text-secondary me-2"></i>Merek</td>
                                 <td class="fw-bold text-dark py-2 text-end">{{ $inventory->brand ?: '-' }}</td>
                             </tr>
                             <tr>
@@ -119,7 +119,7 @@
                                 <td class="text-dark py-2 text-end">{{ $inventory->created_at ? $inventory->created_at->format('d M Y, H:i') . ' WIB' : '-' }}</td>
                             </tr>
                             <tr>
-                                <td class="text-muted py-2 ps-0"><i class="bi bi-clock text-secondary me-2"></i>Terakhir Update</td>
+                                <td class="text-muted py-2 ps-0"><i class="bi bi-clock text-secondary me-2"></i>Terakhir Diperbarui</td>
                                 <td class="text-dark py-2 text-end">{{ $inventory->updated_at ? $inventory->updated_at->format('d M Y, H:i') . ' WIB' : '-' }}</td>
                             </tr>
                         </tbody>
@@ -177,7 +177,7 @@
                                     <div class="d-flex align-items-center justify-content-center text-muted small u-w-130px u-h-130px">Belum tersedia</div>
                                 @endif
                             </div>
-                            <div class="fw-semibold small mt-2">QR Label</div>
+                            <div class="fw-semibold small mt-2">Label QR</div>
                             <div class="font-monospace text-muted small text-break">{{ $inventory->serial_number }}</div>
                         </div>
                         <div class="col-6">
@@ -188,7 +188,7 @@
                                     <div class="d-flex align-items-center justify-content-center text-muted small u-w-130px u-h-130px">Belum tersedia</div>
                                 @endif
                             </div>
-                            <div class="fw-semibold small mt-2">QR Report</div>
+                            <div class="fw-semibold small mt-2">Laporan QR</div>
                         </div>
                     </div>
                 </div>
@@ -282,7 +282,7 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td class="text-muted py-2">Brand</td>
+                                            <td class="text-muted py-2">Merek</td>
                                             <td class="fw-bold text-dark py-2">: {{ $inventory->brand ?: '-' }}</td>
                                         </tr>
                                         <tr>
@@ -290,7 +290,7 @@
                                             <td class="text-dark py-2">: {{ $inventory->created_at ? $inventory->created_at->format('d F Y H:i') . ' WIB' : '-' }}</td>
                                         </tr>
                                         <tr>
-                                            <td class="text-muted py-2">Terakhir Update</td>
+                                            <td class="text-muted py-2">Terakhir Diperbarui</td>
                                             <td class="text-dark py-2">: {{ $inventory->updated_at ? $inventory->updated_at->format('d F Y H:i') . ' WIB' : '-' }}</td>
                                         </tr>
                                     </tbody>
@@ -327,7 +327,7 @@
             <div class="col-12 col-lg-4">
                 <div class="card shadow-sm border-0 rounded-3 bg-white mb-3">
                     <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
-                        <h6 class="fw-bold text-dark m-0">QR Code Label</h6>
+                        <h6 class="fw-bold text-dark m-0">Label QR Code</h6>
                         <small class="text-muted">Dipakai di QR Label - isinya Serial Number</small>
                     </div>
                     <div class="card-body p-4 text-center">
@@ -347,7 +347,7 @@
 
                 <div class="card shadow-sm border-0 rounded-3 bg-white">
                     <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
-                        <h6 class="fw-bold text-dark m-0">QR Code Report</h6>
+                        <h6 class="fw-bold text-dark m-0">Laporan QR Code</h6>
                         <small class="text-muted">Dipakai di Inventory Report - isinya link detail barang</small>
                     </div>
                     <div class="card-body p-4 text-center">
@@ -491,7 +491,7 @@
 
                     <div class="modal-header border-0 bg-light py-3">
                         <h5 class="modal-title fw-semibold" id="moveLocationTitle">Pindah Lokasi Unit</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                     </div>
 
                     <div class="modal-body py-4">
@@ -526,7 +526,7 @@
                     </div>
 
                     <div class="modal-footer border-0 bg-light py-2">
-                        <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Batal</button>
                         <button type="submit" class="btn btn-primary px-4">Pindahkan</button>
                     </div>
                 </form>

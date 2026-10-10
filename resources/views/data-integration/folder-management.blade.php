@@ -45,7 +45,7 @@
 
         <div class="dropdown">
             <button class="btn btn-primary dropdown-toggle px-3" type="button" id="btnNewDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-plus-lg me-1"></i> New
+                <i class="bi bi-plus-lg me-1"></i> Baru
             </button>
             <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="btnNewDropdown">
                 <li>
@@ -55,7 +55,7 @@
                 </li>
                 <li>
                     <a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#uploadFileModal">
-                        <i class="bi bi-file-earmark-arrow-up text-info me-2"></i> Upload File
+                        <i class="bi bi-file-earmark-arrow-up text-info me-2"></i> Unggah File
                     </a>
                 </li>
             </ul>
@@ -141,13 +141,13 @@
                                                     <li>
                                                         <a class="dropdown-item small py-2" href="#"
                                                            onclick="openRenameModal({{ \Illuminate\Support\Js::from(route('folders.rename', $folder->id)) }}, {{ \Illuminate\Support\Js::from($folder->name) }}, 'name', '', 'folder'); return false;">
-                                                            <i class="bi bi-pencil me-2 text-muted"></i> Rename
+                                                            <i class="bi bi-pencil me-2 text-muted"></i> Ganti Nama
                                                         </a>
                                                     </li>
                                                     <li>
                                                         <a class="dropdown-item small py-2" href="#"
                                                            onclick="openMoveModal({{ \Illuminate\Support\Js::from(route('folders.move', $folder->id)) }}, true, 'folder'); return false;">
-                                                            <i class="bi bi-folder-symlink me-2 text-muted"></i> Move
+                                                            <i class="bi bi-folder-symlink me-2 text-muted"></i> Pindahkan
                                                         </a>
                                                     </li>
                                                 @endif
@@ -167,7 +167,7 @@
                                                     <li>
                                                         <a class="dropdown-item small py-2 text-danger" href="#"
                                                            onclick="openDeleteModal({{ \Illuminate\Support\Js::from(route('folders.destroy', $folder->id)) }}, {{ \Illuminate\Support\Js::from($folder->name) }}, 'folder'); return false;">
-                                                            <i class="bi bi-trash me-2"></i> Delete
+                                                            <i class="bi bi-trash me-2"></i> Hapus
                                                         </a>
                                                     </li>
                                                 @endif
@@ -206,9 +206,9 @@
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                                         @if($file->preview_type && auth()->user()->hasPermission('data_integration', 'download'))
-                                            <li><a class="dropdown-item small py-2" href="{{ route('files.preview', $file) }}" target="_blank" rel="noopener"><i class="bi bi-eye me-2 text-muted"></i> Preview</a></li>
+                                            <li><a class="dropdown-item small py-2" href="{{ route('files.preview', $file) }}" target="_blank" rel="noopener"><i class="bi bi-eye me-2 text-muted"></i> Pratinjau</a></li>
                                         @endif
-                                        <li><a class="dropdown-item small py-2" href="{{ route('files.download', $file->id) }}"><i class="bi bi-download me-2 text-muted"></i> Download</a></li>
+                                        <li><a class="dropdown-item small py-2" href="{{ route('files.download', $file->id) }}"><i class="bi bi-download me-2 text-muted"></i> Unduh</a></li>
 
                                         @if($fileProtected)
                                             <li><span class="dropdown-item-text small text-muted"><i class="bi bi-lock-fill me-2"></i> Terkunci</span></li>
@@ -216,14 +216,14 @@
                                             <li>
                                                 <a class="dropdown-item small py-2" href="#"
                                                    onclick="openRenameModal({{ \Illuminate\Support\Js::from(route('files.rename', $file->id)) }}, {{ \Illuminate\Support\Js::from($file->base_name) }}, 'file_name', {{ \Illuminate\Support\Js::from($file->locked_extension) }}, 'file'); return false;">
-                                                    <i class="bi bi-pencil me-2 text-muted"></i> Rename
+                                                    <i class="bi bi-pencil me-2 text-muted"></i> Ganti Nama
                                                 </a>
                                             </li>
                                             <li>
                                                 {{-- File bersama wajib berada di sebuah folder: opsi "tingkat atas" disembunyikan --}}
                                                 <a class="dropdown-item small py-2" href="#"
                                                    onclick="openMoveModal({{ \Illuminate\Support\Js::from(route('files.move', $file->id)) }}, false, 'file'); return false;">
-                                                    <i class="bi bi-folder-symlink me-2 text-muted"></i> Move
+                                                    <i class="bi bi-folder-symlink me-2 text-muted"></i> Pindahkan
                                                 </a>
                                             </li>
                                         @endif
@@ -237,7 +237,7 @@
                                             <li>
                                                 <a class="dropdown-item small py-2 text-danger" href="#"
                                                    onclick="openDeleteModal({{ \Illuminate\Support\Js::from(route('files.destroy', $file->id)) }}, {{ \Illuminate\Support\Js::from($file->file_name) }}, 'file'); return false;">
-                                                    <i class="bi bi-trash me-2"></i> Delete
+                                                    <i class="bi bi-trash me-2"></i> Hapus
                                                 </a>
                                             </li>
                                         @endif
@@ -258,12 +258,12 @@
             @csrf
             <input type="hidden" name="parent_id" value="{{ $current_folder->id ?? '' }}">
             <div class="modal-header border-0 bg-light py-3">
-                <h5 class="modal-title fw-semibold" id="createFolderModalLabel">New Folder</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title fw-semibold" id="createFolderModalLabel">Folder Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
             <div class="modal-body py-4">
                 <div class="mb-3">
-                    <label for="folder_name" class="form-label fw-medium text-secondary">Folder Name</label>
+                    <label for="folder_name" class="form-label fw-medium text-secondary">Nama Folder</label>
                     <input type="text" class="form-control @error('name') is-invalid @enderror" id="folder_name" name="name" value="{{ old('name') }}" required maxlength="255" placeholder="Masukkan nama folder...">
                     @error('name')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -271,8 +271,8 @@
                 </div>
             </div>
             <div class="modal-footer border-0 bg-light py-2">
-                <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary px-4">Submit</button>
+                <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-primary px-4">Simpan</button>
             </div>
         </form>
     </div>
@@ -285,7 +285,7 @@
             <input type="hidden" name="folder_id" value="{{ $current_folder->id ?? '' }}">
             <div class="modal-header border-0 bg-light py-3">
                 <h5 class="modal-title fw-semibold" id="uploadFileModalLabel">Unggah File</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
             <div class="modal-body py-4">
                 <div class="mb-3">

@@ -5,7 +5,7 @@
 
     <div class="d-flex justify-content-end gap-2 mb-3">
     <button type="button" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-2 fw-medium" data-bs-toggle="modal" data-bs-target="#modalAddList">
-        <i class="bi bi-layout-three-columns"></i> Add List
+        <i class="bi bi-layout-three-columns"></i> Tambah List
     </button>
     @if(auth()->user()->hasPermission('tracking_progress', 'create_task'))
     <a href="{{ route('tasks.create', ['project_id' => $project->id]) }}" class="btn btn-primary btn-sm d-flex align-items-center gap-2 shadow-sm fw-medium">
@@ -20,7 +20,7 @@
             @csrf
             <div class="modal-header">
                 <h5 class="modal-title">Tambah List Baru</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
             <div class="modal-body">
                 <label for="label" class="form-label fw-semibold small text-secondary">Nama List</label>

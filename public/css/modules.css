@@ -10,7 +10,7 @@
 .drv-search input { border-radius: 50rem; padding-left: 2.6rem; background: var(--bs-tertiary-bg, #f1f3f5); border-color: transparent; }
 .drv-search input:focus { background: #fff; border-color: var(--bs-primary, #0d6efd); }
 
-.drv-chip { border-radius: .5rem; font-size: .8125rem; padding: .3rem .75rem; }
+.drv-chip { border-radius: var(--radius-md); font-size: .8125rem; padding: .3rem .75rem; }
 .drv-chip.is-active { background: var(--bs-primary-bg-subtle, #cfe2ff); border-color: transparent; color: var(--bs-primary-text-emphasis, #052c65); }
 
 .drv-list { width: 100%; border-collapse: collapse; }

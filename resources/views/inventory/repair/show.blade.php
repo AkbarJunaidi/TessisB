@@ -171,7 +171,7 @@
                 @csrf
                 <div class="modal-header border-0 bg-light py-3">
                     <h5 class="modal-title fw-semibold" id="completeRepairTitle">Selesaikan Perbaikan</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
                 <div class="modal-body py-4">
                     <div class="row g-3">
@@ -222,7 +222,7 @@
                     </datalist>
                 </div>
                 <div class="modal-footer border-0 bg-light py-2">
-                    <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-primary px-4">Simpan</button>
                 </div>
             </form>
@@ -236,7 +236,7 @@
                 @csrf
                 <div class="modal-header border-0 bg-light py-3">
                     <h5 class="modal-title fw-semibold" id="cancelRepairTitle">Batalkan Catatan Perbaikan</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
                 <div class="modal-body py-4 small">
                     Gunakan ini bila catatan salah input. Semua unit dikembalikan ke status sebelum dikirim servis,

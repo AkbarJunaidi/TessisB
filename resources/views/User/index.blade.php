@@ -125,13 +125,13 @@
                                 @if($user->status == 'active')
 
                                     <span class="badge bg-success">
-                                        Active
+                                        Aktif
                                     </span>
 
                                 @else
 
                                     <span class="badge bg-danger">
-                                        Inactive
+                                        Nonaktif
                                     </span>
 
                                 @endif

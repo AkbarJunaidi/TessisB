@@ -8,10 +8,10 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <div class="text-muted small fw-semibold text-uppercase mb-1">
-                <i class="bi bi-kanban me-1 text-primary"></i> Tracking Progress Board
+                <i class="bi bi-kanban me-1 text-primary"></i> Board Progres
             </div>
             <h3 class="fw-bold text-dark m-0">{{ $project->name }}</h3>
-            <p class="text-muted small m-0 mt-1">Project Deadline: <strong class="text-danger font-monospace">{{ $project->deadline }}</strong></p>
+            <p class="text-muted small m-0 mt-1">Deadline Project: <strong class="text-danger font-monospace">{{ $project->deadline }}</strong></p>
         </div>
 
         <a href="{{ route('tasks.create', ['project_id' => $project->id]) }}" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm fw-medium">
@@ -24,10 +24,10 @@
         @php
             // Menyiapkan daftar status resmi sebagai acuan mapping kolom
             $statuses = [
-                'Todo'        => ['bg' => 'bg-secondary', 'title' => 'TODO'],
-                'In Progress' => ['bg' => 'bg-primary',   'title' => 'IN PROGRESS'],
+                'Todo'        => ['bg' => 'bg-secondary', 'title' => 'BELUM MULAI'],
+                'In Progress' => ['bg' => 'bg-primary',   'title' => 'SEDANG DIKERJAKAN'],
                 'Review'      => ['bg' => 'bg-warning',   'title' => 'REVIEW'],
-                'Done'        => ['bg' => 'bg-success',   'title' => 'DONE']
+                'Done'        => ['bg' => 'bg-success',   'title' => 'SELESAI']
             ];
         @endphp
 

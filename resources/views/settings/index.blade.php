@@ -246,7 +246,7 @@
                         <div class="form-text small">Dipakai saat radius lokasi baru dikosongkan.</div>
                     </div>
                     <div class="col-12 col-md-6 col-lg-3">
-                        <label for="upload_max_mb" class="form-label fw-semibold small text-secondary">Maks. Upload (MB)</label>
+                        <label for="upload_max_mb" class="form-label fw-semibold small text-secondary">Maks. Unggah (MB)</label>
                         <input type="number" name="upload_max_mb" id="upload_max_mb" min="1" max="50"
                                class="form-control @error('upload_max_mb') is-invalid @enderror" value="{{ $v('upload_max_mb') }}" required>
                         @error('upload_max_mb')<div class="invalid-feedback">{{ $message }}</div>@enderror

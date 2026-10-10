@@ -15,13 +15,13 @@
 
         <div class="me-auto">
             <div class="small">
-                Role Default
+                Role Bawaan
                 <span id="summary-role-badge" class="badge bg-primary ms-1">
                     {{ ucwords(str_replace('_', ' ', old('role', $user->role ?? 'employee'))) }}
                 </span>
             </div>
             <div class="small mt-1">
-                Custom Permission
+                Izin Kustom
                 <span id="summary-custom-badge" class="badge {{ $hasCustomPermission ? 'bg-warning text-dark' : 'bg-secondary' }} ms-1">
                     {{ $hasCustomPermission ? 'Aktif' : 'Tidak' }}
                 </span>
@@ -33,7 +33,7 @@
                 <span id="summary-granted">{{ $permissionSummary['granted'] }}</span> Diberikan
             </span>
             <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-2">
-                <span id="summary-readonly">{{ $permissionSummary['read_only'] }}</span> Read Only
+                <span id="summary-readonly">{{ $permissionSummary['read_only'] }}</span> Hanya Baca
             </span>
             <span class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle px-3 py-2">
                 <span id="summary-noaccess">{{ $permissionSummary['no_access'] }}</span> Tidak Diakses

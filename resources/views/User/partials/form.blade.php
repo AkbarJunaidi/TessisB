@@ -157,14 +157,14 @@
                 value="active"
                 @selected(old('status', $user->status ?? 'active') === 'active')
             >
-                Active
+                Aktif
             </option>
 
             <option
                 value="inactive"
                 @selected(old('status', $user->status ?? '') === 'inactive')
             >
-                Inactive
+                Nonaktif
             </option>
 
         </select>

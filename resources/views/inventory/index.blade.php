@@ -137,7 +137,7 @@
                                 </a>
                                 <a href="{{ route('inventory.download-pdf', $item->id) }}"
                                    class="btn btn-sm btn-outline-danger"
-                                   title="Download Report PDF" aria-label="Download report PDF">
+                                   title="Unduh Laporan PDF" aria-label="Unduh laporan PDF">
                                     <i class="bi bi-file-earmark-pdf"></i>
                                 </a>
                                 <button type="button"
@@ -186,7 +186,7 @@
                 <h5 class="modal-title fw-bold" id="deleteInventoryModalLabel">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i>Konfirmasi Hapus Data
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
 
             <form id="deleteInventoryForm" method="POST">

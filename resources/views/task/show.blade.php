@@ -94,15 +94,15 @@
                     <form action="{{ route('tasks.update-status', $task->id) }}" method="POST" class="mb-4">
                         @csrf
                         @method('PATCH')
-                        <label for="status" class="form-label fw-semibold small text-secondary">Update Progress Status</label>
+                        <label for="status" class="form-label fw-semibold small text-secondary">Perbarui Status Progres</label>
                         <div class="d-flex gap-2">
                             <select name="status" id="status" class="form-select fw-bold text-dark">
-                                <option value="Todo" {{ $task->status === 'Todo' ? 'selected' : '' }}>Todo</option>
-                                <option value="In Progress" {{ $task->status === 'In Progress' ? 'selected' : '' }}>In Progress</option>
+                                <option value="Todo" {{ $task->status === 'Todo' ? 'selected' : '' }}>Belum Mulai</option>
+                                <option value="In Progress" {{ $task->status === 'In Progress' ? 'selected' : '' }}>Sedang Dikerjakan</option>
                                 <option value="Review" {{ $task->status === 'Review' ? 'selected' : '' }}>Review</option>
-                                <option value="Done" {{ $task->status === 'Done' ? 'selected' : '' }}>Done</option>
+                                <option value="Done" {{ $task->status === 'Done' ? 'selected' : '' }}>Selesai</option>
                             </select>
-                            <button type="submit" class="btn btn-primary fw-medium px-3">Update</button>
+                            <button type="submit" class="btn btn-primary fw-medium px-3">Perbarui</button>
                         </div>
                     </form>
 
@@ -135,7 +135,7 @@
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-outline-danger w-100 fw-medium">
-                            <i class="bi bi-trash3-fill me-1"></i> Delete Task Card
+                            <i class="bi bi-trash3-fill me-1"></i> Hapus Task
                         </button>
                     </form>
 

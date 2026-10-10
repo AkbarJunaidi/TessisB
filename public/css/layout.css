@@ -4,7 +4,7 @@
 /* Warna & hover disesuaikan token theme.css (var(--c-primary) dsb.) via inline karena
    sidebar punya latar gelap khusus (navy gradient) - style ini scoped di file ini saja. */
 .sidebar-link {
-    border-radius: .65rem;
+    border-radius: var(--radius-md);
     padding: .65rem .85rem;
     font-size: .9rem;
     font-weight: 500;
@@ -28,7 +28,7 @@
 
 .sidebar-submenu {
     background: rgba(255,255,255,.05);
-    border-radius: .65rem;
+    border-radius: var(--radius-md);
     margin: .25rem .25rem 0;
     padding: .35rem;
     gap: .1rem;
@@ -37,7 +37,7 @@
     color: rgba(255,255,255,.75);
     font-size: .84rem;
     padding: .55rem .7rem;
-    border-radius: .5rem;
+    border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     gap: .6rem;
@@ -80,7 +80,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: .5rem;
+    border-radius: var(--radius-md);
     flex-shrink: 0;
     transition: background .2s ease, color .2s ease;
 }
@@ -143,7 +143,7 @@
         color: #fff;
         font-size: 1rem;
         background: var(--c-navy-2);
-        border-radius: .35rem;
+        border-radius: var(--radius-sm);
         transition: opacity .15s ease;
     }
     html.sidebar-collapsed .sidebar-brand-link:hover .sidebar-brand-icon,

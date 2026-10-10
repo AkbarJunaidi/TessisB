@@ -87,7 +87,7 @@ button:focus-visible,
     transition: var(--transition-fast);
 }
 .btn-lg { border-radius: var(--radius-md); }
-.btn-sm { border-radius: .45rem; }
+.btn-sm { border-radius: var(--radius-sm); }
 
 .btn-primary {
     --bs-btn-bg: var(--c-primary);
@@ -780,6 +780,16 @@ html.is-loading #appSpinner { opacity: 1; transition: opacity .2s ease .3s; }
 @media (max-width: 575.98px) {
     .app-pager-goto { margin-left: 0; }
 }
+
+/* ===== Radius seragam: wadah setingkat card = --radius-lg; kotak dan komponen di dalamnya = --radius-md ===== */
+.card { --bs-card-border-radius: var(--radius-lg); --bs-card-inner-border-radius: calc(var(--radius-lg) - 1px); }
+.modal { --bs-modal-border-radius: var(--radius-lg); --bs-modal-inner-border-radius: calc(var(--radius-lg) - 1px); }
+.accordion { --bs-accordion-border-radius: var(--radius-lg); --bs-accordion-inner-border-radius: calc(var(--radius-lg) - 1px); }
+.alert { --bs-alert-border-radius: var(--radius-md); }
+.list-group { --bs-list-group-border-radius: var(--radius-md); }
+.nav-tabs { --bs-nav-tabs-border-radius: var(--radius-md); }
+.rounded, .rounded-2, .rounded-3 { border-radius: var(--radius-md) !important; }
+.rounded-4 { border-radius: var(--radius-lg) !important; }
 
 /* ===== Utilitas pengganti style inline (dibuat otomatis dari view; !important meniru bobot style inline) ===== */
 .u-bd-1px-solid-e2e8f0 { border: 1px solid #e2e8f0 !important; }

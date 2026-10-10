@@ -50,10 +50,10 @@
                     <div class="d-flex gap-2">
                         @if(auth()->user()->hasPermission('surat_jalan', 'print'))
                             <a href="{{ route('surat-jalan.preview', $sj) }}" target="_blank" class="btn btn-sm btn-outline-primary flex-fill">
-                                <i class="bi bi-eye"></i> Preview
+                                <i class="bi bi-eye"></i> Pratinjau
                             </a>
                             <a href="{{ route('surat-jalan.download', $sj) }}" class="btn btn-sm btn-primary flex-fill">
-                                <i class="bi bi-download"></i> Download
+                                <i class="bi bi-download"></i> Unduh
                             </a>
                         @endif
                     </div>
@@ -93,10 +93,10 @@
                             <td class="text-end">
                                 @if(auth()->user()->hasPermission('surat_jalan', 'print'))
                                     <a href="{{ route('surat-jalan.preview', $sj) }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-eye"></i> Preview
+                                        <i class="bi bi-eye"></i> Pratinjau
                                     </a>
                                     <a href="{{ route('surat-jalan.download', $sj) }}" class="btn btn-sm btn-primary">
-                                        <i class="bi bi-download"></i> Download
+                                        <i class="bi bi-download"></i> Unduh
                                     </a>
                                 @endif
                             </td>

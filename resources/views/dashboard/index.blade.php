@@ -10,7 +10,7 @@
 
     <div class="page-heading">
         <div>
-            <h3>Dashboard Overview</h3>
+            <h3>Ringkasan Dashboard</h3>
             <p>Selamat datang, {{ $user->name }} berikut ringkasan sistem hari ini.</p>
         </div>
     </div>
@@ -126,7 +126,7 @@
             <div class="stat-card p-3 p-md-4">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">Files</span>
+                        <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">File</span>
                         <h3 class="fw-bolder text-navy mt-2 mb-0">{{ $statistics['total_files'] }}</h3>
                     </div>
                     <div class="icon-tile">
@@ -170,7 +170,7 @@
             <div class="stat-card p-3 p-md-4">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">Users</span>
+                        <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">User</span>
                         <h3 class="fw-bolder text-navy mt-2 mb-0">{{ $statistics['total_user'] }}</h3>
                         @if($statistics['new_users_this_month'] > 0)
                             <span class="badge-soft-success mt-2 d-inline-block">+{{ $statistics['new_users_this_month'] }} bulan ini</span>

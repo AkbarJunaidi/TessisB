@@ -9,7 +9,7 @@
             <p>Daftarkan aset barang fisik baru ke dalam sistem digital manajemen.</p>
         </div>
         <a href="{{ route('inventory.index') }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2">
-            <i class="bi bi-arrow-left"></i> Back to List
+            <i class="bi bi-arrow-left"></i> Kembali ke Daftar
         </a>
     </div>
 
@@ -24,7 +24,7 @@
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
         </div>
     @endif
 
@@ -111,7 +111,7 @@
                     </div>
 
                     <div class="col-12 col-md-6">
-                        <label for="brand" class="form-label fw-semibold small text-secondary">Brand</label>
+                        <label for="brand" class="form-label fw-semibold small text-secondary">Merek</label>
                         <input type="text"
                                name="brand"
                                id="brand"
@@ -163,7 +163,7 @@
             </div>
             <div class="p-4">
                 <div class="mb-3">
-                    <label for="image" class="form-label fw-semibold small text-secondary">Upload Gambar Barang</label>
+                    <label for="image" class="form-label fw-semibold small text-secondary">Unggah Gambar Barang</label>
                     <input type="file"
                            name="image"
                            id="image"
@@ -285,7 +285,7 @@
         <div class="d-flex justify-content-end gap-2 mb-5">
             <a href="{{ route('inventory.index') }}" class="btn btn-light px-4">Batal</a>
             <button type="submit" class="btn btn-primary px-4">
-                <i class="bi bi-cloud-arrow-up-fill me-1"></i> Save Inventory
+                <i class="bi bi-cloud-arrow-up-fill me-1"></i> Simpan Barang
             </button>
         </div>
 

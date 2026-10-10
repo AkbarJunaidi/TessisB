@@ -148,7 +148,7 @@
             </div>
             <div class="d-flex gap-2">
                 <a href="{{ route('kwitansi.preview', $kw) }}" target="_blank" class="btn btn-sm btn-outline-primary flex-fill"><i class="bi bi-printer"></i> Cetak</a>
-                <a href="{{ route('kwitansi.download', $kw) }}" class="btn btn-sm btn-primary flex-fill"><i class="bi bi-download"></i> Download</a>
+                <a href="{{ route('kwitansi.download', $kw) }}" class="btn btn-sm btn-primary flex-fill"><i class="bi bi-download"></i> Unduh</a>
             </div>
             @if($canVoidKwitansi && $kw->status === 'Aktif')
                 <button type="button" class="btn btn-sm btn-outline-danger w-100 mt-2" data-bs-toggle="modal" data-bs-target="#voidKwitansiModal{{ $kw->id }}">
@@ -184,7 +184,7 @@
                     <td><span class="badge {{ $kw->status === 'Aktif' ? 'bg-success' : 'bg-secondary' }}">{{ $kw->status }}</span></td>
                     <td class="text-end">
                         <a href="{{ route('kwitansi.preview', $kw) }}" target="_blank" class="btn btn-sm btn-outline-primary" title="Cetak"><i class="bi bi-printer"></i></a>
-                        <a href="{{ route('kwitansi.download', $kw) }}" class="btn btn-sm btn-primary" title="Download"><i class="bi bi-download"></i></a>
+                        <a href="{{ route('kwitansi.download', $kw) }}" class="btn btn-sm btn-primary" title="Unduh"><i class="bi bi-download"></i></a>
                         @if($canVoidKwitansi && $kw->status === 'Aktif')
                             <button type="button" class="btn btn-sm btn-outline-danger" title="Ajukan Pembatalan" data-bs-toggle="modal" data-bs-target="#voidKwitansiModal{{ $kw->id }}">
                                 <i class="bi bi-x-circle"></i>

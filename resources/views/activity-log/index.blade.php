@@ -31,7 +31,7 @@
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
         </div>
     @endif
 
@@ -45,9 +45,9 @@
 
                     {{-- Module --}}
                     <div class="col-md-4">
-                        <label for="module" class="form-label small fw-semibold text-muted">Module</label>
+                        <label for="module" class="form-label small fw-semibold text-muted">Modul</label>
                         <select class="form-select select-sm text-dark small" id="module" name="module">
-                            <option value="">All Modules</option>
+                            <option value="">Semua Modul</option>
                             @foreach($modules as $value => $label)
                                 <option value="{{ $value }}" {{ request('module') == $value ? 'selected' : '' }}>
                                     {{ $label }}
@@ -60,7 +60,7 @@
                     <div class="col-md-4">
                         <label for="user_id" class="form-label small fw-semibold text-muted">User</label>
                         <select class="form-select select-sm text-dark small" id="user_id" name="user_id">
-                            <option value="">All Users</option>
+                            <option value="">Semua User</option>
                             @foreach($users as $user)
                                 <option value="{{ $user->id }}" {{ request('user_id') == $user->id ? 'selected' : '' }}>
                                     {{ $user->name }}
@@ -71,9 +71,9 @@
 
                     {{-- Action --}}
                     <div class="col-md-4">
-                        <label for="action" class="form-label small fw-semibold text-muted">Action</label>
+                        <label for="action" class="form-label small fw-semibold text-muted">Aksi</label>
                         <select class="form-select select-sm text-dark small" id="action" name="action">
-                            <option value="">All Actions</option>
+                            <option value="">Semua Aksi</option>
                             @foreach($actions as $group => $items)
                                 <optgroup label="{{ $group }}">
                                     @foreach($items as $act)
@@ -88,13 +88,13 @@
 
                     {{-- Date From --}}
                     <div class="col-md-6">
-                        <label for="date_from" class="form-label small fw-semibold text-muted">Date From</label>
+                        <label for="date_from" class="form-label small fw-semibold text-muted">Dari Tanggal</label>
                         <input type="date" class="form-control small" id="date_from" name="date_from" value="{{ request('date_from') }}">
                     </div>
 
                     {{-- Date To --}}
                     <div class="col-md-6">
-                        <label for="date_to" class="form-label small fw-semibold text-muted">Date To</label>
+                        <label for="date_to" class="form-label small fw-semibold text-muted">Sampai Tanggal</label>
                         <input type="date" class="form-control small" id="date_to" name="date_to" value="{{ request('date_to') }}">
                     </div>
 
@@ -103,7 +103,7 @@
                 <div class="d-flex justify-content-end gap-2 mt-3">
                     <a href="{{ route('activity-logs.index') }}" class="btn btn-sm btn-outline-secondary px-3 fw-medium">Reset</a>
                     <button type="submit" class="btn btn-sm btn-primary px-3 fw-medium">
-                        <i class="bi bi-search me-1"></i>Search
+                        <i class="bi bi-search me-1"></i>Cari
                     </button>
                 </div>
             </form>
@@ -112,9 +112,9 @@
 
     <div class="card shadow-sm border-0 rounded-3 bg-white">
         <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-list-ul me-2"></i>Data Audit Trail Logs</h6>
+            <h6 class="m-0 fw-bold text-dark"><i class="bi bi-list-ul me-2"></i>Data Log Aktivitas</h6>
             <span class="badge bg-secondary text-white fw-medium rounded-pill px-3 py-1.5 u-fs-0p8rem">
-                {{ $logs->total() }} Total Logs
+                {{ $logs->total() }} Total Log
             </span>
         </div>
         <div class="card-body p-0">
@@ -189,7 +189,7 @@
                     <h5 class="modal-title fw-bold" id="deleteRangeModalLabel">
                         <i class="bi bi-exclamation-triangle-fill me-2"></i>Hapus Log Aktivitas Berdasarkan Rentang Tanggal
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
                 <div class="modal-body p-4">
                     <p class="text-dark fw-medium mb-3">Pilih rentang tanggal Log Aktivitas yang ingin dihapus secara permanen.</p>

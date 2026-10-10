@@ -28,7 +28,7 @@
     <header class="bg-white border-bottom sticky-top">
         <div class="scan-wrap container d-flex align-items-center justify-content-between gap-2 py-2 px-3">
             <div class="lh-sm">
-                <div class="fw-bold text-dark">Detail Inventory</div>
+                <div class="fw-bold text-dark">Detail Barang</div>
                 <div class="text-muted small d-none d-sm-block">Sistem Informasi Manajemen</div>
             </div>
             <a href="{{ route('inventory.show', $inventory) }}" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 fw-medium flex-shrink-0">
@@ -112,7 +112,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="text-muted py-2">Brand</td>
+                            <td class="text-muted py-2">Merek</td>
                             <td class="fw-bold text-dark py-2 scan-value">{{ $inventory->brand ?: '-' }}</td>
                         </tr>
                         <tr>
@@ -120,7 +120,7 @@
                             <td class="text-dark py-2">{{ $inventory->created_at ? $inventory->created_at->format('d F Y H:i') . ' WIB' : '-' }}</td>
                         </tr>
                         <tr>
-                            <td class="text-muted py-2">Terakhir Update</td>
+                            <td class="text-muted py-2">Terakhir Diperbarui</td>
                             <td class="text-dark py-2">{{ $inventory->updated_at ? $inventory->updated_at->format('d F Y H:i') . ' WIB' : '-' }}</td>
                         </tr>
                     </tbody>

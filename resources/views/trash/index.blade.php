@@ -24,7 +24,7 @@
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
         </div>
     @endif
 
@@ -88,7 +88,7 @@
                 <div class="d-flex justify-content-end gap-2 mt-3">
                     <a href="{{ route('trash.index') }}" class="btn btn-sm btn-outline-secondary px-3 fw-medium">Reset</a>
                     <button type="submit" class="btn btn-sm btn-primary px-3 fw-medium">
-                        <i class="bi bi-search me-1"></i>Search
+                        <i class="bi bi-search me-1"></i>Cari
                     </button>
                 </div>
             </form>
@@ -147,7 +147,7 @@
                 <h5 class="modal-title fw-bold" id="restoreTrashModalLabel">
                     <i class="bi bi-arrow-counterclockwise me-2"></i>Konfirmasi Pulihkan Data
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
             <div class="modal-body p-4">
                 <p class="text-dark fw-medium mb-3">Apakah Anda yakin ingin memulihkan data ini?</p>
@@ -184,7 +184,7 @@
                 <h5 class="modal-title fw-bold" id="forceDeleteTrashModalLabel">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i>Konfirmasi Hapus Permanen
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
             <div class="modal-body p-4">
                 <p class="text-dark fw-medium mb-3">Apakah Anda yakin ingin menghapus data ini secara permanen?</p>

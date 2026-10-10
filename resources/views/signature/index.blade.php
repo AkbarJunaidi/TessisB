@@ -29,7 +29,7 @@
 
                     <ul class="nav nav-tabs mb-3" id="signatureSourceTabs">
                         <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#src-draw" type="button">Gambar Langsung</button></li>
-                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#src-upload" type="button">Upload File</button></li>
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#src-upload" type="button">Unggah File</button></li>
                     </ul>
 
                     <form action="{{ route('signature.store') }}" method="POST" enctype="multipart/form-data" id="signatureForm">
