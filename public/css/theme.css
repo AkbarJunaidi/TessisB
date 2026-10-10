@@ -675,6 +675,27 @@ button:focus-visible,
 #appProgress.is-active { opacity: 1; }
 html.is-navigating, html.is-navigating * { cursor: progress; }
 
+/* Loading lambat: konten meredup dan spinner muncul setelah 0,3 detik; halaman cepat tidak berkedip. */
+.app-content { transition: opacity .2s ease; }
+html.is-loading .app-content { opacity: .45; transition: opacity .2s ease .3s; }
+#appSpinner {
+    position: fixed;
+    top: 50%;
+    z-index: 2000;
+    width: 2.25rem;
+    height: 2.25rem;
+    margin: -1.125rem 0 0 -1.125rem;
+    border: 3px solid var(--c-border);
+    border-top-color: var(--c-primary);
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+    animation: appSpin .8s linear infinite;
+    transition: opacity .2s ease;
+}
+html.is-loading #appSpinner { opacity: 1; transition: opacity .2s ease .3s; }
+@keyframes appSpin { to { transform: rotate(360deg); } }
+
 @keyframes appFadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes appSlideDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 @keyframes appFieldShake {
@@ -687,6 +708,7 @@ html.is-navigating, html.is-navigating * { cursor: progress; }
 
 @media (prefers-reduced-motion: reduce) {
     #appProgress { transition: none; }
+    #appSpinner { display: none; }
     .alert, .form-control.is-invalid, .form-select.is-invalid { animation: none; }
 }
 

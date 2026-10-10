@@ -9,7 +9,7 @@
     </button>
     @if(auth()->user()->hasPermission('tracking_progress', 'create_task'))
     <a href="{{ route('tasks.create', ['project_id' => $project->id]) }}" class="btn btn-primary btn-sm d-flex align-items-center gap-2 shadow-sm fw-medium">
-        <i class="bi bi-plus-lg"></i> Add New Task
+        <i class="bi bi-plus-lg"></i> Tambah Task
     </a>
     @endif
 </div>

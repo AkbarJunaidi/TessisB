@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Tambah Barang Baru')
+@section('title', 'Tambah Barang')
 
 @section('content')
 <div class="page-heading">
         <div>
-            <h3>Add New Inventory</h3>
+            <h3>Tambah Barang</h3>
             <p>Daftarkan aset barang fisik baru ke dalam sistem digital manajemen.</p>
         </div>
         <a href="{{ route('inventory.index') }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2">

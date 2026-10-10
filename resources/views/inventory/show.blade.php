@@ -12,7 +12,7 @@
                 {{ $inventory->name }}
                 <span class="badge {{ \App\Support\InventoryStatus::subtleClass($inventory->display_status) }} px-2 py-1 rounded-pill fw-semibold u-fs-0p65rem"><i class="bi bi-circle-fill me-1 u-fs-0p45rem"></i>{{ strtoupper($inventory->display_status ?? 'TERSEDIA') }}</span>
             </h3>
-            <p class="text-muted small m-0">Menampilkan informasi lengkap dan identitas aset barang.</p>
+            <p class="d-none d-md-block text-muted small m-0">Menampilkan informasi lengkap dan identitas aset barang.</p>
         </div>
         <div class="d-flex align-items-center gap-2">
             <a href="{{ route('inventory.index') }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 fw-medium">

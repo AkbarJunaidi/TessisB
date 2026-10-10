@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Project Board - ' . $project->name)
+@section('title', 'Board Project - ' . $project->name)
 
 @section('content')
 <div class="container-fluid p-0">
@@ -15,7 +15,7 @@
         </div>
 
         <a href="{{ route('tasks.create', ['project_id' => $project->id]) }}" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm fw-medium">
-            <i class="bi bi-plus-lg"></i> Add New Task
+            <i class="bi bi-plus-lg"></i> Tambah Task
         </a>
     </div>
 

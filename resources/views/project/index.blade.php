@@ -1,19 +1,19 @@
 @extends('layouts.app')
 
-@section('title', 'Project Management')
+@section('title', 'Daftar Project')
 
 @section('content')
 <div class="container-fluid p-0">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
-            <h3 class="fw-bold text-dark m-0">Project Management</h3>
-            <p class="text-muted small m-0">Kelola seluruh project dan pantau jadwal event dengan mudah.</p>
+            <h3 class="fw-bold text-dark m-0">Daftar Project</h3>
+            <p class="d-none d-md-block text-muted small m-0">Kelola seluruh project dan pantau jadwal event dengan mudah.</p>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex flex-wrap gap-2">
             @if(auth()->user()->isSuperAdmin() || auth()->user()->isAdmin())
                 <a href="{{ route('projects.pipeline') }}" class="btn btn-outline-primary d-flex align-items-center gap-2 fw-medium">
-                    <i class="bi bi-kanban"></i> Lihat Pipeline
+                    <i class="bi bi-kanban"></i> Pipeline
                 </a>
             @endif
             @if(auth()->user()->hasPermission('tracking_progress', 'create_project'))

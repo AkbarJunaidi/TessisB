@@ -14,7 +14,7 @@
                 Tambah User
             </h3>
 
-            <p class="text-muted mb-0">
+            <p class="d-none d-md-block text-muted mb-0">
                 Tambahkan akun pengguna baru ke dalam sistem.
             </p>
         </div>

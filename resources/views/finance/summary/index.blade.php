@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Keuangan')
+@section('title', 'Ringkasan Keuangan')
 
 @section('content')
 @php
@@ -16,7 +16,7 @@
 
     <div class="mb-3">
         <h3 class="fw-bold mb-1">Keuangan</h3>
-        <p class="text-muted mb-0">Kondisi keuangan perusahaan, dihitung menurut tanggal transaksi.</p>
+        <p class="d-none d-md-block text-muted mb-0">Kondisi keuangan perusahaan, dihitung menurut tanggal transaksi.</p>
     </div>
 
     @include('finance.partials.tabs', ['active' => 'summary'])

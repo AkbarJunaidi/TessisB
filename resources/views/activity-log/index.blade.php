@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-fluid px-4 py-3">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
             <h3 class="fw-bold text-dark m-0">Log Aktivitas</h3>
             <nav aria-label="breadcrumb">

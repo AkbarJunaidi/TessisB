@@ -25,7 +25,7 @@
 
     <div class="mb-4">
         <h3 class="fw-bold mb-1">Approval</h3>
-        <p class="text-muted mb-0">Kotak masuk permintaan persetujuan lintas modul.</p>
+        <p class="d-none d-md-block text-muted mb-0">Kotak masuk permintaan persetujuan lintas modul.</p>
     </div>
 
     <ul class="nav nav-tabs mb-3">

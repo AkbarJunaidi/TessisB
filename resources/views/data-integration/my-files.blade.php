@@ -31,11 +31,11 @@
     <div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
         <div>
             <h4 class="fw-bold mb-1 text-dark">File Saya</h4>
-            <p class="text-muted small mb-0">
+            <p class="d-none d-md-block text-muted small mb-0">
                 @if($isShared)
-                    Yang Anda unggah, generate, dan buat di ruang bersama &mdash; beserta lokasinya. Daftar ini khusus milik Anda.
+                    Yang Anda unggah, generate, dan buat di ruang bersama.
                 @else
-                    Berkas pribadi Anda. Hanya Anda yang dapat melihatnya sampai dipindahkan ke folder bersama.
+                    Berkas pribadi, hanya Anda yang bisa melihat.
                 @endif
             </p>
         </div>

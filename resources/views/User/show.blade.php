@@ -6,7 +6,7 @@
 
 <div class="container-fluid">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
 
         <div>
 
@@ -14,7 +14,7 @@
                 Detail User
             </h3>
 
-            <p class="text-muted mb-0">
+            <p class="d-none d-md-block text-muted mb-0">
                 Informasi lengkap akun pengguna.
             </p>
 

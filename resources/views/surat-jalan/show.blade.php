@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-fluid p-0">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
             <h3 class="fw-bold text-dark m-0">Surat Jalan {{ $suratJalan->nomor }}</h3>
             <p class="text-muted small m-0">
@@ -14,7 +14,7 @@
                 <span class="badge {{ $suratJalan->status === 'Selesai' ? 'bg-secondary' : 'bg-success' }}">{{ $suratJalan->status }}</span>
             </p>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex flex-wrap gap-2">
             @if(auth()->user()->hasPermission('surat_jalan', 'print'))
                 <a href="{{ route('surat-jalan.preview', $suratJalan) }}" target="_blank" class="btn btn-sm btn-outline-primary">
                     <i class="bi bi-eye"></i> Preview PDF

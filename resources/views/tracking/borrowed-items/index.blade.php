@@ -7,7 +7,7 @@
 
     <div class="mb-4">
         <h3 class="fw-bold text-dark m-0">Barang Pinjaman</h3>
-        <p class="text-muted small m-0">Pantau seluruh barang yang masih dipinjam per project, dan konfirmasi pengembaliannya di sini.</p>
+        <p class="d-none d-md-block text-muted small m-0">Pantau seluruh barang yang masih dipinjam per project, dan konfirmasi pengembaliannya di sini.</p>
     </div>
 
     <div id="borrowedProjectsList">

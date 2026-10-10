@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Lokasi')
+@section('title', 'Lokasi Barang')
 
 @section('content')
 @php
@@ -15,7 +15,7 @@
 
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <div>
-            <h3 class="fw-bold text-dark m-0">Lokasi</h3>
+            <h3 class="fw-bold text-dark m-0">Lokasi Barang</h3>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0 small">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>

@@ -29,7 +29,7 @@
 
     <div class="mb-4">
         <h3 class="fw-bold mb-1">Tanda Tangan Saya</h3>
-        <p class="text-muted mb-0">Dipakai untuk mengisi tanda tangan otomatis di dokumen seperti Kwitansi.</p>
+        <p class="d-none d-md-block text-muted mb-0">Dipakai untuk mengisi tanda tangan otomatis di dokumen seperti Kwitansi.</p>
     </div>
 
     <div class="row g-3">

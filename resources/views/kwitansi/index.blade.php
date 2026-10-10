@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Keuangan')
+@section('title', 'Keuangan per Project')
 
 @section('content')
 <div class="container-fluid p-0">
@@ -20,7 +20,7 @@
 
     <div class="mb-4">
         <h3 class="fw-bold mb-1">Keuangan</h3>
-        <p class="text-muted mb-0">Ringkasan tagihan & pembayaran seluruh project - gabungan Pendapatan (Data Keuangan) + Kwitansi.</p>
+        <p class="d-none d-md-block text-muted mb-0">Ringkasan tagihan & pembayaran seluruh project - gabungan Pendapatan (Data Keuangan) + Kwitansi.</p>
     </div>
 
     @include('finance.partials.tabs', ['active' => 'projects'])

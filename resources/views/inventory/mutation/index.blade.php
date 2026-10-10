@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Mutasi Aset')
+@section('title', 'Mutasi Barang')
 
 {{-- Label dan warna badge per event_type; status_berubah memakai status_after sebagai label (mis. 'Rusak'). --}}
 @php
@@ -26,7 +26,7 @@
 <div class="container-fluid px-4 py-3">
 
     <div class="mb-4">
-        <h3 class="fw-bold text-dark m-0">Mutasi Aset</h3>
+        <h3 class="fw-bold text-dark m-0">Mutasi Barang</h3>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0 small">
                 <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>

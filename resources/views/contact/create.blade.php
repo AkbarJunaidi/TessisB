@@ -13,7 +13,7 @@
                 Tambah Kontak
             </h3>
 
-            <p class="text-muted mb-0">
+            <p class="d-none d-md-block text-muted mb-0">
                 Simpan informasi client baru yang pernah/akan memakai jasa.
             </p>
         </div>

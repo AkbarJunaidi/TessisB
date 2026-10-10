@@ -21,7 +21,7 @@
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
         <div>
             <h3 class="fw-bold mb-1">Pembelian</h3>
-            <p class="text-muted mb-0">Pencatatan pembelian ke vendor, dari pengajuan sampai pembayaran.</p>
+            <p class="d-none d-md-block text-muted mb-0">Pembelian ke vendor.</p>
         </div>
         @if(auth()->user()->hasPermission('purchase', 'create'))
             <a href="{{ route('purchases.create') }}" class="btn btn-primary">

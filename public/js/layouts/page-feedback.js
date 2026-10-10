@@ -9,6 +9,7 @@
     let ticker = null;
     let safety = null;
     let spinners = [];
+    let pageSpinner = null;
 
     function ensureBar() {
         if (bar) return bar;
@@ -23,7 +24,24 @@
         bar.style.transform = 'scaleX(' + value + ')';
     }
 
-    function start() {
+    // Konten meredup dan spinner di tengah area konten; muncul setelah jeda singkat (diatur CSS).
+    function enableLoading() {
+        const content = document.querySelector('.app-content');
+        if (!content) return;
+        if (!pageSpinner) {
+            pageSpinner = document.createElement('div');
+            pageSpinner.id = 'appSpinner';
+            pageSpinner.setAttribute('aria-hidden', 'true');
+            document.body.appendChild(pageSpinner);
+        }
+        const rect = content.getBoundingClientRect();
+        pageSpinner.style.left = (rect.left + rect.width / 2) + 'px';
+        document.documentElement.classList.add('is-loading');
+    }
+
+    // withLoading: true untuk klik link/submit form; false untuk navigasi yang tidak diketahui (mis. reload).
+    function start(withLoading) {
+        if (withLoading) enableLoading();
         if (ticker) return;
         ensureBar();
         document.documentElement.classList.add('is-navigating');
@@ -49,7 +67,7 @@
         clearInterval(ticker);
         clearTimeout(safety);
         ticker = safety = null;
-        document.documentElement.classList.remove('is-navigating');
+        document.documentElement.classList.remove('is-navigating', 'is-loading');
         clearSpinners();
         if (!bar || !bar.classList.contains('is-active')) return;
         value = 1;
@@ -86,7 +104,7 @@
     document.addEventListener('click', function (e) {
         if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
         const a = e.target.closest('a[href]');
-        if (a && isPageLink(a)) start();
+        if (a && isPageLink(a)) start(true);
     });
 
     document.addEventListener('submit', function (e) {
@@ -97,12 +115,12 @@
             if ((form.target && form.target !== '_self') || form.hasAttribute('data-no-progress')) return;
             if (/\/download/.test(form.action || '')) return;
             showButtonSpinner(e.submitter || form.querySelector('button[type="submit"], button:not([type])'));
-            start();
+            start(true);
         }, 0);
     });
 
     // Reload, tombol kembali, atau pindah halaman lewat script.
-    window.addEventListener('beforeunload', start);
+    window.addEventListener('beforeunload', function () { start(false); });
 
     // Kembali dari cache browser (bfcache): matikan bar yang masih menyala.
     window.addEventListener('pageshow', finish);

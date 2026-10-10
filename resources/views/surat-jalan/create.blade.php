@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-fluid p-0">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
             <h3 class="fw-bold text-dark m-0">Buat Surat Jalan</h3>
             <p class="text-muted small m-0">Project: <span class="fw-semibold" title="{{ $project->name }}">{{ $project->short_name }}</span></p>
