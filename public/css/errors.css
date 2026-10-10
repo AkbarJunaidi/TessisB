@@ -1,0 +1,90 @@
+/* Halaman error mandiri (403, 404, 419, 429, 500, 503); dimuat setelah theme.css. */
+.error-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 1.5rem;
+    background: var(--bg-page);
+}
+.error-card {
+    width: 100%;
+    max-width: 30rem;
+    padding: 2.5rem 2rem;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    background: var(--bg-white);
+    box-shadow: var(--shadow-md);
+    text-align: center;
+    animation: errorIn .35s ease-out;
+}
+.error-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 6rem;
+    height: 6rem;
+    margin: 0 auto 1.25rem;
+    border-radius: 50%;
+    font-size: 2.6rem;
+}
+.error-icon::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    animation: errorRing 2.2s ease-out infinite;
+}
+.error-icon i { display: inline-block; }
+.error-icon--danger  { background: #fff1f0; color: #dc3545; }
+.error-icon--warning { background: #fff8e6; color: #b7791f; }
+.error-icon--primary { background: var(--bg-soft); color: var(--c-primary); }
+.error-code {
+    color: var(--c-muted);
+    font-size: .85rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+}
+.error-title {
+    margin: .25rem 0 .75rem;
+    color: var(--c-navy);
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+.error-message {
+    margin-bottom: 1.75rem;
+    color: var(--c-muted);
+}
+.error-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .5rem;
+}
+
+@keyframes errorIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes errorRing { 0% { transform: scale(1); opacity: .45; } 100% { transform: scale(1.5); opacity: 0; } }
+@keyframes errorShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-7px); }
+    40% { transform: translateX(7px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+}
+@keyframes errorFloat { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-6px) rotate(12deg); } }
+@keyframes errorFlip { 0% { transform: rotate(0); } 60%, 100% { transform: rotate(180deg); } }
+@keyframes errorPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+@keyframes errorWobble { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-12deg); } 75% { transform: rotate(12deg); } }
+
+.error-anim--shake  { animation: errorShake .6s ease-in-out .3s 2; }
+.error-anim--float  { animation: errorFloat 3s ease-in-out infinite; }
+.error-anim--flip   { animation: errorFlip 1.6s ease-in-out infinite; }
+.error-anim--pulse  { animation: errorPulse 1.2s ease-in-out infinite; }
+.error-anim--wobble { animation: errorWobble 1.4s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+    .error-card, .error-icon::after, .error-icon i { animation: none; }
+}

@@ -6,7 +6,7 @@
     <title>@yield('title', 'Login') - Management Information System</title>
     {{ \App\Support\VendorAsset::style('bootstrap-css') }}
     {{ \App\Support\VendorAsset::style('bootstrap-icons') }}
-    <link href="{{ asset('css/theme.css') }}" rel="stylesheet">
+    <link href="{{ \App\Support\AppAsset::url('css/theme.css') }}" rel="stylesheet">
 </head>
 <body class="d-flex align-items-center py-4 u-minh-100vh u-bg-var--bg-page">
 
@@ -15,5 +15,6 @@
     </main>
 
     {{ \App\Support\VendorAsset::script('bootstrap-js') }}
+    <script src="{{ \App\Support\AppAsset::url('js/layouts/page-feedback.js') }}"></script>
 </body>
 </html>

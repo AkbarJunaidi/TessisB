@@ -108,6 +108,7 @@
     </div>
 
     <script src="{{ \App\Support\AppAsset::url('js/layouts/app-2.js') }}"></script>
+    <script src="{{ \App\Support\AppAsset::url('js/layouts/page-feedback.js') }}"></script>
 
     @stack('scripts')
 </body>

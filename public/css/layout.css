@@ -322,3 +322,9 @@
         max-height: none;
     }
 }
+
+/* Konten halaman muncul halus saat dimuat (opacity saja agar modal/fixed di dalamnya tidak bergeser). */
+.app-content { animation: appFadeIn .2s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+    .app-content { animation: none; }
+}
