@@ -40,7 +40,7 @@
     const LOCK_MS = 8000;
     document.addEventListener('submit', function (e) {
         const form = e.target;
-        if (e.defaultPrevented || !form.querySelectorAll) return;
+        if (e.defaultPrevented || !form.querySelectorAll || form.hasAttribute('data-ajax')) return;
         if (form.target && form.target !== '_self') return;
 
         setTimeout(function () {
@@ -72,15 +72,18 @@
         toast: function (message, tone) {
             const holder = document.querySelector('.toast-container');
             if (!holder) return;
+            const icons = { success: 'bi-check-circle-fill', danger: 'bi-exclamation-triangle-fill', primary: 'bi-info-circle-fill' };
+            const key = icons[tone] ? tone : 'danger';
             const el = document.createElement('div');
-            el.className = 'toast align-items-center border-0 shadow text-bg-' + (tone || 'danger');
+            el.className = 'toast app-toast app-toast--' + key;
             el.setAttribute('role', 'alert');
-            el.innerHTML = '<div class="d-flex"><div class="toast-body"></div>' +
-                '<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Tutup"></button></div>';
+            el.innerHTML = '<div class="d-flex align-items-start"><i class="bi ' + icons[key] + ' app-toast-icon"></i>' +
+                '<div class="toast-body"></div>' +
+                '<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Tutup"></button></div>';
             el.querySelector('.toast-body').textContent = message;
             holder.appendChild(el);
             el.addEventListener('hidden.bs.toast', function () { el.remove(); });
-            bootstrap.Toast.getOrCreateInstance(el, { delay: 5000 }).show();
+            bootstrap.Toast.getOrCreateInstance(el, { delay: key === 'danger' ? 6000 : 4000 }).show();
         }
     };
 

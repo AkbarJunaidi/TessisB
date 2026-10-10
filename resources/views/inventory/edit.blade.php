@@ -220,7 +220,6 @@
                 <span class="text-muted small">1 Serial Number / QR untuk seluruh unit</span>
             </div>
             <div class="p-4">
-                <div id="unitStatusAlert" class="alert d-none" role="alert"></div>
                 <div class="table-responsive table-bleed-4">
                     <table class="table align-middle">
                         <thead>
@@ -515,15 +514,11 @@
     // Kelola Unit Fisik: update status per-baris via AJAX (tanpa reload halaman, tanpa submit form utama)
     (function () {
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        const alertBox = document.getElementById('unitStatusAlert');
         const badgeClassMap = @json($statusBadgeMap);
 
-        // Tampilkan pesan sukses/gagal di kotak alert halaman.
+        // Notifikasi lewat toast global.
         function showAlert(message, isError) {
-            alertBox.textContent = message;
-            alertBox.classList.remove('d-none', 'alert-success', 'alert-danger');
-            alertBox.classList.add(isError ? 'alert-danger' : 'alert-success');
-            setTimeout(() => alertBox.classList.add('d-none'), 3000);
+            AppUI.toast(message, isError ? 'danger' : 'success');
         }
 
         document.querySelectorAll('.save-unit-status').forEach(function (btn) {

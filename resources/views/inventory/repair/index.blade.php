@@ -194,7 +194,7 @@
     </div>
 
     <div class="mt-3">
-        {{ $repairs->links('pagination::bootstrap-5') }}
+        {{ $repairs->links('pagination.app') }}
     </div>
 </div>
 @endsection

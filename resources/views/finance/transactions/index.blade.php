@@ -29,19 +29,6 @@
 
 <div class="container-fluid p-0">
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-3" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-3" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
     <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
         <div>
             <h3 class="fw-bold mb-1">Keuangan</h3>
@@ -242,7 +229,7 @@
     </div>
 
     @if($transactions->hasPages())
-        <div class="mt-3">{{ $transactions->links('pagination::bootstrap-5') }}</div>
+        <div class="mt-3">{{ $transactions->links('pagination.app') }}</div>
     @endif
 </div>
 

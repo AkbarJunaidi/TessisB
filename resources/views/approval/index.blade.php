@@ -5,18 +5,6 @@
 @section('content')
 <div class="container-fluid p-0">
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-3" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-3" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
     @if($errors->any())
         <div class="alert alert-danger border-0 shadow-sm mb-3" role="alert">
             {{ $errors->first() }}
@@ -29,7 +17,7 @@
     </div>
 
     <ul class="nav nav-tabs mb-3">
-        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-pending" type="button">Menunggu ({{ $pending->count() + $pendingPasswordResets->count() }})</button></li>
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-pending" type="button">Menunggu (<span id="pendingCount">{{ $pending->count() + $pendingPasswordResets->count() }}</span>)</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-riwayat" type="button">Riwayat</button></li>
     </ul>
 
@@ -62,9 +50,9 @@
             @endif
 
             <div class="card border-0 shadow-sm rounded-3">
-                <div class="list-group list-group-flush">
-                    @forelse($pending as $req)
-                        <div class="list-group-item p-3">
+                <div class="list-group list-group-flush approval-list">
+                    @foreach($pending as $req)
+                        <div class="list-group-item p-3 approval-row" id="approvalRow{{ $req->id }}">
                             <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
                                 <div>
                                     <div class="fw-semibold">{{ $req->display_title }}</div>
@@ -91,11 +79,10 @@
                                 </div>
                             </div>
                         </div>
-                    @empty
-                        @if($pendingPasswordResets->isEmpty())
-                            <p class="text-center text-muted py-5 mb-0">Tidak ada permintaan approval yang menunggu.</p>
-                        @endif
-                    @endforelse
+                    @endforeach
+                    @if($pendingPasswordResets->isEmpty())
+                        <p class="approval-empty text-center text-muted py-5 mb-0">Tidak ada permintaan approval yang menunggu.</p>
+                    @endif
                 </div>
             </div>
         </div>
@@ -140,7 +127,7 @@
             </div>
 
             @if($history->hasPages())
-                <div class="mt-3">{{ $history->links('pagination::bootstrap-5') }}</div>
+                <div class="mt-3">{{ $history->links('pagination.app') }}</div>
             @endif
         </div>
     </div>
@@ -149,7 +136,7 @@
         <div class="modal fade" id="approveModal{{ $req->id }}" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <form action="{{ route('approval.approve', $req) }}" method="POST">
+                    <form action="{{ route('approval.approve', $req) }}" method="POST" data-ajax data-ajax-remove="#approvalRow{{ $req->id }}" data-ajax-decrement="#pendingCount">
                         @csrf
                         <div class="modal-header">
                             <h6 class="modal-title">Setujui: {{ $req->display_title }}</h6>
@@ -171,7 +158,7 @@
         <div class="modal fade" id="rejectModal{{ $req->id }}" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <form action="{{ route('approval.reject', $req) }}" method="POST">
+                    <form action="{{ route('approval.reject', $req) }}" method="POST" data-ajax data-ajax-remove="#approvalRow{{ $req->id }}" data-ajax-decrement="#pendingCount">
                         @csrf
                         <div class="modal-header">
                             <h6 class="modal-title">Tolak: {{ $req->display_title }}</h6>

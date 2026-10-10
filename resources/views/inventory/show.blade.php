@@ -70,13 +70,6 @@
     </div>
 
     <!-- Alert Success -->
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
 
     <!-- ================= LAYOUT MOBILE (TAMPIL HANYA DI HP/TABLET KECIL) ================= -->
     <div class="d-md-none">
@@ -203,7 +196,6 @@
             </div>
         </div>
     </div>
-
 
     <!-- ================= LAYOUT DESKTOP (TAMPIL HANYA DI LAYAR LEBAR / DESKTOP) ================= -->
     {{-- mb-4 ada di pembungkus terluar ini (bukan di row dalam) agar jarak ke Status Unit Fisik tidak menumpuk dengan gutter row. --}}

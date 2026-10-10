@@ -2,6 +2,7 @@
 
 namespace App\Services\Inventory;
 
+use App\Support\PerPage;
 use App\Models\EquipmentBooking;
 use App\Models\Inventory;
 use App\Models\InventoryAttribute;
@@ -66,7 +67,7 @@ class InventoryService
                 ->when($isCustom, fn ($q2) => $q2->orWhereHas('units', fn ($u) => $u->where('status', $status))));
         }
 
-        return $query->latest()->paginate($perPage)->withQueryString();
+        return $query->latest()->paginate(PerPage::resolve($perPage))->withQueryString();
     }
 
     /**

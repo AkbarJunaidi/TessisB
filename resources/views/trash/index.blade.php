@@ -132,7 +132,7 @@
 
         @if($trashItems->hasPages())
             <div class="card-footer bg-white py-3 border-top d-flex justify-content-center">
-                {{ $trashItems->appends(request()->query())->links('pagination::bootstrap-5') }}
+                {{ $trashItems->appends(request()->query())->links('pagination.app') }}
             </div>
         @endif
     </div>

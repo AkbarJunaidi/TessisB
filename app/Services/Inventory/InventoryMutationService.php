@@ -2,6 +2,7 @@
 
 namespace App\Services\Inventory;
 
+use App\Support\PerPage;
 use App\Models\InventoryMutation;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
@@ -130,6 +131,6 @@ class InventoryMutationService
             $query->whereDate('created_at', '<=', $filters['to']);
         }
 
-        return $query->paginate($perPage)->withQueryString();
+        return $query->paginate(PerPage::resolve($perPage))->withQueryString();
     }
 }

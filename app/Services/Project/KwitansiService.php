@@ -2,6 +2,7 @@
 
 namespace App\Services\Project;
 
+use App\Support\PerPage;
 use App\Models\ApprovalRequest;
 use App\Models\Kwitansi;
 use App\Models\Project;
@@ -165,7 +166,7 @@ class KwitansiService
                     ->orWhere('client', 'like', "%{$search}%");
             }))
             ->orderByDesc('event_date')
-            ->paginate(15)
+            ->paginate(PerPage::resolve(15))
             ->withQueryString();
     }
 }

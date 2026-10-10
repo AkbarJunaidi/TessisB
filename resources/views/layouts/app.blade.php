@@ -49,26 +49,25 @@
         @include('layouts.bottom-nav')
     @endauth
 
-    {{-- Toast global (auto-hilang); jangan tambah alert session('success'/'error') lokal di view, andalkan ini. --}}
+    {{-- Satu-satunya notifikasi hasil aksi (auto-hilang). Jangan tambah alert session('success'/'error') lokal di view;
+         dari JS pakai AppUI.toast(). Gaya: .app-toast di theme.css. --}}
     <div class="toast-container position-fixed top-0 end-0 p-3 u-z-1100">
         @if(session('success'))
-            <div class="toast align-items-center text-bg-success border-0 shadow" role="alert" data-bs-autohide="true" data-bs-delay="4000" id="globalToastSuccess">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            <div class="toast app-toast app-toast--success" role="alert" data-bs-autohide="true" data-bs-delay="4000" id="globalToastSuccess">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-check-circle-fill app-toast-icon"></i>
+                    <div class="toast-body">{{ session('success') }}</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Tutup"></button>
                 </div>
             </div>
         @endif
 
         @if(session('error'))
-            <div class="toast align-items-center text-bg-danger border-0 shadow" role="alert" data-bs-autohide="true" data-bs-delay="6000" id="globalToastError">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ session('error') }}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            <div class="toast app-toast app-toast--danger" role="alert" data-bs-autohide="true" data-bs-delay="6000" id="globalToastError">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-exclamation-triangle-fill app-toast-icon"></i>
+                    <div class="toast-body">{{ session('error') }}</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Tutup"></button>
                 </div>
             </div>
         @endif
@@ -109,6 +108,8 @@
 
     <script src="{{ \App\Support\AppAsset::url('js/layouts/app-2.js') }}"></script>
     <script src="{{ \App\Support\AppAsset::url('js/layouts/page-feedback.js') }}"></script>
+    <script src="{{ \App\Support\AppAsset::url('js/layouts/ajax-forms.js') }}"></script>
+    <script src="{{ \App\Support\AppAsset::url('js/layouts/pager.js') }}"></script>
 
     @stack('scripts')
 </body>

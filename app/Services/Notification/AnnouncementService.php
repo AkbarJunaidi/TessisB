@@ -2,6 +2,7 @@
 
 namespace App\Services\Notification;
 
+use App\Support\PerPage;
 use App\Models\User;
 use App\Notifications\AnnouncementNotification;
 use App\Services\ActivityLog\ActivityLogService;
@@ -53,7 +54,7 @@ class AnnouncementService
             ->orderByRaw('pinned_at IS NULL')
             ->orderByDesc('pinned_at')
             ->orderByDesc('created_at')
-            ->paginate($perPage);
+            ->paginate(PerPage::resolve($perPage));
     }
 
     public function unreadCount(): int

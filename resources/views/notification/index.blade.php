@@ -178,7 +178,7 @@
 
                     @if($inbox->isNotEmpty())
                         <div class="card-body border-top">
-                            {{ $inbox->links() }}
+                            {{ $inbox->links('pagination.app') }}
                         </div>
                     @endif
                 @endif

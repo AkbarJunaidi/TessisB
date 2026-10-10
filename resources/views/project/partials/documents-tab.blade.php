@@ -75,7 +75,7 @@
 <div class="modal fade" id="uploadDocModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route('files.store') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('files.store') }}" method="POST" enctype="multipart/form-data" data-ajax data-ajax-progress data-ajax-hash="#tab-dokumen">
                 @csrf
                 <div class="modal-header">
                     <h6 class="modal-title fw-bold">Upload Dokumen</h6>
@@ -98,10 +98,13 @@
                         <input type="file" name="file" class="form-control" required>
                         <div class="form-text">Maksimal 10 MB.</div>
                     </div>
+                <div class="progress ajax-progress d-none mt-3" role="progressbar" aria-label="Progres unggah" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar"></div>
+                </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Upload</button>
+                    <button type="submit" class="btn btn-primary">Unggah</button>
                 </div>
             </form>
         </div>

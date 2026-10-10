@@ -324,7 +324,7 @@
             Menampilkan {{ $projects->firstItem() ?? 0 }} - {{ $projects->lastItem() ?? 0 }} dari {{ $projects->total() }} project
         </div>
         <div>
-            {{ $projects->links('pagination::bootstrap-5') }}
+            {{ $projects->links('pagination.app') }}
         </div>
     </div>
 

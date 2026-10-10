@@ -2,6 +2,7 @@
 
 namespace App\Services\Purchase;
 
+use App\Support\PerPage;
 use App\Models\ApprovalRequest;
 use App\Models\Contact;
 use App\Models\Inventory;
@@ -47,7 +48,7 @@ class PurchaseService
             ->when(!empty($filters['to']), fn ($q) => $q->whereDate('purchase_date', '<=', $filters['to']))
             ->latest('purchase_date')
             ->latest('id')
-            ->paginate($perPage)
+            ->paginate(PerPage::resolve($perPage))
             ->withQueryString();
     }
 

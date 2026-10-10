@@ -5,19 +5,6 @@
 @section('content')
 <div class="container-fluid p-0">
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-3" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-3" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
     <div class="mb-4">
         <h3 class="fw-bold mb-1">Keuangan</h3>
         <p class="d-none d-md-block text-muted mb-0">Ringkasan tagihan & pembayaran seluruh project - gabungan Pendapatan (Data Keuangan) + Kwitansi.</p>
@@ -104,7 +91,7 @@
     </div>
 
     @if($projects->hasPages())
-        <div class="mt-3">{{ $projects->links('pagination::bootstrap-5') }}</div>
+        <div class="mt-3">{{ $projects->links('pagination.app') }}</div>
     @endif
 
     {{-- Modal "Tambah Kwitansi" per project - entry point ke-2 (selain tab

@@ -22,7 +22,12 @@ document.querySelectorAll('.go-to-surat-jalan-tab').forEach(function (link) {
 // Buka tab dari URL #tab-suratjalan. Dibungkus DOMContentLoaded karena bootstrap.bundle.js
 // dimuat setelah blok ini; tanpa itu `bootstrap` masih undefined dan gagal diam-diam.
 document.addEventListener('DOMContentLoaded', function () {
-    if (window.location.hash === '#tab-suratjalan') {
+    const hash = window.location.hash;
+    if (hash === '#tab-suratjalan') {
         goToSuratJalanTab();
+    } else if (/^#tab-[a-z]+$/.test(hash)) {
+        // Tab lain (mis. #tab-dokumen setelah unggah) dibuka langsung dari hash.
+        const trigger = document.querySelector('[data-bs-target="' + hash + '"]');
+        if (trigger) bootstrap.Tab.getOrCreateInstance(trigger).show();
     }
 });

@@ -28,13 +28,6 @@
 
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
     {{-- Kartu Statistik --}}
     <div class="row g-3 mb-4">
 
@@ -274,7 +267,7 @@
 
         @if($contacts->hasPages())
             <div class="card-footer bg-white">
-                {{ $contacts->links() }}
+                {{ $contacts->links('pagination.app') }}
             </div>
         @endif
 

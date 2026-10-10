@@ -2,6 +2,7 @@
 
 namespace App\Services\User;
 
+use App\Support\PerPage;
 use App\Models\User;
 use App\Services\ActivityLog\ActivityLogService;
 use App\Services\Auth\PasswordResetRequestService;
@@ -29,7 +30,7 @@ class UserService
      */
     public function getAllPaginated(int $perPage = 10): LengthAwarePaginator
     {
-        return User::latest()->paginate($perPage);
+        return User::latest()->paginate(PerPage::resolve($perPage));
     }
 
     /**

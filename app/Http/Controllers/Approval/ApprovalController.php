@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Approval;
 
+use App\Http\Controllers\Concerns\RespondsToAjax;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Approval\ApprovalDecisionRequest;
 use App\Models\ApprovalRequest;
 use App\Services\Approval\ApprovalService;
 use App\Services\Auth\PasswordResetRequestService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -14,6 +16,8 @@ use Exception;
 
 class ApprovalController extends Controller
 {
+    use RespondsToAjax;
+
     public function __construct(
         protected ApprovalService $approvalService,
         protected PasswordResetRequestService $passwordResetRequestService
@@ -45,25 +49,25 @@ class ApprovalController extends Controller
         return view('approval.index', compact('pending', 'history', 'pendingPasswordResets'));
     }
 
-    public function approve(ApprovalDecisionRequest $request, ApprovalRequest $approvalRequest): RedirectResponse
+    public function approve(ApprovalDecisionRequest $request, ApprovalRequest $approvalRequest): RedirectResponse|JsonResponse
     {
         try {
             $this->approvalService->approve($approvalRequest, $request->validated()['note'] ?? null);
         } catch (Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return $this->failed($request, $e->getMessage());
         }
 
-        return redirect()->back()->with('success', 'Permintaan disetujui.');
+        return $this->done($request, 'Permintaan disetujui.');
     }
 
-    public function reject(ApprovalDecisionRequest $request, ApprovalRequest $approvalRequest): RedirectResponse
+    public function reject(ApprovalDecisionRequest $request, ApprovalRequest $approvalRequest): RedirectResponse|JsonResponse
     {
         try {
             $this->approvalService->reject($approvalRequest, $request->validated()['note'] ?? null);
         } catch (Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return $this->failed($request, $e->getMessage());
         }
 
-        return redirect()->back()->with('success', 'Permintaan ditolak.');
+        return $this->done($request, 'Permintaan ditolak.');
     }
 }

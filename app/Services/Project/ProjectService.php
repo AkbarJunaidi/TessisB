@@ -2,6 +2,7 @@
 
 namespace App\Services\Project;
 
+use App\Support\PerPage;
 use App\Models\Project;
 use App\Models\SuratJalan;
 use App\Models\SuratJalanItem;
@@ -54,7 +55,7 @@ class ProjectService
             $query->whereDate('event_date', $filters['date']);
         }
 
-        return $query->latest()->paginate($perPage)->withQueryString();
+        return $query->latest()->paginate(PerPage::resolve($perPage))->withQueryString();
     }
 
 // Statistik ringkas untuk dashboard Project Management.

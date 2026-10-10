@@ -23,7 +23,6 @@
         @endif
     </div>
 
-    <div id="activityLogAlertPlaceholder"></div>
 
     @if($errors->any())
         <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
@@ -174,7 +173,7 @@
 
         @if($logs->hasPages())
             <div class="card-footer bg-white py-3 border-top d-flex justify-content-center">
-                {{ $logs->appends(request()->query())->links('pagination::bootstrap-5') }}
+                {{ $logs->appends(request()->query())->links('pagination.app') }}
             </div>
         @endif
     </div>
@@ -225,20 +224,14 @@
     <script>
     document.addEventListener('DOMContentLoaded', function () {
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        const alertPlaceholder = document.getElementById('activityLogAlertPlaceholder');
 
         const deleteRangeModalEl = document.getElementById('deleteRangeModal');
         const deleteRangeModal = new bootstrap.Modal(deleteRangeModalEl);
         const errorBox = document.getElementById('deleteRangeError');
 
-        // Tampilkan alert Bootstrap di atas halaman.
+        // Notifikasi lewat toast global.
         function showAlert(type, message) {
-            const alertEl = document.createElement('div');
-            alertEl.className = `alert alert-${type} alert-dismissible fade show mb-4`;
-            alertEl.role = 'alert';
-            alertEl.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
-            alertPlaceholder.innerHTML = '';
-            alertPlaceholder.appendChild(alertEl);
+            AppUI.toast(message, type);
         }
 
         // Kosongkan input dan error modal hapus rentang.

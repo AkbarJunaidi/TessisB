@@ -60,3 +60,11 @@
 
 /* ===== User: Detail ===== */
 .user-password-group { max-width: 22rem; }
+
+/* ===== Project: tab Catatan ===== */
+.notes-empty { display: none; }
+.notes-list:not(:has(.note-row)) + .notes-empty { display: block; }
+
+/* ===== Approval: daftar menunggu ===== */
+.approval-empty { display: none; }
+.approval-list:not(:has(.approval-row)) .approval-empty { display: block; }

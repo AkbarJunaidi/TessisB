@@ -2,6 +2,7 @@
 
 namespace App\Services\Approval;
 
+use App\Support\PerPage;
 use App\Models\ApprovalRequest;
 use App\Services\ActivityLog\ActivityLogService;
 use App\Services\Project\KwitansiService;
@@ -138,7 +139,7 @@ class ApprovalService
         return ApprovalRequest::whereIn('status', ['approved', 'rejected'])
             ->with('requestedBy', 'decidedBy')
             ->latest('decided_at')
-            ->paginate($perPage);
+            ->paginate(PerPage::resolve($perPage));
     }
 
     public function pendingCount(): int

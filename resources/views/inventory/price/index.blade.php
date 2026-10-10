@@ -168,7 +168,7 @@
     </p>
 
     <div class="mt-3">
-        {{ $items->links('pagination::bootstrap-5') }}
+        {{ $items->links('pagination.app') }}
     </div>
 </div>
 @endsection

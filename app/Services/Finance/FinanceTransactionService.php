@@ -2,6 +2,7 @@
 
 namespace App\Services\Finance;
 
+use App\Support\PerPage;
 use App\Models\ProjectFinanceItem;
 use App\Services\ActivityLog\ActivityLogService;
 use App\Support\FinanceLock;
@@ -49,7 +50,7 @@ class FinanceTransactionService
             ->with(['project:id,name,client,contact_id', 'contact:id,name'])
             ->orderByDesc('tanggal')
             ->orderByDesc('id')
-            ->paginate($perPage)
+            ->paginate(PerPage::resolve($perPage))
             ->withQueryString();
     }
 

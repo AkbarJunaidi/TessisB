@@ -2,6 +2,7 @@
 
 namespace App\Services\Contact;
 
+use App\Support\PerPage;
 use App\Models\Contact;
 use App\Models\Purchase;
 use App\Services\ActivityLog\ActivityLogService;
@@ -48,7 +49,7 @@ class ContactService
             $query->clients();
         }
 
-        $contacts = $query->paginate($perPage)->withQueryString();
+        $contacts = $query->paginate(PerPage::resolve($perPage))->withQueryString();
 
         $this->attachTotalIncome($contacts->getCollection());
         $this->attachPurchaseTotal($contacts->getCollection());

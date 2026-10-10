@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\DataIntegration;
 
+use App\Http\Controllers\Concerns\RespondsToAjax;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DataIntegration\FileRequest;
 use App\Models\File;
 use App\Services\DataIntegration\FileService;
 use App\Services\DataIntegration\FolderService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -17,6 +19,8 @@ use Exception;
 
 class FileController extends Controller
 {
+    use RespondsToAjax;
+
     /**
      * Service File.
      */
@@ -105,7 +109,7 @@ class FileController extends Controller
      */
     public function store(
         FileRequest $request
-    ): RedirectResponse {
+    ): RedirectResponse|JsonResponse {
 
         try {
 
@@ -114,17 +118,11 @@ class FileController extends Controller
                 $request->folder_id
             );
 
-            return back()->with(
-                'success',
-                'Berkas berhasil diunggah.'
-            );
+            return $this->done($request, 'Berkas berhasil diunggah.', ['reload' => true]);
 
         } catch (Exception $e) {
 
-            return back()->with(
-                'error',
-                $e->getMessage()
-            );
+            return $this->failed($request, $e->getMessage());
         }
     }
 

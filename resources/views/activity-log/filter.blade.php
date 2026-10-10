@@ -31,26 +31,6 @@
 
                 </div>
 
-                {{-- Show --}}
-                <div class="col-md-2">
-
-                    <label class="form-label small fw-semibold text-muted">
-                        Show
-                    </label>
-
-                    <select
-                        name="per_page"
-                        class="form-select @error('per_page') is-invalid @enderror">
-
-                        <option value="10" @selected(request('per_page', 10) == 10)>10</option>
-                        <option value="25" @selected(request('per_page') == 25)>25</option>
-                        <option value="50" @selected(request('per_page') == 50)>50</option>
-                        <option value="100" @selected(request('per_page') == 100)>100</option>
-
-                    </select>
-
-                </div>
-
                 {{-- Module (DIPERBAIKI) --}}
                 <div class="col-md-4">
 

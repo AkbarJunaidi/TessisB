@@ -2,6 +2,7 @@
 
 namespace App\Services\Inventory;
 
+use App\Support\PerPage;
 use App\Models\AppSetting;
 use App\Models\ProjectFinanceItem;
 use App\Support\FinanceCategory;
@@ -57,7 +58,7 @@ class RepairService
             ->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END', [InventoryRepair::STATUS_ACTIVE])
             ->latest('tanggal_masuk')
             ->latest('id')
-            ->paginate($perPage)
+            ->paginate(PerPage::resolve($perPage))
             ->withQueryString();
     }
 
@@ -401,7 +402,7 @@ class RepairService
             })
             ->when($filterIds !== null, fn ($q) => $q->whereIn('id', $filterIds))
             ->orderBy('name')
-            ->paginate($perPage)
+            ->paginate(PerPage::resolve($perPage))
             ->withQueryString();
 
         $summary = [

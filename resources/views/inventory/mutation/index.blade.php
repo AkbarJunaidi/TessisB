@@ -172,7 +172,7 @@
 
         @if($mutations->hasPages())
             <div class="card-footer bg-white py-3 border-top d-flex justify-content-center">
-                {{ $mutations->appends(request()->query())->links('pagination::bootstrap-5') }}
+                {{ $mutations->appends(request()->query())->links('pagination.app') }}
             </div>
         @endif
     </div>

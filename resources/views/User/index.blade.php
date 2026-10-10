@@ -231,7 +231,7 @@
     </div>
 
     @if($users->hasPages())
-        <div class="mt-3">{{ $users->links('pagination::bootstrap-5') }}</div>
+        <div class="mt-3">{{ $users->links('pagination.app') }}</div>
     @endif
 
 </div>

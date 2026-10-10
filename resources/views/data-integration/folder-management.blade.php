@@ -280,16 +280,16 @@
 
 <div class="modal fade" id="uploadFileModal" tabindex="-1" aria-labelledby="uploadFileModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <form action="{{ route('files.store') }}" method="POST" enctype="multipart/form-data" class="modal-content border-0 shadow">
+        <form action="{{ route('files.store') }}" method="POST" enctype="multipart/form-data" class="modal-content border-0 shadow" data-ajax data-ajax-progress>
             @csrf
             <input type="hidden" name="folder_id" value="{{ $current_folder->id ?? '' }}">
             <div class="modal-header border-0 bg-light py-3">
-                <h5 class="modal-title fw-semibold" id="uploadFileModalLabel">Upload File</h5>
+                <h5 class="modal-title fw-semibold" id="uploadFileModalLabel">Unggah File</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body py-4">
                 <div class="mb-3">
-                    <label for="choose_file" class="form-label fw-medium text-secondary">Choose File</label>
+                    <label for="choose_file" class="form-label fw-medium text-secondary">Pilih File</label>
                     <input class="form-control @error('file') is-invalid @enderror" type="file" id="choose_file" name="file" required>
                     <div class="form-text text-muted mt-2 small">
                         Ekstensi diizinkan: {{ implode(', ', \App\Models\AppSetting::allowedExtensions()) }} (Maks. {{ \App\Models\AppSetting::int('upload_max_mb') }}MB)
@@ -298,10 +298,13 @@
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
+                <div class="progress ajax-progress d-none mt-3" role="progressbar" aria-label="Progres unggah" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar"></div>
+                </div>
             </div>
             <div class="modal-footer border-0 bg-light py-2">
-                <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary px-4">Submit</button>
+                <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-primary px-4">Unggah</button>
             </div>
         </form>
     </div>

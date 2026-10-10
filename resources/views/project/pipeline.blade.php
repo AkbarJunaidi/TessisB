@@ -21,7 +21,6 @@
         </a>
     </div>
 
-    <div id="pipelineAlertPlaceholder"></div>
 
     <div class="row g-3 flex-nowrap overflow-auto pb-2 u-minh-65vh" id="pipelineBoard">
 
@@ -136,17 +135,11 @@
     // Template URL update-status: ganti __ID__ dengan id project saat dipakai.
     const updateUrlTemplate = @json(route('projects.update-status', ['project' => '__ID__']));
     const csrfToken = @json(csrf_token());
-    const alertPlaceholder = document.getElementById('pipelineAlertPlaceholder');
     let draggedCard = null;
 
-    // Tampilkan alert Bootstrap di atas halaman.
+    // Notifikasi lewat toast global.
     function showAlert(type, message) {
-        const alertEl = document.createElement('div');
-        alertEl.className = `alert alert-${type} alert-dismissible fade show mb-4`;
-        alertEl.role = 'alert';
-        alertEl.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
-        alertPlaceholder.innerHTML = '';
-        alertPlaceholder.appendChild(alertEl);
+        AppUI.toast(message, type);
     }
 
     document.querySelectorAll('#pipelineBoard .card-pipeline').forEach((card) => {
