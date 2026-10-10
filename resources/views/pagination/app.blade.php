@@ -1,4 +1,4 @@
-{{-- Pagination seragam: Total, baris per halaman, nomor halaman, dan "Ke halaman". Tampil bila data lebih dari 10.
+{{-- Pagination seragam: Total, baris per halaman, 4 nomor halaman, dan "Ke halaman". Tampil bila data lebih dari 10.
      Dipakai lewat ->links('pagination.app'); perilaku select/input ada di public/js/layouts/pager.js. --}}
 @if($paginator->total() > 10)
     @php
@@ -7,21 +7,9 @@
         $last = $paginator->lastPage();
         $sizes = collect(\App\Support\PerPage::OPTIONS)->push($paginator->perPage())->unique()->sort()->values();
 
-        // Halaman pertama, terakhir, dan sekitar halaman aktif; celah 1 halaman diisi angkanya, selebihnya "...".
-        $shown = collect([1, $last, $current - 1, $current, $current + 1])
-            ->filter(fn ($p) => $p >= 1 && $p <= $last)->unique()->sort()->values();
-        $items = [];
-        foreach ($shown as $i => $page) {
-            if ($i > 0) {
-                $gap = $page - $shown[$i - 1];
-                if ($gap === 2) {
-                    $items[] = $page - 1;
-                } elseif ($gap > 2) {
-                    $items[] = null;
-                }
-            }
-            $items[] = $page;
-        }
+        // Jendela 4 nomor halaman yang bergeser mengikuti halaman aktif; lompat jauh lewat "Ke halaman".
+        $start = max(1, min($current - 1, $last - 3));
+        $items = range($start, min($last, $start + 3));
     @endphp
 
     <nav class="app-pager" aria-label="Navigasi halaman">
@@ -45,9 +33,7 @@
 
             @foreach($items as $item)
                 <li>
-                    @if($item === null)
-                        <span class="is-gap">&hellip;</span>
-                    @elseif($item === $current)
+                    @if($item === $current)
                         <span class="is-active" aria-current="page">{{ $item }}</span>
                     @else
                         <a href="{{ $paginator->url($item) }}" aria-label="Halaman {{ $item }}">{{ $item }}</a>
