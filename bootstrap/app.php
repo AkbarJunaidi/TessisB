@@ -20,6 +20,9 @@ return Application::configure(
             'role' => RoleMiddleware::class,
         ]);
 
+        // Percayai header X-Forwarded-* dari proxy lokal (Cloudflare Tunnel) agar URL aset dan link memakai https.
+        $middleware->trustProxies(at: ['127.0.0.1', '::1']);
+
     })
 
     ->withExceptions(function (Exceptions $exceptions): void {
