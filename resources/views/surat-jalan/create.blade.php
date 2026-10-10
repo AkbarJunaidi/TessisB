@@ -8,7 +8,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h3 class="fw-bold text-dark m-0">Buat Surat Jalan</h3>
-            <p class="text-muted small m-0">Project: <span class="fw-semibold">{{ $project->name }}</span></p>
+            <p class="text-muted small m-0">Project: <span class="fw-semibold" title="{{ $project->name }}">{{ $project->short_name }}</span></p>
         </div>
         <a href="{{ route('projects.show', $project) }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 fw-medium">
             <i class="bi bi-arrow-left"></i> Kembali ke Detail Project

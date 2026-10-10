@@ -175,7 +175,7 @@
                         <a href="{{ route('projects.show', $project) }}" class="text-decoration-none text-dark">
                             <div class="d-flex justify-content-between align-items-center p-3 rounded-3 border mb-2 contact-project-row">
                                 <div>
-                                    <div class="fw-semibold">{{ $project->name }}</div>
+                                    <div class="fw-semibold" title="{{ $project->name }}">{{ $project->short_name }}</div>
                                     <div class="text-muted small">
                                         <span class="badge bg-light text-dark border">
                                             {{ \App\Models\Project::STATUS_LABELS[$project->status] ?? $project->status }}

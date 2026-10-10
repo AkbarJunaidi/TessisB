@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'User Management')
+@section('title', 'Kelola User')
 
 @section('content')
 
@@ -10,7 +10,7 @@
 
         <div>
             <h3 class="fw-bold mb-1">
-                User Management
+                Kelola User
             </h3>
 
             <p class="text-muted mb-0">
@@ -24,7 +24,7 @@
             class="btn btn-primary"
         >
             <i class="bi bi-person-plus me-2"></i>
-            Add User
+            Tambah User
         </a>
         @endif
 

@@ -1,20 +1,17 @@
 <nav class="app-topbar navbar navbar-expand-lg border-bottom bg-white px-3 px-md-4 py-2">
     <div class="container-fluid p-0 flex-nowrap">
 
-        <div class="d-flex align-items-center gap-4 u-minw-0">
+        <div class="d-flex align-items-center gap-4 me-3 u-minw-0">
             <div class="u-minw-0">
-                <span class="fw-semibold text-navy d-block navbar-page-title u-fs-p95rem">
+                <span class="fw-semibold text-navy d-block navbar-page-title">
                     @yield('title', 'Dashboard')
-                </span>
-                <span class="text-muted d-none d-sm-block u-fs-p72rem">
-                    Sistem Informasi Manajemen
                 </span>
             </div>
 
-            {{-- Ticker notifikasi (sumber sama dengan lonceng) untuk semua role; jenis yang tampil disaring per user di NotificationService. --}}
-                <div class="rounded-pill" id="navbarNotifTicker">
-                    <div class="d-flex align-items-center gap-2" id="navbarNotifTickerContent"></div>
-                </div>
+            {{-- Ticker notifikasi (sumber sama dengan lonceng): label singkat tebal merah tanpa kapsul; jenis yang tampil disaring per user di NotificationService. --}}
+            <div id="navbarNotifTicker">
+                <div id="navbarNotifTickerContent"></div>
+            </div>
         </div>
 
         <div class="ms-auto d-flex align-items-center gap-2 gap-md-3 flex-shrink-0">
@@ -311,21 +308,36 @@
             });
         });
 
-        // Tampilkan satu notifikasi di ticker.
-        function paintTickerItem(n) {
-            tickerContentEl.innerHTML = `<i class="bi ${n.icon}"></i><span>${escapeHtml(n.title)}: ${escapeHtml(n.message)}</span>`;
+        // Tampilkan satu teks ticker.
+        function paintTickerItem(text) {
+            tickerContentEl.textContent = text;
+        }
+
+        // Teks ticker = label singkat + keterangan; jenis yang sama digabung jadi jumlah item.
+        function buildTickerItems(notifications) {
+            const groups = new Map();
+            notifications.forEach(function (n) {
+                const label = n.short || n.title;
+                const group = groups.get(label) || { count: 0, detail: n.detail || '' };
+                group.count += 1;
+                groups.set(label, group);
+            });
+            return Array.from(groups, function ([label, g]) {
+                if (g.count > 1) return `${label}: ${g.count} item`;
+                return g.detail ? `${label}: ${g.detail}` : label;
+            });
         }
 
         // Tampilkan notifikasi ticker ke-index dengan transisi.
         function showTickerItem(index) {
             if (!tickerContentEl || !tickerData.length) return;
-            const n = tickerData[index];
+            const text = tickerData[index];
 
             tickerContentEl.style.opacity = '0';
             tickerContentEl.style.transform = 'translateY(-6px)';
 
             setTimeout(function () {
-                paintTickerItem(n);
+                paintTickerItem(text);
                 tickerContentEl.style.transform = 'translateY(6px)';
                 requestAnimationFrame(function () {
                     tickerContentEl.style.opacity = '1';
@@ -343,7 +355,7 @@
                 tickerTimer = null;
             }
 
-            tickerData = notifications;
+            tickerData = buildTickerItems(notifications);
 
             if (!notifications.length) {
                 tickerEl.classList.remove('has-notif');

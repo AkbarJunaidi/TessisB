@@ -30,7 +30,7 @@
     {{-- Judul + aksi utama --}}
     <div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
         <div>
-            <h4 class="fw-bold mb-1 text-dark">My Files</h4>
+            <h4 class="fw-bold mb-1 text-dark">File Saya</h4>
             <p class="text-muted small mb-0">
                 @if($isShared)
                     Yang Anda unggah, generate, dan buat di ruang bersama &mdash; beserta lokasinya. Daftar ini khusus milik Anda.
@@ -85,7 +85,7 @@
     @if(!$isShared && $currentFolder)
         <nav aria-label="breadcrumb" class="mb-2">
             <ol class="breadcrumb mb-0 small">
-                <li class="breadcrumb-item"><a href="{{ route('files.my-files') }}" class="text-decoration-none">My Files</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('files.my-files') }}" class="text-decoration-none">File Saya</a></li>
                 @foreach($breadcrumb as $crumb)
                     @if($loop->last)
                         <li class="breadcrumb-item active" aria-current="page">{{ $crumb->name }}</li>
@@ -441,7 +441,7 @@
 
 @include('data-integration.partials.item-action-modals', [
     'moveGroups'    => $moveGroups,
-    'moveRootLabel' => 'My Files (tingkat atas)',
+    'moveRootLabel' => 'File Saya (tingkat atas)',
 ])
 
 {{-- Buka kembali modal Folder bila validasi nama gagal (halaman dimuat ulang, modal tertutup). --}}

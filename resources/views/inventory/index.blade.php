@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'Daftar Inventory')
+@section('title', 'Daftar Barang')
 
 @section('content')
 
 <div class="page-heading">
     <div>
-        <h3>Inventory List</h3>
+        <h3>Daftar Barang</h3>
         <p>Kelola dan pantau seluruh data aset barang fisik perusahaan.</p>
     </div>
     <div class="d-flex flex-wrap gap-2">

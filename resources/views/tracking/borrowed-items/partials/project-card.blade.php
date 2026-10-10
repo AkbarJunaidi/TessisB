@@ -8,7 +8,7 @@
         <div class="d-flex align-items-center gap-2 flex-grow-1 u-cur-pointer" data-bs-toggle="collapse" data-bs-target="#borrowedProject{{ $project->id }}">
             <i class="bi bi-chevron-down text-muted"></i>
             <div>
-                <div class="fw-bold">{{ $project->name }}</div>
+                <div class="fw-bold" title="{{ $project->name }}">{{ $project->short_name }}</div>
                 <div class="small text-muted">
                     {{ $project->category }}
                     &middot; {{ optional($project->event_date)->translatedFormat('d M Y') }}

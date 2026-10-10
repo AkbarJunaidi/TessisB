@@ -3,7 +3,7 @@
     <div class="card-header bg-white py-3 border-bottom">
         <h6 class="m-0 fw-bold text-primary">
             <i class="fas fa-filter me-2"></i>
-            Filter Activity Logs
+            Filter Log Aktivitas
         </h6>
     </div>
 

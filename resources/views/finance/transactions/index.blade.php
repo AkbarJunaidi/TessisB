@@ -101,7 +101,7 @@
                         <select name="project_id" id="fProject" class="form-select form-select-sm">
                             <option value="">Semua</option>
                             @foreach($projects as $project)
-                                <option value="{{ $project->id }}" @selected((string) ($filters['project_id'] ?? '') === (string) $project->id)>{{ $project->name }}</option>
+                                <option value="{{ $project->id }}" @selected((string) ($filters['project_id'] ?? '') === (string) $project->id)>{{ $project->short_name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -183,7 +183,7 @@
                     @forelse($transactions as $t)
                         @php
                             $meta = collect([
-                                $t->project?->name,
+                                $t->project?->short_name,
                                 $t->contact?->name ?? ($t->project?->client),
                                 $t->recipient ? 'Penerima: ' . $t->recipient : null,
                                 $t->payment_method,
@@ -295,7 +295,7 @@
                         <select name="project_id" id="tProject" class="form-select">
                             <option value="">Tanpa project</option>
                             @foreach($projects as $project)
-                                <option value="{{ $project->id }}">{{ $project->name }}</option>
+                                <option value="{{ $project->id }}">{{ $project->short_name }}</option>
                             @endforeach
                         </select>
                     </div>

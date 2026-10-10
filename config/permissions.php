@@ -16,7 +16,7 @@ return [
     'modules' => [
 
         'inventory' => [
-            'label' => 'Inventory',
+            'label' => 'Inventaris',
             'icon'  => 'bi-box-seam',
             'actions' => [
                 'view'         => 'Melihat data inventory',
@@ -34,7 +34,7 @@ return [
         ],
 
         'tracking_progress' => [
-            'label' => 'Tracking Progress',
+            'label' => 'Project',
             'icon'  => 'bi-kanban',
             'actions' => [
                 'view'           => 'Melihat project & task',
@@ -93,7 +93,7 @@ return [
         ],
 
         'user_management' => [
-            'label' => 'User Management',
+            'label' => 'Kelola User',
             'icon'  => 'bi-people',
             'actions' => [
                 'view_user'      => 'Melihat data user',
@@ -145,7 +145,7 @@ return [
         // ini permanen & tidak bisa dibatalkan (lihat role_defaults, default
         // HANYA Super Admin, sama seperti Reset Password User).
         'trash' => [
-            'label' => 'Trash',
+            'label' => 'Sampah',
             'icon'  => 'bi-trash3',
             'actions' => [
                 'view'         => 'Melihat isi Trash',

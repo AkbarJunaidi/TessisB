@@ -9,7 +9,7 @@
         <div>
             <h3 class="fw-bold text-dark m-0">Surat Jalan {{ $suratJalan->nomor }}</h3>
             <p class="text-muted small m-0">
-                Project: <a href="{{ route('projects.show', $suratJalan->project) }}">{{ $suratJalan->project->name }}</a>
+                Project: <a href="{{ route('projects.show', $suratJalan->project) }}">{{ $suratJalan->project->short_name }}</a>
                 &middot; Status:
                 <span class="badge {{ $suratJalan->status === 'Selesai' ? 'bg-secondary' : 'bg-success' }}">{{ $suratJalan->status }}</span>
             </p>

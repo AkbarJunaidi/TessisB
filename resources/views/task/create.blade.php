@@ -8,7 +8,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h3 class="fw-bold text-dark m-0">Add New Task</h3>
-            <p class="text-muted small m-0">Tautkan kartu tugas baru ke dalam project: <strong>{{ $project->name }}</strong></p>
+            <p class="text-muted small m-0">Tautkan kartu tugas baru ke dalam project: <strong title="{{ $project->name }}">{{ $project->short_name }}</strong></p>
         </div>
         <a href="{{ route('projects.show', $project->id) }}" class="btn btn-sm btn-outline-secondary fw-medium">
             <i class="bi bi-arrow-left"></i> Kembali ke Board

@@ -179,7 +179,7 @@
                     @forelse($projects->take(5) as $project)
                         <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
                             <div class="flex-grow-1 u-minw-0">
-                                <div class="fw-semibold small text-truncate">{{ $project->name }}</div>
+                                <div class="fw-semibold small text-truncate" title="{{ $project->name }}">{{ $project->short_name }}</div>
                                 <div class="text-muted small text-truncate">
                                     <i class="bi bi-calendar-event"></i> {{ optional($project->event_date)->translatedFormat('d M Y') }}
                                     &middot; <i class="bi bi-geo-alt"></i> {{ $project->location }}
@@ -274,7 +274,7 @@
                             <td class="ps-4 py-3 fw-semibold text-secondary" data-label="No">{{ $projects->firstItem() + $index }}</td>
                             <td class="py-3 fw-semibold" data-label="Nama Project">
                                 <div class="text-truncate u-maxw-260px" title="{{ $project->name }}">
-                                    {{ $project->name }}
+                                    {{ $project->short_name }}
                                 </div>
                             </td>
                             <td class="py-3" data-label="PIC">{{ $project->pic }}</td>
@@ -355,7 +355,7 @@
                     </div>
 
                     <small class="text-danger d-block mt-3">
-                        <i class="bi bi-info-circle me-1"></i>Data ini akan dipindahkan ke Trash dan masih dapat dipulihkan kembali.
+                        <i class="bi bi-info-circle me-1"></i>Data ini akan dipindahkan ke Sampah dan masih dapat dipulihkan kembali.
                     </small>
 
                     <div id="return-status-loading" class="text-muted small mt-3 d-none">
@@ -400,7 +400,7 @@
                 <select id="pickProjectSelect" class="form-select">
                     <option value="">-- Pilih Project --</option>
                     @foreach($allProjectsForPicker as $project)
-                        <option value="{{ route('surat-jalan.create', $project) }}">{{ $project->name }}</option>
+                        <option value="{{ route('surat-jalan.create', $project) }}">{{ $project->short_name }}</option>
                     @endforeach
                 </select>
             </div>

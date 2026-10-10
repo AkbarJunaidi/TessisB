@@ -18,10 +18,10 @@ class ProjectRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Maks 25 karakter; nama lama yang lebih panjang boleh tetap selama tidak diubah.
+            // Maks Project::NAME_MAX_LENGTH karakter; nama lama yang lebih panjang boleh tetap selama tidak diubah.
             'name'        => ['required', 'string', function ($attribute, $value, $fail) {
-                if (mb_strlen($value) > 25 && $value !== $this->route('project')?->name) {
-                    $fail('Nama project maksimal 25 karakter.');
+                if (mb_strlen($value) > \App\Models\Project::NAME_MAX_LENGTH && $value !== $this->route('project')?->name) {
+                    $fail('Nama project maksimal ' . \App\Models\Project::NAME_MAX_LENGTH . ' karakter.');
                 }
             }],
             'client'      => ['required', 'string', 'max:255'],

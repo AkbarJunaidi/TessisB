@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Inventory - ' . $inventory->name)
+@section('title', 'Detail Barang - ' . $inventory->name)
 
 @section('content')
 <div class="container-fluid p-0">

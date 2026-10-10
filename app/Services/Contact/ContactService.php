@@ -37,7 +37,8 @@ class ContactService
             });
         }
 
-        if (!empty($filters['letter'])) {
+        // Hanya satu huruf A-Z; karakter lain (mis. % atau _) diabaikan agar tidak jadi wildcard LIKE.
+        if (!empty($filters['letter']) && preg_match('/^[A-Za-z]$/', $filters['letter'])) {
             $query->where('name', 'like', $filters['letter'] . '%');
         }
 
@@ -53,6 +54,23 @@ class ContactService
         $this->attachPurchaseTotal($contacts->getCollection());
 
         return $contacts;
+    }
+
+    /**
+     * Huruf awal nama (A-Z) yang benar-benar ada, untuk pilihan filter.
+     *
+     * @return array<int, string>
+     */
+    public function availableLetters(): array
+    {
+        return Contact::query()
+            ->selectRaw('UPPER(SUBSTR(name, 1, 1)) as letter')
+            ->distinct()
+            ->orderBy('letter')
+            ->pluck('letter')
+            ->filter(fn ($letter) => preg_match('/^[A-Z]$/', (string) $letter))
+            ->values()
+            ->all();
     }
 
     /**

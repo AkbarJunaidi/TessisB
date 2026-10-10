@@ -62,7 +62,7 @@ class ApprovalRequest extends Model
     protected function displayDetail(): Attribute
     {
         return Attribute::get(fn () => match ($this->type) {
-            'kwitansi_void' => ($this->payload['project_name'] ?? '-') . ' - ' . Money::formatRupiah($this->payload['jumlah'] ?? 0),
+            'kwitansi_void' => \App\Models\Project::shorten($this->payload['project_name'] ?? '-') . ' - ' . Money::formatRupiah($this->payload['jumlah'] ?? 0),
             'purchase_approve' => ($this->payload['vendor'] ?? '-') . ' - ' . Money::formatRupiah($this->payload['total'] ?? 0),
             default => '-',
         });

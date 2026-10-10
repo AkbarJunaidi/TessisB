@@ -80,7 +80,7 @@
             <div class="stat-card p-3 p-md-4">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">Inventory</span>
+                        <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">Inventaris</span>
                         <h3 class="fw-bolder text-navy mt-2 mb-0">{{ $statistics['total_inventory'] }}</h3>
                         @if($statistics['new_inventory_this_month'] > 0)
                             <span class="badge-soft-success mt-2 d-inline-block">+{{ $statistics['new_inventory_this_month'] }} barang baru</span>
@@ -226,7 +226,7 @@
                                         @endphp
                                         <tr>
                                             <td class="ps-4 py-2 fw-semibold text-dark">{{ $task->title }}</td>
-                                            <td class="py-2 text-secondary">{{ $task->project->name ?? '-' }}</td>
+                                            <td class="py-2 text-secondary">{{ $task->project->short_name ?? '-' }}</td>
                                             <td class="py-2 pe-4">
                                                 @if($isOverdue)
                                                     <span class="badge-soft-danger">
@@ -279,7 +279,7 @@
                                         @endphp
                                         <tr>
                                             <td class="ps-4 py-2 fw-semibold text-dark">
-                                                <a href="{{ route('projects.show', $project->id) }}" class="text-dark text-decoration-none">{{ $project->name }}</a>
+                                                <a href="{{ route('projects.show', $project->id) }}" class="text-dark text-decoration-none" title="{{ $project->name }}">{{ $project->short_name }}</a>
                                             </td>
                                             <td class="py-2 text-secondary">{{ $project->client }}</td>
                                             <td class="py-2 pe-4">
@@ -369,7 +369,7 @@
                                                 <td class="ps-4 py-2 fw-semibold text-dark">
                                                     <a href="{{ route('surat-jalan.show', $suratJalan->id) }}" class="text-dark text-decoration-none">{{ $suratJalan->nomor }}</a>
                                                 </td>
-                                                <td class="py-2 text-secondary">{{ $suratJalan->project->name ?? '-' }}</td>
+                                                <td class="py-2 text-secondary">{{ $suratJalan->project->short_name ?? '-' }}</td>
                                                 <td class="py-2 text-secondary">
                                                     {{ $suratJalan->tanggal_acara ? \Carbon\Carbon::parse($suratJalan->tanggal_acara)->format('d/m/Y') : '-' }}
                                                 </td>
@@ -402,7 +402,7 @@
                     <i class="bi bi-clock-history fs-5"></i>
                 </div>
                 <h5 class="fw-bold text-navy m-0">
-                    {{ $user->hasRole('super_admin', 'admin') ? 'Recent Activity Log' : 'Aktivitas Saya Terbaru' }}
+                    {{ $user->hasRole('super_admin', 'admin') ? 'Log Aktivitas Terbaru' : 'Aktivitas Saya Terbaru' }}
                 </h5>
             </div>
             {{-- Kondisi disamakan dengan helper hasRole() yang dipakai di sidebar,

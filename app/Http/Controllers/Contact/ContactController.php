@@ -44,7 +44,7 @@ class ContactController extends Controller
 
     /**
      * Menampilkan daftar Kontak (buku alamat client), dengan kartu
-     * statistik, filter huruf awal nama (A-Z), & pencarian.
+     * statistik, kartu filter (tipe, huruf awal nama, pencarian).
      */
     public function index(Request $request): View
     {
@@ -58,8 +58,9 @@ class ContactController extends Controller
 
         $contacts = $this->contactService->getAllPaginated($filters);
         $stats    = $this->contactService->getStats();
+        $letters  = $this->contactService->availableLetters();
 
-        return view('contact.index', compact('contacts', 'filters', 'stats'));
+        return view('contact.index', compact('contacts', 'filters', 'stats', 'letters'));
     }
 
     /**

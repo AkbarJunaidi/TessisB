@@ -66,8 +66,8 @@
                             >
                                 <div class="card-body p-3">
 
-                                    <h6 class="fw-bold text-dark mb-2 text-wrap u-lh-1p4 u-fs-0p9rem">
-                                        {{ $project->name }}
+                                    <h6 class="fw-bold text-dark mb-2 text-wrap u-lh-1p4 u-fs-0p9rem" title="{{ $project->name }}">
+                                        {{ $project->short_name }}
                                     </h6>
 
                                     <div class="d-flex align-items-center gap-2 text-secondary small mb-1">

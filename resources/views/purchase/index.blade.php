@@ -124,7 +124,7 @@
                             <td class="ps-4 fw-semibold">{{ $purchase->code }}</td>
                             <td>{{ $purchase->purchase_date->format('d/m/Y') }}</td>
                             <td>{{ $purchase->vendor_name }}</td>
-                            <td>{{ $purchase->project?->name ?? '-' }}</td>
+                            <td title="{{ $purchase->project?->name }}">{{ $purchase->project?->short_name ?? '-' }}</td>
                             <td class="text-end">{{ \App\Support\Money::formatRupiah($purchase->total) }}</td>
                             <td><span class="badge {{ \App\Models\Purchase::STATUS_BADGES[$purchase->status] ?? 'bg-secondary' }}">{{ $purchase->status }}</span></td>
                             <td>

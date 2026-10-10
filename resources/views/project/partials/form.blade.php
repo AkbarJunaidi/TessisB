@@ -29,7 +29,7 @@
         <input type="text" name="name" id="name" autocomplete="off"
                class="form-control @error('name') is-invalid @enderror"
                placeholder="Contoh: Wedding Arnold & Gita"
-               value="{{ $old('name') }}" required autofocus maxlength="25">
+               value="{{ $old('name') }}" required autofocus maxlength="{{ \App\Models\Project::NAME_MAX_LENGTH }}">
         @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
 

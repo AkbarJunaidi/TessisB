@@ -80,7 +80,7 @@
                             <a href="{{ route('surat-jalan.show', $item->id) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
                                 <div>
                                     <div class="fw-semibold text-dark">{{ $item->nomor }}</div>
-                                    <div class="text-muted small">{{ $item->project?->name ?? $item->kepada }}</div>
+                                    <div class="text-muted small">{{ $item->project?->short_name ?? $item->kepada }}</div>
                                 </div>
                                 <span class="text-muted small">{{ $item->tanggal_terbit?->format('d/m/Y') }}</span>
                             </a>

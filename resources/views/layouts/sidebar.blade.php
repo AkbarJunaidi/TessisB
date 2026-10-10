@@ -72,20 +72,20 @@
             @php $invActive = request()->routeIs('inventory.*') && !request()->routeIs('inventory.locations.*'); @endphp
             <li class="nav-item">
                 <a href="#menuInventory" data-bs-toggle="collapse" class="nav-link sidebar-link text-white d-flex align-items-center justify-content-between {{ $invActive ? 'active' : '' }}" aria-expanded="{{ $invActive ? 'true' : 'false' }}">
-                    <span><i class="bi bi-box-seam"></i> <span class="sidebar-link-text">Inventory</span></span>
+                    <span><i class="bi bi-box-seam"></i> <span class="sidebar-link-text">Inventaris</span></span>
                     <i class="bi bi-chevron-down sidebar-collapse-icon"></i>
                 </a>
                 <div class="collapse {{ $invActive ? 'show' : '' }}" id="menuInventory" data-bs-parent="#sidebarMenuAccordion">
                     <ul class="nav flex-column sidebar-submenu">
                         <li class="nav-item">
                             <a href="{{ route('inventory.index') }}" class="nav-link sidebar-sublink {{ request()->routeIs('inventory.index') || request()->routeIs('inventory.show') || request()->routeIs('inventory.edit') ? 'active' : '' }}">
-                                <i class="bi bi-list-ul"></i> Inventory List
+                                <i class="bi bi-list-ul"></i> Daftar Barang
                             </a>
                         </li>
                         <li class="nav-item">
                             @if(auth()->user()->hasPermission('inventory', 'create'))
                             <a href="{{ route('inventory.create') }}" class="nav-link sidebar-sublink {{ request()->routeIs('inventory.create') ? 'active' : '' }}">
-                                <i class="bi bi-plus-circle"></i> Add Inventory
+                                <i class="bi bi-plus-circle"></i> Tambah Barang
                             </a>
                             @endif
                         </li>
@@ -111,20 +111,20 @@
             </li>
         @endif
 
-        {{-- Progress Management (Projects & Task) --}}
+        {{-- Menu Project: daftar, pipeline, barang pinjaman, tambah project --}}
         @php
             $trackActive = request()->routeIs('projects.*') || request()->routeIs('tasks.*') || request()->routeIs('borrowed-items.*');
         @endphp
         <li class="nav-item">
             <a href="#menuTracking" data-bs-toggle="collapse" class="nav-link sidebar-link text-white d-flex align-items-center justify-content-between {{ $trackActive ? 'active' : '' }}" aria-expanded="{{ $trackActive ? 'true' : 'false' }}">
-                <span><i class="bi bi-kanban"></i> <span class="sidebar-link-text">Progress Management</span></span>
+                <span><i class="bi bi-kanban"></i> <span class="sidebar-link-text">Project</span></span>
                 <i class="bi bi-chevron-down sidebar-collapse-icon"></i>
             </a>
             <div class="collapse {{ $trackActive ? 'show' : '' }}" id="menuTracking" data-bs-parent="#sidebarMenuAccordion">
                 <ul class="nav flex-column sidebar-submenu">
                     <li class="nav-item">
                         <a href="{{ route('projects.index') }}" class="nav-link sidebar-sublink {{ request()->routeIs('projects.index') || request()->routeIs('projects.show') || request()->routeIs('tasks.show') ? 'active' : '' }}">
-                            <i class="bi bi-kanban"></i> Projects
+                            <i class="bi bi-kanban"></i> Daftar Project
                         </a>
                     </li>
                     @if(auth()->user()->hasRole('super_admin', 'admin'))
@@ -142,7 +142,7 @@
                     <li class="nav-item">
                         @if(auth()->user()->hasPermission('tracking_progress', 'create_project'))
                         <a href="{{ route('projects.create') }}" class="nav-link sidebar-sublink {{ request()->routeIs('projects.create') ? 'active' : '' }}">
-                            <i class="bi bi-folder-plus"></i> Add Project
+                            <i class="bi bi-folder-plus"></i> Tambah Project
                         </a>
                         @endif
                     </li>
@@ -192,12 +192,12 @@
                 <ul class="nav flex-column sidebar-submenu">
                     <li class="nav-item">
                         <a href="{{ route('folders.index') }}" class="nav-link sidebar-sublink {{ request()->routeIs('folders.index') || request()->routeIs('folders.show') ? 'active' : '' }}">
-                            <i class="bi bi-folder2-open"></i> Folder Management
+                            <i class="bi bi-folder2-open"></i> Kelola Folder
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="{{ route('files.my-files') }}" class="nav-link sidebar-sublink {{ request()->routeIs('files.my-files') ? 'active' : '' }}">
-                            <i class="bi bi-file-earmark-arrow-up"></i> My Files
+                            <i class="bi bi-file-earmark-arrow-up"></i> File Saya
                         </a>
                     </li>
                 </ul>
@@ -210,7 +210,7 @@
             @php $userActive = request()->routeIs('users.*'); @endphp
             <li class="nav-item">
                 <a href="#menuUser" data-bs-toggle="collapse" class="nav-link sidebar-link text-white d-flex align-items-center justify-content-between {{ $userActive ? 'active' : '' }}" aria-expanded="{{ $userActive ? 'true' : 'false' }}">
-                    <span><i class="bi bi-people"></i> <span class="sidebar-link-text">User Management</span></span>
+                    <span><i class="bi bi-people"></i> <span class="sidebar-link-text">Kelola User</span></span>
                     <i class="bi bi-chevron-down sidebar-collapse-icon"></i>
                 </a>
                 <div class="collapse {{ $userActive ? 'show' : '' }}" id="menuUser" data-bs-parent="#sidebarMenuAccordion">
@@ -222,7 +222,7 @@
                         </li>
                         <li class="nav-item">
                             <a href="{{ route('users.create') }}" class="nav-link sidebar-sublink {{ request()->routeIs('users.create') ? 'active' : '' }}">
-                                <i class="bi bi-person-plus"></i> Add User
+                                <i class="bi bi-person-plus"></i> Tambah User
                             </a>
                         </li>
                     </ul>
@@ -230,23 +230,23 @@
             </li>
         @endif
 
-        {{-- Activity Logs - level-atas, tetap role-only (sengaja tidak
+        {{-- Log Aktivitas - level-atas, tetap role-only (sengaja tidak
              ikut sistem Permission Override, lihat config/permissions.php). --}}
         @if(auth()->user()->hasRole('super_admin', 'admin'))
             <li class="nav-item">
                 <a href="{{ route('activity-logs.index') }}"
                     class="nav-link sidebar-link text-white {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}">
-                    <i class="bi bi-journal-text"></i> <span class="sidebar-link-text">Activity Logs</span>
+                    <i class="bi bi-journal-text"></i> <span class="sidebar-link-text">Log Aktivitas</span>
                 </a>
             </li>
         @endif
 
-        {{-- Trash: permission 'trash.view'. --}}
+        {{-- Sampah: permission 'trash.view'. --}}
         @if(auth()->user()->hasPermission('trash', 'view'))
             <li class="nav-item">
                 <a href="{{ route('trash.index') }}"
                     class="nav-link sidebar-link text-white {{ request()->routeIs('trash.*') ? 'active' : '' }}">
-                    <i class="bi bi-trash"></i> <span class="sidebar-link-text">Trash</span>
+                    <i class="bi bi-trash"></i> <span class="sidebar-link-text">Sampah</span>
                 </a>
             </li>
         @endif
@@ -299,33 +299,33 @@
 
     </ul>
 
-    <hr class="border-white opacity-10 my-3">
-
-    {{-- Profil pengguna --}}
-    <div class="mb-3">
-        <div class="d-flex align-items-center p-2 rounded-4 sidebar-profile">
-            @auth
-                <div class="avatar-initial flex-shrink-0 u-w-40px u-h-40px u-fs-1p05rem u-bg-rgba255-255-255-p12 u-c-fff">
-                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                </div>
-                <div class="ms-3 overflow-hidden sidebar-link-text">
-                    <div class="text-white fw-semibold text-truncate mb-0 lh-sm u-fs-p9rem">
-                        {{ Auth::user()->name }}
+    {{-- Footer: garis atas seperti garis di bawah brand (tanpa margin) supaya area scroll menu lebih tinggi. --}}
+    <div class="sidebar-footer">
+        {{-- Profil pengguna --}}
+        <div class="mb-2">
+            <div class="d-flex align-items-center p-2 rounded-4 sidebar-profile">
+                @auth
+                    <div class="avatar-initial flex-shrink-0 u-w-40px u-h-40px u-fs-1p05rem u-bg-rgba255-255-255-p12 u-c-fff">
+                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                     </div>
-                    <small class="text-white-50 text-truncate d-block u-fs-p72rem">
-                        {{ Auth::user()->email ?? 'Administrator' }}
-                    </small>
-                </div>
-            @endauth
+                    <div class="ms-3 overflow-hidden sidebar-link-text">
+                        <div class="text-white fw-semibold text-truncate mb-0 lh-sm u-fs-p9rem">
+                            {{ Auth::user()->name }}
+                        </div>
+                        <small class="text-white-50 text-truncate d-block u-fs-p72rem">
+                            {{ Auth::user()->email ?? 'Administrator' }}
+                        </small>
+                    </div>
+                @endauth
+            </div>
         </div>
+
+        {{-- Keluar sistem --}}
+        <form action="{{ route('logout') }}" method="POST" data-confirm="Apakah Anda yakin ingin keluar sistem?" data-confirm-label="Keluar">
+            @csrf
+            <button type="submit" class="btn btn-sm btn-outline-light w-100 d-flex align-items-center justify-content-center py-2 rounded-3">
+                <i class="bi bi-box-arrow-left me-2"></i> <span class="sidebar-link-text">Keluar Sistem</span>
+            </button>
+        </form>
     </div>
-
-    {{-- Keluar sistem --}}
-    <form action="{{ route('logout') }}" method="POST" data-confirm="Apakah Anda yakin ingin keluar sistem?" data-confirm-label="Keluar">
-        @csrf
-        <button type="submit" class="btn btn-sm btn-outline-light w-100 d-flex align-items-center justify-content-center py-2 rounded-3">
-            <i class="bi bi-box-arrow-left me-2"></i> <span class="sidebar-link-text">Keluar Sistem</span>
-        </button>
-    </form>
 </div>
-

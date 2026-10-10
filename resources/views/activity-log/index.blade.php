@@ -1,17 +1,17 @@
 @extends('layouts.app')
 
-@section('title', 'Activity Logs Audit Trail')
+@section('title', 'Log Aktivitas')
 
 @section('content')
 <div class="container-fluid px-4 py-3">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h3 class="fw-bold text-dark m-0">Activity Logs</h3>
+            <h3 class="fw-bold text-dark m-0">Log Aktivitas</h3>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0 small">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Activity Logs</li>
+                    <li class="breadcrumb-item active" aria-current="page">Log Aktivitas</li>
                 </ol>
             </nav>
         </div>
@@ -38,7 +38,7 @@
 
     <div class="card shadow-sm mb-4 border-0 rounded-3 bg-white">
         <div class="card-header bg-white py-3 border-bottom">
-            <h6 class="m-0 fw-bold text-primary"><i class="bi bi-funnel me-2"></i>Filter Activity Logs</h6>
+            <h6 class="m-0 fw-bold text-primary"><i class="bi bi-funnel me-2"></i>Filter Log Aktivitas</h6>
         </div>
         <div class="card-body bg-light bg-opacity-25">
             <form action="{{ route('activity-logs.index') }}" method="GET">
@@ -182,18 +182,18 @@
 </div>
 
 @if(auth()->user()->isSuperAdmin())
-    {{-- Modal Konfirmasi Hapus Activity Log Berdasarkan Rentang Tanggal --}}
+    {{-- Modal Konfirmasi Hapus Log Aktivitas Berdasarkan Rentang Tanggal --}}
     <div class="modal fade" id="deleteRangeModal" tabindex="-1" aria-labelledby="deleteRangeModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow">
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title fw-bold" id="deleteRangeModalLabel">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Hapus Activity Log Berdasarkan Rentang Tanggal
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Hapus Log Aktivitas Berdasarkan Rentang Tanggal
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <p class="text-dark fw-medium mb-3">Pilih rentang tanggal Activity Log yang ingin dihapus secara permanen.</p>
+                    <p class="text-dark fw-medium mb-3">Pilih rentang tanggal Log Aktivitas yang ingin dihapus secara permanen.</p>
 
                     <div class="mb-3">
                         <label for="deleteRangeFrom" class="form-label small fw-semibold text-muted">Dari Tanggal</label>
@@ -208,7 +208,7 @@
                     <div id="deleteRangeError" class="text-danger small mb-2 d-none"></div>
 
                     <small class="text-danger d-block">
-                        <i class="bi bi-info-circle me-1"></i>Seluruh Activity Log pada rentang tanggal ini akan dihapus permanen dan <strong>tidak dapat dipulihkan</strong>.
+                        <i class="bi bi-info-circle me-1"></i>Seluruh Log Aktivitas pada rentang tanggal ini akan dihapus permanen dan <strong>tidak dapat dipulihkan</strong>.
                     </small>
                 </div>
                 <div class="modal-footer bg-light border-top p-3">

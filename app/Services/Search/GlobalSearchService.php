@@ -149,7 +149,7 @@ class GlobalSearchService
             return [];
         }
 
-        // Halaman/menu (Dashboard, Inventory List, Kontak, dst) dicek
+        // Halaman/menu (Dashboard, Daftar Barang, Kontak, dst) dicek
         // duluan - ini yang menjawab kasus ketik "inventory" atau
         // "kontak" (nama MENU-nya sendiri, bukan nama data di
         // dalamnya) supaya tetap dapat saran, bukan langsung invalid.
@@ -195,7 +195,7 @@ class GlobalSearchService
             foreach ($this->searchSuratJalans($keyword, $perCategory) as $item) {
                 $suggestions[] = [
                     'label'    => $item->nomor,
-                    'subtitle' => $item->project?->name ?? $item->kepada,
+                    'subtitle' => $item->project?->short_name ?? $item->kepada,
                     'icon'     => 'bi-file-earmark-text',
                     'category' => 'Surat Jalan',
                     'url'      => route('surat-jalan.show', $item->id),
@@ -229,16 +229,16 @@ class GlobalSearchService
                 'visible' => true,
             ],
             [
-                'label' => 'Inventory List',
+                'label' => 'Daftar Barang',
                 'icon' => 'bi-box-seam',
-                'keywords' => ['inventory', 'barang', 'aset', 'stok'],
+                'keywords' => ['inventory', 'inventaris', 'daftar barang', 'barang', 'aset', 'stok'],
                 'url' => route('inventory.index'),
                 'visible' => $user->hasPermission('inventory', 'view'),
             ],
             [
-                'label' => 'Add Inventory',
+                'label' => 'Tambah Barang',
                 'icon' => 'bi-plus-circle',
-                'keywords' => ['tambah inventory', 'add inventory', 'barang baru', 'inventory'],
+                'keywords' => ['tambah barang', 'tambah inventory', 'add inventory', 'barang baru', 'inventory'],
                 'url' => route('inventory.create'),
                 'visible' => $user->hasPermission('inventory', 'create'),
             ],
@@ -250,7 +250,7 @@ class GlobalSearchService
                 'visible' => $user->hasPermission('inventory', 'view'),
             ],
             [
-                'label' => 'Projects',
+                'label' => 'Daftar Project',
                 'icon' => 'bi-kanban',
                 'keywords' => ['project', 'projects', 'daftar project'],
                 'url' => route('projects.index'),
@@ -271,21 +271,21 @@ class GlobalSearchService
                 'visible' => $user->hasPermission('borrowed_items', 'view'),
             ],
             [
-                'label' => 'Add Project',
+                'label' => 'Tambah Project',
                 'icon' => 'bi-folder-plus',
                 'keywords' => ['tambah project', 'add project', 'project baru'],
                 'url' => route('projects.create'),
                 'visible' => $user->hasPermission('tracking_progress', 'create_project'),
             ],
             [
-                'label' => 'Folder Management',
+                'label' => 'Kelola Folder',
                 'icon' => 'bi-folder2-open',
-                'keywords' => ['folder', 'folder management', 'integrasi data'],
+                'keywords' => ['folder', 'kelola folder', 'folder management', 'integrasi data'],
                 'url' => route('folders.index'),
                 'visible' => $user->hasPermission('data_integration', 'view'),
             ],
             [
-                'label' => 'My Files',
+                'label' => 'File Saya',
                 'icon' => 'bi-file-earmark-arrow-up',
                 'keywords' => ['my files', 'file saya', 'files', 'berkas'],
                 'url' => route('files.my-files'),
@@ -301,26 +301,26 @@ class GlobalSearchService
             [
                 'label' => 'Data User',
                 'icon' => 'bi-person-lines-fill',
-                'keywords' => ['user', 'data user', 'pengguna', 'user management'],
+                'keywords' => ['user', 'data user', 'pengguna', 'kelola user', 'user management'],
                 'url' => route('users.index'),
                 'visible' => $user->isSuperAdmin(),
             ],
             [
-                'label' => 'Add User',
+                'label' => 'Tambah User',
                 'icon' => 'bi-person-plus',
                 'keywords' => ['tambah user', 'add user', 'user baru'],
                 'url' => route('users.create'),
                 'visible' => $user->isSuperAdmin(),
             ],
             [
-                'label' => 'Activity Logs',
+                'label' => 'Log Aktivitas',
                 'icon' => 'bi-journal-text',
-                'keywords' => ['activity log', 'log aktivitas', 'riwayat aktivitas'],
+                'keywords' => ['activity log', 'activity logs', 'log aktivitas', 'riwayat aktivitas'],
                 'url' => route('activity-logs.index'),
                 'visible' => $user->hasRole('super_admin', 'admin'),
             ],
             [
-                'label' => 'Trash',
+                'label' => 'Sampah',
                 'icon' => 'bi-trash',
                 'keywords' => ['trash', 'sampah', 'recycle bin', 'data terhapus'],
                 'url' => route('trash.index'),

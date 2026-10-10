@@ -55,7 +55,7 @@
                     <option value="">- Stok umum (tanpa project) -</option>
                     @foreach($projects as $project)
                         <option value="{{ $project->id }}" @selected((string) old('project_id', $purchase->project_id ?? '') === (string) $project->id)>
-                            {{ $project->name }}
+                            {{ $project->short_name }}
                         </option>
                     @endforeach
                 </select>

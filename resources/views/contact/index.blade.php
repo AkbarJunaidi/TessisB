@@ -88,17 +88,26 @@
 
     </div>
 
-    <div class="card shadow-sm border-0">
+    @php
+        $typeTabs = [
+            ''       => ['Semua', $stats['total']],
+            'client' => ['Client', $stats['clients']],
+            'vendor' => ['Vendor', $stats['vendors']],
+        ];
+        $hasFilter = filled($filters['search'] ?? null) || filled($filters['letter'] ?? null) || filled($filters['type'] ?? null);
+        $currentLetter = preg_match('/^[A-Za-z]$/', $filters['letter'] ?? '') ? strtoupper($filters['letter']) : '';
+        $letterOptions = collect($letters)
+            ->when($currentLetter !== '' && !in_array($currentLetter, $letters, true), fn ($c) => $c->push($currentLetter)->sort())
+            ->values();
+    @endphp
 
-        <div class="card-body">
+    {{-- Kartu filter terpisah: tipe (dengan jumlah), pencarian, dan huruf awal nama. --}}
+    <div class="card shadow-sm mb-4 border-0 rounded-3 bg-white">
+        <div class="card-header bg-white py-3 border-bottom">
+            <h6 class="m-0 fw-bold text-primary"><i class="bi bi-funnel me-2"></i>Filter Kontak</h6>
+        </div>
+        <div class="card-body bg-light bg-opacity-25">
 
-            @php
-                $typeTabs = [
-                    ''       => ['Semua', $stats['total']],
-                    'client' => ['Client', $stats['clients']],
-                    'vendor' => ['Vendor', $stats['vendors']],
-                ];
-            @endphp
             <ul class="nav nav-pills mb-3">
                 @foreach($typeTabs as $typeKey => $typeTab)
                     <li class="nav-item">
@@ -113,53 +122,56 @@
                 @endforeach
             </ul>
 
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-                <h6 class="fw-bold mb-0">Kontak Terbaru</h6>
-
-                {{-- Filter huruf awal nama (A-Z) --}}
-                <div class="d-flex flex-wrap gap-1">
-                    @if(!empty($filters['letter']))
-                        <a href="{{ route('contacts.index', array_merge($filters, ['letter' => null])) }}" class="btn btn-sm btn-outline-secondary">Semua</a>
-                    @endif
-                    @foreach(range('A', 'Z') as $letter)
-                        <a
-                            href="{{ route('contacts.index', array_merge($filters, ['letter' => $letter])) }}"
-                            class="btn btn-sm {{ ($filters['letter'] ?? '') === $letter ? 'btn-primary' : 'btn-outline-secondary' }} u-minw-32px"
-                           
-                        >{{ $letter }}</a>
-                    @endforeach
-                </div>
-            </div>
-
-            <form method="GET" class="row g-2 mb-3">
-                @if(!empty($filters['letter']))
-                    <input type="hidden" name="letter" value="{{ $filters['letter'] }}">
-                @endif
+            <form method="GET" action="{{ route('contacts.index') }}">
                 @if(!empty($filters['type']))
                     <input type="hidden" name="type" value="{{ $filters['type'] }}">
                 @endif
-                <div class="col-md-4">
-                    <input
-                        type="text"
-                        name="search"
-                        class="form-control form-control-sm"
-                        placeholder="Cari nama, perusahaan, No. HP/WA, atau email..."
-                        value="{{ $filters['search'] ?? '' }}"
-                    >
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-sm btn-outline-primary w-100">
-                        <i class="bi bi-search me-1"></i> Cari
-                    </button>
-                </div>
-                @if(!empty($filters['search']))
-                    <div class="col-md-2">
-                        <a href="{{ route('contacts.index', array_filter(['letter' => $filters['letter'] ?? null, 'type' => $filters['type'] ?? null])) }}" class="btn btn-sm btn-outline-secondary w-100">
-                            Reset Pencarian
-                        </a>
+
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label for="contactSearch" class="form-label small fw-semibold text-muted">Cari Kontak</label>
+                        <input
+                            type="text"
+                            id="contactSearch"
+                            name="search"
+                            class="form-control form-control-sm"
+                            placeholder="Nama, perusahaan, No. HP/WA, atau email..."
+                            value="{{ $filters['search'] ?? '' }}"
+                        >
                     </div>
-                @endif
+
+                    <div class="col-md-3">
+                        <label for="contactLetter" class="form-label small fw-semibold text-muted">Huruf Awal Nama</label>
+                        <select id="contactLetter" name="letter" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">Semua Huruf</option>
+                            @foreach($letterOptions as $letter)
+                                <option value="{{ $letter }}" @selected($currentLetter === $letter)>{{ $letter }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 d-flex justify-content-md-end gap-2">
+                        @if($hasFilter)
+                            <a href="{{ route('contacts.index') }}" class="btn btn-sm btn-outline-secondary px-3 fw-medium">Reset</a>
+                        @endif
+                        <button type="submit" class="btn btn-sm btn-primary px-3 fw-medium">
+                            <i class="bi bi-search me-1"></i>Cari
+                        </button>
+                    </div>
+                </div>
             </form>
+
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="m-0 fw-bold text-dark">{{ $hasFilter ? 'Hasil Filter' : 'Kontak Terbaru' }}</h6>
+            <span class="badge bg-secondary text-white fw-medium rounded-pill px-3">{{ number_format($contacts->total()) }} kontak</span>
+        </div>
+
+        <div class="card-body">
 
             <div class="row g-3">
 

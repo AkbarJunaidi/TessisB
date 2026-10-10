@@ -82,7 +82,7 @@ class FileController extends Controller
 
             $moveGroups = [
                 [
-                    'label'   => 'My Files (pribadi)',
+                    'label'   => 'File Saya (pribadi)',
                     'warn'    => false,
                     'options' => $this->folderService->pathMap(true),
                 ],

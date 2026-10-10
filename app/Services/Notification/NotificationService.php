@@ -78,6 +78,18 @@ class NotificationService
         'announcement'           => 'Pengumuman dari Super Admin',
     ];
 
+    /** Label singkat per jenis untuk ticker navbar; 'detail' tiap item melengkapinya (servis dan pengumuman ditangani di shortLabel()). */
+    private const SHORT_LABELS = [
+        'password_reset_request' => 'Lupa password',
+        'report_ready'           => 'Laporan siap',
+        'unpaid_deadline'        => 'Belum lunas',
+        'finance_missing'        => 'Pendapatan belum diisi',
+        'approval_pending'       => 'Approval menunggu',
+        'schedule_conflict'      => 'Bentrok jadwal',
+        'inventory_new'          => 'Barang baru',
+        'project_new'            => 'Project baru',
+    ];
+
     protected PasswordResetRequestService $passwordResetRequestService;
 
     public function __construct(PasswordResetRequestService $passwordResetRequestService)
@@ -102,7 +114,7 @@ class NotificationService
      *   tidak mendukung cache tags seperti Redis) - perubahan pengaturan
      *   langsung terasa di poll berikutnya, bukan menunggu cache 30 detik.
      *
-     * @return array<int, array{id: string, type: string, icon: string, title: string, message: string, url: string}>
+     * @return array<int, array{id: string, type: string, icon: string, title: string, short: string, message: string, url: string, detail?: string}>
      */
     public function getActiveNotifications(int $userId): array
     {
@@ -173,7 +185,25 @@ class NotificationService
         // applyUserNotificationStates()) terhadap 4 jenis notifikasi
         // OTOMATIS - jenis "announcement" dilewati, itu sudah punya
         // mekanisme sematkan/hapus sendiri di AnnouncementService.
-        return $this->applyUserNotificationStates($userId, $items);
+        $items = $this->applyUserNotificationStates($userId, $items);
+
+        // Label singkat untuk ticker navbar; dropdown tetap memakai title + message lengkap.
+        return array_map(fn (array $item) => $item + ['short' => $this->shortLabel($item)], $items);
+    }
+
+    /**
+     * Label singkat satu notifikasi (ticker navbar). Jenis tak dikenal, termasuk
+     * pengumuman, memakai title aslinya.
+     *
+     * @param  array<string, mixed>  $item
+     */
+    private function shortLabel(array $item): string
+    {
+        if ($item['type'] === 'servis_jatuh_tempo') {
+            return str_contains($item['title'], 'Jatuh Tempo') ? 'Servis jatuh tempo' : 'Servis segera';
+        }
+
+        return self::SHORT_LABELS[$item['type']] ?? $item['title'];
     }
 
     /**
@@ -261,6 +291,7 @@ class NotificationService
             'icon'    => 'bi-key text-warning',
             'title'   => 'Permintaan Lupa Password',
             'message' => "{$request->user->name} ({$request->user->email}) minta reset password",
+            'detail'  => $request->user->name,
             'url'     => route('users.show', $request->user_id),
         ])->all();
     }
@@ -303,6 +334,7 @@ class NotificationService
             'icon'    => 'bi-check2-square text-warning',
             'title'   => 'Permintaan Approval Menunggu',
             'message' => $request->display_title,
+            'detail'  => $request->display_title,
             'url'     => route('approval.index'),
         ])->all();
     }
@@ -336,6 +368,7 @@ class NotificationService
                     'icon'    => 'bi-tools ' . ($row['counts']['terlambat'] > 0 ? 'text-danger' : 'text-warning'),
                     'title'   => 'Servis Alat ' . ($row['counts']['terlambat'] > 0 ? 'Jatuh Tempo' : 'Segera'),
                     'message' => $row['inventory']->name . ': ' . implode(', ', $parts),
+                    'detail'  => $row['inventory']->name,
                     'url'     => route('inventory.show', $row['inventory']),
                 ];
             })
@@ -358,6 +391,7 @@ class NotificationService
                 'icon'    => 'bi-box-seam text-primary',
                 'title'   => 'Barang Baru',
                 'message' => "{$inventory->name} ditambahkan " . $inventory->created_at->diffForHumans(),
+                'detail'  => $inventory->name,
                 'url'     => route('inventory.show', $inventory),
             ])
             ->all();
@@ -378,6 +412,7 @@ class NotificationService
                 'icon'    => 'bi-kanban text-primary',
                 'title'   => 'Project Baru',
                 'message' => "{$project->name} ({$project->client}) dibuat " . $project->created_at->diffForHumans(),
+                'detail'  => $project->short_name,
                 'url'     => route('projects.show', $project),
             ])
             ->all();
@@ -434,6 +469,7 @@ class NotificationService
                     'icon'    => 'bi-calendar-x text-danger',
                     'title'   => 'Bentrok Jadwal Alat',
                     'message' => "\"{$pair[0]->name}\" & \"{$pair[1]->name}\" event di tanggal yang sama - cek Booking Alat.",
+                    'detail'  => "{$pair[0]->name} & {$pair[1]->name}",
                     'url'     => route('projects.show', $priorityProject),
                     '_rank'   => min($rankA, $rankB),
                 ];
@@ -474,6 +510,7 @@ class NotificationService
                 'icon'    => 'bi-cash-coin text-danger',
                 'title'   => 'Client Belum Lunas',
                 'message' => "{$project->client} - {$project->name} ({$when})",
+                'detail'  => $project->client,
                 'url'     => route('projects.show', $project),
             ];
         })->all();
@@ -514,6 +551,7 @@ class NotificationService
             'icon'    => 'bi-clipboard-x text-warning',
             'title'   => 'Pendapatan Belum Diisi',
             'message' => "{$project->name} - pendapatan bulan ini belum diisi ({$when})",
+            'detail'  => $project->short_name,
             'url'     => route('projects.show', $project),
         ])->all();
     }

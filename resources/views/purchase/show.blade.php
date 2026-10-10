@@ -121,7 +121,7 @@
                     <div class="mb-2">
                         <div class="text-muted small">Project</div>
                         @if($purchase->project)
-                            <a href="{{ route('projects.show', $purchase->project) }}" class="text-decoration-none">{{ $purchase->project->name }}</a>
+                            <a href="{{ route('projects.show', $purchase->project) }}" class="text-decoration-none" title="{{ $purchase->project->name }}">{{ $purchase->project->short_name }}</a>
                         @else
                             <div>Stok umum</div>
                         @endif
@@ -242,7 +242,7 @@
                                 <th class="text-end">Jumlah</th>
                                 <th class="text-end">Harga Satuan</th>
                                 <th class="text-end">Subtotal</th>
-                                <th>Inventory</th>
+                                <th>Barang</th>
                             </tr>
                         </thead>
                         <tbody>

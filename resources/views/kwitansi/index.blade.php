@@ -71,7 +71,7 @@
                         @endphp
                         <tr>
                             <td class="ps-4">
-                                <div class="fw-semibold">{{ $project->name }}</div>
+                                <div class="fw-semibold" title="{{ $project->name }}">{{ $project->short_name }}</div>
                                 <div class="text-muted small">{{ $project->client ?: $project->company ?: '-' }}</div>
                             </td>
                             <td>{{ \App\Support\Money::formatRupiah($estimasi) }}</td>
@@ -118,7 +118,7 @@
                         <form action="{{ route('kwitansi.store', $project) }}" method="POST">
                             @csrf
                             <div class="modal-header">
-                                <h6 class="modal-title">Tambah Kwitansi - {{ $project->name }}</h6>
+                                <h6 class="modal-title">Tambah Kwitansi - {{ $project->short_name }}</h6>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
                             <div class="modal-body row g-2">

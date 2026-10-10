@@ -51,6 +51,10 @@
     font-weight: 700;
 }
 
+.sidebar-footer {
+    border-top: 1px solid rgba(255,255,255,.1);
+    padding-top: .75rem;
+}
 .sidebar-profile { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); }
 
 /* Scrollbar tipis untuk sidebar (khusus WebKit, degradasi aman di browser lain) */
@@ -165,41 +169,46 @@
 
 /* Judul halaman navbar dipotong dengan '...' bila terlalu panjang; prefiks tetap dipertahankan selama muat. */
 .navbar-page-title {
+    font-size: 1.05rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100%;
 }
 
+/* Ticker notifikasi: kapsul dengan warna yang sama seperti tombol lonceng (.navbar-notif-btn.has-notif), lebarnya mengikuti teks; hanya tampil di layar lebar bila ada notifikasi. */
 #navbarNotifTicker {
-    height: 40px;
-    padding: 0 8px;
     display: none;
     align-items: center;
-    white-space: nowrap;
-    margin-right: 1.5rem; /* jarak tetap ke ikon lonceng, tidak bergantung sisa ruang flex */
+    min-width: 0;
 }
 @media (min-width: 1156px) {
     #navbarNotifTicker.has-notif { display: flex; }
 }
 #navbarNotifTicker #navbarNotifTickerContent {
-    font-size: .78rem;
-    white-space: nowrap;
+    display: inline-block;
+    max-width: 24rem;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 360px;
+    white-space: nowrap;
+    padding: .3rem .9rem;
+    border: 1px solid #ffb3ae;
+    border-radius: 999px;
+    background: #fff1f0;
+    color: #dc3545;
+    font-size: .85rem;
+    font-weight: 600;
     transition: opacity .3s ease, transform .3s ease;
 }
-#navbarNotifTicker.has-notif {
-    background-color: #fff1f0;
-    border: 1px solid #ffd4d1;
-    border-radius: 999px;
-}
-#navbarNotifTicker.has-notif #navbarNotifTickerContent {
-    color: #b02a37;
-}
-#navbarNotifTicker.has-notif #navbarNotifTickerContent i {
-    color: #dc3545;
+#navbarNotifTicker #navbarNotifTickerContent::before {
+    content: "";
+    display: inline-block;
+    width: .45rem;
+    height: .45rem;
+    margin-right: .5rem;
+    border-radius: 50%;
+    background: currentColor;
+    vertical-align: middle;
 }
 
 #navbarSearchBar #navbarSearchInput:focus {
@@ -281,6 +290,7 @@
         min-height: 0;
         overflow-x: hidden;
         overflow-y: auto;
+        padding-bottom: .5rem;
         scrollbar-width: thin;
         scrollbar-color: transparent transparent;
     }

@@ -99,6 +99,23 @@ class Project extends Model
         return $this->hasMany(ProjectFinanceItem::class);
     }
 
+    /** Batas karakter nama project di form Create/Edit. */
+    public const NAME_MAX_LENGTH = 40;
+
+    /** Batas karakter nama project di tampilan selain halaman detail; sisanya diganti "...". */
+    public const NAME_DISPLAY_LIMIT = 25;
+
+    public static function shorten(?string $name): string
+    {
+        return \Illuminate\Support\Str::limit((string) $name, self::NAME_DISPLAY_LIMIT, '...');
+    }
+
+    /** Nama singkat untuk daftar, tabel, dan label (halaman detail memakai $project->name penuh). */
+    protected function shortName(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::get(fn () => self::shorten($this->name));
+    }
+
     /**
      * Total Pendapatan (jumlah seluruh baris item bertipe income).
      */

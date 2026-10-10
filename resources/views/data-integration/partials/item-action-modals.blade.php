@@ -80,7 +80,7 @@
                     <strong class="text-secondary small" id="dynamicDeleteLabel">Nama: </strong>
                     <span id="dynamicDeleteNameText" class="fw-medium text-dark"></span>
                 </div>
-                <div class="form-text small mt-2">Item dipindahkan ke Trash dan masih dapat dipulihkan.</div>
+                <div class="form-text small mt-2">Item dipindahkan ke Sampah dan masih dapat dipulihkan.</div>
             </div>
             <div class="modal-footer border-0 bg-light py-2">
                 <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Cancel</button>

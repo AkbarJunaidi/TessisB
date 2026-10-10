@@ -126,7 +126,7 @@ class FileService
                     'model'        => $folder,
                     'name'         => $folder->name,
                     // Folder tingkat atas berada di akar Folder Management.
-                    'location'     => $parentKnown ? $paths[$folder->parent_id] : 'Folder Management',
+                    'location'     => $parentKnown ? $paths[$folder->parent_id] : 'Kelola Folder',
                     'location_url' => $parentKnown
                         ? route('folders.show', $folder->parent_id)
                         : route('folders.index'),

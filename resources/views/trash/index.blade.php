@@ -1,17 +1,17 @@
 @extends('layouts.app')
 
-@section('title', 'Trash')
+@section('title', 'Sampah')
 
 @section('content')
 <div class="container-fluid px-4 py-3">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h3 class="fw-bold text-dark m-0">Trash</h3>
+            <h3 class="fw-bold text-dark m-0">Sampah</h3>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0 small">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Trash</li>
+                    <li class="breadcrumb-item active" aria-current="page">Sampah</li>
                 </ol>
             </nav>
         </div>
@@ -32,7 +32,7 @@
 
     <div class="card shadow-sm mb-4 border-0 rounded-3 bg-white">
         <div class="card-header bg-white py-3 border-bottom">
-            <h6 class="m-0 fw-bold text-primary"><i class="bi bi-funnel me-2"></i>Filter Trash</h6>
+            <h6 class="m-0 fw-bold text-primary"><i class="bi bi-funnel me-2"></i>Filter Sampah</h6>
         </div>
         <div class="card-body bg-light bg-opacity-25">
             <form action="{{ route('trash.index') }}" method="GET">
@@ -121,7 +121,7 @@
                             <tr id="trashEmptyRow">
                                 <td colspan="5" class="text-center py-5 text-muted">
                                     <i class="bi bi-check2-circle fs-2 d-block mb-2 text-secondary opacity-50"></i>
-                                    Trash kosong. Tidak ada data yang cocok dengan kriteria filter Anda.
+                                    Sampah kosong. Tidak ada data yang cocok dengan kriteria filter Anda.
                                 </td>
                             </tr>
                         @endforelse

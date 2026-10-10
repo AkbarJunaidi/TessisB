@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <tr id="trashEmptyRow">
                     <td colspan="5" class="text-center py-5 text-muted">
                         <i class="bi bi-check2-circle fs-2 d-block mb-2 text-secondary opacity-50"></i>
-                        Trash kosong. Tidak ada data yang cocok dengan kriteria filter Anda.
+                        Sampah kosong. Tidak ada data yang cocok dengan kriteria filter Anda.
                     </td>
                 </tr>`;
         }
