@@ -55,11 +55,14 @@
     <div class="card filter-card mb-4">
         <div class="card-body">
             <form method="GET" class="row g-3 align-items-end">
-                <div class="col-12 col-md-6 col-lg-4">
+                <div class="col-12 col-md-6">
                     <label for="fSearch" class="form-label">Cari</label>
-                    <input type="text" id="fSearch" name="search" class="form-control" placeholder="Cari kode / vendor..." value="{{ $filters['search'] ?? '' }}">
+                    <div class="search-field">
+                        <i class="bi bi-search"></i>
+                        <input type="text" id="fSearch" name="search" class="form-control" placeholder="Cari kode / vendor..." value="{{ $filters['search'] ?? '' }}">
+                    </div>
                 </div>
-                <div class="col-6 col-md-3 col-lg-2">
+                <div class="col-6 col-md-3">
                     <label for="fStatus" class="form-label">Status</label>
                     <select name="status" id="fStatus" class="form-select">
                         <option value="">Semua Status</option>
@@ -68,7 +71,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-6 col-md-3 col-lg-2">
+                <div class="col-6 col-md-3">
                     <label for="fPayment" class="form-label">Pembayaran</label>
                     <select name="payment_status" id="fPayment" class="form-select">
                         <option value="">Semua Pembayaran</option>
@@ -77,15 +80,15 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-6 col-md-3 col-lg-2">
+                <div class="col-6 col-md-3">
                     <label for="fFrom" class="form-label">Dari Tanggal</label>
                     <input type="date" name="from" id="fFrom" class="form-control" value="{{ $filters['from'] ?? '' }}">
                 </div>
-                <div class="col-6 col-md-3 col-lg-2">
+                <div class="col-6 col-md-3">
                     <label for="fTo" class="form-label">Sampai Tanggal</label>
                     <input type="date" name="to" id="fTo" class="form-control" value="{{ $filters['to'] ?? '' }}">
                 </div>
-                <div class="col-12 d-flex justify-content-end gap-2">
+                <div class="col-12 col-md-6 filter-actions filter-actions-end">
                     <a href="{{ route('purchases.index') }}" class="btn btn-outline-secondary px-3">Reset</a>
                     <button type="submit" class="btn btn-primary px-3"><i class="bi bi-search me-1"></i>Cari</button>
                 </div>

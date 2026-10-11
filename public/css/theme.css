@@ -144,6 +144,10 @@ button:focus-visible,
     box-shadow: 0 0 0 .2rem rgba(var(--c-primary-rgb), .15);
 }
 .input-group-text { background-color: var(--field-bg); border-color: var(--c-border); color: var(--c-muted); }
+/* Kolom pencarian standar: ikon kaca pembesar di dalam kolom (bungkus input dengan .search-field). */
+.search-field { position: relative; }
+.search-field > .bi-search { position: absolute; left: .9rem; top: 50%; transform: translateY(-50%); color: var(--c-muted); pointer-events: none; }
+.search-field > .form-control { padding-left: 2.5rem; }
 .form-label { font-weight: 600; font-size: .875rem; color: var(--c-ink); }
 .form-check-input:checked { background-color: var(--c-primary); border-color: var(--c-primary); }
 .form-check-input:focus { box-shadow: 0 0 0 .2rem rgba(var(--c-primary-rgb), .15); }
@@ -308,11 +312,11 @@ button:focus-visible,
 .image-preview-empty { display: flex; flex-direction: column; align-items: center; gap: .35rem; padding: 1rem; color: var(--c-muted); text-align: center; }
 .image-preview-empty .bi { font-size: 2rem; opacity: .45; }
 
-/* --- Switch dengan teks di sebelahnya (Ya/Tidak): jarak konsisten, tanpa margin negatif bawaan Bootstrap --- */
-.switch-inline { display: flex; align-items: center; gap: .75rem; min-height: 0; padding-left: 0; }
-.switch-inline .form-check-input { flex-shrink: 0; float: none; margin: 0; }
-.switch-inline .form-check-label { margin: 0; font-weight: 600; color: var(--c-navy); cursor: pointer; }
-.switch-inline .form-check-label.small { font-weight: 400; }
+/* --- Semua switch: teks di sebelah toggle berjarak konsisten, tanpa margin negatif bawaan Bootstrap --- */
+.form-switch, .switch-inline { display: flex; align-items: center; gap: .75rem; min-height: 0; padding-left: 0; }
+.form-switch .form-check-input, .switch-inline .form-check-input { flex-shrink: 0; float: none; margin: 0; }
+.form-switch .form-check-label, .switch-inline .form-check-label { margin: 0; font-weight: 600; color: var(--c-navy); cursor: pointer; }
+.form-switch .form-check-label.small, .switch-inline .form-check-label.small { font-weight: 400; }
 
 /* --- Avatar inisial bulat --- */
 .avatar-initial {
@@ -850,6 +854,11 @@ html.is-loading #appSpinner { opacity: 1; transition: opacity .2s ease .3s; }
 
 /* ===== Kartu filter seragam: label di atas kolom (warna kolom ikut aturan global .form-control) ===== */
 .filter-card .form-label { margin-bottom: .35rem; color: var(--c-muted); font-size: .8rem; font-weight: 600; }
+/* Tombol Reset/Cari mengisi lebar kolomnya; -end = rapat kanan dengan ukuran biasa di layar lebar. */
+.filter-card .filter-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.filter-card .filter-actions .btn { flex: 1 1 auto; }
+.filter-card .filter-actions-end { justify-content: flex-end; }
+@media (min-width: 768px) { .filter-card .filter-actions-end .btn { flex: 0 0 auto; } }
 
 /* ===== Utilitas pengganti style inline (dibuat otomatis dari view; !important meniru bobot style inline) ===== */
 .u-bd-1px-solid-e2e8f0 { border: 1px solid #e2e8f0 !important; }

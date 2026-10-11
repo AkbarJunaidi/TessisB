@@ -99,7 +99,7 @@
 
     {{-- Toolbar: pencarian (di halaman ini) + chip filter --}}
     <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-        <div class="drv-search">
+        <div class="search-field drv-search">
             <i class="bi bi-search"></i>
             <input type="search" id="drvSearch" class="form-control" placeholder="Cari di daftar ini" autocomplete="off" aria-label="Cari di daftar ini">
         </div>

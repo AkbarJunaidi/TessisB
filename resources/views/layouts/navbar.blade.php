@@ -59,17 +59,20 @@
      Tanpa saran cocok, Enter/Cari hanya menandai kolom invalid dan tidak pindah halaman. --}}
 <div class="collapse" id="navbarSearchBar">
     <div class="border-bottom bg-white px-3 px-md-4 py-2">
-        <div class="position-relative u-maxw-480px">
+        <div class="position-relative">
             <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-search text-muted"></i>
-                <input
-                    type="search"
-                    id="navbarSearchInput"
-                    class="form-control form-control-sm border-0 shadow-none"
-                    placeholder="Cari project, inventory, kontak, surat jalan..."
-                    autocomplete="off"
-                >
-                <button type="button" id="navbarSearchGoBtn" class="btn btn-sm btn-primary flex-shrink-0">
+                <div class="search-field flex-grow-1">
+                    <i class="bi bi-search"></i>
+                    <input
+                        type="search"
+                        id="navbarSearchInput"
+                        class="form-control"
+                        placeholder="Cari project, barang, kontak..."
+                        aria-label="Cari"
+                        autocomplete="off"
+                    >
+                </div>
+                <button type="button" id="navbarSearchGoBtn" class="btn btn-primary flex-shrink-0">
                     Cari
                 </button>
             </div>

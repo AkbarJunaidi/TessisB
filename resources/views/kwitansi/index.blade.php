@@ -15,11 +15,14 @@
     <div class="card filter-card mb-4">
         <div class="card-body">
             <form method="GET" class="row g-3 align-items-end">
-                <div class="col-12 col-md-9">
+                <div class="col-12 col-md">
                     <label for="fSearch" class="form-label">Cari</label>
-                    <input type="text" id="fSearch" name="search" class="form-control" placeholder="Cari nama project / client..." value="{{ $search }}">
+                    <div class="search-field">
+                        <i class="bi bi-search"></i>
+                        <input type="text" id="fSearch" name="search" class="form-control" placeholder="Cari nama project / client..." value="{{ $search }}">
+                    </div>
                 </div>
-                <div class="col-12 col-md-3 d-flex gap-2">
+                <div class="col-12 col-md-auto filter-actions">
                     <a href="{{ route('kwitansi.index') }}" class="btn btn-outline-secondary px-3">Reset</a>
                     <button type="submit" class="btn btn-primary px-3"><i class="bi bi-search me-1"></i>Cari</button>
                 </div>

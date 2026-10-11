@@ -135,7 +135,10 @@
                     <span class="text-muted small"><span id="selectedCount">0</span> unit dipilih</span>
                 </div>
 
-                <input type="search" id="inventoryFilter" class="form-control mb-3" placeholder="Cari nama barang...">
+                <div class="search-field mb-3">
+                    <i class="bi bi-search"></i>
+                    <input type="search" id="inventoryFilter" class="form-control" placeholder="Cari nama barang..." aria-label="Cari nama barang">
+                </div>
 
                 <div id="inventoryGroups">
                     @forelse($groups as $group)

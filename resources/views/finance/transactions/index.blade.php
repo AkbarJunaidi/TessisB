@@ -101,11 +101,14 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-12 col-lg-6">
+                    <div class="col-12 col-xl">
                         <label class="form-label" for="fSearch">Cari</label>
-                        <input type="text" name="search" id="fSearch" class="form-control" placeholder="Keterangan atau penerima" value="{{ $filters['search'] ?? '' }}">
+                        <div class="search-field">
+                            <i class="bi bi-search"></i>
+                            <input type="text" name="search" id="fSearch" class="form-control" placeholder="Keterangan atau penerima" value="{{ $filters['search'] ?? '' }}">
+                        </div>
                     </div>
-                    <div class="col-12 col-lg-6 d-flex flex-wrap align-items-end gap-2">
+                    <div class="col-12 col-xl-auto filter-actions">
                         <a href="{{ route('finance.transactions.index') }}" class="btn btn-outline-secondary">Reset</a>
                         <button type="submit" class="btn btn-primary"><i class="bi bi-search me-1"></i>Cari</button>
                         <span class="vr d-none d-md-inline"></span>

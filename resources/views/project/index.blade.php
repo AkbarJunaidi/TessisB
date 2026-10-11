@@ -126,10 +126,13 @@
     <div class="card filter-card mb-4">
         <div class="card-body">
             <form method="GET" class="row g-3 align-items-end">
-                <div class="col-12 col-lg-3">
+                <div class="col-12 col-lg">
                     <label for="search" class="form-label">Cari</label>
-                    <input type="text" id="search" name="search" class="form-control"
-                               placeholder="Cari nama project, PIC, lokasi..." value="{{ $filters['search'] ?? '' }}">
+                    <div class="search-field">
+                        <i class="bi bi-search"></i>
+                        <input type="text" id="search" name="search" class="form-control"
+                                   placeholder="Cari nama project, PIC, lokasi..." value="{{ $filters['search'] ?? '' }}">
+                    </div>
                 </div>
                 <div class="col-6 col-lg-2">
                     <label for="status" class="form-label">Status</label>
@@ -158,7 +161,7 @@
                         @endfor
                     </select>
                 </div>
-                <div class="col-12 col-lg-3 d-flex gap-2">
+                <div class="col-6 col-lg-auto filter-actions">
                     <a href="{{ route('projects.index') }}" class="btn btn-outline-secondary px-3">Reset</a>
                     <button type="submit" class="btn btn-primary px-3"><i class="bi bi-search me-1"></i>Cari</button>
                 </div>

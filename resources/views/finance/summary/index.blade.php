@@ -31,15 +31,15 @@
                 @endforeach
                 <span class="vr d-none d-md-inline"></span>
                 <input type="hidden" name="period" value="custom">
-                <div>
+                <div class="flex-fill">
                     <label class="form-label" for="sFrom">Dari Tanggal</label>
                     <input type="date" name="from" id="sFrom" class="form-control" value="{{ $period['from']->toDateString() }}" required>
                 </div>
-                <div>
+                <div class="flex-fill">
                     <label class="form-label" for="sTo">Sampai Tanggal</label>
                     <input type="date" name="to" id="sTo" class="form-control" value="{{ $period['to']->toDateString() }}" required>
                 </div>
-                <button type="submit" class="btn btn-primary px-3"><i class="bi bi-search me-1"></i>Cari</button>
+                <button type="submit" class="btn btn-primary px-3 flex-fill flex-md-grow-0"><i class="bi bi-search me-1"></i>Cari</button>
             </form>
             <div class="text-muted small mt-2">
                 Periode {{ $fmt($period['from']) }} - {{ $fmt($period['to']) }}, pembanding {{ $fmt($overview['prevFrom']) }} - {{ $fmt($overview['prevTo']) }}.

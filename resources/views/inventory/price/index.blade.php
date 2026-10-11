@@ -63,12 +63,15 @@
     <div class="card filter-card mb-4">
         <div class="card-body">
             <form action="{{ route('inventory.prices.index') }}" method="GET" class="row g-3 align-items-end">
-                <div class="col-md-6">
+                <div class="col-12 col-md">
                     <label for="filterSearch" class="form-label">Cari</label>
-                    <input type="text" class="form-control" id="filterSearch" name="search"
-                           value="{{ $filters['search'] ?? '' }}" placeholder="Nama, brand, atau serial number...">
+                    <div class="search-field">
+                        <i class="bi bi-search"></i>
+                        <input type="text" class="form-control" id="filterSearch" name="search"
+                               value="{{ $filters['search'] ?? '' }}" placeholder="Nama, brand, atau serial number...">
+                    </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-6 col-md-3">
                     <label for="filterTampil" class="form-label">Tampilkan</label>
                     <select class="form-select" id="filterTampil" name="filter">
                         <option value="">Semua barang</option>
@@ -76,7 +79,7 @@
                         <option value="ganti" {{ ($filters['filter'] ?? '') === 'ganti' ? 'selected' : '' }}>Layak dipertimbangkan ganti</option>
                     </select>
                 </div>
-                <div class="col-md-3 d-flex gap-2">
+                <div class="col-6 col-md-auto filter-actions">
                     <a href="{{ route('inventory.prices.index') }}" class="btn btn-outline-secondary px-3">Reset</a>
                     <button type="submit" class="btn btn-primary px-3"><i class="bi bi-search me-1"></i>Cari</button>
                 </div>

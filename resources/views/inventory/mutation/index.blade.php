@@ -43,8 +43,11 @@
 
                     <div class="col-md-4">
                         <label for="search" class="form-label">Cari</label>
-                        <input type="text" class="form-control" id="search" name="search"
-                               value="{{ $filters['search'] ?? '' }}" placeholder="Cari nama barang...">
+                        <div class="search-field">
+                            <i class="bi bi-search"></i>
+                            <input type="text" class="form-control" id="search" name="search"
+                                   value="{{ $filters['search'] ?? '' }}" placeholder="Cari nama barang...">
+                        </div>
                     </div>
 
                     <div class="col-md-4">
@@ -73,7 +76,7 @@
 
                 </div>
 
-                <div class="d-flex justify-content-end gap-2 mt-3">
+                <div class="filter-actions filter-actions-end mt-3">
                     <a href="{{ route('inventory.mutasi') }}" class="btn btn-outline-secondary px-3">Reset</a>
                     <button type="submit" class="btn btn-primary px-3">
                         <i class="bi bi-search me-1"></i>Cari

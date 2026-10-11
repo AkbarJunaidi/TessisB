@@ -118,19 +118,22 @@
                 @endif
 
                 <div class="row g-3 align-items-end">
-                    <div class="col-md-6">
+                    <div class="col-12 col-md">
                         <label for="contactSearch" class="form-label">Cari</label>
-                        <input
-                            type="text"
-                            id="contactSearch"
-                            name="search"
-                            class="form-control"
-                            placeholder="Nama, perusahaan, No. HP/WA, atau email..."
-                            value="{{ $filters['search'] ?? '' }}"
-                        >
+                        <div class="search-field">
+                            <i class="bi bi-search"></i>
+                            <input
+                                type="text"
+                                id="contactSearch"
+                                name="search"
+                                class="form-control"
+                                placeholder="Nama, perusahaan, No. HP/WA, atau email..."
+                                value="{{ $filters['search'] ?? '' }}"
+                            >
+                        </div>
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-6 col-md-3">
                         <label for="contactLetter" class="form-label">Huruf Awal Nama</label>
                         <select id="contactLetter" name="letter" class="form-select" onchange="this.form.submit()">
                             <option value="">Semua Huruf</option>
@@ -140,7 +143,7 @@
                         </select>
                     </div>
 
-                    <div class="col-md-3 d-flex justify-content-md-end gap-2">
+                    <div class="col-6 col-md-auto filter-actions">
                         @if($hasFilter)
                             <a href="{{ route('contacts.index') }}" class="btn btn-outline-secondary px-3">Reset</a>
                         @endif
