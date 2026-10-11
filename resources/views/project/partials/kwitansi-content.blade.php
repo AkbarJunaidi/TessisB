@@ -233,7 +233,7 @@
                             @include('project.partials.kwitansi-form-fields', ['userSignatures' => $userSignatures, 'uniqueId' => 'inc' . $item->id])
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
                             <button type="submit" class="btn btn-primary"><i class="bi bi-printer"></i> Simpan & Cetak</button>
                         </div>
                     </form>
@@ -261,7 +261,7 @@
                             <textarea name="reason" class="form-control" rows="3" required></textarea>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
                             <button type="submit" class="btn btn-danger">Ajukan</button>
                         </div>
                     </form>

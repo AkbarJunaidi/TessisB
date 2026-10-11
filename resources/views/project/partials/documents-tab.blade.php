@@ -78,7 +78,7 @@
             <form action="{{ route('files.store') }}" method="POST" enctype="multipart/form-data" data-ajax data-ajax-progress data-ajax-hash="#tab-dokumen">
                 @csrf
                 <div class="modal-header">
-                    <h6 class="modal-title fw-bold">Unggah Dokumen</h6>
+                    <h6 class="modal-title">Unggah Dokumen</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">

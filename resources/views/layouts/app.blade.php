@@ -90,15 +90,24 @@
         </script>
     @endauth
 
-    {{-- Modal konfirmasi global: pasang data-confirm="Teks" di <form>.
-         Opsional: data-confirm-danger, data-confirm-label="Hapus". --}}
-    <div class="modal fade" id="appConfirmModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
+    {{-- Popup konfirmasi global. Semua form non-GET otomatis minta konfirmasi (hapus = merah);
+         lewati dengan data-no-confirm. Opsional: data-confirm="Teks", data-confirm-title, data-confirm-label,
+         data-confirm-danger, data-track-changes (tampilkan daftar perubahan, lihat form-changes.js). --}}
+    <div class="modal fade" id="appConfirmModal" tabindex="-1" aria-labelledby="appConfirmTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
-                <div class="modal-body pt-4">
-                    <p class="mb-0 fw-semibold" id="appConfirmText"></p>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="appConfirmTitle">
+                        <i class="bi bi-question-circle-fill text-primary" id="appConfirmIcon"></i>
+                        <span id="appConfirmTitleText">Konfirmasi</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
-                <div class="modal-footer border-0 pt-0">
+                <div class="modal-body">
+                    <p class="mb-0" id="appConfirmText"></p>
+                    <div class="app-changes d-none" id="appConfirmChanges"></div>
+                </div>
+                <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
                     <button type="button" class="btn btn-primary" id="appConfirmOk">Lanjutkan</button>
                 </div>
@@ -106,6 +115,7 @@
         </div>
     </div>
 
+    <script src="{{ \App\Support\AppAsset::url('js/layouts/form-changes.js') }}"></script>
     <script src="{{ \App\Support\AppAsset::url('js/layouts/app-2.js') }}"></script>
     <script src="{{ \App\Support\AppAsset::url('js/layouts/page-feedback.js') }}"></script>
     <script src="{{ \App\Support\AppAsset::url('js/layouts/ajax-forms.js') }}"></script>

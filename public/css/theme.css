@@ -16,6 +16,11 @@
     --c-muted: #546680;
     --c-border: #dbe7f5;
 
+    /* Kolom isian dan dropdown di semua form: biru lembut, putih saat fokus. */
+    --field-bg: var(--bg-soft);
+    --field-bg-focus: var(--bg-white);
+    --field-color: var(--c-navy);
+
     /* Dua bentuk: kontrol/dropdown (sm, md) dan wadah kartu/modal (lg), plus pill. */
     --radius-sm: .5rem;
     --radius-md: .5rem;
@@ -129,12 +134,16 @@ button:focus-visible,
 .form-control, .form-select {
     border-radius: var(--radius-sm);
     border-color: var(--c-border);
+    background-color: var(--field-bg);
+    color: var(--field-color);
     padding-block: .6rem;
 }
 .form-control:focus, .form-select:focus {
     border-color: var(--c-primary);
+    background-color: var(--field-bg-focus);
     box-shadow: 0 0 0 .2rem rgba(var(--c-primary-rgb), .15);
 }
+.input-group-text { background-color: var(--field-bg); border-color: var(--c-border); color: var(--c-muted); }
 .form-label { font-weight: 600; font-size: .875rem; color: var(--c-ink); }
 .form-check-input:checked { background-color: var(--c-primary); border-color: var(--c-primary); }
 .form-check-input:focus { box-shadow: 0 0 0 .2rem rgba(var(--c-primary-rgb), .15); }
@@ -156,6 +165,31 @@ button:focus-visible,
 .page-item.active .page-link { background-color: var(--c-primary); border-color: var(--c-primary); }
 
 .modal-content { border-radius: var(--radius-lg); border: none; box-shadow: var(--shadow-lift); }
+
+/* ===== Popup seragam: konfirmasi, hapus, peringatan, dan form dalam modal memakai satu bentuk =====
+   Header (judul + tutup), isi, footer (Batal di kiri, aksi di kanan). Jangan tambah warna header per modal;
+   tone hanya lewat ikon judul (text-danger / text-primary) dan warna tombol aksi. */
+.modal {
+    --bs-modal-padding: 1.25rem;
+    --bs-modal-header-padding: 1rem 1.25rem;
+    --bs-modal-header-border-color: var(--c-border);
+    --bs-modal-footer-border-color: var(--c-border);
+    --bs-modal-footer-gap: .5rem;
+}
+.modal-title { display: flex; align-items: center; gap: .5rem; font-size: 1.0625rem; font-weight: 700; color: var(--c-navy); }
+.modal-footer .btn { min-width: 5.5rem; }
+
+/* Daftar perubahan di popup konfirmasi (dibuat form-changes.js, dirender app-2.js) */
+.app-changes-group + .app-changes-group { margin-top: 1rem; }
+.app-changes-title { margin: 1rem 0 .4rem; font-size: .8rem; font-weight: 700; color: var(--c-muted); }
+.app-changes-group + .app-changes-group .app-changes-title { margin-top: 0; }
+.app-changes-list { display: flex; flex-direction: column; gap: .4rem; margin: 0; padding: 0; list-style: none; }
+.app-changes-list li { display: flex; align-items: flex-start; gap: .6rem; padding: .5rem .7rem; font-size: .875rem; background: var(--bg-soft); border: 1px solid var(--c-border); border-radius: var(--radius-sm); overflow-wrap: anywhere; }
+.app-change-tag { flex-shrink: 0; padding: .15rem .55rem; font-size: .7rem; font-weight: 700; border-radius: var(--radius-pill); }
+.app-change-tag--add { color: var(--bs-success-text-emphasis); background: var(--bs-success-bg-subtle); }
+.app-change-tag--remove { color: var(--bs-danger-text-emphasis); background: var(--bs-danger-bg-subtle); }
+.app-change-tag--change { color: var(--c-primary-hover); background: rgba(var(--c-primary-rgb), .14); }
+.app-change-from { color: var(--c-muted); text-decoration: line-through; }
 .dropdown-menu { border-radius: var(--radius-md); border-color: var(--c-border); box-shadow: var(--shadow-md); }
 .toast { border-radius: var(--radius-md); }
 
@@ -257,6 +291,28 @@ button:focus-visible,
 }
 .table-modern tbody tr { transition: var(--transition-fast); }
 .table-modern tbody tr:hover { background-color: var(--bg-soft); }
+
+/* --- Tabel isian (baris input yang bisa ditambah/dihapus): bingkai bulat, tanpa garis vertikal; mobile jadi kartu lewat table-stack --- */
+.table-editor { border: 1px solid var(--c-border); border-radius: var(--radius-md); }
+.table-editor > .table > tbody > tr > td { padding: .65rem .75rem; border-color: var(--c-border); }
+.table-editor > .table > tbody > tr:last-child > td { border-bottom: 0; }
+@media (max-width: 767.98px) { .table-editor { border: 0; border-radius: 0; } }
+
+/* --- Pratinjau gambar yang dipilih di form (rasio tetap, isi tidak terpotong) --- */
+.image-preview {
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+    aspect-ratio: 4 / 3; background: var(--bg-soft);
+    border: 1px dashed var(--c-border); border-radius: var(--radius-md);
+}
+.image-preview img { width: 100%; height: 100%; object-fit: contain; }
+.image-preview-empty { display: flex; flex-direction: column; align-items: center; gap: .35rem; padding: 1rem; color: var(--c-muted); text-align: center; }
+.image-preview-empty .bi { font-size: 2rem; opacity: .45; }
+
+/* --- Switch dengan teks di sebelahnya (Ya/Tidak): jarak konsisten, tanpa margin negatif bawaan Bootstrap --- */
+.switch-inline { display: flex; align-items: center; gap: .75rem; min-height: 0; padding-left: 0; }
+.switch-inline .form-check-input { flex-shrink: 0; float: none; margin: 0; }
+.switch-inline .form-check-label { margin: 0; font-weight: 600; color: var(--c-navy); cursor: pointer; }
+.switch-inline .form-check-label.small { font-weight: 400; }
 
 /* --- Avatar inisial bulat --- */
 .avatar-initial {
@@ -792,10 +848,8 @@ html.is-loading #appSpinner { opacity: 1; transition: opacity .2s ease .3s; }
 .rounded, .rounded-2, .rounded-3 { border-radius: var(--radius-md) !important; }
 .rounded-4 { border-radius: var(--radius-lg) !important; }
 
-/* ===== Kartu filter seragam: label di atas kolom, kolom dan dropdown berlatar biru lembut ===== */
+/* ===== Kartu filter seragam: label di atas kolom (warna kolom ikut aturan global .form-control) ===== */
 .filter-card .form-label { margin-bottom: .35rem; color: var(--c-muted); font-size: .8rem; font-weight: 600; }
-.filter-card .form-control, .filter-card .form-select { border-color: var(--c-border); background-color: var(--bg-soft); color: var(--c-navy); }
-.filter-card .form-control:focus, .filter-card .form-select:focus { border-color: var(--c-primary); background-color: var(--bg-white); }
 
 /* ===== Utilitas pengganti style inline (dibuat otomatis dari view; !important meniru bobot style inline) ===== */
 .u-bd-1px-solid-e2e8f0 { border: 1px solid #e2e8f0 !important; }

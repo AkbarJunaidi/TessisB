@@ -297,7 +297,7 @@
                             @endforeach
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
                             <button type="submit" class="btn btn-primary">Konfirmasi Diterima</button>
                         </div>
                     </form>
@@ -331,7 +331,7 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
                             <button type="submit" class="btn btn-primary">Simpan</button>
                         </div>
                     </form>
@@ -355,7 +355,7 @@
                             <textarea name="note" class="form-control" rows="2" maxlength="255"></textarea>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
                             <button type="submit" class="btn btn-primary">Setujui</button>
                         </div>
                     </form>
@@ -377,7 +377,7 @@
                             <textarea name="note" class="form-control" rows="2" maxlength="255"></textarea>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
                             <button type="submit" class="btn btn-danger">Tolak</button>
                         </div>
                     </form>

@@ -45,7 +45,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h6 class="modal-title fw-bold">Konfirmasi Perubahan Barang</h6>
+                <h6 class="modal-title">Konfirmasi Perubahan Barang</h6>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">

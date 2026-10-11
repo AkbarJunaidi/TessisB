@@ -6,7 +6,7 @@
 
         <h6 class="fw-bold mb-3">Catatan</h6>
 
-        <form action="{{ route('projects.notes.store') }}" method="POST" class="mb-4" data-ajax data-ajax-prepend="#projectNotesList" data-ajax-reset>
+        <form action="{{ route('projects.notes.store') }}" method="POST" class="mb-4" data-ajax data-ajax-prepend="#projectNotesList" data-ajax-reset data-no-confirm>
             @csrf
             <input type="hidden" name="project_id" value="{{ $project->id }}">
             <div class="mb-2">

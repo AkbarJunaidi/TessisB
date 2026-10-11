@@ -69,7 +69,7 @@
                         @method('PATCH')
 
                         <div class="modal-header">
-                            <h6 class="modal-title fw-bold">Reset Password - {{ $user->name }}</h6>
+                            <h6 class="modal-title">Reset Password - {{ $user->name }}</h6>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
 
@@ -106,7 +106,7 @@
                         </div>
 
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
                             <button type="submit" class="btn btn-warning">
                                 <i class="bi bi-arrow-repeat me-1"></i>
                                 Reset Password

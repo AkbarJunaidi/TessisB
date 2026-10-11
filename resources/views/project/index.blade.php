@@ -88,80 +88,7 @@
     {{-- Kalender + Panel Tanggal Terpilih --}}
     <div class="row g-3 mb-4">
         <div class="col-lg-7">
-            <div class="card border-0 shadow-sm rounded-3 h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="fw-bold m-0"><i class="bi bi-calendar3 me-1"></i> Kalender Project</h6>
-                        <div class="d-flex align-items-center gap-2">
-                            @php
-                                $prevMonth = $calendarMonth - 1; $prevYear = $calendarYear;
-                                if ($prevMonth < 1) { $prevMonth = 12; $prevYear--; }
-                                $nextMonth = $calendarMonth + 1; $nextYear = $calendarYear;
-                                if ($nextMonth > 12) { $nextMonth = 1; $nextYear++; }
-                            @endphp
-                            <a href="{{ request()->fullUrlWithQuery(['cal_month' => $prevMonth, 'cal_year' => $prevYear]) }}" class="btn btn-sm btn-light"><i class="bi bi-chevron-left"></i></a>
-                            <span class="fw-semibold small">{{ \Carbon\Carbon::createFromDate($calendarYear, $calendarMonth, 1)->translatedFormat('F Y') }}</span>
-                            <a href="{{ request()->fullUrlWithQuery(['cal_month' => $nextMonth, 'cal_year' => $nextYear]) }}" class="btn btn-sm btn-light"><i class="bi bi-chevron-right"></i></a>
-                        </div>
-                    </div>
-
-                    @php
-                        $firstDay = \Carbon\Carbon::createFromDate($calendarYear, $calendarMonth, 1);
-                        $daysInMonth = $firstDay->daysInMonth;
-                        $startWeekday = $firstDay->dayOfWeek; // 0 = Minggu
-                        $today = now()->format('Y-m-d');
-                    @endphp
-
-                    <table class="table table-borderless text-center small mb-2">
-                        <thead>
-                            <tr class="text-muted">
-                                <th>Min</th><th>Sen</th><th>Sel</th><th>Rab</th><th>Kam</th><th>Jum</th><th>Sab</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                @for($i = 0; $i < $startWeekday; $i++)
-                                    <td></td>
-                                @endfor
-                                @for($day = 1; $day <= $daysInMonth; $day++)
-                                    @php
-                                        $dateStr = sprintf('%04d-%02d-%02d', $calendarYear, $calendarMonth, $day);
-                                        $count = $calendarData[$dateStr] ?? 0;
-                                        $isToday = $dateStr === $today;
-                                    @endphp
-                                    <td class="p-1">
-                                        <a href="{{ request()->fullUrlWithQuery(['date' => $dateStr]) }}"
-                                           class="d-inline-flex flex-column align-items-center justify-content-center rounded-circle {{ $isToday ? 'bg-primary text-white' : ($count > 0 ? 'bg-light fw-semibold' : '') }} u-w-32px u-h-32px u-td-none u-c-inherit"
-                                          >
-                                            {{ $day }}
-                                        </a>
-                                        @if($count > 0)
-                                            <div class="{{ $count > 4 ? 'text-danger' : ($count >= 3 ? 'text-warning' : 'text-primary') }} u-fs-8px">&#9679;</div>
-                                        @endif
-                                    </td>
-                                    @if(($startWeekday + $day) % 7 === 0 && $day !== $daysInMonth)
-                                        </tr><tr>
-                                    @endif
-                                @endfor
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div class="small text-muted">
-                        <span class="text-primary">&#9679;</span> 1-2 Project &nbsp;
-                        <span class="text-warning">&#9679;</span> 3-4 Project &nbsp;
-                        <span class="text-danger">&#9679;</span> &gt; 4 Project
-                    </div>
-
-                    @if(auth()->user()->hasPermission('finance', 'export_report'))
-                        <hr class="my-3">
-                        <button type="button" id="exportMonthlyReportBtn" class="btn btn-outline-primary btn-sm w-100 d-flex align-items-center justify-content-center gap-2"
-                                data-month="{{ $calendarMonth }}" data-year="{{ $calendarYear }}">
-                            <span class="btn-text"><i class="bi bi-file-earmark-pdf me-1"></i> Ekspor Laporan Bulanan</span>
-                            <span class="spinner-border spinner-border-sm d-none" role="status"></span>
-                        </button>
-                    @endif
-                </div>
-            </div>
+            @include('project.partials.calendar-card')
         </div>
 
         <div class="col-lg-5">
@@ -325,19 +252,19 @@
 @if(auth()->user()->hasPermission('tracking_progress', 'delete_project'))
 <div class="modal fade" id="deleteProjectModal" tabindex="-1" aria-labelledby="deleteProjectModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title fw-bold" id="deleteProjectModalLabel">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Konfirmasi Hapus Project
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteProjectModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill text-danger"></i>Konfirmasi Hapus Project
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
 
             <form id="deleteProjectForm" method="POST">
                 @csrf
                 @method('DELETE')
 
-                <div class="modal-body p-4">
+                <div class="modal-body">
                     <p class="text-dark fw-medium mb-3">Apakah Anda yakin ingin menghapus project ini?</p>
 
                     <div class="bg-light p-3 rounded-3 border">
@@ -365,9 +292,9 @@
                     </div>
                 </div>
 
-                <div class="modal-footer bg-light border-top p-3">
-                    <button type="button" class="btn btn-secondary px-3 fw-medium" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger px-4 fw-medium shadow-sm">Ya, Hapus</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">Ya, Hapus</button>
                 </div>
             </form>
         </div>
@@ -383,7 +310,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h6 class="modal-title fw-bold">Buat Surat Jalan</h6>
+                <h6 class="modal-title">Buat Surat Jalan</h6>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -410,55 +337,84 @@
 </script>
 @endif
 
+<script>
+document.addEventListener('click', function (event) {
+    const link = event.target.closest('a.js-calendar-nav');
+    if (!link || event.ctrlKey || event.metaKey || event.shiftKey) return;
+
+    const card = document.getElementById('projectCalendarCard');
+    if (!card || card.dataset.loading) return;
+
+    event.preventDefault();
+    card.dataset.loading = '1';
+    card.style.opacity = '.6';
+
+    fetch(link.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(function (response) {
+            if (!response.ok) throw new Error('Gagal memuat kalender.');
+            return response.text();
+        })
+        .then(function (html) {
+            const tpl = document.createElement('template');
+            tpl.innerHTML = html.trim();
+            const fresh = tpl.content.querySelector('#projectCalendarCard');
+            if (!fresh) throw new Error('Respons bukan kartu kalender.');
+            card.replaceWith(fresh);
+            history.replaceState(null, '', link.href);
+        })
+        .catch(function () {
+            window.location.href = link.href;
+        });
+});
+</script>
+
 @if(auth()->user()->hasPermission('finance', 'export_report'))
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const btn = document.getElementById('exportMonthlyReportBtn');
-    if (!btn) return;
+document.addEventListener('click', function (event) {
+    const btn = event.target.closest('#exportMonthlyReportBtn');
+    if (!btn || btn.disabled) return;
 
-    btn.addEventListener('click', function () {
-        const month = btn.dataset.month;
-        const year = btn.dataset.year;
-        const btnText = btn.querySelector('.btn-text');
-        const spinner = btn.querySelector('.spinner-border');
+    const month = btn.dataset.month;
+    const year = btn.dataset.year;
+    const btnText = btn.querySelector('.btn-text');
+    const spinner = btn.querySelector('.spinner-border');
 
-        btn.disabled = true;
-        btnText.classList.add('d-none');
-        spinner.classList.remove('d-none');
+    btn.disabled = true;
+    btnText.classList.add('d-none');
+    spinner.classList.remove('d-none');
 
-        fetch(`{{ route('reports.finance.monthly') }}?month=${month}&year=${year}`, {
-            method: 'GET',
-            headers: { 'Accept': 'application/json' },
+    fetch(`{{ route('reports.finance.monthly') }}?month=${month}&year=${year}`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+    })
+        .then(async function (response) {
+            if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+                throw new Error(data.message || 'Gagal membuat laporan.');
+            }
+            return response.blob();
         })
-            .then(async function (response) {
-                if (!response.ok) {
-                    const data = await response.json().catch(() => ({}));
-                    throw new Error(data.message || 'Gagal membuat laporan.');
-                }
-                return response.blob();
-            })
-            .then(function (blob) {
-                const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-                const filename = `Laporan-Keuangan-${monthNames[month - 1]}-${year}.pdf`;
+        .then(function (blob) {
+            const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+            const filename = `Laporan-Keuangan-${monthNames[month - 1]}-${year}.pdf`;
 
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(url);
-            })
-            .catch(function (err) {
-                AppUI.toast(err.message);
-            })
-            .finally(function () {
-                btn.disabled = false;
-                btnText.classList.remove('d-none');
-                spinner.classList.add('d-none');
-            });
-    });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        })
+        .catch(function (err) {
+            AppUI.toast(err.message);
+        })
+        .finally(function () {
+            btn.disabled = false;
+            btnText.classList.remove('d-none');
+            spinner.classList.add('d-none');
+        });
 });
 </script>
 @endif

@@ -481,7 +481,7 @@
         <div class="modal fade" id="moveLocationModal" tabindex="-1" aria-labelledby="moveLocationTitle" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
                 <form id="moveLocationForm" method="POST" action="{{ route('inventory.units.move-location', $inventory) }}"
-                      class="modal-content border-0 shadow"
+                      class="modal-content"
                       data-detect-url="{{ route('inventory.locations.detect') }}">
                     @csrf
                     <div id="moveUnitInputs"></div>
@@ -489,12 +489,12 @@
                     <input type="hidden" name="lng" id="moveLng">
                     <input type="hidden" name="accuracy" id="moveAcc">
 
-                    <div class="modal-header border-0 bg-light py-3">
-                        <h5 class="modal-title fw-semibold" id="moveLocationTitle">Pindah Lokasi Unit</h5>
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="moveLocationTitle">Pindah Lokasi Unit</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                     </div>
 
-                    <div class="modal-body py-4">
+                    <div class="modal-body">
                         <p class="small text-muted mb-3">Unit dipilih: <strong id="moveUnitList"></strong></p>
 
                         <div id="moveGpsBox" class="alert alert-light border small py-2 d-flex justify-content-between align-items-center gap-2" role="status">
@@ -525,9 +525,9 @@
                         </div>
                     </div>
 
-                    <div class="modal-footer border-0 bg-light py-2">
-                        <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary px-4">Pindahkan</button>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Pindahkan</button>
                     </div>
                 </form>
             </div>

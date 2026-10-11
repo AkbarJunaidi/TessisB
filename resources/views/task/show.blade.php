@@ -29,7 +29,7 @@
                     <div class="border-top pt-4 mt-2">
                         <h5 class="fw-bold text-dark mb-3"><i class="bi bi-chat-left-text me-2 text-primary"></i>Komentar Progress Kerja</h5>
 
-                        <form action="{{ route('tasks.comments.store') }}" method="POST" class="mb-4">
+                        <form action="{{ route('tasks.comments.store') }}" method="POST" class="mb-4" data-no-confirm>
                             @csrf
                             <input type="hidden" name="task_id" value="{{ $task->id }}">
 

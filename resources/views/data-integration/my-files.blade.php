@@ -381,16 +381,16 @@
 
 <div class="modal fade" id="createPrivateFolderModal" tabindex="-1" aria-labelledby="createPrivateFolderLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <form action="{{ route('folders.store') }}" method="POST" class="modal-content border-0 shadow">
+        <form action="{{ route('folders.store') }}" method="POST" class="modal-content">
             @csrf
             {{-- space=private: folder ini pribadi (hanya tampil di My Files pemiliknya) --}}
             <input type="hidden" name="space" value="private">
             <input type="hidden" name="parent_id" value="{{ $currentFolder->id ?? '' }}">
-            <div class="modal-header border-0 bg-light py-3">
-                <h5 class="modal-title fw-semibold" id="createPrivateFolderLabel">Folder Baru</h5>
+            <div class="modal-header">
+                <h5 class="modal-title" id="createPrivateFolderLabel">Folder Baru</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
-            <div class="modal-body py-4">
+            <div class="modal-body">
                 <div class="mb-3">
                     <label for="private_folder_name" class="form-label fw-medium text-secondary">Nama Folder</label>
                     <input type="text" class="form-control @error('name') is-invalid @enderror" id="private_folder_name" name="name"
@@ -401,9 +401,9 @@
                     <div class="form-text text-muted mt-2 small">Folder ini bersifat pribadi dan hanya terlihat oleh Anda.</div>
                 </div>
             </div>
-            <div class="modal-footer border-0 bg-light py-2">
-                <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-primary px-4">Simpan</button>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-primary">Simpan</button>
             </div>
         </form>
     </div>
@@ -411,15 +411,15 @@
 
 <div class="modal fade" id="uploadPrivateFileModal" tabindex="-1" aria-labelledby="uploadPrivateFileModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <form action="{{ route('files.store') }}" method="POST" enctype="multipart/form-data" class="modal-content border-0 shadow" data-ajax data-ajax-progress>
+        <form action="{{ route('files.store') }}" method="POST" enctype="multipart/form-data" class="modal-content" data-ajax data-ajax-progress>
             @csrf
             {{-- Diunggah dari My Files: masuk ke folder pribadi yang sedang dibuka (kosong = akar My Files) --}}
             <input type="hidden" name="folder_id" value="{{ $currentFolder->id ?? '' }}">
-            <div class="modal-header border-0 bg-light py-3">
-                <h5 class="modal-title fw-semibold" id="uploadPrivateFileModalLabel">Unggah File Pribadi</h5>
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadPrivateFileModalLabel">Unggah File Pribadi</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
-            <div class="modal-body py-4">
+            <div class="modal-body">
                 <div class="mb-3">
                     <label for="choose_private_file" class="form-label fw-medium text-secondary">Pilih File</label>
                     <input class="form-control @error('file') is-invalid @enderror" type="file" id="choose_private_file" name="file" required>
@@ -434,9 +434,9 @@
                     <div class="progress-bar"></div>
                 </div>
             </div>
-            <div class="modal-footer border-0 bg-light py-2">
-                <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-primary px-4">Unggah</button>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-primary">Unggah</button>
             </div>
         </form>
     </div>

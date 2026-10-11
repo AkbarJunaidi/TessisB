@@ -36,7 +36,7 @@
                 @csrf
                 @method('PUT')
                 <div class="modal-header">
-                    <h6 class="modal-title fw-bold">Kelola Crew / Tim Project</h6>
+                    <h6 class="modal-title">Kelola Crew / Tim Project</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">

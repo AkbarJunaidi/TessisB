@@ -27,7 +27,7 @@
                 <input type="text" name="label" id="label" class="form-control" placeholder="Contoh: Testing" maxlength="50" required autofocus>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
                 <button type="submit" class="btn btn-primary">Simpan List</button>
             </div>
         </form>

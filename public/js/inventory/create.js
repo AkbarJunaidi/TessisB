@@ -42,16 +42,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
         const newRow = document.createElement('tr');
         newRow.innerHTML = `
-            <td>
+            <td class="cell-block" data-label="Nama Informasi">
                 <input type="text" name="attributes[${rowIndex}][name]" class="form-control form-control-sm" maxlength="40" placeholder="Contoh: Processor / RAM / Panjang">
             </td>
-            <td>
+            <td class="cell-block" data-label="Nilai">
                 <input type="text" name="attributes[${rowIndex}][value]" class="form-control form-control-sm" maxlength="100" placeholder="Contoh: Ryzen 7 / 16 GB / 5 Meter">
             </td>
-            <td class="text-center">
-                <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row" title="Hapus Baris">
-                    <i class="bi bi-trash"></i> Hapus
-                </button>
+            <td class="text-center cell-block" data-label="Aksi">
+                <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row" title="Hapus Baris" aria-label="Hapus baris"><i class="bi bi-trash"></i><span class="d-md-none ms-1">Hapus</span></button>
             </td>
         `;
         attributesBody.appendChild(newRow);
@@ -72,6 +70,62 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     updateAddButtonState();
+
+    // Pratinjau foto barang yang baru dipilih (tidak diunggah sampai form disimpan).
+    const imageInput = document.getElementById('image');
+    if (imageInput) {
+        const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+        const previewImg = document.getElementById('imagePreviewImg');
+        const previewEmpty = document.getElementById('imagePreviewEmpty');
+        const imageInfo = document.getElementById('imageInfo');
+        const imageName = document.getElementById('imageName');
+        const imageSize = document.getElementById('imageSize');
+        let previewUrl = null;
+
+        function formatSize(bytes) {
+            return bytes >= 1048576
+                ? (bytes / 1048576).toFixed(1).replace('.', ',') + ' MB'
+                : Math.max(1, Math.round(bytes / 1024)) + ' KB';
+        }
+
+        function resetPreview() {
+            if (previewUrl) URL.revokeObjectURL(previewUrl);
+            previewUrl = null;
+            previewImg.removeAttribute('src');
+            previewImg.classList.add('d-none');
+            previewEmpty.classList.remove('d-none');
+            imageInfo.classList.add('d-none');
+        }
+
+        imageInput.addEventListener('change', function() {
+            const file = imageInput.files[0];
+            resetPreview();
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                imageInput.value = '';
+                if (window.AppUI) window.AppUI.toast('File harus berupa gambar (jpeg, png, jpg, webp).', 'danger');
+                return;
+            }
+
+            previewUrl = URL.createObjectURL(file);
+            previewImg.src = previewUrl;
+            previewImg.classList.remove('d-none');
+            previewEmpty.classList.add('d-none');
+
+            const tooBig = file.size > MAX_IMAGE_BYTES;
+            imageName.textContent = file.name;
+            imageSize.textContent = formatSize(file.size) + (tooBig ? ' (melebihi 5 MB)' : '');
+            imageSize.classList.toggle('text-danger', tooBig);
+            imageSize.classList.toggle('text-muted', !tooBig);
+            imageInfo.classList.remove('d-none');
+        });
+
+        document.getElementById('imageClear').addEventListener('click', function() {
+            imageInput.value = '';
+            resetPreview();
+        });
+    }
 
     const descriptionField = document.getElementById('description');
     const descriptionCounter = document.getElementById('descriptionCounter');

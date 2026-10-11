@@ -254,14 +254,14 @@
 
 <div class="modal fade" id="createFolderModal" tabindex="-1" aria-labelledby="createFolderModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <form action="{{ route('folders.store') }}" method="POST" class="modal-content border-0 shadow">
+        <form action="{{ route('folders.store') }}" method="POST" class="modal-content">
             @csrf
             <input type="hidden" name="parent_id" value="{{ $current_folder->id ?? '' }}">
-            <div class="modal-header border-0 bg-light py-3">
-                <h5 class="modal-title fw-semibold" id="createFolderModalLabel">Folder Baru</h5>
+            <div class="modal-header">
+                <h5 class="modal-title" id="createFolderModalLabel">Folder Baru</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
-            <div class="modal-body py-4">
+            <div class="modal-body">
                 <div class="mb-3">
                     <label for="folder_name" class="form-label fw-medium text-secondary">Nama Folder</label>
                     <input type="text" class="form-control @error('name') is-invalid @enderror" id="folder_name" name="name" value="{{ old('name') }}" required maxlength="255" placeholder="Masukkan nama folder...">
@@ -270,9 +270,9 @@
                     @enderror
                 </div>
             </div>
-            <div class="modal-footer border-0 bg-light py-2">
-                <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-primary px-4">Simpan</button>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-primary">Simpan</button>
             </div>
         </form>
     </div>
@@ -280,14 +280,14 @@
 
 <div class="modal fade" id="uploadFileModal" tabindex="-1" aria-labelledby="uploadFileModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <form action="{{ route('files.store') }}" method="POST" enctype="multipart/form-data" class="modal-content border-0 shadow" data-ajax data-ajax-progress>
+        <form action="{{ route('files.store') }}" method="POST" enctype="multipart/form-data" class="modal-content" data-ajax data-ajax-progress>
             @csrf
             <input type="hidden" name="folder_id" value="{{ $current_folder->id ?? '' }}">
-            <div class="modal-header border-0 bg-light py-3">
-                <h5 class="modal-title fw-semibold" id="uploadFileModalLabel">Unggah File</h5>
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadFileModalLabel">Unggah File</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
-            <div class="modal-body py-4">
+            <div class="modal-body">
                 <div class="mb-3">
                     <label for="choose_file" class="form-label fw-medium text-secondary">Pilih File</label>
                     <input class="form-control @error('file') is-invalid @enderror" type="file" id="choose_file" name="file" required>
@@ -302,9 +302,9 @@
                     <div class="progress-bar"></div>
                 </div>
             </div>
-            <div class="modal-footer border-0 bg-light py-2">
-                <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-primary px-4">Unggah</button>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-primary">Unggah</button>
             </div>
         </form>
     </div>

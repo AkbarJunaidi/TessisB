@@ -103,7 +103,7 @@
             </div>
         @enderror
 
-        <div class="form-check form-switch mt-2">
+        <div class="form-check form-switch switch-inline mt-2">
             <input
                 type="checkbox"
                 name="has_whatsapp"
@@ -112,7 +112,7 @@
                 value="1"
                 @checked(old('has_whatsapp', $contact->has_whatsapp ?? false))
             >
-            <label class="form-check-label small text-muted" for="has_whatsapp">
+            <label class="form-check-label small text-muted fw-normal" for="has_whatsapp">
                 Nomor ini punya WhatsApp
             </label>
         </div>

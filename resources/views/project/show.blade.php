@@ -12,10 +12,10 @@
                 <h3 class="fw-bold text-dark m-0">{{ $project->name }}</h3>
 
                 @if(auth()->user()->hasPermission('tracking_progress', 'edit_project'))
-                    <form action="{{ route('projects.update-status', $project) }}" method="POST" class="d-inline">
+                    <form action="{{ route('projects.update-status', $project) }}" method="POST" class="d-inline" data-confirm="Ubah status project ini?" data-confirm-label="Ubah Status" data-confirm-revert>
                         @csrf
                         @method('PATCH')
-                        <select name="status" class="form-select form-select-sm border-0 bg-light fw-semibold u-w-auto" onchange="this.form.submit()">
+                        <select name="status" class="form-select form-select-sm border-0 bg-light fw-semibold u-w-auto" onchange="this.form.requestSubmit()">
                             @foreach(\App\Models\Project::STATUS_LABELS as $s => $label)
                                 <option value="{{ $s }}" @selected($project->status === $s)>{{ $label }}</option>
                             @endforeach
@@ -237,7 +237,7 @@
                         <h6 class="fw-bold mb-3">Data Keuangan</h6>
 
                         @if(auth()->user()->hasPermission('finance', 'manage'))
-                        <form id="financeForm" action="{{ route('projects.finance.update', $project) }}" method="POST">
+                        <form id="financeForm" action="{{ route('projects.finance.update', $project) }}" method="POST" data-track-changes>
                             @csrf
 
                             {{-- Estimasi Pendapatan: tampilan saja (tidak masuk laporan bulanan), diedit inline dan dikirim bersama form Data Keuangan (satu klik Simpan). --}}
@@ -251,7 +251,7 @@
                                         <i class="bi bi-pencil"></i>
                                     </button>
 
-                                    <input type="text" inputmode="numeric" name="estimated_value" id="estimatedValueInput"
+                                    <input type="text" inputmode="numeric" name="estimated_value" id="estimatedValueInput" data-change-label="Estimasi Pendapatan" data-change-prefix="Rp "
                                            class="form-control form-control-sm finance-amount-input d-none u-w-140px"
                                           
                                            value="{{ $project->estimated_value ? number_format((float) $project->estimated_value, 0, ',', '.') : '' }}">
@@ -283,7 +283,7 @@
                                             <i class="bi bi-pencil"></i>
                                         </button>
 
-                                        <input type="text" inputmode="numeric" name="budget" id="budgetInput"
+                                        <input type="text" inputmode="numeric" name="budget" id="budgetInput" data-change-label="Anggaran Biaya" data-change-prefix="Rp "
                                                class="form-control form-control-sm finance-amount-input d-none u-w-140px" placeholder="0"
                                                value="{{ $project->budget ? number_format($budget, 0, ',', '.') : '' }}">
 
@@ -321,7 +321,7 @@
                                 <div class="col-md-4">Nominal (Rp)</div>
                                 <div class="col-md-7">Keterangan</div>
                             </div>
-                            <div id="incomeRows">
+                            <div id="incomeRows" data-change-list="Pendapatan" data-change-row=".finance-row">
                                 @foreach($project->financeItems->where('type', 'income')->values() as $i => $item)
                                     @include('project.partials.finance-row', ['group' => 'incomes', 'index' => $i, 'item' => $item])
                                 @endforeach
@@ -342,7 +342,7 @@
                                 <div class="col-md-4">Nominal (Rp)</div>
                                 <div class="col-md-7">Keterangan</div>
                             </div>
-                            <div id="expenseRows">
+                            <div id="expenseRows" data-change-list="Pengeluaran" data-change-row=".finance-row">
                                 @foreach($project->financeItems->where('type', 'expense')->values() as $i => $item)
                                     @include('project.partials.finance-row', ['group' => 'expenses', 'index' => $i, 'item' => $item])
                                 @endforeach
@@ -508,7 +508,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return `
             <div class="row g-2 mb-2 finance-row">
                 <div class="col-4">
-                    <input type="text" inputmode="numeric" name="${group}[${index}][amount]" class="form-control form-control-sm finance-amount-input" placeholder="0" required>
+                    <input type="text" inputmode="numeric" name="${group}[${index}][amount]" class="form-control form-control-sm finance-amount-input" data-change-prefix="Rp " placeholder="0" required>
                 </div>
                 <div class="col-7">
                     <input type="text" name="${group}[${index}][description]" class="form-control form-control-sm" placeholder="Keterangan">

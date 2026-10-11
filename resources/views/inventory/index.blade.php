@@ -173,18 +173,18 @@
 <div class="modal fade" id="deleteInventoryModal" tabindex="-1" aria-labelledby="deleteInventoryModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header bg-danger text-white rounded-top-4">
-                <h5 class="modal-title fw-bold" id="deleteInventoryModalLabel">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Konfirmasi Hapus Data
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteInventoryModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill text-danger"></i>Konfirmasi Hapus Data
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
 
             <form id="deleteInventoryForm" method="POST">
                 @csrf
                 @method('DELETE')
 
-                <div class="modal-body p-4">
+                <div class="modal-body">
                     <p class="text-dark fw-medium mb-3">Apakah Anda yakin ingin menghapus data inventory ini?</p>
 
                     <div class="bg-light p-3 rounded-3 border">
@@ -203,9 +203,9 @@
                     </small>
                 </div>
 
-                <div class="modal-footer bg-light border-top p-3">
-                    <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger px-4">Ya, Hapus</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">Ya, Hapus</button>
                 </div>
             </form>
         </div>
@@ -220,7 +220,7 @@
         <div class="modal-content">
 
             <div class="modal-header">
-                <h6 class="modal-title fw-bold">Memproses Laporan Semua Inventory</h6>
+                <h6 class="modal-title">Memproses Laporan Semua Inventory</h6>
             </div>
 
             <div class="modal-body">
@@ -246,12 +246,12 @@
                 <button
                     type="button"
                     id="generateReportCancelBtn"
-                    class="btn btn-secondary"
+                    class="btn btn-light"
                 >Batal</button>
                 <button
                     type="button"
                     id="generateReportCloseBtn"
-                    class="btn btn-secondary d-none"
+                    class="btn btn-light d-none"
                     data-bs-dismiss="modal"
                 >Tutup</button>
             </div>

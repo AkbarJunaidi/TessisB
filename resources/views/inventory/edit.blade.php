@@ -332,14 +332,14 @@
 
                     <input type="hidden" name="use_attributes" id="use_attributes_hidden" value="{{ $useAttributesDefault }}">
 
-                    <div class="form-check form-switch">
+                    <div class="form-check form-switch switch-inline">
                         <input class="form-check-input u-w-2p75em u-h-1p5em"
                                type="checkbox"
                                role="switch"
                                id="use_attr_toggle"
                               
                                {{ $useAttributesDefault == '1' ? 'checked' : '' }}>
-                        <label class="form-check-label fw-medium text-dark ms-2" for="use_attr_toggle">
+                        <label class="form-check-label" for="use_attr_toggle">
                             <span id="use_attr_label">{{ $useAttributesDefault == '1' ? 'Ya' : 'Tidak' }}</span>
                         </label>
                     </div>
@@ -347,9 +347,9 @@
 
                 <!-- Container Dynamic Key-Value Table -->
                 <div id="attributesContainer" class="{{ $useAttributesDefault == '1' ? '' : 'd-none' }}">
-                    <div class="table-responsive mb-3">
-                        <table class="table table-bordered align-middle" id="attributesTable">
-                            <thead class="table-light small text-uppercase text-secondary">
+                    <div class="table-responsive table-editor mb-3">
+                        <table class="table table-stack align-middle mb-0" id="attributesTable">
+                            <thead>
                                 <tr>
                                     <th class="u-w-45pct">Nama Informasi</th>
                                     <th class="u-w-45pct">Nilai</th>
@@ -360,7 +360,7 @@
                                 @if($hasExistingAttrs)
                                     @foreach($inventory->attributes as $index => $attr)
                                         <tr>
-                                            <td>
+                                            <td class="cell-block" data-label="Nama Informasi">
                                                 <input type="text"
                                                        name="attributes[{{ $index }}][name]"
                                                        class="form-control form-control-sm"
@@ -368,7 +368,7 @@
                                                        value="{{ old("attributes.{$index}.name", $attr->attribute_name) }}"
                                                        placeholder="Contoh: Processor / RAM / Panjang">
                                             </td>
-                                            <td>
+                                            <td class="cell-block" data-label="Nilai">
                                                 <input type="text"
                                                        name="attributes[{{ $index }}][value]"
                                                        class="form-control form-control-sm"
@@ -376,26 +376,22 @@
                                                        value="{{ old("attributes.{$index}.value", $attr->attribute_value) }}"
                                                        placeholder="Contoh: Ryzen 7 / 16 GB / 5 Meter">
                                             </td>
-                                            <td class="text-center">
-                                                <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row" title="Hapus Baris">
-                                                    <i class="bi bi-trash"></i> Hapus
-                                                </button>
+                                            <td class="text-center cell-block" data-label="Aksi">
+                                                <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row" title="Hapus Baris" aria-label="Hapus baris"><i class="bi bi-trash"></i><span class="d-md-none ms-1">Hapus</span></button>
                                             </td>
                                         </tr>
                                     @endforeach
                                 @else
                                     <!-- Default 1 Baris Kosong jika memilih Ya -->
                                     <tr>
-                                        <td>
+                                        <td class="cell-block" data-label="Nama Informasi">
                                             <input type="text" name="attributes[0][name]" class="form-control form-control-sm" maxlength="40" placeholder="Contoh: Processor / RAM / Panjang">
                                         </td>
-                                        <td>
+                                        <td class="cell-block" data-label="Nilai">
                                             <input type="text" name="attributes[0][value]" class="form-control form-control-sm" maxlength="100" placeholder="Contoh: Ryzen 7 / 16 GB / 5 Meter">
                                         </td>
-                                        <td class="text-center">
-                                            <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row" title="Hapus Baris">
-                                                <i class="bi bi-trash"></i> Hapus
-                                            </button>
+                                        <td class="text-center cell-block" data-label="Aksi">
+                                            <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row" title="Hapus Baris" aria-label="Hapus baris"><i class="bi bi-trash"></i><span class="d-md-none ms-1">Hapus</span></button>
                                         </td>
                                     </tr>
                                 @endif
@@ -404,7 +400,7 @@
                     </div>
 
                     <!-- Tombol Tambah Informasi -->
-                    <button type="button" class="btn btn-primary w-100 fw-medium py-2" id="btnAddAttribute">
+                    <button type="button" class="btn btn-sm btn-outline-primary fw-medium" id="btnAddAttribute">
                         <i class="bi bi-plus-circle me-1"></i> Tambah Informasi
                     </button>
                     <small class="text-danger d-none ms-2" id="attrLimitWarning">Maksimal 7 baris informasi tambahan.</small>
@@ -468,16 +464,14 @@
 
             const newRow = document.createElement('tr');
             newRow.innerHTML = `
-                <td>
+                <td class="cell-block" data-label="Nama Informasi">
                     <input type="text" name="attributes[${rowIndex}][name]" class="form-control form-control-sm" maxlength="40" placeholder="Contoh: Processor / RAM / Panjang">
                 </td>
-                <td>
+                <td class="cell-block" data-label="Nilai">
                     <input type="text" name="attributes[${rowIndex}][value]" class="form-control form-control-sm" maxlength="100" placeholder="Contoh: Ryzen 7 / 16 GB / 5 Meter">
                 </td>
-                <td class="text-center">
-                    <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row" title="Hapus Baris">
-                        <i class="bi bi-trash"></i> Hapus
-                    </button>
+                <td class="text-center cell-block" data-label="Aksi">
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row" title="Hapus Baris" aria-label="Hapus baris"><i class="bi bi-trash"></i><span class="d-md-none ms-1">Hapus</span></button>
                 </td>
             `;
             attributesBody.appendChild(newRow);

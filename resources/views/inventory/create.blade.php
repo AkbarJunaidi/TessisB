@@ -162,21 +162,46 @@
                 </h5>
             </div>
             <div class="p-4">
-                <div class="mb-3">
-                    <label for="image" class="form-label fw-semibold small text-secondary">Unggah Gambar Barang</label>
-                    <input type="file"
-                           name="image"
-                           id="image"
-                           class="form-control @error('image') is-invalid @enderror"
-                           accept="image/jpeg,image/png,image/jpg,image/webp">
-                    <div class="form-text text-muted small mt-1">
-                        <i class="bi bi-info-circle me-1"></i> *Opsional (Boleh dikosongkan). Format berkas: <strong>jpeg, png, jpg, webp</strong>. Maksimal ukuran: <strong>5 MB</strong>.
-                    </div>
-                    @error('image')
-                        <div class="invalid-feedback d-block">
-                            <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ $message }}
+                <div class="row g-4 align-items-start">
+                    <!-- Pratinjau foto yang dipilih -->
+                    <div class="col-12 col-md-4">
+                        <span class="form-label fw-semibold small text-secondary d-block mb-2">Pratinjau</span>
+                        <div class="image-preview">
+                            <div class="image-preview-empty" id="imagePreviewEmpty">
+                                <i class="bi bi-image"></i>
+                                <span class="small">Belum ada foto dipilih</span>
+                            </div>
+                            <img id="imagePreviewImg" class="d-none" alt="Pratinjau foto barang">
                         </div>
-                    @enderror
+                    </div>
+
+                    <div class="col-12 col-md-8">
+                        <label for="image" class="form-label fw-semibold small text-secondary">Unggah Gambar Barang</label>
+                        <input type="file"
+                               name="image"
+                               id="image"
+                               class="form-control @error('image') is-invalid @enderror"
+                               accept="image/jpeg,image/png,image/jpg,image/webp">
+                        <div class="form-text text-muted small mt-1">
+                            <i class="bi bi-info-circle me-1"></i> *Opsional (Boleh dikosongkan). Format berkas: <strong>jpeg, png, jpg, webp</strong>. Maksimal ukuran: <strong>5 MB</strong>.
+                        </div>
+                        @error('image')
+                            <div class="invalid-feedback d-block">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ $message }}
+                            </div>
+                        @enderror
+
+                        <div class="d-none mt-3" id="imageInfo" aria-live="polite">
+                            <div class="d-flex align-items-center flex-wrap gap-2">
+                                <i class="bi bi-file-earmark-image text-primary"></i>
+                                <span class="small fw-semibold text-break" id="imageName"></span>
+                                <span class="small text-muted" id="imageSize"></span>
+                                <button type="button" class="btn btn-sm btn-light ms-md-auto" id="imageClear">
+                                    <i class="bi bi-x-lg me-1"></i> Hapus Pilihan
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -201,14 +226,14 @@
 
                     <input type="hidden" name="use_attributes" id="use_attributes_hidden" value="{{ $useAttributesDefault }}">
 
-                    <div class="form-check form-switch">
+                    <div class="form-check form-switch switch-inline">
                         <input class="form-check-input u-w-2p75em u-h-1p5em"
                                type="checkbox"
                                role="switch"
                                id="use_attr_toggle"
                               
                                {{ $useAttributesDefault == '1' ? 'checked' : '' }}>
-                        <label class="form-check-label fw-medium text-dark" for="use_attr_toggle">
+                        <label class="form-check-label" for="use_attr_toggle">
                             <span id="use_attr_label">{{ $useAttributesDefault == '1' ? 'Ya' : 'Tidak' }}</span>
                         </label>
                     </div>
@@ -216,9 +241,9 @@
 
                 <!-- Container Dynamic Key-Value Table -->
                 <div id="attributesContainer" class="{{ $useAttributesDefault == '1' ? '' : 'd-none' }}">
-                    <div class="table-responsive mb-3">
-                        <table class="table table-bordered align-middle" id="attributesTable">
-                            <thead class="table-light small text-uppercase text-secondary">
+                    <div class="table-responsive table-editor mb-3">
+                        <table class="table table-stack align-middle mb-0" id="attributesTable">
+                            <thead>
                                 <tr>
                                     <th class="u-w-45pct">Nama Informasi</th>
                                     <th class="u-w-45pct">Nilai</th>
@@ -229,7 +254,7 @@
                                 @if(old('attributes'))
                                     @foreach(old('attributes') as $index => $attr)
                                         <tr>
-                                            <td>
+                                            <td class="cell-block" data-label="Nama Informasi">
                                                 <input type="text"
                                                        name="attributes[{{ $index }}][name]"
                                                        class="form-control form-control-sm"
@@ -237,7 +262,7 @@
                                                        value="{{ $attr['name'] ?? '' }}"
                                                        placeholder="Contoh: Processor / RAM / Panjang">
                                             </td>
-                                            <td>
+                                            <td class="cell-block" data-label="Nilai">
                                                 <input type="text"
                                                        name="attributes[{{ $index }}][value]"
                                                        class="form-control form-control-sm"
@@ -245,26 +270,22 @@
                                                        value="{{ $attr['value'] ?? '' }}"
                                                        placeholder="Contoh: Ryzen 7 / 16 GB / 5 Meter">
                                             </td>
-                                            <td class="text-center">
-                                                <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row" title="Hapus Baris">
-                                                    <i class="bi bi-trash"></i> Hapus
-                                                </button>
+                                            <td class="text-center cell-block" data-label="Aksi">
+                                                <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row" title="Hapus Baris" aria-label="Hapus baris"><i class="bi bi-trash"></i><span class="d-md-none ms-1">Hapus</span></button>
                                             </td>
                                         </tr>
                                     @endforeach
                                 @else
                                     <!-- Default 1 Baris Kosong jika memilih Ya -->
                                     <tr>
-                                        <td>
+                                        <td class="cell-block" data-label="Nama Informasi">
                                             <input type="text" name="attributes[0][name]" class="form-control form-control-sm" maxlength="40" placeholder="Contoh: Processor / RAM / Panjang">
                                         </td>
-                                        <td>
+                                        <td class="cell-block" data-label="Nilai">
                                             <input type="text" name="attributes[0][value]" class="form-control form-control-sm" maxlength="100" placeholder="Contoh: Ryzen 7 / 16 GB / 5 Meter">
                                         </td>
-                                        <td class="text-center">
-                                            <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row" title="Hapus Baris">
-                                                <i class="bi bi-trash"></i> Hapus
-                                            </button>
+                                        <td class="text-center cell-block" data-label="Aksi">
+                                            <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row" title="Hapus Baris" aria-label="Hapus baris"><i class="bi bi-trash"></i><span class="d-md-none ms-1">Hapus</span></button>
                                         </td>
                                     </tr>
                                 @endif

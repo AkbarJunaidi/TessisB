@@ -147,7 +147,7 @@
                             <textarea name="note" class="form-control" rows="2"></textarea>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
                             <button type="submit" class="btn btn-primary">Setujui</button>
                         </div>
                     </form>
@@ -169,7 +169,7 @@
                             <textarea name="note" class="form-control" rows="2"></textarea>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
                             <button type="submit" class="btn btn-danger">Tolak</button>
                         </div>
                     </form>
@@ -190,7 +190,7 @@
                                 @method('PATCH')
                                 <input type="hidden" name="reset_user_id" value="{{ $pr->user->id }}">
                                 <div class="modal-header">
-                                    <h6 class="modal-title fw-bold">Reset Password - {{ $pr->user->name }}</h6>
+                                    <h6 class="modal-title">Reset Password - {{ $pr->user->name }}</h6>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                 </div>
                                 <div class="modal-body">
@@ -205,7 +205,7 @@
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
                                     <button type="submit" class="btn btn-warning"><i class="bi bi-arrow-repeat"></i> Reset Password</button>
                                 </div>
                             </form>

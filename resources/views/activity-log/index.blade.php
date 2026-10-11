@@ -184,14 +184,14 @@
     {{-- Modal Konfirmasi Hapus Log Aktivitas Berdasarkan Rentang Tanggal --}}
     <div class="modal fade" id="deleteRangeModal" tabindex="-1" aria-labelledby="deleteRangeModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title fw-bold" id="deleteRangeModalLabel">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Hapus Log Aktivitas Berdasarkan Rentang Tanggal
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteRangeModalLabel">
+                        <i class="bi bi-exclamation-triangle-fill text-danger"></i>Hapus Log Aktivitas Berdasarkan Rentang Tanggal
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
-                <div class="modal-body p-4">
+                <div class="modal-body">
                     <p class="text-dark fw-medium mb-3">Pilih rentang tanggal Log Aktivitas yang ingin dihapus secara permanen.</p>
 
                     <div class="mb-3">
@@ -210,9 +210,9 @@
                         <i class="bi bi-info-circle me-1"></i>Seluruh Log Aktivitas pada rentang tanggal ini akan dihapus permanen dan <strong>tidak dapat dipulihkan</strong>.
                     </small>
                 </div>
-                <div class="modal-footer bg-light border-top p-3">
-                    <button type="button" class="btn btn-secondary px-3 fw-medium" data-bs-dismiss="modal">Batal</button>
-                    <button type="button" id="deleteRangeSubmit" class="btn btn-danger px-4 fw-medium shadow-sm">
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" id="deleteRangeSubmit" class="btn btn-danger">
                         <span class="btn-text">Ya, Hapus</span>
                         <span class="spinner-border spinner-border-sm d-none" role="status"></span>
                     </button>

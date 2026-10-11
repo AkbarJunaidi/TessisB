@@ -2,21 +2,21 @@
      Pemicu: diOpenRename / diOpenMove / diOpenDelete. --}}
 <div class="modal fade" id="diRenameModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <form id="diRenameForm" method="POST" class="modal-content border-0 shadow">
+        <form id="diRenameForm" method="POST" class="modal-content">
             @csrf
             @method('PATCH')
-            <div class="modal-header border-0 bg-light py-3">
-                <h5 class="modal-title fw-semibold" id="diRenameTitle">Ganti Nama</h5>
+            <div class="modal-header">
+                <h5 class="modal-title" id="diRenameTitle">Ganti Nama</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
-            <div class="modal-body py-4">
+            <div class="modal-body">
                 <label for="diRenameInput" class="form-label fw-medium text-secondary">Nama</label>
                 <input type="text" class="form-control" id="diRenameInput" maxlength="255" required>
                 <div class="form-text small" id="diRenameHint"></div>
             </div>
-            <div class="modal-footer border-0 bg-light py-2">
-                <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-primary px-4">Simpan</button>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-primary">Simpan</button>
             </div>
         </form>
     </div>
@@ -24,21 +24,21 @@
 
 <div class="modal fade" id="diMoveModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <form id="diMoveForm" method="POST" class="modal-content border-0 shadow">
+        <form id="diMoveForm" method="POST" class="modal-content">
             @csrf
             @method('PATCH')
-            <div class="modal-header border-0 bg-light py-3">
-                <h5 class="modal-title fw-semibold" id="diMoveTitle">Pindahkan</h5>
+            <div class="modal-header">
+                <h5 class="modal-title" id="diMoveTitle">Pindahkan</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
-            <div class="modal-body py-4">
+            <div class="modal-body">
                 <label for="diMoveSelect" class="form-label fw-medium text-secondary">Folder Tujuan</label>
                 <select class="form-select" id="diMoveSelect" name="target_folder_id" required></select>
                 <div class="form-text small" id="diMoveHint"></div>
             </div>
-            <div class="modal-footer border-0 bg-light py-2">
-                <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-primary px-4">Pindahkan</button>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-primary">Pindahkan</button>
             </div>
         </form>
     </div>
@@ -46,22 +46,22 @@
 
 <div class="modal fade" id="diDeleteModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <form id="diDeleteForm" method="POST" class="modal-content border-0 shadow">
+        <form id="diDeleteForm" method="POST" class="modal-content">
             @csrf
             @method('DELETE')
-            <div class="modal-header border-0 bg-light py-3">
-                <h5 class="modal-title fw-semibold text-danger">Konfirmasi Hapus</h5>
+            <div class="modal-header">
+                <h5 class="modal-title">Konfirmasi Hapus</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
-            <div class="modal-body py-4">
+            <div class="modal-body">
                 <p class="mb-3" id="diDeleteMessage"></p>
                 <div class="p-2 bg-light rounded border text-truncate">
                     <span id="diDeleteName" class="fw-medium text-dark"></span>
                 </div>
             </div>
-            <div class="modal-footer border-0 bg-light py-2">
-                <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-danger px-4">Hapus</button>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-danger">Hapus</button>
             </div>
         </form>
     </div>

@@ -31,7 +31,7 @@
         </nav>
     </div>
 
-    <form method="POST" action="{{ route('settings.update') }}" enctype="multipart/form-data" novalidate>
+    <form method="POST" action="{{ route('settings.update') }}" enctype="multipart/form-data" novalidate data-track-changes>
         @csrf
         @method('PUT')
 
@@ -105,7 +105,7 @@
                 <h6 class="fw-bold mb-1"><i class="bi bi-tags me-2"></i>Kategori Project</h6>
                 <p class="text-muted small mb-3">Project lama tetap menampilkan kategorinya walau dihapus dari daftar.</p>
 
-                <div id="categoryList" class="d-flex flex-column gap-2">
+                <div id="categoryList" class="d-flex flex-column gap-2" data-change-list="Kategori Project" data-change-row=".category-row">
                     @foreach($categories as $i => $category)
                         <div class="input-group category-row">
                             <input type="text" name="project_categories[]" maxlength="100" autocomplete="off"
@@ -139,7 +139,7 @@
                     <span class="text-muted small align-self-center">Status sistem, tidak bisa diubah.</span>
                 </div>
 
-                <div id="statusList" class="d-flex flex-column gap-2">
+                <div id="statusList" class="d-flex flex-column gap-2" data-change-list="Status Inventory" data-change-row=".status-row">
                     @foreach($customStatuses as $i => $row)
                         <div class="row g-2 status-row">
                             <div class="col-7 col-md-5">
@@ -175,7 +175,7 @@
                 <h6 class="fw-bold mb-1"><i class="bi bi-wallet2 me-2"></i>Kategori Transaksi Keuangan</h6>
                 <p class="text-muted small mb-3">Kategori bawaan: {{ implode(', ', array_keys(\App\Support\FinanceCategory::SYSTEM)) }}. Tambahkan kategori lain di bawah, misalnya "Sewa Kantor".</p>
 
-                <div id="financeCategoryList" class="d-flex flex-column gap-2">
+                <div id="financeCategoryList" class="d-flex flex-column gap-2" data-change-list="Kategori Keuangan" data-change-row=".finance-category-row">
                     @foreach($customFinanceCategories as $i => $row)
                         <div class="row g-2 finance-category-row">
                             <div class="col-7 col-md-5">

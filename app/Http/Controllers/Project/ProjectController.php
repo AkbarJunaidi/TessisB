@@ -44,12 +44,17 @@ class ProjectController extends Controller
 
         $filters = $request->only(['search', 'status', 'pic', 'month', 'date']);
 
+        $calendarMonth = min(12, max(1, (int) $request->query('cal_month', now()->month)));
+        $calendarYear  = min(2100, max(1970, (int) $request->query('cal_year', now()->year)));
+        $calendarData  = $this->projectService->getCalendarData($calendarMonth, $calendarYear);
+
+        // Ganti bulan lewat AJAX: cukup kirim kartu kalender, bukan satu halaman penuh.
+        if ($request->ajax()) {
+            return view('project.partials.calendar-card', compact('calendarData', 'calendarMonth', 'calendarYear'));
+        }
+
         $projects = $this->projectService->getAllPaginated($filters, 10);
         $stats    = $this->projectService->getStats();
-
-        $calendarMonth = (int) ($request->query('cal_month', now()->month));
-        $calendarYear  = (int) ($request->query('cal_year', now()->year));
-        $calendarData  = $this->projectService->getCalendarData($calendarMonth, $calendarYear);
 
         $pics = $this->projectService->getDistinctPics();
 

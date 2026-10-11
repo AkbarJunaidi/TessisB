@@ -20,14 +20,14 @@
 
             <input type="hidden" name="use_servis" id="use_servis_hidden" value="{{ $servisOn }}">
 
-            <div class="form-check form-switch">
+            <div class="form-check form-switch switch-inline">
                 <input class="form-check-input u-w-2p75em u-h-1p5em"
                        type="checkbox"
                        role="switch"
                        id="use_servis_toggle"
                       
                        {{ $servisOn == '1' ? 'checked' : '' }}>
-                <label class="form-check-label fw-medium text-dark" for="use_servis_toggle">
+                <label class="form-check-label" for="use_servis_toggle">
                     <span id="use_servis_label">{{ $servisOn == '1' ? 'Ya' : 'Tidak' }}</span>
                 </label>
             </div>

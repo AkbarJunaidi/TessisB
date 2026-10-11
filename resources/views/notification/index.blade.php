@@ -68,7 +68,7 @@
                         <i class="bi bi-bell me-2 text-primary"></i>Semua Notifikasi
                     </h6>
                     @if($inbox->isNotEmpty())
-                        <form method="POST" action="{{ route('announcements.read-all') }}">
+                        <form method="POST" action="{{ route('announcements.read-all') }}" data-no-confirm>
                             @csrf
                             <button type="submit" class="btn btn-sm btn-link text-decoration-none">
                                 Tandai semua dibaca

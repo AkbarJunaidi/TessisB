@@ -244,7 +244,7 @@
             <input type="hidden" name="_edit_id" value="" id="tEditId">
 
             <div class="modal-header">
-                <h5 class="modal-title fw-bold" id="transactionModalTitle">Catat Transaksi</h5>
+                <h5 class="modal-title" id="transactionModalTitle">Catat Transaksi</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
 
@@ -314,7 +314,7 @@
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
                 <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i> Simpan</button>
             </div>
         </form>

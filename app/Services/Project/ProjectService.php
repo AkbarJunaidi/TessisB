@@ -124,6 +124,19 @@ class ProjectService
             ->toArray();
     }
 
+// Daftar tahun untuk dropdown kalender: rentang data project, minimal tahun ini -2 s/d +3.
+    public function getCalendarYears(int $selectedYear): array
+    {
+        $thisYear = (int) now()->year;
+        $minYear  = (int) substr((string) Project::whereNotNull('event_date')->min('event_date'), 0, 4);
+        $maxYear  = (int) substr((string) Project::whereNotNull('event_date')->max('event_date'), 0, 4);
+
+        $from = min(array_filter([$minYear, $thisYear - 2, $selectedYear]));
+        $to   = max(array_filter([$maxYear, $thisYear + 3, $selectedYear]));
+
+        return range($from, $to);
+    }
+
 // Daftar PIC unik untuk dropdown filter
     public function getDistinctPics(): array
     {

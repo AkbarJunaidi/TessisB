@@ -2,20 +2,20 @@
      dengan container, peringatan tampil inline di elemen itu (untuk dipakai di dalam modal lain). --}}
 <div class="modal fade" id="servisWarningModal" tabindex="-1" aria-labelledby="servisWarningTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header border-0 bg-light py-3">
-                <h5 class="modal-title fw-semibold" id="servisWarningTitle">
-                    <i class="bi bi-exclamation-triangle text-warning me-1"></i>Perhatian: Servis Barang
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="servisWarningTitle">
+                    <i class="bi bi-exclamation-triangle text-warning"></i>Perhatian: Servis Barang
                 </h5>
                 <button type="button" class="btn-close" data-servis-cancel aria-label="Tutup"></button>
             </div>
-            <div class="modal-body py-4">
+            <div class="modal-body">
                 <p class="small text-muted mb-3">Unit berikut akan dipakai dan servisnya sudah dekat atau terlewat. Barang tetap bisa dipakai bila diperlukan.</p>
                 <div id="servisWarningList"></div>
             </div>
-            <div class="modal-footer border-0 bg-light py-2">
-                <button type="button" class="btn btn-secondary px-3" data-servis-cancel>Batal</button>
-                <button type="button" class="btn btn-warning px-4" id="servisWarningProceed">Tetap Pakai</button>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-servis-cancel>Batal</button>
+                <button type="button" class="btn btn-warning" id="servisWarningProceed">Tetap Pakai</button>
             </div>
         </div>
     </div>

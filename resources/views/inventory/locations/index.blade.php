@@ -200,7 +200,7 @@
     {{-- Modal Tambah / Ubah Lokasi (satu form, mode diatur JS) --}}
     <div class="modal fade" id="locationModal" tabindex="-1" aria-labelledby="locationModalTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg modal-fullscreen-sm-down modal-dialog-scrollable">
-            <form id="locationForm" method="POST" action="{{ route('inventory.locations.store') }}" class="modal-content border-0 shadow"
+            <form id="locationForm" method="POST" action="{{ route('inventory.locations.store') }}" class="modal-content"
                   data-store-url="{{ route('inventory.locations.store') }}"
                   data-update-url="{{ route('inventory.locations.update', '__ID__') }}"
                   data-search-url="{{ route('inventory.locations.search') }}">
@@ -208,12 +208,12 @@
                 <input type="hidden" name="_method" value="PATCH" id="locationMethod" disabled>
                 <input type="hidden" name="_edit_id" value="{{ old('_edit_id') }}" id="locationEditId">
 
-                <div class="modal-header border-0 bg-light py-3">
-                    <h5 class="modal-title fw-semibold" id="locationModalTitle">Tambah Lokasi</h5>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="locationModalTitle">Tambah Lokasi</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
 
-                <div class="modal-body py-4">
+                <div class="modal-body">
                     @if($errors->any())
                         <div class="alert alert-danger small py-2">{{ $errors->first() }}</div>
                     @endif
@@ -291,9 +291,9 @@
                     </div>
                 </div>
 
-                <div class="modal-footer border-0 bg-light py-2">
-                    <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary px-4">Simpan</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
                 </div>
             </form>
         </div>
@@ -302,14 +302,14 @@
     {{-- Modal konfirmasi hapus --}}
     <div class="modal fade" id="deleteLocationModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <form id="deleteLocationForm" method="POST" class="modal-content border-0 shadow">
+            <form id="deleteLocationForm" method="POST" class="modal-content">
                 @csrf
                 @method('DELETE')
-                <div class="modal-header border-0 bg-light py-3">
-                    <h5 class="modal-title fw-semibold text-danger">Konfirmasi Hapus</h5>
+                <div class="modal-header">
+                    <h5 class="modal-title">Konfirmasi Hapus</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
-                <div class="modal-body py-4">
+                <div class="modal-body">
                     <p class="mb-3">Apakah Anda yakin ingin menghapus lokasi ini?</p>
                     <div class="p-2 bg-light rounded border text-truncate">
                         <strong class="text-secondary small">Nama Lokasi: </strong>
@@ -317,9 +317,9 @@
                     </div>
                     <div class="form-text small mt-2">Lokasi yang masih dipakai unit tidak dapat dihapus.</div>
                 </div>
-                <div class="modal-footer border-0 bg-light py-2">
-                    <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger px-4">Hapus</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">Hapus</button>
                 </div>
             </form>
         </div>

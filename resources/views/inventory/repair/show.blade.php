@@ -167,13 +167,13 @@
     {{-- Modal Selesaikan Perbaikan --}}
     <div class="modal fade" id="completeRepairModal" tabindex="-1" aria-labelledby="completeRepairTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
-            <form method="POST" action="{{ route('inventory.repairs.complete', $repair) }}" class="modal-content border-0 shadow">
+            <form method="POST" action="{{ route('inventory.repairs.complete', $repair) }}" class="modal-content">
                 @csrf
-                <div class="modal-header border-0 bg-light py-3">
-                    <h5 class="modal-title fw-semibold" id="completeRepairTitle">Selesaikan Perbaikan</h5>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="completeRepairTitle">Selesaikan Perbaikan</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
-                <div class="modal-body py-4">
+                <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-12 col-sm-6">
                             <label for="tanggal_selesai" class="form-label fw-medium text-secondary">Tanggal Diambil <span class="text-danger">*</span></label>
@@ -221,9 +221,9 @@
                         @endforeach
                     </datalist>
                 </div>
-                <div class="modal-footer border-0 bg-light py-2">
-                    <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary px-4">Simpan</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
                 </div>
             </form>
         </div>
@@ -232,19 +232,19 @@
     {{-- Modal Batalkan Catatan --}}
     <div class="modal fade" id="cancelRepairModal" tabindex="-1" aria-labelledby="cancelRepairTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <form method="POST" action="{{ route('inventory.repairs.cancel', $repair) }}" class="modal-content border-0 shadow">
+            <form method="POST" action="{{ route('inventory.repairs.cancel', $repair) }}" class="modal-content">
                 @csrf
-                <div class="modal-header border-0 bg-light py-3">
-                    <h5 class="modal-title fw-semibold" id="cancelRepairTitle">Batalkan Catatan Perbaikan</h5>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cancelRepairTitle">Batalkan Catatan Perbaikan</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
-                <div class="modal-body py-4 small">
+                <div class="modal-body small">
                     Gunakan ini bila catatan salah input. Semua unit dikembalikan ke status sebelum dikirim servis,
                     dan catatan tetap tersimpan dengan status Dibatalkan. Untuk perbaikan yang benar-benar terjadi, pakai Selesaikan Perbaikan.
                 </div>
-                <div class="modal-footer border-0 bg-light py-2">
-                    <button type="button" class="btn btn-secondary px-3" data-bs-dismiss="modal">Kembali</button>
-                    <button type="submit" class="btn btn-danger px-4">Batalkan Catatan</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Kembali</button>
+                    <button type="submit" class="btn btn-danger">Batalkan Catatan</button>
                 </div>
             </form>
         </div>
