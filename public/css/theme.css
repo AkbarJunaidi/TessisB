@@ -567,6 +567,7 @@ button:focus-visible,
     padding: 1.25rem .5rem; font-weight: 600;
 }
 .scan-mode-btn i { font-size: 1.6rem; line-height: 1; }
+.scan-mode-btn--wide { grid-column: 1 / -1; }
 
 /* Notifikasi: item belum dibaca diberi garis biru di kiri. */
 .list-group-item.notif-unread { background: var(--bg-soft); box-shadow: inset 3px 0 0 var(--c-primary); }
@@ -790,6 +791,11 @@ html.is-loading #appSpinner { opacity: 1; transition: opacity .2s ease .3s; }
 .nav-tabs { --bs-nav-tabs-border-radius: var(--radius-md); }
 .rounded, .rounded-2, .rounded-3 { border-radius: var(--radius-md) !important; }
 .rounded-4 { border-radius: var(--radius-lg) !important; }
+
+/* ===== Kartu filter seragam: label di atas kolom, kolom dan dropdown berlatar biru lembut ===== */
+.filter-card .form-label { margin-bottom: .35rem; color: var(--c-muted); font-size: .8rem; font-weight: 600; }
+.filter-card .form-control, .filter-card .form-select { border-color: var(--c-border); background-color: var(--bg-soft); color: var(--c-navy); }
+.filter-card .form-control:focus, .filter-card .form-select:focus { border-color: var(--c-primary); background-color: var(--bg-white); }
 
 /* ===== Utilitas pengganti style inline (dibuat otomatis dari view; !important meniru bobot style inline) ===== */
 .u-bd-1px-solid-e2e8f0 { border: 1px solid #e2e8f0 !important; }

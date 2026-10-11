@@ -60,16 +60,16 @@
     </div>
 
     {{-- Filter --}}
-    <div class="card shadow-sm mb-4 border-0 rounded-3 bg-white">
+    <div class="card filter-card mb-4">
         <div class="card-body">
-            <form action="{{ route('inventory.prices.index') }}" method="GET" class="row g-2 align-items-end">
+            <form action="{{ route('inventory.prices.index') }}" method="GET" class="row g-3 align-items-end">
                 <div class="col-md-6">
-                    <label for="filterSearch" class="form-label small fw-semibold text-muted">Cari Barang</label>
+                    <label for="filterSearch" class="form-label">Cari</label>
                     <input type="text" class="form-control" id="filterSearch" name="search"
                            value="{{ $filters['search'] ?? '' }}" placeholder="Nama, brand, atau serial number...">
                 </div>
                 <div class="col-md-3">
-                    <label for="filterTampil" class="form-label small fw-semibold text-muted">Tampilkan</label>
+                    <label for="filterTampil" class="form-label">Tampilkan</label>
                     <select class="form-select" id="filterTampil" name="filter">
                         <option value="">Semua barang</option>
                         <option value="servis" {{ ($filters['filter'] ?? '') === 'servis' ? 'selected' : '' }}>Pernah diservis</option>

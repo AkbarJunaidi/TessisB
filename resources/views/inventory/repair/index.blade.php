@@ -75,16 +75,16 @@
     </div>
 
     {{-- Filter --}}
-    <div class="card shadow-sm mb-4 border-0 rounded-3 bg-white">
+    <div class="card filter-card mb-4">
         <div class="card-body">
-            <form action="{{ route('inventory.repairs.index') }}" method="GET" class="row g-2 align-items-end">
+            <form action="{{ route('inventory.repairs.index') }}" method="GET" class="row g-3 align-items-end">
                 <div class="col-md-6">
-                    <label for="filterSearch" class="form-label small fw-semibold text-muted">Cari</label>
+                    <label for="filterSearch" class="form-label">Cari</label>
                     <input type="text" class="form-control" id="filterSearch" name="search"
                            value="{{ $filters['search'] ?? '' }}" placeholder="Kode, nama barang, atau tempat servis...">
                 </div>
                 <div class="col-md-3">
-                    <label for="filterStatus" class="form-label small fw-semibold text-muted">Status</label>
+                    <label for="filterStatus" class="form-label">Status</label>
                     <select class="form-select" id="filterStatus" name="status">
                         <option value="">Semua status</option>
                         @foreach(['Diservis', 'Selesai', 'Dibatalkan'] as $status)

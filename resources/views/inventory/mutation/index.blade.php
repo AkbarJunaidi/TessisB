@@ -36,32 +36,29 @@
         </nav>
     </div>
 
-    <div class="card shadow-sm mb-4 border-0 rounded-3 bg-white">
-        <div class="card-header bg-white py-3 border-bottom">
-            <h6 class="m-0 fw-bold text-primary"><i class="bi bi-funnel me-2"></i>Filter Mutasi</h6>
-        </div>
-        <div class="card-body bg-light bg-opacity-25">
+    <div class="card filter-card mb-4">
+        <div class="card-body">
             <form action="{{ route('inventory.mutasi') }}" method="GET">
                 <div class="row g-3">
 
                     <div class="col-md-4">
-                        <label for="search" class="form-label small fw-semibold text-muted">Nama Barang</label>
-                        <input type="text" class="form-control small" id="search" name="search"
+                        <label for="search" class="form-label">Cari</label>
+                        <input type="text" class="form-control" id="search" name="search"
                                value="{{ $filters['search'] ?? '' }}" placeholder="Cari nama barang...">
                     </div>
 
                     <div class="col-md-4">
-                        <label for="from" class="form-label small fw-semibold text-muted">Dari Tanggal</label>
-                        <input type="date" class="form-control small" id="from" name="from" value="{{ $filters['from'] ?? '' }}">
+                        <label for="from" class="form-label">Dari Tanggal</label>
+                        <input type="date" class="form-control" id="from" name="from" value="{{ $filters['from'] ?? '' }}">
                     </div>
 
                     <div class="col-md-4">
-                        <label for="to" class="form-label small fw-semibold text-muted">Sampai Tanggal</label>
-                        <input type="date" class="form-control small" id="to" name="to" value="{{ $filters['to'] ?? '' }}">
+                        <label for="to" class="form-label">Sampai Tanggal</label>
+                        <input type="date" class="form-control" id="to" name="to" value="{{ $filters['to'] ?? '' }}">
                     </div>
 
                     <div class="col-12">
-                        <label class="form-label small fw-semibold text-muted d-block">Jenis Kejadian</label>
+                        <label class="form-label">Jenis Kejadian</label>
                         @php $selectedTypes = $filters['event_types'] ?? []; @endphp
                         <div class="d-flex flex-wrap gap-3">
                             @foreach(['ditambahkan' => 'Ditambahkan', 'dihapus' => 'Dihapus', 'dipinjam' => 'Dipinjam', 'dikembalikan' => 'Dikembalikan', 'pindah_lokasi' => 'Pindah Lokasi', 'servis_selesai' => 'Servis Selesai', 'masuk_servis' => 'Masuk Servis', 'servis_dibatalkan' => 'Servis Dibatalkan', 'status_berubah' => 'Status Berubah (Rusak/Perbaikan/Hilang)'] as $value => $label)
@@ -77,8 +74,8 @@
                 </div>
 
                 <div class="d-flex justify-content-end gap-2 mt-3">
-                    <a href="{{ route('inventory.mutasi') }}" class="btn btn-sm btn-outline-secondary px-3 fw-medium">Reset</a>
-                    <button type="submit" class="btn btn-sm btn-primary px-3 fw-medium">
+                    <a href="{{ route('inventory.mutasi') }}" class="btn btn-outline-secondary px-3">Reset</a>
+                    <button type="submit" class="btn btn-primary px-3">
                         <i class="bi bi-search me-1"></i>Cari
                     </button>
                 </div>

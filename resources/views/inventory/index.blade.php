@@ -32,25 +32,20 @@
 </div>
 
 {{-- Form Search & Filter Status --}}
-<div class="app-panel mb-4">
-    <div class="p-3 p-md-4">
-        <form action="{{ route('inventory.index') }}" method="GET" class="row g-3 align-items-center">
-            <div class="col-12 col-md-6 col-lg-7">
-                <label for="search" class="visually-hidden">Cari inventory</label>
-                <div class="input-group">
-                    <span class="input-group-text bg-light border-end-0 text-muted">
-                        <i class="bi bi-search"></i>
-                    </span>
-                    <input type="text" id="search" name="search"
-                           class="form-control bg-light border-start-0 ps-0"
+<div class="card filter-card mb-4">
+    <div class="card-body">
+        <form action="{{ route('inventory.index') }}" method="GET" class="row g-3 align-items-end">
+            <div class="col-12 col-md-6 col-lg-5">
+                <label for="search" class="form-label">Cari</label>
+                <input type="text" id="search" name="search"
+                           class="form-control"
                            placeholder="Cari berdasarkan nama barang atau brand..."
                            value="{{ request('search') }}">
-                </div>
             </div>
 
-            <div class="col-12 col-md-4 col-lg-3">
-                <label for="status" class="visually-hidden">Filter status</label>
-                <select name="status" id="status" class="form-select bg-light" onchange="this.form.submit()">
+            <div class="col-12 col-md-3 col-lg-3">
+                <label for="status" class="form-label">Status</label>
+                <select name="status" id="status" class="form-select" onchange="this.form.submit()">
                     <option value="Semua Status" {{ request('status') == 'Semua Status' || !request('status') ? 'selected' : '' }}>Semua Status</option>
                     @foreach(\App\Support\InventoryStatus::all() as $statusName)
                         <option value="{{ $statusName }}" {{ request('status') == $statusName ? 'selected' : '' }}>{{ $statusName }}</option>
@@ -58,13 +53,9 @@
                 </select>
             </div>
 
-            <div class="col-12 col-md-2 col-lg-2 d-flex gap-2">
-                <button type="submit" class="btn btn-primary w-100">Filter</button>
-                @if(request('search') || (request('status') && request('status') !== 'Semua Status'))
-                    <a href="{{ route('inventory.index') }}" class="btn btn-outline-secondary" title="Reset Filter" aria-label="Reset filter">
-                        <i class="bi bi-arrow-counterclockwise"></i>
-                    </a>
-                @endif
+            <div class="col-12 col-md-3 col-lg-4 d-flex gap-2">
+                <a href="{{ route('inventory.index') }}" class="btn btn-outline-secondary px-3">Reset</a>
+                <button type="submit" class="btn btn-primary px-3"><i class="bi bi-search me-1"></i>Cari</button>
             </div>
         </form>
     </div>

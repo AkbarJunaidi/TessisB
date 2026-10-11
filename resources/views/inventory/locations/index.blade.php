@@ -63,16 +63,16 @@
     </div>
 
     {{-- Filter --}}
-    <div class="card shadow-sm mb-4 border-0 rounded-3 bg-white">
+    <div class="card filter-card mb-4">
         <div class="card-body">
-            <form action="{{ route('inventory.locations.index') }}" method="GET" class="row g-2 align-items-end">
+            <form action="{{ route('inventory.locations.index') }}" method="GET" class="row g-3 align-items-end">
                 <div class="col-md-6">
-                    <label for="filterSearch" class="form-label small fw-semibold text-muted">Cari Lokasi</label>
+                    <label for="filterSearch" class="form-label">Cari</label>
                     <input type="text" class="form-control" id="filterSearch" name="search"
                            value="{{ $filters['search'] ?? '' }}" placeholder="Nama atau alamat...">
                 </div>
                 <div class="col-md-3">
-                    <label for="filterJenis" class="form-label small fw-semibold text-muted">Jenis</label>
+                    <label for="filterJenis" class="form-label">Jenis</label>
                     <select class="form-select" id="filterJenis" name="jenis">
                         <option value="">Semua jenis</option>
                         @foreach(\App\Models\Location::JENIS as $value => $label)

@@ -12,11 +12,17 @@
 
     @include('finance.partials.tabs', ['active' => 'projects'])
 
-    <div class="card border-0 shadow-sm rounded-3 mb-3">
-        <div class="card-body p-3">
-            <form method="GET" class="d-flex gap-2">
-                <input type="text" name="search" class="form-control" placeholder="Cari nama project / client..." value="{{ $search }}">
-                <button type="submit" class="btn btn-outline-primary"><i class="bi bi-search"></i></button>
+    <div class="card filter-card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-12 col-md-9">
+                    <label for="fSearch" class="form-label">Cari</label>
+                    <input type="text" id="fSearch" name="search" class="form-control" placeholder="Cari nama project / client..." value="{{ $search }}">
+                </div>
+                <div class="col-12 col-md-3 d-flex gap-2">
+                    <a href="{{ route('kwitansi.index') }}" class="btn btn-outline-secondary px-3">Reset</a>
+                    <button type="submit" class="btn btn-primary px-3"><i class="bi bi-search me-1"></i>Cari</button>
+                </div>
             </form>
         </div>
     </div>

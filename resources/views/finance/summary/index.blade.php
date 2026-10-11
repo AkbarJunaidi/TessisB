@@ -22,24 +22,24 @@
     @include('finance.partials.tabs', ['active' => 'summary'])
 
     {{-- Periode --}}
-    <div class="card border-0 shadow-sm rounded-3 mb-3">
-        <div class="card-body p-3">
+    <div class="card filter-card mb-4">
+        <div class="card-body">
             <form method="GET" action="{{ route('finance.summary') }}" class="d-flex flex-wrap align-items-end gap-2">
                 @foreach($presets as $key => $label)
                     <a href="{{ route('finance.summary', ['period' => $key]) }}"
-                       class="btn btn-sm {{ $period['preset'] === $key ? 'btn-primary' : 'btn-outline-secondary' }}">{{ $label }}</a>
+                       class="btn {{ $period['preset'] === $key ? 'btn-primary' : 'btn-outline-secondary' }}">{{ $label }}</a>
                 @endforeach
                 <span class="vr d-none d-md-inline"></span>
                 <input type="hidden" name="period" value="custom">
                 <div>
-                    <label class="form-label small text-muted mb-0" for="sFrom">Dari</label>
-                    <input type="date" name="from" id="sFrom" class="form-control form-control-sm" value="{{ $period['from']->toDateString() }}" required>
+                    <label class="form-label" for="sFrom">Dari Tanggal</label>
+                    <input type="date" name="from" id="sFrom" class="form-control" value="{{ $period['from']->toDateString() }}" required>
                 </div>
                 <div>
-                    <label class="form-label small text-muted mb-0" for="sTo">Sampai</label>
-                    <input type="date" name="to" id="sTo" class="form-control form-control-sm" value="{{ $period['to']->toDateString() }}" required>
+                    <label class="form-label" for="sTo">Sampai Tanggal</label>
+                    <input type="date" name="to" id="sTo" class="form-control" value="{{ $period['to']->toDateString() }}" required>
                 </div>
-                <button type="submit" class="btn btn-sm {{ $period['preset'] === 'custom' ? 'btn-primary' : 'btn-outline-primary' }}">Terapkan</button>
+                <button type="submit" class="btn btn-primary px-3"><i class="bi bi-search me-1"></i>Cari</button>
             </form>
             <div class="text-muted small mt-2">
                 Periode {{ $fmt($period['from']) }} - {{ $fmt($period['to']) }}, pembanding {{ $fmt($overview['prevFrom']) }} - {{ $fmt($overview['prevTo']) }}.

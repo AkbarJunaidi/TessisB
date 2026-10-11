@@ -50,29 +50,29 @@
     @endif
 
     {{-- Filter --}}
-    <div class="card border-0 shadow-sm rounded-3 mb-3">
-        <div class="card-body p-3">
+    <div class="card filter-card mb-4">
+        <div class="card-body">
             <form method="GET" action="{{ route('finance.transactions.index') }}" id="filterForm">
-                <div class="row g-2">
+                <div class="row g-3 align-items-end">
                     <div class="col-6 col-md-3 col-lg-2">
-                        <label class="form-label small text-muted mb-1" for="fFrom">Dari</label>
-                        <input type="date" name="from" id="fFrom" class="form-control form-control-sm" value="{{ $filters['from'] ?? '' }}">
+                        <label class="form-label" for="fFrom">Dari Tanggal</label>
+                        <input type="date" name="from" id="fFrom" class="form-control" value="{{ $filters['from'] ?? '' }}">
                     </div>
                     <div class="col-6 col-md-3 col-lg-2">
-                        <label class="form-label small text-muted mb-1" for="fTo">Sampai</label>
-                        <input type="date" name="to" id="fTo" class="form-control form-control-sm" value="{{ $filters['to'] ?? '' }}">
+                        <label class="form-label" for="fTo">Sampai Tanggal</label>
+                        <input type="date" name="to" id="fTo" class="form-control" value="{{ $filters['to'] ?? '' }}">
                     </div>
                     <div class="col-6 col-md-3 col-lg-2">
-                        <label class="form-label small text-muted mb-1" for="fType">Tipe</label>
-                        <select name="type" id="fType" class="form-select form-select-sm">
+                        <label class="form-label" for="fType">Tipe</label>
+                        <select name="type" id="fType" class="form-select">
                             <option value="">Semua</option>
                             <option value="income" @selected(($filters['type'] ?? '') === 'income')>Pemasukan</option>
                             <option value="expense" @selected(($filters['type'] ?? '') === 'expense')>Pengeluaran</option>
                         </select>
                     </div>
                     <div class="col-6 col-md-3 col-lg-2">
-                        <label class="form-label small text-muted mb-1" for="fCategory">Kategori</label>
-                        <select name="category" id="fCategory" class="form-select form-select-sm">
+                        <label class="form-label" for="fCategory">Kategori</label>
+                        <select name="category" id="fCategory" class="form-select">
                             <option value="">Semua</option>
                             @foreach(\App\Support\FinanceCategory::TYPES as $typeKey => $typeLabel)
                                 <optgroup label="{{ $typeLabel }}">
@@ -84,8 +84,8 @@
                         </select>
                     </div>
                     <div class="col-12 col-md-6 col-lg-2">
-                        <label class="form-label small text-muted mb-1" for="fProject">Project</label>
-                        <select name="project_id" id="fProject" class="form-select form-select-sm">
+                        <label class="form-label" for="fProject">Project</label>
+                        <select name="project_id" id="fProject" class="form-select">
                             <option value="">Semua</option>
                             @foreach($projects as $project)
                                 <option value="{{ $project->id }}" @selected((string) ($filters['project_id'] ?? '') === (string) $project->id)>{{ $project->short_name }}</option>
@@ -93,8 +93,8 @@
                         </select>
                     </div>
                     <div class="col-12 col-md-6 col-lg-2">
-                        <label class="form-label small text-muted mb-1" for="fContact">Client / Vendor</label>
-                        <select name="contact_id" id="fContact" class="form-select form-select-sm">
+                        <label class="form-label" for="fContact">Client / Vendor</label>
+                        <select name="contact_id" id="fContact" class="form-select">
                             <option value="">Semua</option>
                             @foreach($contacts as $contact)
                                 <option value="{{ $contact->id }}" @selected((string) ($filters['contact_id'] ?? '') === (string) $contact->id)>{{ $contact->name }}</option>
@@ -102,17 +102,17 @@
                         </select>
                     </div>
                     <div class="col-12 col-lg-6">
-                        <label class="form-label small text-muted mb-1" for="fSearch">Cari</label>
-                        <input type="text" name="search" id="fSearch" class="form-control form-control-sm" placeholder="Keterangan atau penerima" value="{{ $filters['search'] ?? '' }}">
+                        <label class="form-label" for="fSearch">Cari</label>
+                        <input type="text" name="search" id="fSearch" class="form-control" placeholder="Keterangan atau penerima" value="{{ $filters['search'] ?? '' }}">
                     </div>
                     <div class="col-12 col-lg-6 d-flex flex-wrap align-items-end gap-2">
-                        <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-funnel me-1"></i> Terapkan</button>
-                        <a href="{{ route('finance.transactions.index') }}" class="btn btn-sm btn-outline-secondary">Reset</a>
+                        <a href="{{ route('finance.transactions.index') }}" class="btn btn-outline-secondary">Reset</a>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-search me-1"></i>Cari</button>
                         <span class="vr d-none d-md-inline"></span>
-                        <button type="button" class="btn btn-sm btn-outline-secondary btn-preset" data-preset="month">Bulan Ini</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary btn-preset" data-preset="lastmonth">Bulan Lalu</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary btn-preset" data-preset="year">Tahun Ini</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary btn-preset" data-preset="all">Semua</button>
+                        <button type="button" class="btn btn-outline-secondary btn-preset" data-preset="month">Bulan Ini</button>
+                        <button type="button" class="btn btn-outline-secondary btn-preset" data-preset="lastmonth">Bulan Lalu</button>
+                        <button type="button" class="btn btn-outline-secondary btn-preset" data-preset="year">Tahun Ini</button>
+                        <button type="button" class="btn btn-outline-secondary btn-preset" data-preset="all">Semua</button>
                     </div>
                 </div>
             </form>

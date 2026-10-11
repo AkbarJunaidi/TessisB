@@ -148,7 +148,7 @@ class InventoryController extends Controller
 
         $request->validate([
             'serial_number' => ['required', 'string'],
-            'mode'          => ['required', 'in:pinjam,kembalikan,rusak,hilang'],
+            'mode'          => ['required', 'in:pinjam,kembalikan,rusak,hilang,pindah'],
         ]);
 
         $inventory = Inventory::withAvailability()
@@ -166,6 +166,13 @@ class InventoryController extends Controller
             'inventory' => ['id' => $inventory->id, 'name' => $inventory->name],
         ];
 
+        if ($mode === 'pindah') {
+            $this->authorizeScanMove();
+            $response['units'] = $this->getUnitsLocationPayload($inventory);
+
+            return response()->json($response);
+        }
+
         if ($mode === 'pinjam') {
             $response['available_qty'] = $inventory->qty_available;
             // Rincian unit siap pinjam per lokasi, untuk catatan "unit ada di lokasi lain" di modal Scan.
@@ -182,6 +189,74 @@ class InventoryController extends Controller
         $response['borrowed_units'] = $this->getBorrowedUnitsPayload($inventory);
 
         return response()->json($response);
+    }
+
+    /**
+     * Mode Scan "Ubah Lokasi" butuh izin Scan sekaligus izin memindahkan lokasi unit.
+     */
+    private function authorizeScanMove(): void
+    {
+        abort_unless(
+            Auth::user()?->hasPermission('scan_barang', 'view') && Auth::user()?->hasPermission('inventory', 'move_location'),
+            403,
+            'Anda tidak memiliki hak akses untuk memindahkan lokasi unit.'
+        );
+    }
+
+    /**
+     * Semua unit fisik barang beserta lokasi sekarang, untuk mode Scan "Ubah Lokasi".
+     * Unit yang sedang dipinjam atau berstatus Hilang ditandai tidak bisa dipindah (lihat LocationService::planMove).
+     */
+    private function getUnitsLocationPayload(Inventory $inventory): array
+    {
+        return $inventory->units()
+            ->with('lokasiSekarang:id,name')
+            ->orderBy('unit_number')
+            ->get()
+            ->map(function ($unit) {
+                $blocked = $unit->isOnLoan() ? 'Sedang dipinjam' : ($unit->status === 'Hilang' ? 'Berstatus Hilang' : null);
+
+                return [
+                    'unit_id'     => $unit->id,
+                    'unit_number' => $unit->unit_number,
+                    'lokasi'      => $unit->lokasiSekarang?->name ?? 'Tanpa lokasi',
+                    'blocked'     => $blocked,
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    /**
+     * [AJAX] Submit fitur Scan mode "Ubah Lokasi" - pindahkan unit terpilih ke lokasi pada
+     * bar lokasi Scan, lewat LocationService::moveUnits() (aturan dan catatan Mutasi sama
+     * dengan Detail Inventory).
+     */
+    public function scanPindah(Request $request): JsonResponse
+    {
+        $this->authorizeScanMove();
+
+        $data = $request->validate([
+            'inventory_id' => ['required', 'integer', 'exists:inventories,id'],
+            'unit_ids'     => ['required', 'array', 'min:1'],
+            'unit_ids.*'   => ['integer', 'distinct'],
+        ] + LocationService::INPUT_RULES);
+
+        try {
+            $moved = $this->locationService->moveUnits(
+                Inventory::findOrFail($data['inventory_id']),
+                array_map('intval', $data['unit_ids']),
+                (int) $data['lokasi_id'],
+                false,
+                isset($data['lat']) ? (float) $data['lat'] : null,
+                isset($data['lng']) ? (float) $data['lng'] : null,
+                isset($data['accuracy']) ? (float) $data['accuracy'] : null
+            );
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        return response()->json(['success' => true, 'moved' => $moved]);
     }
 
     /**

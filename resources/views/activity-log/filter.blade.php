@@ -1,14 +1,5 @@
-<div class="card shadow-sm mb-4 border-0">
-
-    <div class="card-header bg-white py-3 border-bottom">
-        <h6 class="m-0 fw-bold text-primary">
-            <i class="fas fa-filter me-2"></i>
-            Filter Log Aktivitas
-        </h6>
-    </div>
-
-    <div class="card-body bg-light-50">
-
+<div class="card filter-card mb-4">
+    <div class="card-body">
         <form
             action="{{ route('activity-logs.index') }}"
             method="GET">
@@ -18,7 +9,7 @@
                 {{-- Search --}}
                 <div class="col-md-6">
 
-                    <label class="form-label small fw-semibold text-muted">
+                    <label class="form-label">
                         Cari
                     </label>
 
@@ -34,7 +25,7 @@
                 {{-- Module (DIPERBAIKI) --}}
                 <div class="col-md-4">
 
-                    <label class="form-label small fw-semibold text-muted">
+                    <label class="form-label">
                         Modul
                     </label>
 
@@ -62,7 +53,7 @@
                 {{-- User --}}
                 <div class="col-md-4">
 
-                    <label class="form-label small fw-semibold text-muted">
+                    <label class="form-label">
                         User
                     </label>
 
@@ -87,7 +78,7 @@
                 {{-- Action --}}
                 <div class="col-md-4">
 
-                    <label class="form-label small fw-semibold text-muted">
+                    <label class="form-label">
                         Aksi
                     </label>
 
@@ -118,7 +109,7 @@
                 {{-- Date From --}}
                 <div class="col-md-6">
 
-                    <label class="form-label small fw-semibold text-muted">
+                    <label class="form-label">
                         Dari Tanggal
                     </label>
 
@@ -132,7 +123,7 @@
                 {{-- Date To --}}
                 <div class="col-md-6">
 
-                    <label class="form-label small fw-semibold text-muted">
+                    <label class="form-label">
                         Sampai Tanggal
                     </label>
 
@@ -146,17 +137,17 @@
             </div>
 
             {{-- Action Buttons --}}
-            <div class="d-flex justify-content-end gap-2 mt-4">
+            <div class="d-flex justify-content-end gap-2 mt-3">
 
                 <a
                     href="{{ route('activity-logs.index') }}"
-                    class="btn btn-outline-secondary px-4">
+                    class="btn btn-outline-secondary px-3">
                     Reset
                 </a>
 
                 <button
                     type="submit"
-                    class="btn btn-primary px-4">
+                    class="btn btn-primary px-3">
                     Cari
                 </button>
             </div>

@@ -196,22 +196,17 @@
     </div>
 
     {{-- Form Search & Filter --}}
-    <div class="app-panel mb-4">
-        <div class="p-3 p-md-4">
-            <form method="GET" class="row g-3 align-items-center">
-                <div class="col-12 col-lg-4">
-                    <label for="search" class="visually-hidden">Cari project</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0 text-muted">
-                            <i class="bi bi-search"></i>
-                        </span>
-                        <input type="text" id="search" name="search" class="form-control bg-light border-start-0 ps-0"
+    <div class="card filter-card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-12 col-lg-3">
+                    <label for="search" class="form-label">Cari</label>
+                    <input type="text" id="search" name="search" class="form-control"
                                placeholder="Cari nama project, PIC, lokasi..." value="{{ $filters['search'] ?? '' }}">
-                    </div>
                 </div>
                 <div class="col-6 col-lg-2">
-                    <label for="status" class="visually-hidden">Filter status</label>
-                    <select name="status" id="status" class="form-select bg-light">
+                    <label for="status" class="form-label">Status</label>
+                    <select name="status" id="status" class="form-select">
                         <option value="">Semua Status</option>
                         @foreach(\App\Models\Project::STATUS_LABELS as $s => $label)
                             <option value="{{ $s }}" @selected(($filters['status'] ?? '') === $s)>{{ $label }}</option>
@@ -219,8 +214,8 @@
                     </select>
                 </div>
                 <div class="col-6 col-lg-2">
-                    <label for="pic" class="visually-hidden">Filter PIC</label>
-                    <select name="pic" id="pic" class="form-select bg-light">
+                    <label for="pic" class="form-label">PIC</label>
+                    <select name="pic" id="pic" class="form-select">
                         <option value="">Semua PIC</option>
                         @foreach($pics as $p)
                             <option value="{{ $p }}" @selected(($filters['pic'] ?? '') === $p)>{{ $p }}</option>
@@ -228,21 +223,17 @@
                     </select>
                 </div>
                 <div class="col-6 col-lg-2">
-                    <label for="month" class="visually-hidden">Filter bulan</label>
-                    <select name="month" id="month" class="form-select bg-light">
+                    <label for="month" class="form-label">Bulan</label>
+                    <select name="month" id="month" class="form-select">
                         <option value="">Semua Bulan</option>
                         @for($m = 1; $m <= 12; $m++)
                             <option value="{{ $m }}" @selected((string)($filters['month'] ?? '') === (string)$m)>{{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}</option>
                         @endfor
                     </select>
                 </div>
-                <div class="col-6 col-lg-2 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary w-100">Filter</button>
-                    @if(collect($filters ?? [])->filter()->isNotEmpty())
-                        <a href="{{ route('projects.index') }}" class="btn btn-outline-secondary" title="Reset Filter" aria-label="Reset filter">
-                            <i class="bi bi-arrow-counterclockwise"></i>
-                        </a>
-                    @endif
+                <div class="col-12 col-lg-3 d-flex gap-2">
+                    <a href="{{ route('projects.index') }}" class="btn btn-outline-secondary px-3">Reset</a>
+                    <button type="submit" class="btn btn-primary px-3"><i class="bi bi-search me-1"></i>Cari</button>
                 </div>
             </form>
         </div>

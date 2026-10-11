@@ -52,36 +52,42 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-3 mb-3">
-        <div class="card-body p-3">
-            <form method="GET" class="row g-2">
-                <div class="col-md-3">
-                    <input type="text" name="search" class="form-control form-control-sm" placeholder="Cari kode / vendor..." value="{{ $filters['search'] ?? '' }}">
+    <div class="card filter-card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3 align-items-end">
+                <div class="col-12 col-md-6 col-lg-4">
+                    <label for="fSearch" class="form-label">Cari</label>
+                    <input type="text" id="fSearch" name="search" class="form-control" placeholder="Cari kode / vendor..." value="{{ $filters['search'] ?? '' }}">
                 </div>
-                <div class="col-6 col-md-2">
-                    <select name="status" class="form-select form-select-sm">
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label for="fStatus" class="form-label">Status</label>
+                    <select name="status" id="fStatus" class="form-select">
                         <option value="">Semua Status</option>
                         @foreach(\App\Models\Purchase::STATUSES as $status)
                             <option value="{{ $status }}" @selected(($filters['status'] ?? '') === $status)>{{ $status }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-6 col-md-2">
-                    <select name="payment_status" class="form-select form-select-sm">
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label for="fPayment" class="form-label">Pembayaran</label>
+                    <select name="payment_status" id="fPayment" class="form-select">
                         <option value="">Semua Pembayaran</option>
                         @foreach([\App\Models\Purchase::PAYMENT_UNPAID, \App\Models\Purchase::PAYMENT_PAID] as $payment)
                             <option value="{{ $payment }}" @selected(($filters['payment_status'] ?? '') === $payment)>{{ $payment }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-6 col-md-2">
-                    <input type="date" name="from" class="form-control form-control-sm" value="{{ $filters['from'] ?? '' }}" title="Dari tanggal">
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label for="fFrom" class="form-label">Dari Tanggal</label>
+                    <input type="date" name="from" id="fFrom" class="form-control" value="{{ $filters['from'] ?? '' }}">
                 </div>
-                <div class="col-6 col-md-2">
-                    <input type="date" name="to" class="form-control form-control-sm" value="{{ $filters['to'] ?? '' }}" title="Sampai tanggal">
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label for="fTo" class="form-label">Sampai Tanggal</label>
+                    <input type="date" name="to" id="fTo" class="form-control" value="{{ $filters['to'] ?? '' }}">
                 </div>
-                <div class="col-md-1">
-                    <button type="submit" class="btn btn-sm btn-outline-primary w-100"><i class="bi bi-search"></i></button>
+                <div class="col-12 d-flex justify-content-end gap-2">
+                    <a href="{{ route('purchases.index') }}" class="btn btn-outline-secondary px-3">Reset</a>
+                    <button type="submit" class="btn btn-primary px-3"><i class="bi bi-search me-1"></i>Cari</button>
                 </div>
             </form>
         </div>

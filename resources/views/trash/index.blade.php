@@ -30,25 +30,22 @@
 
     <div id="trashAlertPlaceholder"></div>
 
-    <div class="card shadow-sm mb-4 border-0 rounded-3 bg-white">
-        <div class="card-header bg-white py-3 border-bottom">
-            <h6 class="m-0 fw-bold text-primary"><i class="bi bi-funnel me-2"></i>Filter Sampah</h6>
-        </div>
-        <div class="card-body bg-light bg-opacity-25">
+    <div class="card filter-card mb-4">
+        <div class="card-body">
             <form action="{{ route('trash.index') }}" method="GET">
                 <div class="row g-3">
 
                     {{-- Search --}}
                     <div class="col-md-4">
-                        <label for="search" class="form-label small fw-semibold text-muted">Cari Nama Data</label>
-                        <input type="text" class="form-control form-control-sm text-dark small" id="search" name="search"
+                        <label for="search" class="form-label">Cari</label>
+                        <input type="text" class="form-control" id="search" name="search"
                                placeholder="Nama / judul data..." value="{{ request('search') }}">
                     </div>
 
                     {{-- Tipe Data --}}
                     <div class="col-md-4">
-                        <label for="type" class="form-label small fw-semibold text-muted">Tipe Data</label>
-                        <select class="form-select select-sm text-dark small" id="type" name="type">
+                        <label for="type" class="form-label">Tipe Data</label>
+                        <select class="form-select" id="type" name="type">
                             <option value="">Semua Tipe</option>
                             @foreach($types as $value => $label)
                                 <option value="{{ $value }}" {{ request('type') == $value ? 'selected' : '' }}>
@@ -60,8 +57,8 @@
 
                     {{-- Dihapus Oleh --}}
                     <div class="col-md-4">
-                        <label for="deleted_by" class="form-label small fw-semibold text-muted">Dihapus Oleh</label>
-                        <select class="form-select select-sm text-dark small" id="deleted_by" name="deleted_by">
+                        <label for="deleted_by" class="form-label">Dihapus Oleh</label>
+                        <select class="form-select" id="deleted_by" name="deleted_by">
                             <option value="">Semua User</option>
                             @foreach($users as $user)
                                 <option value="{{ $user->id }}" {{ request('deleted_by') == $user->id ? 'selected' : '' }}>
@@ -73,21 +70,21 @@
 
                     {{-- Tanggal Dari --}}
                     <div class="col-md-6">
-                        <label for="date_from" class="form-label small fw-semibold text-muted">Tanggal Dari</label>
-                        <input type="date" class="form-control small" id="date_from" name="date_from" value="{{ request('date_from') }}">
+                        <label for="date_from" class="form-label">Tanggal Dari</label>
+                        <input type="date" class="form-control" id="date_from" name="date_from" value="{{ request('date_from') }}">
                     </div>
 
                     {{-- Tanggal Sampai --}}
                     <div class="col-md-6">
-                        <label for="date_to" class="form-label small fw-semibold text-muted">Tanggal Sampai</label>
-                        <input type="date" class="form-control small" id="date_to" name="date_to" value="{{ request('date_to') }}">
+                        <label for="date_to" class="form-label">Tanggal Sampai</label>
+                        <input type="date" class="form-control" id="date_to" name="date_to" value="{{ request('date_to') }}">
                     </div>
 
                 </div>
 
                 <div class="d-flex justify-content-end gap-2 mt-3">
-                    <a href="{{ route('trash.index') }}" class="btn btn-sm btn-outline-secondary px-3 fw-medium">Reset</a>
-                    <button type="submit" class="btn btn-sm btn-primary px-3 fw-medium">
+                    <a href="{{ route('trash.index') }}" class="btn btn-outline-secondary px-3">Reset</a>
+                    <button type="submit" class="btn btn-primary px-3">
                         <i class="bi bi-search me-1"></i>Cari
                     </button>
                 </div>

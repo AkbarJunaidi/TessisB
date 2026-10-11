@@ -95,11 +95,8 @@
     @endphp
 
     {{-- Kartu filter terpisah: tipe (dengan jumlah), pencarian, dan huruf awal nama. --}}
-    <div class="card shadow-sm mb-4 border-0 rounded-3 bg-white">
-        <div class="card-header bg-white py-3 border-bottom">
-            <h6 class="m-0 fw-bold text-primary"><i class="bi bi-funnel me-2"></i>Filter Kontak</h6>
-        </div>
-        <div class="card-body bg-light bg-opacity-25">
+    <div class="card filter-card mb-4">
+        <div class="card-body">
 
             <ul class="nav nav-pills mb-3">
                 @foreach($typeTabs as $typeKey => $typeTab)
@@ -122,20 +119,20 @@
 
                 <div class="row g-3 align-items-end">
                     <div class="col-md-6">
-                        <label for="contactSearch" class="form-label small fw-semibold text-muted">Cari Kontak</label>
+                        <label for="contactSearch" class="form-label">Cari</label>
                         <input
                             type="text"
                             id="contactSearch"
                             name="search"
-                            class="form-control form-control-sm"
+                            class="form-control"
                             placeholder="Nama, perusahaan, No. HP/WA, atau email..."
                             value="{{ $filters['search'] ?? '' }}"
                         >
                     </div>
 
                     <div class="col-md-3">
-                        <label for="contactLetter" class="form-label small fw-semibold text-muted">Huruf Awal Nama</label>
-                        <select id="contactLetter" name="letter" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <label for="contactLetter" class="form-label">Huruf Awal Nama</label>
+                        <select id="contactLetter" name="letter" class="form-select" onchange="this.form.submit()">
                             <option value="">Semua Huruf</option>
                             @foreach($letterOptions as $letter)
                                 <option value="{{ $letter }}" @selected($currentLetter === $letter)>{{ $letter }}</option>
@@ -145,9 +142,9 @@
 
                     <div class="col-md-3 d-flex justify-content-md-end gap-2">
                         @if($hasFilter)
-                            <a href="{{ route('contacts.index') }}" class="btn btn-sm btn-outline-secondary px-3 fw-medium">Reset</a>
+                            <a href="{{ route('contacts.index') }}" class="btn btn-outline-secondary px-3">Reset</a>
                         @endif
-                        <button type="submit" class="btn btn-sm btn-primary px-3 fw-medium">
+                        <button type="submit" class="btn btn-primary px-3">
                             <i class="bi bi-search me-1"></i>Cari
                         </button>
                     </div>

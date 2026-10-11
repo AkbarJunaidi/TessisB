@@ -417,7 +417,7 @@ Route::middleware('auth')->group(function () {
         Route::get('scan-barang/lookup', [InventoryController::class, 'scanLookup'])
             ->name('inventory.scan-lookup');
 
-        // 3 endpoint submit fitur Scan (mode Pinjam/Kembalikan/Rusak+Hilang)
+        // Endpoint submit fitur Scan (mode Pinjam/Kembalikan/Rusak+Hilang/Ubah Lokasi)
         // - tidak perlu didaftarkan sebelum Route::resource (method POST,
         // tidak ada risiko ketangkap {inventory} yang scope-nya GET).
         Route::post('inventory/scan/pinjam', [InventoryController::class, 'scanPinjam'])
@@ -426,6 +426,9 @@ Route::middleware('auth')->group(function () {
             ->name('inventory.scan.kembalikan');
         Route::post('inventory/scan/status', [InventoryController::class, 'scanStatus'])
             ->name('inventory.scan.status');
+        // Mode Ubah Lokasi: izin scan_barang.view + inventory.move_location dicek di controller.
+        Route::post('inventory/scan/pindah', [InventoryController::class, 'scanPindah'])
+            ->name('inventory.scan.pindah');
 
         // Cek unit yang servisnya segera / terlambat sebelum barang dipakai (popup peringatan).
         Route::post('inventory/servis-check', [InventoryController::class, 'servisCheck'])

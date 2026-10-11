@@ -29,6 +29,11 @@
                     <button type="button" class="btn btn-outline-danger scan-mode-btn" data-mode="hilang">
                         <i class="bi bi-question-circle"></i> Hilang
                     </button>
+                    @if(auth()->user()->hasPermission('inventory', 'move_location'))
+                        <button type="button" class="btn btn-outline-primary scan-mode-btn scan-mode-btn--wide" data-mode="pindah">
+                            <i class="bi bi-geo-alt"></i> Ubah Lokasi
+                        </button>
+                    @endif
                 </div>
             </div>
 
@@ -279,6 +284,8 @@ document.addEventListener('DOMContentLoaded', function () {
             text = 'Unit ditandai Rusak dan tercatat berada di ' + name + '.';
         } else if (currentMode === 'hilang') {
             text = 'Lokasi unit tidak diubah; ' + name + ' dicatat sebagai tempat pelaporan.';
+        } else if (currentMode === 'pindah') {
+            text = 'Unit terpilih akan dipindahkan ke ' + name + '.';
         }
 
         noteEl.textContent = text;
@@ -303,7 +310,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        renderUnitPicker(data.inventory.name, data.borrowed_units, data.mode);
+        renderUnitPicker(data.inventory.name, data.mode === 'pindah' ? data.units : data.borrowed_units, data.mode, data.inventory.id);
     }
 
     // Mode Pinjam: qty dibatasi ke stok tersedia; stok 0 hanya menampilkan siapa yang sedang meminjam.
@@ -405,13 +412,15 @@ document.addEventListener('DOMContentLoaded', function () {
             .finally(() => { isSubmitting = false; });
     }
 
-    // Kembalikan/Rusak/Hilang memakai tampilan sama: checkbox per unit (default kosong),
+    // Kembalikan/Rusak/Hilang/Ubah Lokasi memakai tampilan sama: checkbox per unit (default kosong),
     // beda di teks dan endpoint submit (lihat submitBatchAction).
-    function renderUnitPicker(inventoryName, units, mode) {
+    function renderUnitPicker(inventoryName, units, mode, inventoryId) {
+        const isMove = mode === 'pindah';
+
         if (units.length === 0) {
             resultArea.innerHTML = `
                 <div class="alert alert-info mb-0">
-                    <strong>${esc(inventoryName)}</strong> ditemukan, tapi barang ini sedang tidak dipinjam di manapun.
+                    <strong>${esc(inventoryName)}</strong> ditemukan, tapi ${isMove ? 'belum punya unit.' : 'barang ini sedang tidak dipinjam di manapun.'}
                 </div>`;
             return;
         }
@@ -420,20 +429,24 @@ document.addEventListener('DOMContentLoaded', function () {
             kembalikan: { info: 'dikembalikan', btn: 'Kembalikan Unit Terpilih' },
             rusak: { info: 'ditandai Rusak', btn: 'Tandai Rusak (Sekaligus Dikembalikan)' },
             hilang: { info: 'ditandai Hilang', btn: 'Tandai Hilang (Sekaligus Dikembalikan)' },
+            pindah: { info: 'dipindahkan', btn: 'Pindahkan Unit Terpilih' },
         }[mode];
 
+        // Mode Ubah Lokasi: tampilkan lokasi sekarang; unit yang sedang dipinjam atau Hilang tidak bisa dipilih.
         const optionsHtml = units.map((unit, idx) => `
             <div class="form-check border rounded-3 p-2 mb-2">
-                <input class="form-check-input scan-unit-checkbox" type="checkbox" id="scanUnitChoice${idx}" value="${idx}">
+                <input class="form-check-input scan-unit-checkbox" type="checkbox" id="scanUnitChoice${idx}" value="${idx}" ${unit.blocked ? 'disabled' : ''}>
                 <label class="form-check-label d-block" for="scanUnitChoice${idx}">
                     <div class="fw-semibold">Unit #${esc(unit.unit_number)}</div>
-                    <div class="small text-muted">${esc(unit.referensi)} - SJ ${esc(unit.surat_jalan_nomor)}</div>
+                    <div class="small text-muted">${isMove
+                        ? 'Lokasi sekarang: ' + esc(unit.lokasi) + (unit.blocked ? ' - ' + esc(unit.blocked) : '')
+                        : esc(unit.referensi) + ' - SJ ' + esc(unit.surat_jalan_nomor)}</div>
                 </label>
             </div>
         `).join('');
 
         // Toggle "Pilih Semua" cuma relevan kalau lebih dari 1 unit.
-        const selectAllHtml = units.length > 1 ? `
+        const selectAllHtml = units.filter((u) => !u.blocked).length > 1 ? `
             <div class="form-check mb-2 pb-2 border-bottom">
                 <input class="form-check-input" type="checkbox" id="scanUnitSelectAll">
                 <label class="form-check-label small fw-semibold" for="scanUnitSelectAll">Pilih Semua</label>
@@ -442,7 +455,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         resultArea.innerHTML = `
             <div class="alert alert-secondary">
-                <strong>${esc(inventoryName)}</strong> sedang dipinjam di ${units.length} unit. Pilih yang mau ${modeText.info}:
+                <strong>${esc(inventoryName)}</strong> ${isMove ? 'memiliki' : 'sedang dipinjam di'} ${units.length} unit. Pilih yang mau ${modeText.info}:
             </div>
             ${selectAllHtml}
             ${optionsHtml}
@@ -455,7 +468,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const selectAllCheckbox = document.getElementById('scanUnitSelectAll');
         if (selectAllCheckbox) {
             selectAllCheckbox.addEventListener('change', function () {
-                document.querySelectorAll('.scan-unit-checkbox').forEach((cb) => { cb.checked = this.checked; });
+                document.querySelectorAll('.scan-unit-checkbox:not(:disabled)').forEach((cb) => { cb.checked = this.checked; });
             });
         }
 
@@ -468,7 +481,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            submitBatchAction(chosen, mode);
+            submitBatchAction(chosen, mode, inventoryId);
         });
 
         syncActionState();
@@ -476,7 +489,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Endpoint beda per mode (inventory.scan.*) tetapi 1x POST; unit_ids boleh campuran project
     // (ditangani SuratJalanService).
-    function submitBatchAction(units, mode) {
+    function submitBatchAction(units, mode, inventoryId) {
         const lokasi = locationPicker.value();
 
         if (!lokasi) {
@@ -491,21 +504,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const unitIds = units.map((u) => u.unit_id);
         const isStatusMode = mode === 'rusak' || mode === 'hilang';
-        const url = isStatusMode
-            ? '{{ route('inventory.scan.status') }}'
-            : '{{ route('inventory.scan.kembalikan') }}';
-        const body = Object.assign(
-            isStatusMode
-                ? { unit_ids: unitIds, status: mode === 'rusak' ? 'Rusak' : 'Hilang' }
-                : { unit_ids: unitIds },
-            lokasi
-        );
+        const url = mode === 'pindah'
+            ? '{{ route('inventory.scan.pindah') }}'
+            : (isStatusMode ? '{{ route('inventory.scan.status') }}' : '{{ route('inventory.scan.kembalikan') }}');
+        const base = mode === 'pindah'
+            ? { inventory_id: inventoryId, unit_ids: unitIds }
+            : (isStatusMode ? { unit_ids: unitIds, status: mode === 'rusak' ? 'Rusak' : 'Hilang' } : { unit_ids: unitIds });
+        const body = Object.assign(base, lokasi);
+        const targetName = locationPicker.name();
 
         postJson(url, body)
             .then(() => {
                 resultArea.innerHTML = `
                     <div class="alert alert-success mb-0">
-                        <i class="bi bi-check-circle-fill me-1"></i> ${unitIds.length} unit berhasil diproses.
+                        <i class="bi bi-check-circle-fill me-1"></i> ${unitIds.length} unit berhasil ${mode === 'pindah' ? 'dipindahkan ke ' + esc(targetName) : 'diproses'}.
                     </div>`;
                 serialInput.value = '';
                 serialInput.focus();
