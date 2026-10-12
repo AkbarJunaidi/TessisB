@@ -28,7 +28,7 @@ class PriceController extends Controller
             'Anda tidak memiliki hak akses untuk melihat daftar harga barang.'
         );
 
-        $filters = $request->only(['search', 'filter']);
+        $filters = $request->only(['search', 'filter', 'biaya']);
 
         return view('inventory.price.index', $this->repairService->getPriceList($filters) + compact('filters'));
     }

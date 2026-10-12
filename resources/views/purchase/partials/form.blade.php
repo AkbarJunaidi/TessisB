@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         let html = '<div class="row g-2">'
             + cell('Harga beli terakhir / unit', info.last_price !== null
-                ? rupiah(info.last_price) + ' <span class="text-muted fw-normal">(' + esc(info.last_code) + ')</span>' : '-')
+                ? rupiah(info.last_price) + ' <span class="text-muted fw-normal">(' + esc(info.last_code || 'manual') + ')</span>' : '-')
             + cell('Biaya servis / unit (rata-rata)', avg !== null
                 ? rupiah(avg) + ' <span class="text-muted fw-normal">(' + servisUnits + ' unit pernah diservis)</span>' : '-')
             + cell('Total biaya servis ' + qty + ' unit', avg !== null && qty > 0

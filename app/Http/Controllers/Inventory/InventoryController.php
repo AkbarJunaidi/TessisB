@@ -24,7 +24,8 @@ class InventoryController extends Controller
     public function __construct(
         protected InventoryService $inventoryService,
         protected \App\Services\Project\SuratJalanService $suratJalanService,
-        protected LocationService $locationService
+        protected LocationService $locationService,
+        protected \App\Services\Inventory\RepairService $repairService
     ) {}
 
     /**
@@ -113,7 +114,11 @@ class InventoryController extends Controller
 
         $canManageRepairs = (bool) Auth::user()?->hasPermission('inventory', 'manage_repairs');
 
-        return view('inventory.show', compact('inventory', 'borrowHistory', 'canMoveLocation', 'storageLocations', 'canManageRepairs'));
+        // Harga bersumber dari modul Pembelian, jadi hanya tampil bagi yang boleh melihat Pembelian.
+        $canViewPrice = (bool) Auth::user()?->hasPermission('purchase', 'view');
+        $price        = $canViewPrice ? $this->repairService->latestPrice($inventory) : null;
+
+        return view('inventory.show', compact('inventory', 'borrowHistory', 'canMoveLocation', 'storageLocations', 'canManageRepairs', 'canViewPrice', 'price'));
     }
 
     /**
@@ -389,7 +394,10 @@ class InventoryController extends Controller
 
         $inventory->load('attributes', 'units.suratJalanItem.suratJalan', 'units.repairItem.repair');
 
-        return view('inventory.edit', compact('inventory'));
+        // Harga mengikuti Pembelian terakhir; hanya dihitung bagi yang boleh melihat Pembelian.
+        $latestPrice = Auth::user()?->hasPermission('purchase', 'view') ? $this->repairService->latestPrice($inventory) : null;
+
+        return view('inventory.edit', compact('inventory', 'latestPrice'));
     }
 
     /**

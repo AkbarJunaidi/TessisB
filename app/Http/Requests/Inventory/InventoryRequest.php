@@ -26,7 +26,7 @@ class InventoryRequest extends FormRequest
         // Kondisi untuk membedakan validasi antara Create (POST) dan Update (PUT/PATCH)
         $inventoryId = $this->route('inventory') ? ($this->route('inventory')->id ?? $this->route('inventory')) : null;
 
-        return [
+        $rules = [
             'name' => ['required', 'string', 'max:100'],
             'serial_number' => [
                 'required',
@@ -77,6 +77,23 @@ class InventoryRequest extends FormRequest
             'servis_interval_hari' => ['nullable', 'integer', 'min:1', 'max:3650'],
             'servis_interval_pemakaian' => ['nullable', 'integer', 'min:1', 'max:1000'],
         ];
+
+        // Harga mengikuti izin lihat Pembelian; tanpa izin, field diabaikan dan harga lama tidak tersentuh.
+        if ($this->user()?->hasPermission('purchase', 'view')) {
+            $rules['harga_manual'] = ['nullable', 'integer', 'min:0', 'max:999999999999'];
+        }
+
+        return $rules;
+    }
+
+    /** Input harga berformat "1.500.000" dibersihkan jadi angka; bagian desimal dibuang. */
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('harga_manual')) {
+            $digits = preg_replace('/\D/', '', explode(',', (string) $this->input('harga_manual'))[0]);
+
+            $this->merge(['harga_manual' => $digits === '' ? null : $digits]);
+        }
     }
 
     /**
@@ -110,6 +127,8 @@ class InventoryRequest extends FormRequest
             'image.max' => 'Ukuran gambar tidak boleh melebihi 5MB.',
             'description.max' => 'Deskripsi barang maksimal 500 karakter.',
             'brand.max' => 'Brand maksimal 100 karakter.',
+            'harga_manual.integer' => 'Harga harus berupa angka.',
+            'harga_manual.max' => 'Harga terlalu besar.',
             'quantity_total.required' => 'Jumlah barang wajib diisi.',
             'quantity_total.integer' => 'Jumlah barang harus berupa angka.',
             'quantity_total.min' => 'Jumlah barang minimal 1 unit.',

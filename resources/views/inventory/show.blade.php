@@ -110,6 +110,23 @@
                                 <td class="text-muted py-2 ps-0 u-w-40pct"><i class="bi bi-tag text-secondary me-2"></i>Merek</td>
                                 <td class="fw-bold text-dark py-2 text-end">{{ $inventory->brand ?: '-' }}</td>
                             </tr>
+                            @if($canViewPrice)
+                                <tr>
+                                    <td class="text-muted py-2 ps-0"><i class="bi bi-cash-coin text-secondary me-2"></i>Harga Beli Terakhir / unit</td>
+                                    <td class="fw-bold text-dark py-2 text-end">
+                                        @if($price)
+                                            {{ \App\Support\Money::formatRupiah($price['price']) }}
+                                            @if($price['source'] === 'manual')
+                                                <span class="badge-soft-secondary px-2 py-1 rounded-pill fw-normal ms-1">Manual</span>
+                                            @else
+                                                <div class="small fw-normal"><a href="{{ route('purchases.show', $price['purchase_id']) }}" class="text-decoration-none">{{ $price['code'] }}</a></div>
+                                            @endif
+                                        @else
+                                            <span class="text-muted fw-normal">Belum ada</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
                             <tr>
                                 <td class="text-muted py-2 ps-0 u-w-40pct"><i class="bi bi-hash text-secondary me-2"></i>Serial Number</td>
                                 <td class="fw-bold text-dark py-2 text-end font-monospace">{{ $inventory->serial_number }}</td>
@@ -250,87 +267,98 @@
                 $hasAttributes = $inventory->attributes && $inventory->attributes->count() > 0;
             @endphp
 
-            <!-- SISI KIRI (8 KOLOM): Informasi Identitas Aset, di bawahnya Informasi Tambahan (selebar sama) -->
-            <div class="col-12 col-lg-8">
-                <div class="row g-4">
-                    <div class="col-12">
-                        <div class="card shadow-sm border-0 rounded-3 bg-white h-100">
-                            <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
-                                <h6 class="fw-bold text-dark m-0">Informasi Identitas Aset</h6>
-                            </div>
-                            <div class="card-body p-4">
-                                <table class="table table-borderless table-sm align-middle small mb-0">
-                                    <tbody>
+            <!-- SISI KIRI (8 KOLOM): Informasi Identitas Aset + Informasi Tambahan; kartu melebar mengisi tinggi kolom QR di sebelahnya -->
+            <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+                <div class="card shadow-sm border-0 rounded-3 bg-white flex-grow-1">
+                    <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
+                        <h6 class="fw-bold text-dark m-0">Informasi Identitas Aset</h6>
+                    </div>
+                    <div class="card-body p-4">
+                        <table class="table table-borderless table-sm align-middle small mb-0">
+                            <tbody>
+                                <tr>
+                                    <td class="text-muted py-2 u-w-40pct">Nama Barang</td>
+                                    <td class="fw-bold text-dark py-2">: {{ $inventory->name }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted py-2">Serial Number</td>
+                                    <td class="py-2">: <span class="font-monospace fw-semibold text-secondary">{{ $inventory->serial_number }}</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted py-2">Status Barang</td>
+                                    <td class="py-2">: <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">{{ strtoupper($inventory->display_status ?? 'TERSEDIA') }}</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted py-2">Jumlah Barang</td>
+                                    <td class="py-2">:
+                                        <span class="fw-semibold">{{ $inventory->quantity_total }} unit total</span>
+                                        <span class="text-success">({{ $inventory->qty_available }} tersedia</span>,
+                                        <span class="text-secondary">{{ $inventory->qty_in_use }} sedang dipakai)</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted py-2">Merek</td>
+                                    <td class="fw-bold text-dark py-2">: {{ $inventory->brand ?: '-' }}</td>
+                                </tr>
+                                @if($canViewPrice)
+                                    <tr>
+                                        <td class="text-muted py-2">Harga Beli Terakhir / unit</td>
+                                        <td class="fw-bold text-dark py-2">:
+                                            @if($price)
+                                                {{ \App\Support\Money::formatRupiah($price['price']) }}
+                                                @if($price['source'] === 'manual')
+                                                    <span class="badge-soft-secondary px-2 py-1 rounded-pill fw-normal ms-1">Manual</span>
+                                                @else
+                                                    <a href="{{ route('purchases.show', $price['purchase_id']) }}" class="text-decoration-none fw-normal small ms-1">{{ $price['code'] }}</a>
+                                                @endif
+                                            @else
+                                                <span class="text-muted fw-normal">Belum ada</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endif
+                                <tr>
+                                    <td class="text-muted py-2">Tanggal Input</td>
+                                    <td class="text-dark py-2">: {{ $inventory->created_at ? $inventory->created_at->format('d F Y H:i') . ' WIB' : '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted py-2">Terakhir Diperbarui</td>
+                                    <td class="text-dark py-2">: {{ $inventory->updated_at ? $inventory->updated_at->format('d F Y H:i') . ' WIB' : '-' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                @if($hasAttributes)
+                    <div class="card shadow-sm border-0 rounded-3 bg-white flex-grow-1">
+                        <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
+                            <h6 class="fw-bold text-dark m-0">Informasi Tambahan</h6>
+                        </div>
+                        <div class="card-body p-4">
+                            <table class="table table-borderless table-sm align-middle small mb-0">
+                                <tbody>
+                                    @foreach($inventory->attributes as $attr)
                                         <tr>
-                                            <td class="text-muted py-2 u-w-40pct">Nama Barang</td>
-                                            <td class="fw-bold text-dark py-2">: {{ $inventory->name }}</td>
+                                            <td class="text-muted py-2 u-w-45pct"><i class="bi bi-tag text-primary me-2"></i>{{ $attr->attribute_name }}</td>
+                                            <td class="fw-semibold text-dark py-2">: {{ $attr->attribute_value }}</td>
                                         </tr>
-                                        <tr>
-                                            <td class="text-muted py-2">Serial Number</td>
-                                            <td class="py-2">: <span class="font-monospace fw-semibold text-secondary">{{ $inventory->serial_number }}</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-muted py-2">Status Barang</td>
-                                            <td class="py-2">: <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">{{ strtoupper($inventory->display_status ?? 'TERSEDIA') }}</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-muted py-2">Jumlah Barang</td>
-                                            <td class="py-2">:
-                                                <span class="fw-semibold">{{ $inventory->quantity_total }} unit total</span>
-                                                <span class="text-success">({{ $inventory->qty_available }} tersedia</span>,
-                                                <span class="text-secondary">{{ $inventory->qty_in_use }} sedang dipakai)</span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-muted py-2">Merek</td>
-                                            <td class="fw-bold text-dark py-2">: {{ $inventory->brand ?: '-' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-muted py-2">Tanggal Input</td>
-                                            <td class="text-dark py-2">: {{ $inventory->created_at ? $inventory->created_at->format('d F Y H:i') . ' WIB' : '-' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-muted py-2">Terakhir Diperbarui</td>
-                                            <td class="text-dark py-2">: {{ $inventory->updated_at ? $inventory->updated_at->format('d F Y H:i') . ' WIB' : '-' }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-
-                    @if($hasAttributes)
-                        <div class="col-12">
-                            <div class="card shadow-sm border-0 rounded-3 bg-white h-100">
-                                <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
-                                    <h6 class="fw-bold text-dark m-0">Informasi Tambahan</h6>
-                                </div>
-                                <div class="card-body p-4">
-                                    <table class="table table-borderless table-sm align-middle small mb-0">
-                                        <tbody>
-                                            @foreach($inventory->attributes as $attr)
-                                                <tr>
-                                                    <td class="text-muted py-2 u-w-45pct"><i class="bi bi-tag text-primary me-2"></i>{{ $attr->attribute_name }}</td>
-                                                    <td class="fw-semibold text-dark py-2">: {{ $attr->attribute_value }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-                </div>
+                @endif
             </div>
 
             <!-- SISI KANAN (4 KOLOM): QR Code Aset -->
-            <div class="col-12 col-lg-4">
-                <div class="card shadow-sm border-0 rounded-3 bg-white mb-3">
+            <div class="col-12 col-lg-4 d-flex flex-column gap-3">
+                <div class="card shadow-sm border-0 rounded-3 bg-white flex-grow-1">
                     <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
                         <h6 class="fw-bold text-dark m-0">Label QR Code</h6>
                         <small class="text-muted">Dipakai di QR Label - isinya Serial Number</small>
                     </div>
-                    <div class="card-body p-4 text-center">
+                    <div class="card-body p-4 text-center d-flex flex-column align-items-center justify-content-center">
                         <div class="p-3 bg-white rounded-3 border d-inline-block shadow-sm mb-3">
                             @if($inventory->qr_code_url)
                                 <img src="{{ $inventory->qr_code_url }}" alt="QR Code {{ $inventory->serial_number }}" class="img-fluid u-w-180px u-h-180px u-of-contain">
@@ -345,12 +373,12 @@
                     </div>
                 </div>
 
-                <div class="card shadow-sm border-0 rounded-3 bg-white">
+                <div class="card shadow-sm border-0 rounded-3 bg-white flex-grow-1">
                     <div class="card-header bg-white border-0 pt-3 px-4 pb-0">
                         <h6 class="fw-bold text-dark m-0">Laporan QR Code</h6>
                         <small class="text-muted">Dipakai di Inventory Report - isinya link detail barang</small>
                     </div>
-                    <div class="card-body p-4 text-center">
+                    <div class="card-body p-4 text-center d-flex flex-column align-items-center justify-content-center">
                         <div class="p-3 bg-white rounded-3 border d-inline-block shadow-sm mb-3">
                             @if($inventory->qr_code_report_url)
                                 <img src="{{ $inventory->qr_code_report_url }}" alt="QR Code Report {{ $inventory->serial_number }}" class="img-fluid u-w-180px u-h-180px u-of-contain">

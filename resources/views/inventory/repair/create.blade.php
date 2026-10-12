@@ -273,7 +273,7 @@
             + ' <span class="text-muted fw-normal small">Unit ' + esc(numbers) + ' (' + units.length + ' unit)</span></div>'
             + '<div class="rounded-3 border bg-light p-2 small"><div class="row g-2">'
             + cell('Harga beli terakhir', price !== null
-                ? rupiah(price) + ' <span class="text-muted fw-normal">(' + esc(info.last_code) + ')</span>' : '-')
+                ? rupiah(price) + ' <span class="text-muted fw-normal">(' + esc(info.last_code || 'manual') + ')</span>' : '-')
             + cell('Total biaya servis sebelumnya', info && info.servis_count > 0
                 ? rupiah(info.servis_total) + ' <span class="text-muted fw-normal">(' + info.servis_count + 'x servis)</span>' : '-')
             + cell('Kondisi jadwal servis', (late || soon)

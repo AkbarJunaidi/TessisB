@@ -126,6 +126,8 @@
                         @enderror
                     </div>
 
+                    @include('inventory.partials.harga-manual-field')
+
                     <!-- Deskripsi Barang -->
                     <div class="col-12">
                         <label for="description" class="form-label fw-semibold small text-secondary d-flex justify-content-between">
@@ -314,4 +316,5 @@
 
 <!-- JavaScript Vanilla Dynamic Attribute Key-Value Builder -->
 <script src="{{ \App\Support\AppAsset::url('js/inventory/create.js') }}"></script>
+<script src="{{ \App\Support\AppAsset::url('js/inventory/harga-manual.js') }}"></script>
 @endsection

@@ -82,7 +82,7 @@
                 Tidak ada modul/halaman yang cocok dengan "<span id="navbarSearchInvalidKeyword"></span>".
             </div>
 
-            <div id="navbarSearchSuggestions" class="list-group position-absolute w-100 shadow-sm d-none u-z-1050 u-top-100pct"></div>
+            <div id="navbarSearchSuggestions" class="list-group position-absolute w-100 shadow-sm d-none u-z-1050 u-top-100pct u-maxh-360px u-oy-auto"></div>
         </div>
     </div>
 </div>

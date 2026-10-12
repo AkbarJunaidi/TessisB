@@ -25,6 +25,7 @@ class Inventory extends Model
         'description',
         'status',
         'brand',
+        'harga_manual',
         'image',
         'qr_code', // Kolom bawaan tetap dipertahankan untuk menyimpan path berkas gambar QR
         'qr_code_report', // QR kedua khusus Inventory Report - isinya Signed URL ke halaman scan publik
@@ -32,6 +33,10 @@ class Inventory extends Model
         'servis_interval_hari',
         'servis_interval_pemakaian',
         'deleted_by',
+    ];
+
+    protected $casts = [
+        'harga_manual' => 'decimal:2',
     ];
 
     /**

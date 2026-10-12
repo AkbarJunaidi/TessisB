@@ -31,11 +31,18 @@ class InventoryService
     public function __construct(
         ActivityLogService $activityLogService,
         QrCodeService $qrCodeService,
-        InventoryMutationService $mutationService
+        InventoryMutationService $mutationService,
+        protected RepairService $repairService
     ) {
         $this->activityLogService = $activityLogService;
         $this->qrCodeService = $qrCodeService;
         $this->mutationService = $mutationService;
+    }
+
+    /** Harga beli di laporan PDF hanya untuk pembuat laporan yang boleh melihat Pembelian; null berarti baris harga disembunyikan. */
+    private function reportPrices(iterable $inventories): ?array
+    {
+        return Auth::user()?->hasPermission('purchase', 'view') ? $this->repairService->latestPrices($inventories) : null;
     }
 
     /**
@@ -123,7 +130,7 @@ class InventoryService
                 'image'         => $imagePath,
                 'qr_code'       => null,
                 'quantity_total' => $data['quantity_total'] ?? 1,
-            ] + $this->servisSchedule($data));
+            ] + $this->hargaManual($data) + $this->servisSchedule($data));
 
             // Generate file fisik QR Code berdasarkan serial_number
             $qrCodePath = $this->qrCodeService->generate($inventory->serial_number);
@@ -200,6 +207,7 @@ class InventoryService
             // tercatat jelas, bukan cuma "Update Inventory" generik.
             $oldQuantityTotal = $inventory->quantity_total;
             $hadServisSchedule = $inventory->punyaJadwalServis();
+            $oldHargaManual = $inventory->harga_manual;
 
             // Jalankan update database data tekstual
             $inventory->update([
@@ -210,7 +218,7 @@ class InventoryService
                 'brand'         => $data['brand'] ?? null,
                 'image'         => $inventory->image,
                 'quantity_total' => $data['quantity_total'] ?? $inventory->quantity_total,
-            ] + $this->servisSchedule($data));
+            ] + $this->hargaManual($data) + $this->servisSchedule($data));
 
             // Jadwal baru diaktifkan: hitungan semua unit dimulai dari hari ini.
             if (!$hadServisSchedule && $inventory->punyaJadwalServis()) {
@@ -279,6 +287,14 @@ class InventoryService
             if ((int) $oldQuantityTotal !== (int) $inventory->quantity_total) {
                 $arah = (int) $inventory->quantity_total > (int) $oldQuantityTotal ? 'ditambah' : 'dikurangi';
                 $logMessage .= " (stok {$arah} dari {$oldQuantityTotal} ke {$inventory->quantity_total} unit)";
+            }
+
+            if ($oldHargaManual !== $inventory->harga_manual) {
+                $logMessage .= ' (harga manual '
+                    . ($oldHargaManual === null ? 'belum diisi' : \App\Support\Money::formatRupiah($oldHargaManual))
+                    . ' ke '
+                    . ($inventory->harga_manual === null ? 'dikosongkan' : \App\Support\Money::formatRupiah($inventory->harga_manual))
+                    . ')';
             }
 
             $this->activityLogService->log(
@@ -495,6 +511,16 @@ class InventoryService
         return $unit->fresh();
     }
 
+    /** Harga manual hanya ikut disimpan bila field-nya terkirim (user tanpa izin Pembelian tidak mengirimnya). */
+    private function hargaManual(array $data): array
+    {
+        if (!array_key_exists('harga_manual', $data)) {
+            return [];
+        }
+
+        return ['harga_manual' => filled($data['harga_manual']) ? $data['harga_manual'] : null];
+    }
+
     /**
      * Interval jadwal servis dari input form; toggle mati atau kolom kosong menjadi null.
      *
@@ -569,7 +595,8 @@ class InventoryService
         // Menyusun tanggal pembuatan laporan formal sesuai standarisasi sistem informasi
         $exportDate = now()->translatedFormat('d F Y H:i');
         // Memuat template layout profesional terisolasi
-        $pdf = Pdf::loadView('inventory.pdf.single', compact('inventory', 'exportDate'));
+        $prices = $this->reportPrices([$inventory]);
+        $pdf = Pdf::loadView('inventory.pdf.single', compact('inventory', 'exportDate', 'prices'));
         // Memaksa driver printer untuk mengunci ukuran kertas ke standar internasional A4 Tegak
         $pdf->setPaper('a4', 'portrait');
         $this->addPageNumbers($pdf);
@@ -593,7 +620,9 @@ class InventoryService
         $inventories = Inventory::with('attributes')->latest()->get();
         $exportDate = now()->translatedFormat('d F Y H:i');
 
-        $pdf = Pdf::loadView('inventory.pdf.all', compact('inventories', 'exportDate'));
+        $prices = $this->reportPrices($inventories);
+
+        $pdf = Pdf::loadView('inventory.pdf.all', compact('inventories', 'exportDate', 'prices'));
         $pdf->setPaper('a4', 'portrait');
         $this->addPageNumbers($pdf);
 
@@ -697,10 +726,13 @@ class InventoryService
                 // akhir menampilkan tanggal generate yang sama persis.
                 $exportDate = $reportExport->created_at->translatedFormat('d F Y H:i');
 
+                $prices = $this->reportPrices($items);
+
                 $fragment = $items
                     ->map(fn (Inventory $inventory) => view('inventory.pdf.partials.all-item', [
                         'inventory'  => $inventory,
                         'exportDate' => $exportDate,
+                        'prices'     => $prices,
                     ])->render())
                     ->implode('');
 

@@ -322,7 +322,9 @@ class RepairService
      * Perbandingan servis vs beli baru per barang untuk form Pembelian.
      * Biaya catatan berisi beberapa unit dibagi rata per unit (perkiraan).
      *
-     * @return array<int, array{last_price: ?float, last_code: ?string, last_purchase_id: ?int, servis_total: float, servis_count: int, worst_unit: ?array{number: int, total: float}, units: array<int, array{number: int, total: float}>}>
+     * price_source: pembelian | manual (harga manual hanya jadi cadangan bila belum ada Pembelian diterima).
+     *
+     * @return array<int, array{last_price: ?float, last_code: ?string, last_purchase_id: ?int, price_source: ?string, servis_total: float, servis_count: int, worst_unit: ?array{number: int, total: float}, units: array<int, array{number: int, total: float}>}>
      */
     public function costComparison(): array
     {
@@ -341,7 +343,7 @@ class RepairService
             ->selectRaw('i.inventory_id, i.inventory_unit_id, u.unit_number, r.id as repair_id, r.biaya / c.n as share')
             ->get();
 
-        $empty = ['last_price' => null, 'last_code' => null, 'last_purchase_id' => null, 'servis_total' => 0.0, 'servis_count' => 0, 'worst_unit' => null, 'units' => []];
+        $empty = ['last_price' => null, 'last_code' => null, 'last_purchase_id' => null, 'price_source' => null, 'servis_total' => 0.0, 'servis_count' => 0, 'worst_unit' => null, 'units' => []];
         $map = [];
 
         foreach ($shares->groupBy('inventory_id') as $inventoryId => $rows) {
@@ -356,12 +358,7 @@ class RepairService
             ]);
         }
 
-        $prices = PurchaseItem::query()
-            ->join('purchases', 'purchases.id', '=', 'purchase_items.purchase_id')
-            ->where('purchases.status', Purchase::STATUS_RECEIVED)
-            ->whereNotNull('purchase_items.inventory_id')
-            ->orderByDesc('purchases.purchase_date')
-            ->orderByDesc('purchases.id')
+        $prices = $this->receivedPrices()
             ->get(['purchase_items.inventory_id', 'purchase_items.unit_price', 'purchases.code', 'purchases.id as purchase_id']);
 
         foreach ($prices->unique('inventory_id') as $row) {
@@ -369,10 +366,68 @@ class RepairService
                 'last_price' => (float) $row->unit_price,
                 'last_code'  => $row->code,
                 'last_purchase_id' => (int) $row->purchase_id,
+                'price_source' => 'pembelian',
             ]);
         }
 
+        foreach (Inventory::where('harga_manual', '>', 0)->get(['id', 'harga_manual']) as $inventory) {
+            $current = $map[$inventory->id] ?? $empty;
+
+            if ($current['last_price'] === null) {
+                $map[$inventory->id] = array_merge($current, ['last_price' => (float) $inventory->harga_manual, 'price_source' => 'manual']);
+            }
+        }
+
         return $map;
+    }
+
+    /** Item Pembelian berstatus diterima, terbaru dulu; dasar harga beli terakhir. */
+    private function receivedPrices(): \Illuminate\Database\Eloquent\Builder
+    {
+        return PurchaseItem::query()
+            ->join('purchases', 'purchases.id', '=', 'purchase_items.purchase_id')
+            ->where('purchases.status', Purchase::STATUS_RECEIVED)
+            ->whereNotNull('purchase_items.inventory_id')
+            ->orderByDesc('purchases.purchase_date')
+            ->orderByDesc('purchases.id');
+    }
+
+    /**
+     * Harga beli terakhir beberapa barang sekaligus, dikunci id barang: Pembelian diterima, atau harga manual bila belum ada.
+     *
+     * @param  iterable<Inventory>  $inventories
+     * @return array<int, array{price: float, source: string, code: ?string, purchase_id: ?int}>
+     */
+    public function latestPrices(iterable $inventories): array
+    {
+        $inventories = collect($inventories);
+        $map         = [];
+
+        $rows = $this->receivedPrices()
+            ->whereIn('purchase_items.inventory_id', $inventories->pluck('id')->all())
+            ->get(['purchase_items.inventory_id', 'purchase_items.unit_price', 'purchases.code', 'purchases.id as purchase_id']);
+
+        foreach ($rows->unique('inventory_id') as $row) {
+            $map[(int) $row->inventory_id] = ['price' => (float) $row->unit_price, 'source' => 'pembelian', 'code' => $row->code, 'purchase_id' => (int) $row->purchase_id];
+        }
+
+        foreach ($inventories as $inventory) {
+            if (!isset($map[$inventory->id]) && (float) $inventory->harga_manual > 0) {
+                $map[$inventory->id] = ['price' => (float) $inventory->harga_manual, 'source' => 'manual', 'code' => null, 'purchase_id' => null];
+            }
+        }
+
+        return $map;
+    }
+
+    /**
+     * Harga beli terakhir satu barang.
+     *
+     * @return array{price: float, source: string, code: ?string, purchase_id: ?int}|null
+     */
+    public function latestPrice(Inventory $inventory): ?array
+    {
+        return $this->latestPrices([$inventory])[$inventory->id] ?? null;
     }
 
     /**
@@ -425,6 +480,16 @@ class RepairService
         }
 
         return $cost['worst_unit']['total'] / $cost['last_price'];
+    }
+
+    /**
+     * Rata-rata biaya servis per unit yang pernah diservis, sebanding dengan harga beli per unit.
+     */
+    public static function averagePerUnit(array $cost): ?float
+    {
+        $count = count($cost['units'] ?? []);
+
+        return $count > 0 ? round($cost['servis_total'] / $count, 2) : null;
     }
 
     protected function generateCode(): string

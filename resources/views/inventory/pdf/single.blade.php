@@ -216,6 +216,20 @@
                         <td class="identity-label">Merek</td>
                         <td class="identity-value">{{ $inventory->brand ?: '-' }}</td>
                     </tr>
+                    @if(($prices ?? null) !== null)
+                        @php($hargaBarang = $prices[$inventory->id] ?? null)
+                        <tr>
+                            <td class="identity-label">Harga Beli Terakhir / unit</td>
+                            <td class="identity-value">
+                                @if($hargaBarang)
+                                    {{ \App\Support\Money::formatRupiah($hargaBarang['price']) }}
+                                    ({{ $hargaBarang['source'] === 'manual' ? 'Manual' : $hargaBarang['code'] }})
+                                @else
+                                    -
+                                @endif
+                            </td>
+                        </tr>
+                    @endif
                     <tr>
                         <td class="identity-label">Tanggal Input</td>
                         <td class="identity-value">{{ $inventory->created_at ? $inventory->created_at->translatedFormat('d F Y') : '-' }}</td>
