@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Inventory\CompleteRepairRequest;
 use App\Http\Requests\Inventory\RepairRequest;
 use App\Models\Contact;
+use App\Models\Inventory;
 use App\Models\InventoryRepair;
 use App\Models\User;
 use App\Services\Inventory\RepairService;
@@ -28,11 +29,23 @@ class RepairController extends Controller
     {
         $this->authorizeView();
 
-        $filters = $request->only(['search', 'status']);
-        $repairs = $this->repairService->getFiltered($filters);
+        $request->validate([
+            'dari'         => ['nullable', 'date'],
+            'sampai'       => ['nullable', 'date'],
+            'inventory_id' => ['nullable', 'integer'],
+        ]);
+
+        $filters = $request->only(['search', 'status', 'tampil', 'hasil', 'dari', 'sampai', 'inventory_id']);
+        $riwayat = ($filters['tampil'] ?? '') === 'riwayat';
         $stats   = $this->repairService->getStats();
 
-        return view('inventory.repair.index', compact('repairs', 'stats', 'filters'));
+        $repairs         = $riwayat ? null : $this->repairService->getFiltered($filters);
+        $history         = $riwayat ? $this->repairService->getHistory($filters) : null;
+        $filterInventory = $riwayat && !empty($filters['inventory_id'])
+            ? Inventory::withTrashed()->find($filters['inventory_id'], ['id', 'name'])
+            : null;
+
+        return view('inventory.repair.index', compact('repairs', 'history', 'stats', 'filters', 'riwayat', 'filterInventory'));
     }
 
     public function create(Request $request): View

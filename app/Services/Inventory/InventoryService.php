@@ -507,17 +507,25 @@ class InventoryService
         return $unit->fresh();
     }
 
-    /** Isi, ubah, atau kosongkan harga manual dari Daftar Harga Barang. */
+    /**
+     * Isi, ubah, atau kosongkan harga manual. Setiap simpan dari Daftar Harga dicatat sebagai harga manual terbaru,
+     * termasuk bila angkanya sama dengan harga Pembelian yang sedang berlaku.
+     */
     public function updateHargaManual(Inventory $inventory, ?string $harga): Inventory
     {
         $old = $inventory->harga_manual;
+
+        $inventory->harga_manual_at = $harga === null ? null : now();
         $inventory->update(['harga_manual' => $harga]);
 
-        if ($old !== $inventory->harga_manual) {
+        $changed = ($old === null) !== ($inventory->harga_manual === null)
+            || (float) $old !== (float) $inventory->harga_manual;
+
+        if ($changed) {
             $this->activityLogService->log(
                 Auth::id(),
                 'Inventory',
-                "Mengubah data barang \"{$inventory->name}\" ({$this->hargaChangeText($old, $inventory->harga_manual)})"
+                "Mengubah data barang \"{$inventory->name}\" (" . $this->hargaChangeText($old, $inventory->harga_manual) . ')'
             );
         }
 

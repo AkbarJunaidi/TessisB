@@ -16,7 +16,8 @@ class CompleteRepairRequest extends FormRequest
         return [
             'tanggal_selesai' => ['required', 'date', 'before_or_equal:today'],
             'diambil_oleh'    => ['nullable', 'string', 'max:150'],
-            'biaya'           => ['nullable', 'numeric', 'min:0', 'max:9999999999999'],
+            'biaya_item'      => ['nullable', 'array'],
+            'biaya_item.*'    => ['nullable', 'numeric', 'min:0', 'max:9999999999999'],
             'catatan_hasil'   => ['nullable', 'string', 'max:1000'],
             'hasil'           => ['nullable', 'array'],
             'hasil.*'         => ['in:Tersedia,Rusak'],
@@ -28,7 +29,8 @@ class CompleteRepairRequest extends FormRequest
         return [
             'tanggal_selesai.required'        => 'Tanggal barang diambil wajib diisi.',
             'tanggal_selesai.before_or_equal' => 'Tanggal selesai tidak boleh di masa depan.',
-            'biaya.numeric'                   => 'Biaya harus berupa angka.',
+            'biaya_item.*.numeric'            => 'Biaya tiap unit harus berupa angka.',
+            'biaya_item.*.min'                => 'Biaya tiap unit tidak boleh negatif.',
         ];
     }
 }

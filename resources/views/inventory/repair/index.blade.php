@@ -78,6 +78,12 @@
     <div class="card filter-card mb-4">
         <div class="card-body">
             <form action="{{ route('inventory.repairs.index') }}" method="GET" class="row g-3 align-items-end">
+                @if($riwayat)
+                    <input type="hidden" name="tampil" value="riwayat">
+                    @if($filterInventory)
+                        <input type="hidden" name="inventory_id" value="{{ $filterInventory->id }}">
+                    @endif
+                @endif
                 <div class="col-12 col-md">
                     <label for="filterSearch" class="form-label">Cari</label>
                     <div class="search-field">
@@ -86,17 +92,37 @@
                                value="{{ $filters['search'] ?? '' }}" placeholder="Kode, nama barang, atau tempat servis...">
                     </div>
                 </div>
-                <div class="col-6 col-md-3">
-                    <label for="filterStatus" class="form-label">Status</label>
-                    <select class="form-select" id="filterStatus" name="status">
-                        <option value="">Semua status</option>
-                        @foreach(['Diservis', 'Selesai', 'Dibatalkan'] as $status)
-                            <option value="{{ $status }}" {{ ($filters['status'] ?? '') === $status ? 'selected' : '' }}>{{ $status }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                @if($riwayat)
+                    <div class="col-6 col-md-2">
+                        <label for="filterHasil" class="form-label">Hasil</label>
+                        <select class="form-select" id="filterHasil" name="hasil">
+                            <option value="">Semua hasil</option>
+                            <option value="Diservis" {{ ($filters['hasil'] ?? '') === 'Diservis' ? 'selected' : '' }}>Sedang diservis</option>
+                            <option value="Tersedia" {{ ($filters['hasil'] ?? '') === 'Tersedia' ? 'selected' : '' }}>Kembali tersedia</option>
+                            <option value="Rusak" {{ ($filters['hasil'] ?? '') === 'Rusak' ? 'selected' : '' }}>Rusak</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <label for="filterDari" class="form-label">Masuk dari</label>
+                        <input type="date" class="form-control" id="filterDari" name="dari" value="{{ $filters['dari'] ?? '' }}">
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <label for="filterSampai" class="form-label">Sampai</label>
+                        <input type="date" class="form-control" id="filterSampai" name="sampai" value="{{ $filters['sampai'] ?? '' }}">
+                    </div>
+                @else
+                    <div class="col-6 col-md-3">
+                        <label for="filterStatus" class="form-label">Status</label>
+                        <select class="form-select" id="filterStatus" name="status">
+                            <option value="">Semua status</option>
+                            @foreach(['Diservis', 'Selesai', 'Dibatalkan'] as $status)
+                                <option value="{{ $status }}" {{ ($filters['status'] ?? '') === $status ? 'selected' : '' }}>{{ $status }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
                 <div class="col-6 col-md-auto filter-actions">
-                    <a href="{{ route('inventory.repairs.index') }}" class="btn btn-outline-secondary px-3">Reset</a>
+                    <a href="{{ route('inventory.repairs.index', $riwayat ? ['tampil' => 'riwayat'] : []) }}" class="btn btn-outline-secondary px-3">Reset</a>
                     <button type="submit" class="btn btn-primary px-3"><i class="bi bi-search me-1"></i>Cari</button>
                 </div>
             </form>
@@ -105,9 +131,24 @@
 
     {{-- Daftar --}}
     <div class="app-panel overflow-hidden">
-        <div class="px-3 px-md-4 pt-3 pt-md-4">
-            <h6 class="fw-bold mb-3">Semua Perbaikan</h6>
+        <div class="px-3 px-md-4 pt-3 pt-md-4 mb-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <h6 class="fw-bold m-0">{{ $riwayat ? 'Riwayat Servis per Unit' : 'Semua Perbaikan' }}</h6>
+            <div class="btn-group btn-group-sm" role="group" aria-label="Tampilan perbaikan">
+                <a href="{{ route('inventory.repairs.index') }}"
+                   class="btn {{ $riwayat ? 'btn-outline-primary' : 'btn-primary' }}">Surat perbaikan</a>
+                <a href="{{ route('inventory.repairs.index', ['tampil' => 'riwayat']) }}"
+                   class="btn {{ $riwayat ? 'btn-primary' : 'btn-outline-primary' }}">Riwayat servis</a>
+            </div>
         </div>
+        @if($riwayat && $filterInventory)
+            <div class="px-3 px-md-4 mb-3 small">
+                Barang: <span class="fw-semibold">{{ $filterInventory->name }}</span>
+                <a href="{{ route('inventory.repairs.index', ['tampil' => 'riwayat']) }}" class="text-decoration-none ms-2">Tampilkan semua barang</a>
+            </div>
+        @endif
+        @if($riwayat)
+            @include('inventory.repair.partials.history-table', ['history' => $history])
+        @else
         <div class="table-responsive">
             <table class="table table-hover table-modern table-stack align-middle mb-0">
                 <thead>
@@ -194,10 +235,11 @@
                 </tbody>
             </table>
         </div>
+        @endif
     </div>
 
     <div class="mt-3">
-        {{ $repairs->links('pagination.app') }}
+        {{ ($riwayat ? $history : $repairs)->links('pagination.app') }}
     </div>
 </div>
 @endsection

@@ -127,6 +127,7 @@
                                     <th>Unit</th>
                                     <th>Status Sebelumnya</th>
                                     <th>Hasil</th>
+                                    <th class="text-end">Biaya</th>
                                 </tr>
                             </thead>
                             <tbody class="small">
@@ -150,6 +151,16 @@
                                                 <span class="text-muted">Dikembalikan ke status sebelumnya</span>
                                             @else
                                                 <span class="badge-soft-warning px-2 py-1 rounded-pill">Diperbaiki di {{ $repair->tempat_nama }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-end" data-label="Biaya">
+                                            @if($item->biaya !== null)
+                                                {{ \App\Support\Money::formatRupiah($item->biaya) }}
+                                                @if($item->biaya_estimasi)
+                                                    <div class="text-muted small">perkiraan</div>
+                                                @endif
+                                            @else
+                                                -
                                             @endif
                                         </td>
                                     </tr>
@@ -187,23 +198,36 @@
                                    list="peopleList" value="{{ old('diambil_oleh') }}" placeholder="Pilih akun atau ketik nama">
                         </div>
                         <div class="col-12">
-                            <label for="biaya" class="form-label fw-medium text-secondary">Biaya (Rp)</label>
-                            <input type="number" name="biaya" id="biaya" class="form-control" min="0" step="1"
-                                   value="{{ old('biaya') }}" placeholder="Kosongkan bila belum diketahui">
+                            <label for="biayaTotal" class="form-label fw-medium text-secondary">Total Biaya (Rp)</label>
+                            <input type="number" id="biayaTotal" class="form-control" min="0" step="1"
+                                   placeholder="Isi total untuk dibagi rata ke semua unit">
+                            <div class="form-text">Biaya tiap unit bisa diubah di bawah, total ikut menyesuaikan. Kosongkan bila belum diketahui.</div>
                         </div>
 
                         <div class="col-12">
-                            <div class="form-label fw-medium text-secondary mb-2">Hasil per Unit</div>
+                            <div class="form-label fw-medium text-secondary mb-2">Hasil dan Biaya per Unit</div>
                             @foreach($repair->items as $item)
-                                <div class="d-flex justify-content-between align-items-center gap-2 border rounded-3 px-3 py-2 mb-2">
-                                    <span class="small">
+                                <div class="border rounded-3 px-3 py-2 mb-2">
+                                    <div class="small mb-2">
                                         <span class="fw-semibold">{{ $item->inventory->name ?? 'Barang' }}</span>
                                         #{{ $item->unit->unit_number ?? '?' }}
-                                    </span>
-                                    <select name="hasil[{{ $item->id }}]" class="form-select form-select-sm w-auto" aria-label="Hasil unit">
-                                        <option value="Tersedia" @selected(old('hasil.' . $item->id, 'Tersedia') === 'Tersedia')>Kembali Tersedia</option>
-                                        <option value="Rusak" @selected(old('hasil.' . $item->id) === 'Rusak')>Rusak (tidak bisa diperbaiki)</option>
-                                    </select>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-12 col-sm-7">
+                                            <select name="hasil[{{ $item->id }}]" class="form-select form-select-sm" aria-label="Hasil unit">
+                                                <option value="Tersedia" @selected(old('hasil.' . $item->id, 'Tersedia') === 'Tersedia')>Kembali Tersedia</option>
+                                                <option value="Rusak" @selected(old('hasil.' . $item->id) === 'Rusak')>Rusak (tidak bisa diperbaiki)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-12 col-sm-5">
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text">Rp</span>
+                                                <input type="number" name="biaya_item[{{ $item->id }}]" class="form-control repair-unit-biaya"
+                                                       min="0" step="1" value="{{ old('biaya_item.' . $item->id) }}" placeholder="0"
+                                                       aria-label="Biaya unit">
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             @endforeach
                             <div class="form-text">Unit yang kembali Tersedia otomatis menghitung ulang jadwal servisnya.</div>
@@ -249,5 +273,7 @@
             </form>
         </div>
     </div>
+
+    <script src="{{ \App\Support\AppAsset::url('js/inventory/repair-biaya.js') }}"></script>
 @endif
 @endsection

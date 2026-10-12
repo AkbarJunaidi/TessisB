@@ -15,6 +15,13 @@ class InventoryRepairItem extends Model
         'inventory_unit_id',
         'status_sebelum',
         'hasil',
+        'biaya',
+        'biaya_estimasi',
+    ];
+
+    protected $casts = [
+        'biaya'          => 'decimal:2',
+        'biaya_estimasi' => 'boolean',
     ];
 
     public function repair(): BelongsTo

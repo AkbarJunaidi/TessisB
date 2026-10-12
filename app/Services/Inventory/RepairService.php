@@ -63,6 +63,37 @@ class RepairService
     }
 
     /**
+     * Riwayat servis: satu baris per unit yang pernah dikirim ke servis (catatan dibatalkan tidak dihitung).
+     *
+     * @param array{search?: ?string, hasil?: ?string, dari?: ?string, sampai?: ?string, inventory_id?: int|string|null} $filters hasil: Tersedia | Rusak | Diservis
+     */
+    public function getHistory(array $filters = [], int $perPage = 20): LengthAwarePaginator
+    {
+        return InventoryRepairItem::query()
+            ->join('inventory_repairs as r', 'r.id', '=', 'inventory_repair_items.repair_id')
+            ->where('r.status', '!=', InventoryRepair::STATUS_CANCELLED)
+            ->select('inventory_repair_items.*')
+            ->with(['repair:id,code,tempat_nama,keluhan,status,tanggal_masuk,tanggal_selesai', 'inventory:id,name,serial_number', 'unit:id,unit_number'])
+            ->when(!empty($filters['inventory_id']), fn ($q) => $q->where('inventory_repair_items.inventory_id', (int) $filters['inventory_id']))
+            ->when(!empty($filters['dari']), fn ($q) => $q->whereDate('r.tanggal_masuk', '>=', $filters['dari']))
+            ->when(!empty($filters['sampai']), fn ($q) => $q->whereDate('r.tanggal_masuk', '<=', $filters['sampai']))
+            ->when(in_array($filters['hasil'] ?? null, ['Tersedia', 'Rusak'], true), fn ($q) => $q->where('inventory_repair_items.hasil', $filters['hasil']))
+            ->when(($filters['hasil'] ?? null) === 'Diservis', fn ($q) => $q->whereNull('inventory_repair_items.hasil'))
+            ->when(!empty($filters['search']), function ($q) use ($filters) {
+                $keyword = trim($filters['search']);
+                $q->where(function ($w) use ($keyword) {
+                    $w->where('r.code', 'like', "%{$keyword}%")
+                        ->orWhere('r.tempat_nama', 'like', "%{$keyword}%")
+                        ->orWhereHas('inventory', fn ($i) => $i->withTrashed()->where('name', 'like', "%{$keyword}%"));
+                });
+            })
+            ->orderByDesc('r.tanggal_masuk')
+            ->orderByDesc('inventory_repair_items.id')
+            ->paginate(PerPage::resolve($perPage))
+            ->withQueryString();
+    }
+
+    /**
      * @return array{aktif: int, unit_aktif: int, terlambat: int, biaya_bulan_ini: float}
      */
     public function getStats(): array
@@ -193,12 +224,15 @@ class RepairService
                 throw new Exception('Tanggal selesai tidak boleh sebelum tanggal barang masuk servis.');
             }
 
-            if ((float) ($data['biaya'] ?? 0) > 0) {
+            $items      = $repair->items()->with(['unit', 'inventory'])->get();
+            $hasil      = $data['hasil'] ?? [];
+            $costs      = $items->mapWithKeys(fn ($item) => [$item->id => $this->cleanCost($data['biaya_item'][$item->id] ?? null)]);
+            $totalBiaya = $costs->filter()->sum();
+
+            if ($totalBiaya > 0) {
                 FinanceLock::assertOpen($data['tanggal_selesai']);
             }
 
-            $items   = $repair->items()->with(['unit', 'inventory'])->get();
-            $hasil   = $data['hasil'] ?? [];
             $tersedia = collect();
             $rusak    = collect();
 
@@ -217,18 +251,16 @@ class RepairService
                     $unit->update($update);
                 }
 
-                $item->update(['hasil' => $result]);
+                $item->update(['hasil' => $result, 'biaya' => $costs[$item->id], 'biaya_estimasi' => false]);
                 ($result === 'Tersedia' ? $tersedia : $rusak)->push($item);
             }
-
-            $biaya = $data['biaya'] ?? null;
 
             $repair->update([
                 'status'          => InventoryRepair::STATUS_DONE,
                 'tanggal_selesai' => $data['tanggal_selesai'],
                 'diambil_oleh'    => $data['diambil_oleh'] ?? null,
                 'catatan_hasil'   => $data['catatan_hasil'] ?? null,
-                'biaya'           => ($biaya === null || $biaya === '') ? null : $biaya,
+                'biaya'           => $costs->filter(fn ($cost) => $cost !== null)->isEmpty() ? null : $totalBiaya,
                 'completed_by'    => Auth::id(),
             ]);
 
@@ -270,6 +302,12 @@ class RepairService
 
             return $repair->fresh();
         });
+    }
+
+    /** Biaya kosong berarti belum diketahui (null), bukan nol. */
+    private function cleanCost(mixed $value): ?float
+    {
+        return ($value === null || $value === '') ? null : (float) $value;
     }
 
     /**
@@ -320,30 +358,23 @@ class RepairService
 
     /**
      * Perbandingan servis vs beli baru per barang untuk form Pembelian.
-     * Biaya catatan berisi beberapa unit dibagi rata per unit (perkiraan).
+     * Biaya diambil dari biaya per unit; catatan lama yang dibagi rata ditandai servis_estimasi.
      *
      * price_source: pembelian | manual (harga manual hanya jadi cadangan bila belum ada Pembelian diterima).
      *
-     * @return array<int, array{last_price: ?float, last_date: ?\Carbon\Carbon, last_code: ?string, last_purchase_id: ?int, price_source: ?string, servis_total: float, servis_count: int, worst_unit: ?array{number: int, total: float}, units: array<int, array{number: int, total: float}>}>
+     * @return array<int, array{last_price: ?float, last_date: ?\Carbon\Carbon, last_code: ?string, last_purchase_id: ?int, price_source: ?string, servis_total: float, servis_count: int, servis_estimasi: bool, worst_unit: ?array{number: int, total: float}, units: array<int, array{number: int, total: float}>}>
      */
     public function costComparison(): array
     {
         $shares = DB::table('inventory_repair_items as i')
             ->join('inventory_repairs as r', 'r.id', '=', 'i.repair_id')
             ->join('inventory_units as u', 'u.id', '=', 'i.inventory_unit_id')
-            ->joinSub(
-                DB::table('inventory_repair_items')->select('repair_id', DB::raw('COUNT(*) as n'))->groupBy('repair_id'),
-                'c',
-                'c.repair_id',
-                '=',
-                'i.repair_id'
-            )
             ->where('r.status', InventoryRepair::STATUS_DONE)
-            ->where('r.biaya', '>', 0)
-            ->selectRaw('i.inventory_id, i.inventory_unit_id, u.unit_number, r.id as repair_id, r.biaya / c.n as share')
+            ->where('i.biaya', '>', 0)
+            ->selectRaw('i.inventory_id, i.inventory_unit_id, u.unit_number, r.id as repair_id, i.biaya as share, i.biaya_estimasi as estimasi')
             ->get();
 
-        $empty = ['last_price' => null, 'last_date' => null, 'last_code' => null, 'last_purchase_id' => null, 'price_source' => null, 'servis_total' => 0.0, 'servis_count' => 0, 'worst_unit' => null, 'units' => []];
+        $empty = ['last_price' => null, 'last_date' => null, 'last_code' => null, 'last_purchase_id' => null, 'price_source' => null, 'servis_total' => 0.0, 'servis_count' => 0, 'servis_estimasi' => false, 'worst_unit' => null, 'units' => []];
         $map = [];
 
         foreach ($shares->groupBy('inventory_id') as $inventoryId => $rows) {
@@ -353,32 +384,34 @@ class RepairService
             $map[(int) $inventoryId] = array_merge($empty, [
                 'servis_total' => round((float) $rows->sum('share'), 2),
                 'servis_count' => $rows->pluck('repair_id')->unique()->count(),
+                'servis_estimasi' => $rows->contains(fn ($row) => (bool) $row->estimasi),
                 'worst_unit'   => $perUnit->sortByDesc('total')->first(),
                 'units'        => $perUnit->all(),
             ]);
         }
 
-        $prices = $this->receivedPrices()
-            ->get(['purchase_items.inventory_id', 'purchase_items.unit_price', 'purchases.code', 'purchases.id as purchase_id', 'purchases.purchase_date']);
+        $purchases = $this->receivedPrices()
+            ->get(['purchase_items.inventory_id', 'purchase_items.unit_price', 'purchases.code', 'purchases.id as purchase_id', 'purchases.purchase_date'])
+            ->unique('inventory_id')
+            ->keyBy('inventory_id');
 
-        foreach ($prices->unique('inventory_id') as $row) {
-            $map[(int) $row->inventory_id] = array_merge($map[(int) $row->inventory_id] ?? $empty, [
-                'last_price' => (float) $row->unit_price,
-                'last_date'  => $row->purchase_date ? \Carbon\Carbon::parse($row->purchase_date) : null,
-                'last_code'  => $row->code,
-                'last_purchase_id' => (int) $row->purchase_id,
-                'price_source' => 'pembelian',
-            ]);
-        }
+        $manuals = Inventory::where('harga_manual', '>', 0)
+            ->get(['id', 'harga_manual', 'harga_manual_at'])
+            ->keyBy('id');
 
-        foreach (Inventory::where('harga_manual', '>', 0)->get(['id', 'harga_manual', 'harga_manual_at']) as $inventory) {
-            $current = $map[$inventory->id] ?? $empty;
+        foreach (array_unique([...$purchases->keys()->all(), ...$manuals->keys()->all()]) as $inventoryId) {
+            $price = $this->newerPrice(
+                $this->purchasePrice($purchases->get($inventoryId)),
+                $this->manualPrice($manuals->get($inventoryId))
+            );
 
-            if ($current['last_price'] === null) {
-                $map[$inventory->id] = array_merge($current, [
-                    'last_price'   => (float) $inventory->harga_manual,
-                    'last_date'    => $inventory->harga_manual_at,
-                    'price_source' => 'manual',
+            if ($price !== null) {
+                $map[(int) $inventoryId] = array_merge($map[(int) $inventoryId] ?? $empty, [
+                    'last_price'       => $price['price'],
+                    'last_date'        => $price['date'],
+                    'last_code'        => $price['code'],
+                    'last_purchase_id' => $price['purchase_id'],
+                    'price_source'     => $price['source'],
                 ]);
             }
         }
@@ -401,34 +434,86 @@ class RepairService
      * Harga beli terakhir beberapa barang sekaligus, dikunci id barang: Pembelian diterima, atau harga manual bila belum ada.
      *
      * @param  iterable<Inventory>  $inventories
-     * @return array<int, array{price: float, source: string, code: ?string, purchase_id: ?int}>
+     * @return array<int, array{price: float, date: ?\Carbon\Carbon, source: string, code: ?string, purchase_id: ?int}>
      */
     public function latestPrices(iterable $inventories): array
     {
         $inventories = collect($inventories);
-        $map         = [];
-
-        $rows = $this->receivedPrices()
+        $purchases   = $this->receivedPrices()
             ->whereIn('purchase_items.inventory_id', $inventories->pluck('id')->all())
-            ->get(['purchase_items.inventory_id', 'purchase_items.unit_price', 'purchases.code', 'purchases.id as purchase_id']);
+            ->get(['purchase_items.inventory_id', 'purchase_items.unit_price', 'purchases.code', 'purchases.id as purchase_id', 'purchases.purchase_date'])
+            ->unique('inventory_id')
+            ->keyBy('inventory_id');
 
-        foreach ($rows->unique('inventory_id') as $row) {
-            $map[(int) $row->inventory_id] = ['price' => (float) $row->unit_price, 'source' => 'pembelian', 'code' => $row->code, 'purchase_id' => (int) $row->purchase_id];
-        }
+        $map = [];
 
         foreach ($inventories as $inventory) {
-            if (!isset($map[$inventory->id]) && (float) $inventory->harga_manual > 0) {
-                $map[$inventory->id] = ['price' => (float) $inventory->harga_manual, 'source' => 'manual', 'code' => null, 'purchase_id' => null];
+            $price = $this->newerPrice(
+                $this->purchasePrice($purchases->get($inventory->id)),
+                $this->manualPrice($inventory)
+            );
+
+            if ($price !== null) {
+                $map[(int) $inventory->id] = $price;
             }
         }
 
         return $map;
     }
 
+    /** Harga Pembelian diterima; tanggal = tanggal Pembelian (awal hari). */
+    private function purchasePrice(?object $row): ?array
+    {
+        if ($row === null) {
+            return null;
+        }
+
+        return [
+            'price'       => (float) $row->unit_price,
+            'date'        => \Carbon\Carbon::parse($row->purchase_date)->startOfDay(),
+            'source'      => 'pembelian',
+            'code'        => $row->code,
+            'purchase_id' => (int) $row->purchase_id,
+        ];
+    }
+
+    /** Harga manual; tanggal = saat terakhir diisi atau diubah. */
+    private function manualPrice(?Inventory $inventory): ?array
+    {
+        if ($inventory === null || (float) $inventory->harga_manual <= 0) {
+            return null;
+        }
+
+        return [
+            'price'       => (float) $inventory->harga_manual,
+            'date'        => $inventory->harga_manual_at,
+            'source'      => 'manual',
+            'code'        => null,
+            'purchase_id' => null,
+        ];
+    }
+
+    /**
+     * Harga yang berlaku: yang tanggalnya paling baru. Harga manual yang diubah setelah Pembelian menang,
+     * dan Pembelian yang lebih baru menggantikan harga manual. Bila tanggal manual tidak ada, Pembelian dipakai.
+     */
+    private function newerPrice(?array $purchase, ?array $manual): ?array
+    {
+        if ($purchase === null || $manual === null) {
+            return $purchase ?? $manual;
+        }
+
+        if ($manual['date'] === null) {
+            return $purchase;
+        }
+
+        return $manual['date']->gte($purchase['date']) ? $manual : $purchase;
+    }
+
     /**
      * Harga beli terakhir satu barang.
      *
-     * @return array{price: float, source: string, code: ?string, purchase_id: ?int}|null
+     * @return array{price: float, date: ?\Carbon\Carbon, source: string, code: ?string, purchase_id: ?int}|null
      */
     public function latestPrice(Inventory $inventory): ?array
     {
@@ -473,7 +558,6 @@ class RepairService
         $summary = [
             'total_barang' => count($activeIds),
             'ada_harga'    => count(array_filter($costs, fn ($c) => $c['last_price'] !== null)),
-            'total_servis' => round(array_sum(array_column($costs, 'servis_total')), 2),
             'layak_ganti'  => count(array_filter($costs, fn ($c) => (self::replaceRatio($c) ?? 0) >= self::replaceWarnRatio())),
         ];
 

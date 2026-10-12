@@ -33,23 +33,20 @@ class PriceController extends Controller
             'Anda tidak memiliki hak akses untuk melihat daftar harga barang.'
         );
 
-        $filters   = $request->only(['search', 'filter', 'biaya']);
-        $canEdit   = (bool) $user->hasPermission('inventory', 'edit');
+        $filters = $request->only(['search', 'filter']);
+        $canEdit = (bool) $user->hasPermission('inventory', 'edit');
 
         return view('inventory.price.index', $this->repairService->getPriceList($filters) + compact('filters', 'canEdit'));
     }
 
     public function update(PriceRequest $request, Inventory $inventory): RedirectResponse
     {
-        // Harga dari Pembelian diterima selalu menang, jadi harga manual tidak boleh diubah dari sini.
-        if (($this->repairService->latestPrice($inventory)['source'] ?? null) === 'pembelian') {
-            return back()->with('error', "Harga \"{$inventory->name}\" mengikuti Pembelian terakhir dan diubah lewat Pembelian.");
-        }
+        $harga = $request->validated('harga_manual');
 
-        $this->inventoryService->updateHargaManual($inventory, $request->validated('harga_manual'));
+        $this->inventoryService->updateHargaManual($inventory, $harga);
 
-        return back()->with('success', $request->validated('harga_manual') === null
-            ? "Harga \"{$inventory->name}\" dikosongkan."
-            : "Harga \"{$inventory->name}\" disimpan.");
+        return back()->with('success', $harga === null
+            ? "Harga manual \"{$inventory->name}\" dihapus."
+            : "Harga \"{$inventory->name}\" diperbarui sebagai harga manual.");
     }
 }
