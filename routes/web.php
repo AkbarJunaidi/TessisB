@@ -148,6 +148,8 @@ Route::middleware('auth')->group(function () {
         // Daftar Harga Barang (harga beli vs biaya servis). Sebelum Route::resource, sama alasannya.
         Route::get('inventory/harga', [PriceController::class, 'index'])
             ->name('inventory.prices.index');
+        Route::patch('inventory/harga/{inventory}', [PriceController::class, 'update'])
+            ->name('inventory.prices.update');
 
         Route::resource('inventory', InventoryController::class);
 

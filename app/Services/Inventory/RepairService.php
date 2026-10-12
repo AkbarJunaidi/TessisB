@@ -324,7 +324,7 @@ class RepairService
      *
      * price_source: pembelian | manual (harga manual hanya jadi cadangan bila belum ada Pembelian diterima).
      *
-     * @return array<int, array{last_price: ?float, last_code: ?string, last_purchase_id: ?int, price_source: ?string, servis_total: float, servis_count: int, worst_unit: ?array{number: int, total: float}, units: array<int, array{number: int, total: float}>}>
+     * @return array<int, array{last_price: ?float, last_date: ?\Carbon\Carbon, last_code: ?string, last_purchase_id: ?int, price_source: ?string, servis_total: float, servis_count: int, worst_unit: ?array{number: int, total: float}, units: array<int, array{number: int, total: float}>}>
      */
     public function costComparison(): array
     {
@@ -343,7 +343,7 @@ class RepairService
             ->selectRaw('i.inventory_id, i.inventory_unit_id, u.unit_number, r.id as repair_id, r.biaya / c.n as share')
             ->get();
 
-        $empty = ['last_price' => null, 'last_code' => null, 'last_purchase_id' => null, 'price_source' => null, 'servis_total' => 0.0, 'servis_count' => 0, 'worst_unit' => null, 'units' => []];
+        $empty = ['last_price' => null, 'last_date' => null, 'last_code' => null, 'last_purchase_id' => null, 'price_source' => null, 'servis_total' => 0.0, 'servis_count' => 0, 'worst_unit' => null, 'units' => []];
         $map = [];
 
         foreach ($shares->groupBy('inventory_id') as $inventoryId => $rows) {
@@ -359,22 +359,27 @@ class RepairService
         }
 
         $prices = $this->receivedPrices()
-            ->get(['purchase_items.inventory_id', 'purchase_items.unit_price', 'purchases.code', 'purchases.id as purchase_id']);
+            ->get(['purchase_items.inventory_id', 'purchase_items.unit_price', 'purchases.code', 'purchases.id as purchase_id', 'purchases.purchase_date']);
 
         foreach ($prices->unique('inventory_id') as $row) {
             $map[(int) $row->inventory_id] = array_merge($map[(int) $row->inventory_id] ?? $empty, [
                 'last_price' => (float) $row->unit_price,
+                'last_date'  => $row->purchase_date ? \Carbon\Carbon::parse($row->purchase_date) : null,
                 'last_code'  => $row->code,
                 'last_purchase_id' => (int) $row->purchase_id,
                 'price_source' => 'pembelian',
             ]);
         }
 
-        foreach (Inventory::where('harga_manual', '>', 0)->get(['id', 'harga_manual']) as $inventory) {
+        foreach (Inventory::where('harga_manual', '>', 0)->get(['id', 'harga_manual', 'harga_manual_at']) as $inventory) {
             $current = $map[$inventory->id] ?? $empty;
 
             if ($current['last_price'] === null) {
-                $map[$inventory->id] = array_merge($current, ['last_price' => (float) $inventory->harga_manual, 'price_source' => 'manual']);
+                $map[$inventory->id] = array_merge($current, [
+                    'last_price'   => (float) $inventory->harga_manual,
+                    'last_date'    => $inventory->harga_manual_at,
+                    'price_source' => 'manual',
+                ]);
             }
         }
 
@@ -433,7 +438,7 @@ class RepairService
     /**
      * Daftar harga barang: harga beli terakhir berdampingan dengan biaya servisnya.
      *
-     * @param array{search?: ?string, filter?: ?string} $filters filter: servis | ganti
+     * @param array{search?: ?string, filter?: ?string} $filters filter: servis | ganti | kosong
      * @return array{items: LengthAwarePaginator, costs: array, summary: array<string, int|float>}
      */
     public function getPriceList(array $filters = [], int $perPage = 20): array
@@ -448,6 +453,10 @@ class RepairService
             default  => null,
         };
 
+        $withoutPrice = ($filters['filter'] ?? null) === 'kosong'
+            ? array_values(array_diff($activeIds, array_keys(array_filter($costs, fn ($c) => $c['last_price'] !== null))))
+            : null;
+
         $items = Inventory::withCount('units')
             ->when(!empty($filters['search']), function ($q) use ($filters) {
                 $keyword = trim($filters['search']);
@@ -456,6 +465,7 @@ class RepairService
                     ->orWhere('serial_number', 'like', "%{$keyword}%"));
             })
             ->when($filterIds !== null, fn ($q) => $q->whereIn('id', $filterIds))
+            ->when($withoutPrice !== null, fn ($q) => $q->whereIn('id', $withoutPrice))
             ->orderBy('name')
             ->paginate(PerPage::resolve($perPage))
             ->withQueryString();

@@ -36,8 +36,23 @@ class Inventory extends Model
     ];
 
     protected $casts = [
-        'harga_manual' => 'decimal:2',
+        'harga_manual'    => 'decimal:2',
+        'harga_manual_at' => 'datetime',
     ];
+
+    /** Tanggal harga manual dicatat di satu tempat, jadi berlaku dari form barang maupun Daftar Harga. */
+    protected static function booted(): void
+    {
+        static::saving(function (self $inventory) {
+            $old = $inventory->getRawOriginal('harga_manual');
+            $new = $inventory->getAttributes()['harga_manual'] ?? null;
+
+            // Dibandingkan sebagai angka: "1500000" dan "1500000.00" bukan perubahan.
+            if (($old === null) !== ($new === null) || ($old !== null && (float) $old !== (float) $new)) {
+                $inventory->harga_manual_at = $new === null ? null : now();
+            }
+        });
+    }
 
     /**
      * Jadwal servis aktif bila minimal satu interval (hari / pemakaian) terisi.

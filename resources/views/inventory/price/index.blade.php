@@ -21,6 +21,10 @@
         </nav>
     </div>
 
+    @error('harga_manual')
+        <div class="alert alert-danger small">{{ $message }}</div>
+    @enderror
+
     {{-- Ringkasan --}}
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
@@ -80,6 +84,7 @@
                     <select class="form-select" id="filterTampil" name="filter">
                         <option value="">Semua barang</option>
                         <option value="servis" {{ ($filters['filter'] ?? '') === 'servis' ? 'selected' : '' }}>Pernah diservis</option>
+                        <option value="kosong" {{ ($filters['filter'] ?? '') === 'kosong' ? 'selected' : '' }}>Belum ada harga</option>
                         <option value="ganti" {{ ($filters['filter'] ?? '') === 'ganti' ? 'selected' : '' }}>Layak dipertimbangkan ganti</option>
                     </select>
                 </div>
@@ -106,13 +111,15 @@
             <table class="table table-hover table-modern table-stack align-middle mb-0">
                 <thead>
                     <tr>
-                        <th class="ps-4 py-3">Barang</th>
+                        <th class="ps-4 py-3">Foto</th>
+                        <th>Barang</th>
                         <th class="text-center">Unit</th>
                         <th class="text-end">{{ $perUnit ? 'Harga Beli Terakhir' : 'Total Harga Beli Terakhir' }}</th>
                         <th class="text-end">{{ $perUnit ? 'Rata-rata Servis per Unit' : 'Total Biaya Servis' }}</th>
                         <th class="text-center">Servis</th>
                         <th>Unit Termahal Diservis</th>
-                        <th class="pe-4">Perbandingan</th>
+                        <th>Perbandingan</th>
+                        <th class="text-center pe-4">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="small">
@@ -123,7 +130,18 @@
                             $pct   = $ratio === null ? null : (int) round($ratio * 100);
                         @endphp
                         <tr>
-                            <td class="ps-4 py-3 u-minw-200px" data-label="Barang">
+                            <td class="ps-4 py-3" data-label="Foto">
+                                @if($inventory->image)
+                                    <img src="{{ asset('storage/' . $inventory->image) }}"
+                                         alt="Foto {{ $inventory->name }}"
+                                         class="rounded-3 border u-w-56px u-h-46px u-of-cover">
+                                @else
+                                    <div class="bg-light rounded-3 d-flex align-items-center justify-content-center text-muted border u-w-56px u-h-46px u-fs-0p7rem">
+                                        <i class="bi bi-image opacity-50"></i>
+                                    </div>
+                                @endif
+                            </td>
+                            <td class="py-3 u-minw-200px" data-label="Barang">
                                 <a href="{{ route('inventory.show', $inventory) }}" class="text-decoration-none fw-semibold">{{ $inventory->name }}</a>
                                 <div class="text-muted small">{{ $inventory->brand ?: '' }} SN {{ $inventory->serial_number }}</div>
                             </td>
@@ -134,6 +152,9 @@
                                     @unless($perUnit)
                                         <div class="text-muted small">{{ $inventory->units_count }} unit x {{ \App\Support\Money::formatRupiah($cost['last_price']) }}</div>
                                     @endunless
+                                    @if($cost['last_date'])
+                                        <div class="text-muted small">{{ $cost['last_date']->translatedFormat('d M Y') }}</div>
+                                    @endif
                                     @if(($cost['price_source'] ?? null) === 'manual')
                                         <span class="badge-soft-secondary px-2 py-1 rounded-pill small">Manual</span>
                                     @elseif($canPurchase && $cost['last_purchase_id'])
@@ -164,21 +185,42 @@
                                     <span class="text-muted">-</span>
                                 @endif
                             </td>
-                            <td class="pe-4" data-label="Perbandingan">
+                            <td data-label="Perbandingan">
                                 @if($pct === null)
                                     <span class="text-muted">{{ $cost && $cost['worst_unit'] ? 'Harga beli belum ada' : '-' }}</span>
                                 @elseif($ratio >= \App\Services\Inventory\RepairService::replaceWarnRatio())
-                                    <span class="badge-soft-danger px-2 py-1 rounded-pill">{{ $pct }}% - pertimbangkan ganti</span>
+                                    <span class="badge-soft-danger px-2 py-1 rounded-pill text-nowrap">{{ $pct }}% - pertimbangkan ganti</span>
                                 @elseif($ratio >= \App\Services\Inventory\RepairService::replaceWatchRatio())
-                                    <span class="badge-soft-warning px-2 py-1 rounded-pill">{{ $pct }}% - pantau</span>
+                                    <span class="badge-soft-warning px-2 py-1 rounded-pill text-nowrap">{{ $pct }}% - pantau</span>
                                 @else
-                                    <span class="badge-soft-success px-2 py-1 rounded-pill">{{ $pct }}% - aman</span>
+                                    <span class="badge-soft-success px-2 py-1 rounded-pill text-nowrap">{{ $pct }}% - aman</span>
+                                @endif
+                            </td>
+                            <td class="text-center pe-4" data-label="Aksi">
+                                @if(($cost['price_source'] ?? null) === 'pembelian')
+                                    <a href="{{ route('purchases.show', $cost['last_purchase_id']) }}"
+                                       class="btn btn-sm btn-light border" title="Harga mengikuti Pembelian. Buka Pembelian untuk mengubah" aria-label="Buka Pembelian {{ $cost['last_code'] }}">
+                                        <i class="bi bi-box-arrow-up-right"></i>
+                                    </a>
+                                @elseif($canEdit)
+                                    @php $hasManual = ($cost['price_source'] ?? null) === 'manual'; @endphp
+                                    <button type="button" class="btn btn-sm btn-light border"
+                                            data-bs-toggle="modal" data-bs-target="#priceModal"
+                                            data-action="{{ route('inventory.prices.update', $inventory) }}"
+                                            data-name="{{ $inventory->name }}"
+                                            data-price="{{ $hasManual ? (int) $inventory->harga_manual : '' }}"
+                                            title="{{ $hasManual ? 'Ubah harga' : 'Isi harga' }}"
+                                            aria-label="{{ $hasManual ? 'Ubah harga' : 'Isi harga' }} {{ $inventory->name }}">
+                                        <i class="bi {{ $hasManual ? 'bi-pencil' : 'bi-plus-lg' }}"></i>
+                                    </button>
+                                @else
+                                    <span class="text-muted">-</span>
                                 @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-5">
+                            <td colspan="9" class="text-center text-muted py-5">
                                 <i class="bi bi-currency-dollar fs-3 d-block mb-2 opacity-50"></i>
                                 Tidak ada barang yang cocok.
                             </td>
@@ -193,11 +235,47 @@
         Total servis membandingkan semua unit: Total Harga Beli = harga beli terakhir x jumlah unit saat ini (perkiraan).
         Per unit memakai harga satuan dan rata-rata servis per unit yang pernah diservis. Perbandingan = biaya servis unit
         paling mahal dibagi harga beli terakhir per unit. Biaya catatan perbaikan yang berisi beberapa unit dibagi rata per
-        unit, jadi angkanya perkiraan. Barang yang belum pernah dibeli lewat Pembelian belum punya harga, kecuali harga manualnya diisi di Edit Barang.
+        unit, jadi angkanya perkiraan. Barang yang belum pernah dibeli lewat Pembelian belum punya harga, kecuali harga manualnya diisi lewat tombol di kolom Aksi
+        atau di Edit Barang. Harga dari Pembelian selalu didahulukan; tanggalnya adalah tanggal Pembelian, sedangkan harga manual
+        memakai tanggal terakhir diisi atau diubah.
     </p>
 
     <div class="mt-3">
         {{ $items->links('pagination.app') }}
     </div>
 </div>
+
+@if($canEdit)
+    {{-- Modal isi / ubah harga manual --}}
+    <div class="modal fade" id="priceModal" tabindex="-1" aria-labelledby="priceModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form method="POST" action="" id="priceForm" class="modal-content">
+                @csrf
+                @method('PATCH')
+                <div class="modal-header">
+                    <h5 class="modal-title" id="priceModalTitle">Harga Beli Barang</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="fw-semibold mb-3" id="priceModalName"></div>
+                    <label for="hargaManual" class="form-label fw-semibold small text-secondary">Harga Beli per Unit</label>
+                    <div class="input-group">
+                        <span class="input-group-text">Rp</span>
+                        <input type="text" inputmode="numeric" name="harga_manual" id="hargaManual" class="form-control" placeholder="0" autocomplete="off">
+                    </div>
+                    <div class="form-text">
+                        Kosongkan untuk menghapus harga. Begitu barang dibeli lewat Pembelian, harga otomatis mengikuti Pembelian terakhir.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ \App\Support\AppAsset::url('js/inventory/harga-manual.js') }}"></script>
+    <script src="{{ \App\Support\AppAsset::url('js/inventory/harga-price.js') }}"></script>
+@endif
 @endsection

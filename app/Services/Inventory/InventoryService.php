@@ -290,11 +290,7 @@ class InventoryService
             }
 
             if ($oldHargaManual !== $inventory->harga_manual) {
-                $logMessage .= ' (harga manual '
-                    . ($oldHargaManual === null ? 'belum diisi' : \App\Support\Money::formatRupiah($oldHargaManual))
-                    . ' ke '
-                    . ($inventory->harga_manual === null ? 'dikosongkan' : \App\Support\Money::formatRupiah($inventory->harga_manual))
-                    . ')';
+                $logMessage .= ' (' . $this->hargaChangeText($oldHargaManual, $inventory->harga_manual) . ')';
             }
 
             $this->activityLogService->log(
@@ -509,6 +505,31 @@ class InventoryService
         });
 
         return $unit->fresh();
+    }
+
+    /** Isi, ubah, atau kosongkan harga manual dari Daftar Harga Barang. */
+    public function updateHargaManual(Inventory $inventory, ?string $harga): Inventory
+    {
+        $old = $inventory->harga_manual;
+        $inventory->update(['harga_manual' => $harga]);
+
+        if ($old !== $inventory->harga_manual) {
+            $this->activityLogService->log(
+                Auth::id(),
+                'Inventory',
+                "Mengubah data barang \"{$inventory->name}\" ({$this->hargaChangeText($old, $inventory->harga_manual)})"
+            );
+        }
+
+        return $inventory;
+    }
+
+    private function hargaChangeText(?string $old, ?string $new): string
+    {
+        return 'harga manual '
+            . ($old === null ? 'belum diisi' : \App\Support\Money::formatRupiah($old))
+            . ' ke '
+            . ($new === null ? 'dikosongkan' : \App\Support\Money::formatRupiah($new));
     }
 
     /** Harga manual hanya ikut disimpan bila field-nya terkirim (user tanpa izin Pembelian tidak mengirimnya). */
