@@ -85,13 +85,19 @@
         border-collapse: collapse;
     }
     .identity-table td {
-        padding: 9px 0;
+        padding: 7px 0;
         border-bottom: 1px solid #eeeeee;
         font-size: 10pt;
     }
     .identity-label {
         color: #666666;
         width: 40%;
+    }
+    /* Titik dua terpisah dan jarak ke nilai, supaya label panjang tidak menempel. */
+    .identity-table .identity-colon {
+        color: #666666;
+        width: 3%;
+        padding-right: 8px;
     }
     .identity-value {
         font-weight: bold;
@@ -115,6 +121,9 @@
     .box-body {
         font-size: 9.5pt;
         color: #333333;
+        /* Tiga baris saja (9.5pt x 1.5); ringkasan penuh ada di halaman detail lewat QR. */
+        max-height: 43pt;
+        overflow: hidden;
     }
     .box-body-empty {
         font-size: 9.5pt;

@@ -84,13 +84,19 @@
             border-collapse: collapse;
         }
         .identity-table td {
-            padding: 9px 0;
+            padding: 7px 0;
             border-bottom: 1px solid #eeeeee;
             font-size: 10pt;
         }
         .identity-label {
             color: #666666;
             width: 40%;
+        }
+        /* Titik dua terpisah dan jarak ke nilai, supaya label panjang tidak menempel. */
+        .identity-table .identity-colon {
+            color: #666666;
+            width: 3%;
+            padding-right: 8px;
         }
         .identity-value {
             font-weight: bold;
@@ -114,6 +120,9 @@
         .box-body {
             font-size: 9.5pt;
             color: #333333;
+            /* Tiga baris saja (9.5pt x 1.5); ringkasan penuh ada di halaman detail lewat QR. */
+            max-height: 43pt;
+            overflow: hidden;
         }
         .box-body-empty {
             font-size: 9.5pt;
@@ -202,40 +211,40 @@
                 <table class="identity-table">
                     <tr>
                         <td class="identity-label">Nama Barang</td>
+                        <td class="identity-colon">:</td>
                         <td class="identity-value">{{ $inventory->name }}</td>
                     </tr>
                     <tr>
                         <td class="identity-label">Serial Number</td>
+                        <td class="identity-colon">:</td>
                         <td class="identity-value">{{ $inventory->serial_number }}</td>
                     </tr>
                     <tr>
                         <td class="identity-label">Jumlah Unit</td>
+                        <td class="identity-colon">:</td>
                         <td class="identity-value">{{ $inventory->quantity_total ?? '-' }}</td>
                     </tr>
                     <tr>
                         <td class="identity-label">Merek</td>
+                        <td class="identity-colon">:</td>
                         <td class="identity-value">{{ $inventory->brand ?: '-' }}</td>
                     </tr>
                     @if(($prices ?? null) !== null)
                         @php($hargaBarang = $prices[$inventory->id] ?? null)
                         <tr>
-                            <td class="identity-label">Harga Beli Terakhir / unit</td>
-                            <td class="identity-value">
-                                @if($hargaBarang)
-                                    {{ \App\Support\Money::formatRupiah($hargaBarang['price']) }}
-                                    ({{ $hargaBarang['source'] === 'manual' ? 'Manual' : $hargaBarang['code'] }})
-                                @else
-                                    -
-                                @endif
-                            </td>
+                            <td class="identity-label">Harga Beli / unit</td>
+                            <td class="identity-colon">:</td>
+                            <td class="identity-value">{{ $hargaBarang ? \App\Support\Money::formatRupiah($hargaBarang['price']) : '-' }}</td>
                         </tr>
                     @endif
                     <tr>
                         <td class="identity-label">Tanggal Input</td>
+                        <td class="identity-colon">:</td>
                         <td class="identity-value">{{ $inventory->created_at ? $inventory->created_at->translatedFormat('d F Y') : '-' }}</td>
                     </tr>
                     <tr>
                         <td class="identity-label">Terakhir Diperbarui</td>
+                        <td class="identity-colon">:</td>
                         <td class="identity-value">{{ $inventory->updated_at ? $inventory->updated_at->translatedFormat('d F Y') : '-' }}</td>
                     </tr>
                 </table>
@@ -247,7 +256,7 @@
     <div class="box-section">
         <p class="box-title">Deskripsi Barang</p>
         @if(!empty($inventory->description))
-            <div class="box-body">{!! nl2br(e($inventory->description)) !!}</div>
+            <div class="box-body">{{ \Illuminate\Support\Str::limit(preg_replace('/\s+/', ' ', trim($inventory->description)), 240, '...', preserveWords: true) }}</div>
         @else
             <div class="box-body-empty">Belum ada deskripsi.</div>
         @endif
