@@ -1,4 +1,4 @@
-// Modal tambah/perbarui harga: isi form dari baris yang diklik, judul mengikuti ada tidaknya harga.
+// Modal tambah/perbarui harga dan ambang ganti: isi form dari baris yang diklik, judul mengikuti ada tidaknya harga.
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('priceModal');
 
@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('priceModalTitle').textContent = hasPrice ? 'Perbarui Harga Barang' : 'Tambah Harga Barang';
         document.getElementById('priceSubmit').textContent = 'Simpan';
         document.getElementById('hargaManual').value = price;
+        document.getElementById('ambangGanti').value = button.dataset.ambang || '';
     });
 
     modal.addEventListener('shown.bs.modal', () => document.getElementById('hargaManual').focus());

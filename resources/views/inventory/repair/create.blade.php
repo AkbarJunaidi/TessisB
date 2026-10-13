@@ -287,7 +287,7 @@
             if (spent <= 0) return;
             const ratio = price ? spent / price : null;
             const pct = ratio === null ? '' : ' (' + Math.round(ratio * 100) + '% dari harga beli)';
-            if (ratio !== null && ratio >= warnRatio) {
+            if (ratio !== null && ratio >= (info.warn_ratio || warnRatio)) {
                 lines.push('<div class="text-danger fw-semibold mt-2"><i class="bi bi-exclamation-triangle me-1"></i>Unit #' + u.number
                     + ' sudah menghabiskan ' + rupiah(spent) + ' untuk servis' + pct + '. Pertimbangkan beli baru daripada servis lagi.</div>');
             } else {

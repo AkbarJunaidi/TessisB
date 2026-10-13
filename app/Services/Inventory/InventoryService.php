@@ -532,6 +532,26 @@ class InventoryService
         return $inventory;
     }
 
+    /** Ambang ganti khusus barang; null mengembalikan ke nilai Pengaturan. Perubahan dicatat di log aktivitas. */
+    public function updateAmbangGanti(Inventory $inventory, ?int $ambang): Inventory
+    {
+        $old = $inventory->ambang_ganti_persen;
+
+        if ($old === $ambang) {
+            return $inventory;
+        }
+
+        $inventory->update(['ambang_ganti_persen' => $ambang]);
+
+        $this->activityLogService->log(
+            Auth::id(),
+            'Inventory',
+            "Mengubah data barang \"{$inventory->name}\" (ambang ganti " . ($old === null ? 'ikut pengaturan' : "{$old}%") . ' ke ' . ($ambang === null ? 'ikut pengaturan' : "{$ambang}%") . ')'
+        );
+
+        return $inventory;
+    }
+
     private function hargaChangeText(?string $old, ?string $new): string
     {
         return 'harga manual '

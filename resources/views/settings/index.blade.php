@@ -236,7 +236,35 @@
                         <input type="number" name="repair_warn_percent" id="repair_warn_percent" min="10" max="200"
                                class="form-control @error('repair_warn_percent') is-invalid @enderror" value="{{ $v('repair_warn_percent') }}" required>
                         @error('repair_warn_percent')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                        <div class="form-text small">Biaya servis satu unit setara persen ini dari harga beli baru.</div>
+                        <div class="form-text small">Biaya servis satu unit setara persen ini dari harga beli baru. Bisa diatur khusus per barang di Daftar Harga Barang.</div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label for="repair_rawan_hari" class="form-label fw-semibold small text-secondary">Rawan Rusak: Periode (hari)</label>
+                        <input type="number" name="repair_rawan_hari" id="repair_rawan_hari" min="30" max="730"
+                               class="form-control @error('repair_rawan_hari') is-invalid @enderror" value="{{ $v('repair_rawan_hari') }}" required>
+                        @error('repair_rawan_hari')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <div class="form-text small">Hanya servis dalam sekian hari terakhir yang dihitung.</div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label for="repair_rawan_kali" class="form-label fw-semibold small text-secondary">Rawan Rusak: Batas Servis (kali)</label>
+                        <input type="number" name="repair_rawan_kali" id="repair_rawan_kali" min="2" max="100"
+                               class="form-control @error('repair_rawan_kali') is-invalid @enderror" value="{{ $v('repair_rawan_kali') }}" required>
+                        @error('repair_rawan_kali')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <div class="form-text small">Barang ditandai bila servisnya sudah sebanyak ini dalam periode.</div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label for="repair_rawan_percent" class="form-label fw-semibold small text-secondary">Rawan Rusak: Batas Unit (%)</label>
+                        <input type="number" name="repair_rawan_percent" id="repair_rawan_percent" min="10" max="500"
+                               class="form-control @error('repair_rawan_percent') is-invalid @enderror" value="{{ $v('repair_rawan_percent') }}" required>
+                        @error('repair_rawan_percent')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <div class="form-text small">Atau bila servisnya setara persen ini dari jumlah unit. Minimal 2 servis.</div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3">
+                        <label for="repair_gagal_percent" class="form-label fw-semibold small text-secondary">Sulit Diperbaiki (%)</label>
+                        <input type="number" name="repair_gagal_percent" id="repair_gagal_percent" min="10" max="100"
+                               class="form-control @error('repair_gagal_percent') is-invalid @enderror" value="{{ $v('repair_gagal_percent') }}" required>
+                        @error('repair_gagal_percent')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <div class="form-text small">Unit gagal diperbaiki setara persen ini dari yang pernah diservis, minimal 2 kali servis.</div>
                     </div>
                     <div class="col-12 col-md-6 col-lg-3">
                         <label for="location_default_radius" class="form-label fw-semibold small text-secondary">Radius Lokasi Default (m)</label>

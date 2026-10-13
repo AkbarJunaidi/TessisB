@@ -30,22 +30,36 @@ class RepairController extends Controller
         $this->authorizeView();
 
         $request->validate([
-            'dari'         => ['nullable', 'date'],
-            'sampai'       => ['nullable', 'date'],
             'inventory_id' => ['nullable', 'integer'],
+            'penanda'      => ['nullable', 'in:rawan,sulit,mahal,aman'],
         ]);
 
-        $filters = $request->only(['search', 'status', 'tampil', 'hasil', 'dari', 'sampai', 'inventory_id']);
-        $riwayat = ($filters['tampil'] ?? '') === 'riwayat';
-        $stats   = $this->repairService->getStats();
+        $filters = $request->only(['search', 'status', 'tampil', 'penanda', 'inventory_id']);
+        // "riwayat" adalah nama lama tab Kondisi barang; tetap diterima untuk tautan yang sudah tersimpan.
+        $kondisi  = in_array($filters['tampil'] ?? '', ['kondisi', 'riwayat'], true);
+        $canPrice = (bool) Auth::user()?->hasPermission('purchase', 'view');
+        $stats    = $this->repairService->getStats();
 
-        $repairs         = $riwayat ? null : $this->repairService->getFiltered($filters);
-        $history         = $riwayat ? $this->repairService->getHistory($filters) : null;
-        $filterInventory = $riwayat && !empty($filters['inventory_id'])
+        $repairs    = $kondisi ? null : $this->repairService->getFiltered($filters);
+        $conditions = $kondisi ? $this->repairService->getCondition($filters, $canPrice) : null;
+        $filterInventory = $kondisi && !empty($filters['inventory_id'])
             ? Inventory::withTrashed()->find($filters['inventory_id'], ['id', 'name'])
             : null;
 
-        return view('inventory.repair.index', compact('repairs', 'history', 'stats', 'filters', 'riwayat', 'filterInventory'));
+        return view('inventory.repair.index', compact('repairs', 'conditions', 'stats', 'filters', 'kondisi', 'filterInventory', 'canPrice'));
+    }
+
+    /** Rincian kondisi satu barang; dimuat saat barisnya dibuka di tab Kondisi barang. */
+    public function kondisi(Inventory $inventory): View
+    {
+        $this->authorizeView();
+
+        return view('inventory.repair.partials.condition-detail', [
+            'inventory' => $inventory,
+            'repairs'   => $this->repairService->getConditionDetail($inventory),
+            'canPrice'  => (bool) Auth::user()?->hasPermission('purchase', 'view'),
+            'limit'     => 30,
+        ]);
     }
 
     public function create(Request $request): View

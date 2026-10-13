@@ -136,6 +136,8 @@ Route::middleware('auth')->group(function () {
             ->name('inventory.repairs.index');
         Route::get('inventory/perbaikan/create', [RepairController::class, 'create'])
             ->name('inventory.repairs.create');
+        Route::get('inventory/perbaikan/kondisi/{inventory}', [RepairController::class, 'kondisi'])
+            ->name('inventory.repairs.kondisi');
         Route::post('inventory/perbaikan', [RepairController::class, 'store'])
             ->name('inventory.repairs.store');
         Route::get('inventory/perbaikan/{repair}', [RepairController::class, 'show'])

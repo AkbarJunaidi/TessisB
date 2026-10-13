@@ -15,6 +15,7 @@ class InventoryRepairItem extends Model
         'inventory_unit_id',
         'status_sebelum',
         'hasil',
+        'catatan',
         'biaya',
         'biaya_estimasi',
     ];

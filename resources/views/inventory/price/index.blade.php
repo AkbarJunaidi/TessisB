@@ -23,6 +23,9 @@
     @error('harga_manual')
         <div class="alert alert-danger small">{{ $message }}</div>
     @enderror
+    @error('ambang_ganti_persen')
+        <div class="alert alert-danger small">{{ $message }}</div>
+    @enderror
 
     {{-- Ringkasan --}}
     <div class="row g-3 mb-4">
@@ -48,7 +51,7 @@
                 <div class="card-body">
                     <div class="text-muted small">Layak Dipertimbangkan Ganti</div>
                     <div class="fs-4 fw-bold {{ $summary['layak_ganti'] > 0 ? 'text-danger' : '' }}">{{ $summary['layak_ganti'] }}</div>
-                    <div class="text-muted small">servis unit &ge; {{ \App\Models\AppSetting::int('repair_warn_percent') }}% harga beli</div>
+                    <div class="text-muted small">servis unit melewati ambang barang (bawaan {{ \App\Models\AppSetting::int('repair_warn_percent') }}% harga beli)</div>
                 </div>
             </div>
         </div>
@@ -94,9 +97,9 @@
                     <tr>
                         <th class="ps-4 py-3">Foto</th>
                         <th>Barang</th>
-                        <th class="text-center">Unit</th>
-                        <th class="text-end">Harga Beli Terakhir</th>
-                        <th class="text-end">Rata-rata Servis per Unit</th>
+                        <th class="text-end">Harga Beli</th>
+                        <th class="text-end">Servis Termahal</th>
+                        <th class="text-end">Rata-rata Servis</th>
                         <th class="text-center">Servis</th>
                         <th>Penanda</th>
                         <th class="text-center pe-4">Aksi</th>
@@ -105,9 +108,11 @@
                 <tbody class="small">
                     @forelse($items as $inventory)
                         @php
-                            $cost  = $costs[$inventory->id] ?? ['last_price' => null, 'last_date' => null, 'last_code' => null, 'last_purchase_id' => null, 'price_source' => null, 'servis_total' => 0.0, 'servis_count' => 0, 'servis_estimasi' => false, 'worst_unit' => null, 'units' => []];
-                            $ratio = $cost ? \App\Services\Inventory\RepairService::replaceRatio($cost) : null;
-                            $pct   = $ratio === null ? null : (int) round($ratio * 100);
+                            $cost   = $costs[$inventory->id] ?? \App\Services\Inventory\RepairService::emptyCost($inventory->ambang_ganti_persen);
+                            $ratio  = \App\Services\Inventory\RepairService::replaceRatio($cost);
+                            $pct    = $ratio === null ? null : (int) round($ratio * 100);
+                            $warn   = $cost['warn_ratio'];
+                            $servis = $events[$inventory->id] ?? 0;
                         @endphp
                         <tr>
                             <td class="ps-4 py-3" data-label="Foto">
@@ -125,8 +130,7 @@
                                 <a href="{{ route('inventory.show', $inventory) }}" class="text-decoration-none fw-semibold">{{ $inventory->name }}</a>
                                 <div class="text-muted small">{{ $inventory->brand ?: '' }} SN {{ $inventory->serial_number }}</div>
                             </td>
-                            <td class="text-center" data-label="Unit">{{ $inventory->units_count }}</td>
-                            <td class="text-end" data-label="Harga Beli Terakhir">
+                            <td class="text-end" data-label="Harga Beli">
                                 @if($cost['last_price'] !== null)
                                     <div class="fw-semibold">{{ \App\Support\Money::formatRupiah($cost['last_price']) }}</div>
                                     @if($cost['last_date'])
@@ -141,18 +145,26 @@
                                     <span class="text-muted">Belum ada</span>
                                 @endif
                             </td>
-                            <td class="text-end" data-label="Rata-rata Servis per Unit">
+                            <td class="text-end" data-label="Servis Termahal">
+                                @if($cost['worst_unit'])
+                                    {{ \App\Support\Money::formatRupiah($cost['worst_unit']['total']) }}
+                                    <div class="text-muted small">Unit #{{ $cost['worst_unit']['number'] }}{{ $cost['servis_estimasi'] ? ', perkiraan' : '' }}</div>
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td class="text-end" data-label="Rata-rata Servis">
                                 @if($cost['units'])
                                     {{ \App\Support\Money::formatRupiah(\App\Services\Inventory\RepairService::averagePerUnit($cost)) }}
-                                    <div class="text-muted small">dari {{ count($cost['units']) }} unit{{ $cost['servis_estimasi'] ? ', perkiraan' : '' }}</div>
+                                    <div class="text-muted small">dari {{ count($cost['units']) }} unit</div>
                                 @else
                                     -
                                 @endif
                             </td>
                             <td class="text-center" data-label="Servis">
-                                @if($cost['servis_count'] > 0)
-                                    <a href="{{ route('inventory.repairs.index', ['tampil' => 'riwayat', 'inventory_id' => $inventory->id]) }}"
-                                       class="text-decoration-none" title="Lihat riwayat servis">{{ $cost['servis_count'] }}x</a>
+                                @if($servis > 0)
+                                    <a href="{{ route('inventory.repairs.index', ['tampil' => 'kondisi', 'inventory_id' => $inventory->id]) }}"
+                                       class="text-decoration-none" title="Lihat kondisi barang">{{ $servis }}x</a>
                                 @else
                                     -
                                 @endif
@@ -162,12 +174,15 @@
                                     <span class="text-muted">{{ $cost['worst_unit'] ? 'Harga beli belum ada' : '-' }}</span>
                                 @else
                                     @php
-                                        [$tone, $label] = $ratio >= \App\Services\Inventory\RepairService::replaceWarnRatio()
+                                        [$tone, $label] = $ratio >= $warn
                                             ? ['danger', 'Pertimbangkan ganti']
-                                            : ($ratio >= \App\Services\Inventory\RepairService::replaceWatchRatio() ? ['warning', 'Pantau'] : ['success', 'Aman']);
+                                            : ($ratio >= \App\Services\Inventory\RepairService::replaceWatchRatio($warn) ? ['warning', 'Pantau'] : ['success', 'Aman']);
                                     @endphp
                                     <span class="badge-soft-{{ $tone }} px-2 py-1 rounded-pill text-nowrap"
                                           title="Unit #{{ $cost['worst_unit']['number'] }} diservis {{ \App\Support\Money::formatRupiah($cost['worst_unit']['total']) }} ({{ $pct }}% dari harga beli)">{{ $label }}</span>
+                                @endif
+                                @if($inventory->ambang_ganti_persen !== null)
+                                    <div class="text-muted small">ambang {{ $inventory->ambang_ganti_persen }}%</div>
                                 @endif
                             </td>
                             <td class="text-center pe-4" data-label="Aksi">
@@ -177,6 +192,7 @@
                                             data-action="{{ route('inventory.prices.update', $inventory) }}"
                                             data-name="{{ $inventory->name }}"
                                             data-price="{{ $cost['last_price'] !== null ? (int) round($cost['last_price']) : '' }}"
+                                            data-ambang="{{ $inventory->ambang_ganti_persen }}"
                                             aria-label="Tambah atau perbarui harga {{ $inventory->name }}"
                                             title="Tambah atau perbarui harga">
                                         <i class="bi bi-pencil-square"></i>
@@ -201,9 +217,9 @@
 
     <p class="text-muted small mt-3 mb-0">
         Semua angka per unit. Harga yang berlaku adalah yang paling baru: Pembelian diterima atau harga manual dari tombol Aksi,
-        sesuai tanggalnya. Rata-rata servis dihitung dari biaya servis tiap unit yang pernah diservis. Penanda membandingkan biaya
-        servis unit yang paling mahal dengan harga beli per unit; arahkan kursor ke penanda untuk melihat angkanya. Biaya perbaikan lama
-        yang dicatat per catatan dibagi rata ke tiap unit dan ditandai perkiraan. Angka pada Servis membuka riwayat servis barang itu.
+        sesuai tanggalnya. Servis termahal adalah total biaya servis satu unit yang paling besar, dan rata-rata servis dihitung dari
+        semua unit yang pernah diservis. Penanda membandingkan servis termahal dengan harga beli; ambang bawaan ada di Pengaturan
+        dan bisa diubah per barang lewat tombol Aksi. Angka pada Servis membuka kondisi barang itu di Perbaikan Barang.
     </p>
 
     <div class="mt-3">
@@ -233,6 +249,9 @@
                         Disimpan sebagai harga manual dengan tanggal hari ini. Kosongkan untuk menghapus harga manual.
                         Harga manual berlaku sampai ada Pembelian yang lebih baru.
                     </div>
+                    <label for="ambangGanti" class="form-label fw-semibold small text-secondary mt-3">Ambang Pertimbangkan Ganti (%)</label>
+                    <input type="number" name="ambang_ganti_persen" id="ambangGanti" min="10" max="200" class="form-control"
+                           placeholder="Kosong: ikut Pengaturan ({{ \App\Models\AppSetting::int('repair_warn_percent') }}%)">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>

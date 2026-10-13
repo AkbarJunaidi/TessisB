@@ -78,8 +78,8 @@
     <div class="card filter-card mb-4">
         <div class="card-body">
             <form action="{{ route('inventory.repairs.index') }}" method="GET" class="row g-3 align-items-end">
-                @if($riwayat)
-                    <input type="hidden" name="tampil" value="riwayat">
+                @if($kondisi)
+                    <input type="hidden" name="tampil" value="kondisi">
                     @if($filterInventory)
                         <input type="hidden" name="inventory_id" value="{{ $filterInventory->id }}">
                     @endif
@@ -89,26 +89,21 @@
                     <div class="search-field">
                         <i class="bi bi-search"></i>
                         <input type="text" class="form-control" id="filterSearch" name="search"
-                               value="{{ $filters['search'] ?? '' }}" placeholder="Kode, nama barang, atau tempat servis...">
+                               value="{{ $filters['search'] ?? '' }}" placeholder="{{ $kondisi ? 'Nama, brand, atau serial number...' : 'Kode, nama barang, atau tempat servis...' }}">
                     </div>
                 </div>
-                @if($riwayat)
-                    <div class="col-6 col-md-2">
-                        <label for="filterHasil" class="form-label">Hasil</label>
-                        <select class="form-select" id="filterHasil" name="hasil">
-                            <option value="">Semua hasil</option>
-                            <option value="Diservis" {{ ($filters['hasil'] ?? '') === 'Diservis' ? 'selected' : '' }}>Sedang diservis</option>
-                            <option value="Tersedia" {{ ($filters['hasil'] ?? '') === 'Tersedia' ? 'selected' : '' }}>Kembali tersedia</option>
-                            <option value="Rusak" {{ ($filters['hasil'] ?? '') === 'Rusak' ? 'selected' : '' }}>Rusak</option>
+                @if($kondisi)
+                    <div class="col-6 col-md-3">
+                        <label for="filterPenanda" class="form-label">Penanda</label>
+                        <select class="form-select" id="filterPenanda" name="penanda">
+                            <option value="">Semua penanda</option>
+                            <option value="rawan" {{ ($filters['penanda'] ?? '') === 'rawan' ? 'selected' : '' }}>Rawan rusak</option>
+                            <option value="sulit" {{ ($filters['penanda'] ?? '') === 'sulit' ? 'selected' : '' }}>Sulit diperbaiki</option>
+                            @if($canPrice)
+                                <option value="mahal" {{ ($filters['penanda'] ?? '') === 'mahal' ? 'selected' : '' }}>Mahal diperbaiki</option>
+                            @endif
+                            <option value="aman" {{ ($filters['penanda'] ?? '') === 'aman' ? 'selected' : '' }}>Aman</option>
                         </select>
-                    </div>
-                    <div class="col-6 col-md-2">
-                        <label for="filterDari" class="form-label">Masuk dari</label>
-                        <input type="date" class="form-control" id="filterDari" name="dari" value="{{ $filters['dari'] ?? '' }}">
-                    </div>
-                    <div class="col-6 col-md-2">
-                        <label for="filterSampai" class="form-label">Sampai</label>
-                        <input type="date" class="form-control" id="filterSampai" name="sampai" value="{{ $filters['sampai'] ?? '' }}">
                     </div>
                 @else
                     <div class="col-6 col-md-3">
@@ -122,7 +117,7 @@
                     </div>
                 @endif
                 <div class="col-6 col-md-auto filter-actions">
-                    <a href="{{ route('inventory.repairs.index', $riwayat ? ['tampil' => 'riwayat'] : []) }}" class="btn btn-outline-secondary px-3">Reset</a>
+                    <a href="{{ route('inventory.repairs.index', $kondisi ? ['tampil' => 'kondisi'] : []) }}" class="btn btn-outline-secondary px-3">Reset</a>
                     <button type="submit" class="btn btn-primary px-3"><i class="bi bi-search me-1"></i>Cari</button>
                 </div>
             </form>
@@ -132,22 +127,22 @@
     {{-- Daftar --}}
     <div class="app-panel overflow-hidden">
         <div class="px-3 px-md-4 pt-3 pt-md-4 mb-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
-            <h6 class="fw-bold m-0">{{ $riwayat ? 'Riwayat Servis per Unit' : 'Semua Perbaikan' }}</h6>
+            <h6 class="fw-bold m-0">{{ $kondisi ? 'Kondisi Barang' : 'Semua Perbaikan' }}</h6>
             <div class="btn-group btn-group-sm" role="group" aria-label="Tampilan perbaikan">
                 <a href="{{ route('inventory.repairs.index') }}"
-                   class="btn {{ $riwayat ? 'btn-outline-primary' : 'btn-primary' }}">Surat perbaikan</a>
-                <a href="{{ route('inventory.repairs.index', ['tampil' => 'riwayat']) }}"
-                   class="btn {{ $riwayat ? 'btn-primary' : 'btn-outline-primary' }}">Riwayat servis</a>
+                   class="btn {{ $kondisi ? 'btn-outline-primary' : 'btn-primary' }}">Surat perbaikan</a>
+                <a href="{{ route('inventory.repairs.index', ['tampil' => 'kondisi']) }}"
+                   class="btn {{ $kondisi ? 'btn-primary' : 'btn-outline-primary' }}">Kondisi barang</a>
             </div>
         </div>
-        @if($riwayat && $filterInventory)
+        @if($kondisi && $filterInventory)
             <div class="px-3 px-md-4 mb-3 small">
                 Barang: <span class="fw-semibold">{{ $filterInventory->name }}</span>
-                <a href="{{ route('inventory.repairs.index', ['tampil' => 'riwayat']) }}" class="text-decoration-none ms-2">Tampilkan semua barang</a>
+                <a href="{{ route('inventory.repairs.index', ['tampil' => 'kondisi']) }}" class="text-decoration-none ms-2">Tampilkan semua barang</a>
             </div>
         @endif
-        @if($riwayat)
-            @include('inventory.repair.partials.history-table', ['history' => $history])
+        @if($kondisi)
+            @include('inventory.repair.partials.condition-table', ['conditions' => $conditions])
         @else
         <div class="table-responsive">
             <table class="table table-hover table-modern table-stack align-middle mb-0">
@@ -239,7 +234,11 @@
     </div>
 
     <div class="mt-3">
-        {{ ($riwayat ? $history : $repairs)->links('pagination.app') }}
+        {{ ($kondisi ? $conditions : $repairs)->links('pagination.app') }}
     </div>
 </div>
+
+@if($kondisi)
+    <script src="{{ \App\Support\AppAsset::url('js/inventory/repair-kondisi.js') }}"></script>
+@endif
 @endsection

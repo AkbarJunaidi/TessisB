@@ -26,6 +26,7 @@ class Inventory extends Model
         'status',
         'brand',
         'harga_manual',
+        'ambang_ganti_persen',
         'image',
         'qr_code', // Kolom bawaan tetap dipertahankan untuk menyimpan path berkas gambar QR
         'qr_code_report', // QR kedua khusus Inventory Report - isinya Signed URL ke halaman scan publik
@@ -38,6 +39,7 @@ class Inventory extends Model
     protected $casts = [
         'harga_manual'    => 'decimal:2',
         'harga_manual_at' => 'datetime',
+        'ambang_ganti_persen' => 'integer',
     ];
 
     /** Tanggal harga manual dicatat di satu tempat, jadi berlaku dari form barang maupun Daftar Harga. */

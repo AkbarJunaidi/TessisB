@@ -40,6 +40,14 @@
         @endif
     </div>
 
+    @if($errors->any())
+        <div class="alert alert-danger small">
+            @foreach($errors->all() as $error)
+                <div>{{ $error }}</div>
+            @endforeach
+        </div>
+    @endif
+
     @if($repair->isOverdue())
         <div class="alert alert-danger small">
             <i class="bi bi-exclamation-triangle me-1"></i>
@@ -119,55 +127,18 @@
             <div class="card shadow-sm border-0 rounded-3 h-100">
                 <div class="card-body p-4">
                     <h6 class="fw-bold mb-3">Unit ({{ $repair->items->count() }})</h6>
-                    <div class="table-responsive table-bleed-4">
-                        <table class="table table-stack align-middle mb-0">
-                            <thead class="table-light text-secondary small text-uppercase">
-                                <tr>
-                                    <th>Barang</th>
-                                    <th>Unit</th>
-                                    <th>Status Sebelumnya</th>
-                                    <th>Hasil</th>
-                                    <th class="text-end">Biaya</th>
-                                </tr>
-                            </thead>
-                            <tbody class="small">
-                                @foreach($repair->items as $item)
-                                    <tr>
-                                        <td data-label="Barang">
-                                            @if($item->inventory)
-                                                <a href="{{ route('inventory.show', $item->inventory) }}" class="text-decoration-none fw-semibold">{{ $item->inventory->name }}</a>
-                                            @else
-                                                -
-                                            @endif
-                                        </td>
-                                        <td data-label="Unit">#{{ $item->unit->unit_number ?? '?' }}</td>
-                                        <td data-label="Status Sebelumnya">{{ $item->status_sebelum }}</td>
-                                        <td data-label="Hasil">
-                                            @if($item->hasil === 'Tersedia')
-                                                <span class="badge-soft-success px-2 py-1 rounded-pill">Kembali Tersedia</span>
-                                            @elseif($item->hasil === 'Rusak')
-                                                <span class="badge-soft-danger px-2 py-1 rounded-pill">Rusak</span>
-                                            @elseif($repair->status === 'Dibatalkan')
-                                                <span class="text-muted">Dikembalikan ke status sebelumnya</span>
-                                            @else
-                                                <span class="badge-soft-warning px-2 py-1 rounded-pill">Diperbaiki di {{ $repair->tempat_nama }}</span>
-                                            @endif
-                                        </td>
-                                        <td class="text-end" data-label="Biaya">
-                                            @if($item->biaya !== null)
-                                                {{ \App\Support\Money::formatRupiah($item->biaya) }}
-                                                @if($item->biaya_estimasi)
-                                                    <div class="text-muted small">perkiraan</div>
-                                                @endif
-                                            @else
-                                                -
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                    @foreach($repair->items->groupBy('inventory_id') as $group)
+                        <div class="{{ $loop->last ? '' : 'border-bottom pb-3 mb-3' }}">
+                            <div class="mb-2">
+                                @if($group->first()->inventory)
+                                    <a href="{{ route('inventory.show', $group->first()->inventory) }}" class="text-decoration-none fw-semibold">{{ $group->first()->inventory->name }}</a>
+                                @else
+                                    <span class="fw-semibold">Barang</span>
+                                @endif
+                            </div>
+                            @include('inventory.repair.partials.unit-groups', ['items' => $group, 'repair' => $repair])
+                        </div>
+                    @endforeach
                 </div>
             </div>
         </div>
@@ -214,7 +185,8 @@
                                     </div>
                                     <div class="row g-2">
                                         <div class="col-12 col-sm-7">
-                                            <select name="hasil[{{ $item->id }}]" class="form-select form-select-sm" aria-label="Hasil unit">
+                                            <select name="hasil[{{ $item->id }}]" class="form-select form-select-sm repair-hasil"
+                                                    data-inventory="{{ $item->inventory_id }}" aria-label="Hasil unit">
                                                 <option value="Tersedia" @selected(old('hasil.' . $item->id, 'Tersedia') === 'Tersedia')>Kembali Tersedia</option>
                                                 <option value="Rusak" @selected(old('hasil.' . $item->id) === 'Rusak')>Rusak (tidak bisa diperbaiki)</option>
                                             </select>
@@ -234,7 +206,28 @@
                         </div>
 
                         <div class="col-12">
-                            <label for="catatan_hasil" class="form-label fw-medium text-secondary">Catatan Hasil</label>
+                            <div class="form-label fw-medium text-secondary mb-2">Catatan per Kelompok</div>
+                            @foreach($repair->items->groupBy('inventory_id') as $inventoryId => $group)
+                                @php $name = $group->first()->inventory->name ?? 'Barang'; @endphp
+                                <div class="repair-note d-none mb-2" data-inventory="{{ $inventoryId }}" data-hasil="Tersedia">
+                                    <label for="catatan_{{ $inventoryId }}_Tersedia" class="form-label small mb-1">{{ $name }}: unit berhasil</label>
+                                    <textarea name="catatan[{{ $inventoryId }}][Tersedia]" id="catatan_{{ $inventoryId }}_Tersedia" rows="2" maxlength="500"
+                                              class="form-control form-control-sm @error('catatan.' . $inventoryId . '.Tersedia') is-invalid @enderror"
+                                              placeholder="Apa yang dikerjakan, garansi, dan sebagainya" disabled>{{ old('catatan.' . $inventoryId . '.Tersedia') }}</textarea>
+                                    @error('catatan.' . $inventoryId . '.Tersedia')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                </div>
+                                <div class="repair-note d-none mb-2" data-inventory="{{ $inventoryId }}" data-hasil="Rusak">
+                                    <label for="catatan_{{ $inventoryId }}_Rusak" class="form-label small mb-1">{{ $name }}: unit gagal <span class="text-danger">*</span></label>
+                                    <textarea name="catatan[{{ $inventoryId }}][Rusak]" id="catatan_{{ $inventoryId }}_Rusak" rows="2" maxlength="500"
+                                              class="form-control form-control-sm @error('catatan.' . $inventoryId . '.Rusak') is-invalid @enderror"
+                                              placeholder="Penyebab dan alasan tidak bisa diperbaiki" disabled>{{ old('catatan.' . $inventoryId . '.Rusak') }}</textarea>
+                                    @error('catatan.' . $inventoryId . '.Rusak')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <div class="col-12">
+                            <label for="catatan_hasil" class="form-label fw-medium text-secondary">Catatan Umum</label>
                             <textarea name="catatan_hasil" id="catatan_hasil" rows="2" class="form-control" maxlength="1000"
                                       placeholder="Apa yang dikerjakan, garansi, dan sebagainya">{{ old('catatan_hasil') }}</textarea>
                         </div>

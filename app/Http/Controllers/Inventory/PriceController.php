@@ -41,12 +41,14 @@ class PriceController extends Controller
 
     public function update(PriceRequest $request, Inventory $inventory): RedirectResponse
     {
-        $harga = $request->validated('harga_manual');
+        $harga  = $request->validated('harga_manual');
+        $ambang = $request->validated('ambang_ganti_persen');
 
         $this->inventoryService->updateHargaManual($inventory, $harga);
+        $this->inventoryService->updateAmbangGanti($inventory, $ambang === null ? null : (int) $ambang);
 
         return back()->with('success', $harga === null
-            ? "Harga manual \"{$inventory->name}\" dihapus."
+            ? "Pengaturan \"{$inventory->name}\" disimpan."
             : "Harga \"{$inventory->name}\" diperbarui sebagai harga manual.");
     }
 }

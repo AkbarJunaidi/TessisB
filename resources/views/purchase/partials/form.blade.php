@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (info.worst_unit && refPrice > 0) {
             const w = info.worst_unit;
             const ratio = w.total / refPrice;
-            if (ratio >= warnRatio) {
+            if (ratio >= (info.warn_ratio || warnRatio)) {
                 html += '<div class="text-danger fw-semibold mt-2"><i class="bi bi-exclamation-triangle me-1"></i>Servis Unit #'
                     + w.number + ' sudah ' + rupiah(w.total) + ' (' + Math.round(ratio * 100) + '% dari harga beli). Pertimbangkan mengganti dengan yang baru.</div>';
             }

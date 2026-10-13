@@ -73,6 +73,10 @@ class SettingUpdateRequest extends FormRequest
 
             'servis_segera_hari'      => ['required', 'integer', 'between:1,90'],
             'repair_warn_percent'     => ['required', 'integer', 'between:10,200'],
+            'repair_rawan_hari'       => ['required', 'integer', 'between:30,730'],
+            'repair_rawan_kali'       => ['required', 'integer', 'between:2,100'],
+            'repair_rawan_percent'    => ['required', 'integer', 'between:10,500'],
+            'repair_gagal_percent'    => ['required', 'integer', 'between:10,100'],
             'location_default_radius' => ['required', 'integer', 'between:10,5000'],
             'upload_max_mb'           => ['required', 'integer', 'between:1,50'],
             'finance_lock_date'       => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
@@ -182,6 +186,10 @@ class SettingUpdateRequest extends FormRequest
 
             'servis_segera_hari.between'      => 'Batas servis segera harus antara 1 dan 90 hari.',
             'repair_warn_percent.between'     => 'Ambang biaya servis harus antara 10 dan 200 persen.',
+            'repair_rawan_hari.between'       => 'Periode rawan rusak harus antara 30 dan 730 hari.',
+            'repair_rawan_kali.between'       => 'Batas servis rawan rusak harus antara 2 dan 100 kali.',
+            'repair_rawan_percent.between'    => 'Batas persen rawan rusak harus antara 10 dan 500 persen.',
+            'repair_gagal_percent.between'    => 'Ambang sulit diperbaiki harus antara 10 dan 100 persen.',
             'location_default_radius.between' => 'Radius default harus antara 10 dan 5000 meter.',
             'upload_max_mb.between'           => 'Batas ukuran upload harus antara 1 dan 50 MB.',
             'finance_lock_date.date_format'   => 'Tanggal tutup buku tidak valid.',

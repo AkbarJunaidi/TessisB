@@ -17,7 +17,7 @@ class SettingService
     public const TEXT_KEYS = [
         'company_name', 'company_tagline', 'company_address', 'company_phone', 'company_whatsapp',
         'company_footer_tagline', 'company_footer_contact', 'company_website', 'company_instagram', 'company_tiktok',
-        'servis_segera_hari', 'repair_warn_percent', 'location_default_radius',
+        'servis_segera_hari', 'repair_warn_percent', 'repair_rawan_hari', 'repair_rawan_kali', 'repair_rawan_percent', 'repair_gagal_percent', 'location_default_radius',
         'upload_max_mb', 'upload_allowed_extensions', 'finance_lock_date',
     ];
 

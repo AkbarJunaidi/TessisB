@@ -20,6 +20,10 @@ return [
 
         'servis_segera_hari'        => 7,
         'repair_warn_percent'       => 50,
+        'repair_rawan_hari'         => 180,
+        'repair_rawan_kali'         => 5,
+        'repair_rawan_percent'      => 50,
+        'repair_gagal_percent'      => 30,
         'location_default_radius'   => 100,
         'upload_max_mb'             => 10,
         'finance_lock_date'         => '',

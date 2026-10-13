@@ -19,7 +19,8 @@ class PriceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'harga_manual' => ['nullable', 'integer', 'min:0', 'max:999999999999'],
+            'harga_manual'        => ['nullable', 'integer', 'min:0', 'max:999999999999'],
+            'ambang_ganti_persen' => ['nullable', 'integer', 'between:10,200'],
         ];
     }
 
@@ -29,6 +30,8 @@ class PriceRequest extends FormRequest
             'harga_manual.integer' => 'Harga harus berupa angka.',
             'harga_manual.min'     => 'Harga tidak boleh negatif.',
             'harga_manual.max'     => 'Harga terlalu besar.',
+            'ambang_ganti_persen.integer' => 'Ambang ganti harus berupa angka.',
+            'ambang_ganti_persen.between' => 'Ambang ganti harus antara 10 dan 200 persen.',
         ];
     }
 

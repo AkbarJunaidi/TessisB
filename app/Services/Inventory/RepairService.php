@@ -32,10 +32,50 @@ class RepairService
         return AppSetting::int('repair_warn_percent') / 100;
     }
 
-    /** Rasio mulai dari sini ditandai "pantau" di Daftar Harga Barang: 60% dari ambang ganti. */
-    public static function replaceWatchRatio(): float
+    /** Rasio mulai dari sini ditandai "pantau" di Daftar Harga Barang: 60% dari ambang ganti barang itu. */
+    public static function replaceWatchRatio(?float $warn = null): float
     {
-        return round(self::replaceWarnRatio() * 0.6, 2);
+        return round(($warn ?? self::replaceWarnRatio()) * 0.6, 2);
+    }
+
+    /** Servis dalam periode dibanding jumlah unit; salah satu syarat barang ditandai rawan rusak (Pengaturan). */
+    public static function rawanRatio(): float
+    {
+        return AppSetting::int('repair_rawan_percent') / 100;
+    }
+
+    /** Periode hitung rawan rusak dalam hari (Pengaturan). */
+    public static function rawanDays(): int
+    {
+        return AppSetting::int('repair_rawan_hari');
+    }
+
+    /** Jumlah servis dalam periode yang menandai barang rawan rusak (Pengaturan). */
+    public static function rawanTimes(): int
+    {
+        return AppSetting::int('repair_rawan_kali');
+    }
+
+    /** Unit gagal dibanding yang pernah diservis; dari sini barang ditandai sulit diperbaiki (Pengaturan). */
+    public static function gagalRatio(): float
+    {
+        return AppSetting::int('repair_gagal_percent') / 100;
+    }
+
+    /** Ambang ganti satu barang: isian khusus barang, atau Pengaturan bila kosong. */
+    public static function warnRatioFor(?int $ambang): float
+    {
+        return $ambang !== null ? $ambang / 100 : self::replaceWarnRatio();
+    }
+
+    /** Bentuk dasar perbandingan biaya untuk barang yang belum punya harga maupun servis. */
+    public static function emptyCost(?int $ambang = null): array
+    {
+        return [
+            'last_price' => null, 'last_date' => null, 'last_code' => null, 'last_purchase_id' => null, 'price_source' => null,
+            'servis_total' => 0.0, 'servis_count' => 0, 'servis_estimasi' => false, 'worst_unit' => null, 'units' => [],
+            'warn_ratio' => self::warnRatioFor($ambang),
+        ];
     }
 
     public function __construct(
@@ -63,34 +103,114 @@ class RepairService
     }
 
     /**
-     * Riwayat servis: satu baris per unit yang pernah dikirim ke servis (catatan dibatalkan tidak dihitung).
+     * Kondisi barang: satu baris per barang yang pernah dikirim servis (catatan dibatalkan tidak dihitung).
+     * Diservis = kejadian servis yang sudah selesai (unit x surat). Penanda: rawan (servis dalam periode terakhir), sulit,
+     * mahal (butuh izin Pembelian), atau aman.
      *
-     * @param array{search?: ?string, hasil?: ?string, dari?: ?string, sampai?: ?string, inventory_id?: int|string|null} $filters hasil: Tersedia | Rusak | Diservis
+     * @param array{search?: ?string, penanda?: ?string, inventory_id?: int|string|null} $filters
      */
-    public function getHistory(array $filters = [], int $perPage = 20): LengthAwarePaginator
+    public function getCondition(array $filters = [], bool $withCost = false, int $perPage = 10): LengthAwarePaginator
     {
-        return InventoryRepairItem::query()
-            ->join('inventory_repairs as r', 'r.id', '=', 'inventory_repair_items.repair_id')
+        $stats = DB::table('inventory_repair_items as i')
+            ->join('inventory_repairs as r', 'r.id', '=', 'i.repair_id')
             ->where('r.status', '!=', InventoryRepair::STATUS_CANCELLED)
-            ->select('inventory_repair_items.*')
-            ->with(['repair:id,code,tempat_nama,keluhan,status,tanggal_masuk,tanggal_selesai', 'inventory:id,name,serial_number', 'unit:id,unit_number'])
-            ->when(!empty($filters['inventory_id']), fn ($q) => $q->where('inventory_repair_items.inventory_id', (int) $filters['inventory_id']))
-            ->when(!empty($filters['dari']), fn ($q) => $q->whereDate('r.tanggal_masuk', '>=', $filters['dari']))
-            ->when(!empty($filters['sampai']), fn ($q) => $q->whereDate('r.tanggal_masuk', '<=', $filters['sampai']))
-            ->when(in_array($filters['hasil'] ?? null, ['Tersedia', 'Rusak'], true), fn ($q) => $q->where('inventory_repair_items.hasil', $filters['hasil']))
-            ->when(($filters['hasil'] ?? null) === 'Diservis', fn ($q) => $q->whereNull('inventory_repair_items.hasil'))
+            ->groupBy('i.inventory_id')
+            ->selectRaw("i.inventory_id,
+                SUM(CASE WHEN i.hasil IS NOT NULL THEN 1 ELSE 0 END) as diservis,
+                SUM(CASE WHEN i.hasil = 'Tersedia' THEN 1 ELSE 0 END) as berhasil,
+                SUM(CASE WHEN i.hasil = 'Rusak' THEN 1 ELSE 0 END) as gagal,
+                SUM(CASE WHEN i.hasil IS NULL THEN 1 ELSE 0 END) as aktif,
+                SUM(CASE WHEN i.hasil IS NOT NULL AND r.tanggal_selesai >= ? THEN 1 ELSE 0 END) as periode,
+                MAX(CASE WHEN i.hasil IS NOT NULL THEN r.tanggal_selesai END) as terakhir", [now()->subDays(self::rawanDays())->toDateString()])
+            ->get()
+            ->keyBy('inventory_id');
+
+        $costs = $withCost ? $this->costComparison() : [];
+
+        $rows = Inventory::withCount('units')
+            ->whereIn('id', $stats->keys()->all())
+            ->when(!empty($filters['inventory_id']), fn ($q) => $q->where('id', (int) $filters['inventory_id']))
             ->when(!empty($filters['search']), function ($q) use ($filters) {
                 $keyword = trim($filters['search']);
-                $q->where(function ($w) use ($keyword) {
-                    $w->where('r.code', 'like', "%{$keyword}%")
-                        ->orWhere('r.tempat_nama', 'like', "%{$keyword}%")
-                        ->orWhereHas('inventory', fn ($i) => $i->withTrashed()->where('name', 'like', "%{$keyword}%"));
-                });
+                $q->where(fn ($w) => $w->where('name', 'like', "%{$keyword}%")
+                    ->orWhere('brand', 'like', "%{$keyword}%")
+                    ->orWhere('serial_number', 'like', "%{$keyword}%"));
             })
-            ->orderByDesc('r.tanggal_masuk')
-            ->orderByDesc('inventory_repair_items.id')
-            ->paginate(PerPage::resolve($perPage))
+            ->get()
+            ->map(function (Inventory $inventory) use ($stats, $costs) {
+                $stat     = $stats[$inventory->id];
+                $diservis = (int) $stat->diservis;
+                $gagal    = (int) $stat->gagal;
+                $units    = max((int) $inventory->units_count, 1);
+                $cost     = $costs[$inventory->id] ?? null;
+                $ratio    = $cost ? self::replaceRatio($cost) : null;
+                $flags    = [];
+
+                $periode = (int) $stat->periode;
+
+                if ($periode >= 2 && ($periode >= self::rawanTimes() || $periode / $units >= self::rawanRatio())) {
+                    $flags[] = 'rawan';
+                }
+
+                if ($diservis >= 2 && $gagal > 0 && $gagal / $diservis >= self::gagalRatio()) {
+                    $flags[] = 'sulit';
+                }
+
+                if ($ratio !== null && $ratio >= $cost['warn_ratio']) {
+                    $flags[] = 'mahal';
+                }
+
+                return (object) [
+                    'inventory'    => $inventory,
+                    'units'        => (int) $inventory->units_count,
+                    'diservis'     => $diservis,
+                    'berhasil'     => (int) $stat->berhasil,
+                    'periode'      => $periode,
+                    'gagal'        => $gagal,
+                    'aktif'        => (int) $stat->aktif,
+                    'persen_berhasil' => $diservis > 0 ? (int) round((int) $stat->berhasil / $diservis * 100) : null,
+                    'persen_gagal' => $diservis > 0 ? (int) round($gagal / $diservis * 100) : null,
+                    'terakhir'     => $stat->terakhir ? \Carbon\Carbon::parse($stat->terakhir) : null,
+                    'flags'        => $flags,
+                    'ratio'        => $ratio,
+                    'cost'         => $cost,
+                ];
+            });
+
+        $penanda = $filters['penanda'] ?? null;
+
+        $rows = $rows
+            ->when($penanda === 'aman', fn ($c) => $c->filter(fn ($r) => $r->diservis > 0 && $r->flags === []))
+            ->when(in_array($penanda, ['rawan', 'sulit', 'mahal'], true), fn ($c) => $c->filter(fn ($r) => in_array($penanda, $r->flags, true)))
+            ->sortBy([
+                fn ($a, $b) => count($b->flags) <=> count($a->flags),
+                fn ($a, $b) => $b->gagal <=> $a->gagal,
+                fn ($a, $b) => $b->diservis <=> $a->diservis,
+                fn ($a, $b) => strcasecmp($a->inventory->name, $b->inventory->name),
+            ])
+            ->values();
+
+        $perPage = PerPage::resolve($perPage);
+        $page    = LengthAwarePaginator::resolveCurrentPage();
+
+        return (new LengthAwarePaginator($rows->forPage($page, $perPage)->values(), $rows->count(), $perPage, $page, ['path' => request()->url()]))
             ->withQueryString();
+    }
+
+    /**
+     * Rincian kondisi satu barang: surat perbaikan terbaru lebih dulu, hanya unit barang itu yang dimuat.
+     *
+     * @return Collection<int, InventoryRepair>
+     */
+    public function getConditionDetail(Inventory $inventory, int $limit = 30): Collection
+    {
+        return InventoryRepair::where('status', '!=', InventoryRepair::STATUS_CANCELLED)
+            ->whereHas('items', fn ($q) => $q->where('inventory_id', $inventory->id))
+            ->with(['items' => fn ($q) => $q->where('inventory_id', $inventory->id)->with('unit:id,unit_number')])
+            ->orderByDesc('tanggal_masuk')
+            ->orderByDesc('id')
+            ->limit($limit)
+            ->get();
     }
 
     /**
@@ -251,7 +371,12 @@ class RepairService
                     $unit->update($update);
                 }
 
-                $item->update(['hasil' => $result, 'biaya' => $costs[$item->id], 'biaya_estimasi' => false]);
+                $item->update([
+                    'hasil'          => $result,
+                    'catatan'        => $this->groupNote($data, (int) $item->inventory_id, $result),
+                    'biaya'          => $costs[$item->id],
+                    'biaya_estimasi' => false,
+                ]);
                 ($result === 'Tersedia' ? $tersedia : $rusak)->push($item);
             }
 
@@ -302,6 +427,14 @@ class RepairService
 
             return $repair->fresh();
         });
+    }
+
+    /** Satu catatan per barang dan hasil; semua unit di kelompok itu memakai catatan yang sama. */
+    private function groupNote(array $data, int $inventoryId, string $result): ?string
+    {
+        $note = trim((string) ($data['catatan'][$inventoryId][$result] ?? ''));
+
+        return $note === '' ? null : $note;
     }
 
     /** Biaya kosong berarti belum diketahui (null), bukan nol. */
@@ -362,7 +495,7 @@ class RepairService
      *
      * price_source: pembelian | manual (harga manual hanya jadi cadangan bila belum ada Pembelian diterima).
      *
-     * @return array<int, array{last_price: ?float, last_date: ?\Carbon\Carbon, last_code: ?string, last_purchase_id: ?int, price_source: ?string, servis_total: float, servis_count: int, servis_estimasi: bool, worst_unit: ?array{number: int, total: float}, units: array<int, array{number: int, total: float}>}>
+     * @return array<int, array{last_price: ?float, last_date: ?\Carbon\Carbon, last_code: ?string, last_purchase_id: ?int, price_source: ?string, servis_total: float, servis_count: int, servis_estimasi: bool, worst_unit: ?array{number: int, total: float}, units: array<int, array{number: int, total: float}>, warn_ratio: float}>
      */
     public function costComparison(): array
     {
@@ -374,7 +507,7 @@ class RepairService
             ->selectRaw('i.inventory_id, i.inventory_unit_id, u.unit_number, r.id as repair_id, i.biaya as share, i.biaya_estimasi as estimasi')
             ->get();
 
-        $empty = ['last_price' => null, 'last_date' => null, 'last_code' => null, 'last_purchase_id' => null, 'price_source' => null, 'servis_total' => 0.0, 'servis_count' => 0, 'servis_estimasi' => false, 'worst_unit' => null, 'units' => []];
+        $empty = self::emptyCost();
         $map = [];
 
         foreach ($shares->groupBy('inventory_id') as $inventoryId => $rows) {
@@ -414,6 +547,13 @@ class RepairService
                     'price_source'     => $price['source'],
                 ]);
             }
+        }
+
+        // Ambang ganti khusus barang menggantikan nilai Pengaturan.
+        $ambang = Inventory::whereNotNull('ambang_ganti_persen')->pluck('ambang_ganti_persen', 'id');
+
+        foreach ($map as $inventoryId => $row) {
+            $map[$inventoryId]['warn_ratio'] = self::warnRatioFor($ambang->has($inventoryId) ? (int) $ambang[$inventoryId] : null);
         }
 
         return $map;
@@ -524,17 +664,18 @@ class RepairService
      * Daftar harga barang: harga beli terakhir berdampingan dengan biaya servisnya.
      *
      * @param array{search?: ?string, filter?: ?string} $filters filter: servis | ganti | kosong
-     * @return array{items: LengthAwarePaginator, costs: array, summary: array<string, int|float>}
+     * @return array{items: LengthAwarePaginator, costs: array, events: array<int, int>, summary: array<string, int|float>}
      */
     public function getPriceList(array $filters = [], int $perPage = 20): array
     {
         $costs = $this->costComparison();
         $activeIds = Inventory::pluck('id')->all();
         $costs = array_intersect_key($costs, array_flip($activeIds));
+        $events = array_intersect_key($this->serviceEvents(), array_flip($activeIds));
 
         $filterIds = match ($filters['filter'] ?? null) {
-            'servis' => array_keys(array_filter($costs, fn ($c) => $c['servis_count'] > 0)),
-            'ganti'  => array_keys(array_filter($costs, fn ($c) => (self::replaceRatio($c) ?? 0) >= self::replaceWarnRatio())),
+            'servis' => array_keys($events),
+            'ganti'  => array_keys(array_filter($costs, fn ($c) => self::isReplaceWarn($c))),
             default  => null,
         };
 
@@ -558,10 +699,10 @@ class RepairService
         $summary = [
             'total_barang' => count($activeIds),
             'ada_harga'    => count(array_filter($costs, fn ($c) => $c['last_price'] !== null)),
-            'layak_ganti'  => count(array_filter($costs, fn ($c) => (self::replaceRatio($c) ?? 0) >= self::replaceWarnRatio())),
+            'layak_ganti'  => count(array_filter($costs, fn ($c) => self::isReplaceWarn($c))),
         ];
 
-        return ['items' => $items, 'costs' => $costs, 'summary' => $summary];
+        return ['items' => $items, 'costs' => $costs, 'events' => $events, 'summary' => $summary];
     }
 
     /**
@@ -574,6 +715,31 @@ class RepairService
         }
 
         return $cost['worst_unit']['total'] / $cost['last_price'];
+    }
+
+    /** Biaya servis unit paling mahal sudah menyentuh ambang ganti barang itu. */
+    public static function isReplaceWarn(array $cost): bool
+    {
+        $ratio = self::replaceRatio($cost);
+
+        return $ratio !== null && $ratio >= ($cost['warn_ratio'] ?? self::replaceWarnRatio());
+    }
+
+    /**
+     * Jumlah kejadian servis selesai per barang (unit x surat), terlepas dari ada tidaknya biaya.
+     *
+     * @return array<int, int>
+     */
+    public function serviceEvents(): array
+    {
+        return DB::table('inventory_repair_items as i')
+            ->join('inventory_repairs as r', 'r.id', '=', 'i.repair_id')
+            ->where('r.status', InventoryRepair::STATUS_DONE)
+            ->groupBy('i.inventory_id')
+            ->selectRaw('i.inventory_id, COUNT(*) as total')
+            ->pluck('total', 'inventory_id')
+            ->map(fn ($total) => (int) $total)
+            ->all();
     }
 
     /**
