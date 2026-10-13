@@ -33,15 +33,21 @@
         </div>
     @endif
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('folders.index') }}" class="text-decoration-none">Root</a></li>
-                @if(isset($current_folder) && $current_folder)
-                    <li class="breadcrumb-item active" aria-current="page">{{ $current_folder->name }}</li>
-                @endif
-            </ol>
-        </nav>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div>
+            <h3 class="fw-bold text-dark m-0">Kelola Folder</h3>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0 small">
+                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" class="text-decoration-none">Dashboard</a></li>
+                    @if(isset($current_folder) && $current_folder)
+                        <li class="breadcrumb-item"><a href="{{ route('folders.index') }}" class="text-decoration-none">Kelola Folder</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ $current_folder->name }}</li>
+                    @else
+                        <li class="breadcrumb-item active" aria-current="page">Kelola Folder</li>
+                    @endif
+                </ol>
+            </nav>
+        </div>
 
         <div class="dropdown">
             <button class="btn btn-primary dropdown-toggle px-3" type="button" id="btnNewDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -50,12 +56,12 @@
             <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="btnNewDropdown">
                 <li>
                     <a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#createFolderModal">
-                        <i class="bi bi-folder-plus text-warning me-2"></i> Folder
+                        <i class="bi bi-folder-plus text-muted me-2"></i> Folder
                     </a>
                 </li>
                 <li>
                     <a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#uploadFileModal">
-                        <i class="bi bi-file-earmark-arrow-up text-info me-2"></i> Unggah File
+                        <i class="bi bi-file-earmark-arrow-up text-muted me-2"></i> Unggah File
                     </a>
                 </li>
             </ul>
@@ -63,22 +69,22 @@
     </div>
 
     <div class="app-panel overflow-hidden">
-        <div class="px-3 px-md-4 pt-3 pt-md-4">
-            <h6 class="fw-bold mb-3">Isi Folder</h6>
+        <div class="px-3 px-md-4 pt-3 pt-md-4 mb-3">
+            <h6 class="fw-bold m-0">Isi Folder</h6>
         </div>
         <div class="table-responsive">
             <table class="table table-hover table-modern align-middle mb-0">
                 <thead>
                     <tr>
-                        <th scope="col" class="ps-4 py-3 u-w-40pct">Nama</th>
-                        <th scope="col" class="py-3">Tipe</th>
-                        <th scope="col" class="py-3">Pemilik</th>
-                        <th scope="col" class="py-3">Dibuat</th>
-                        <th scope="col" class="pe-4 py-3 text-center u-w-10pct">Aksi</th>
+                        <th scope="col" class="ps-4 py-3">Nama</th>
+                        <th scope="col" class="d-none d-md-table-cell">Tipe</th>
+                        <th scope="col" class="d-none d-md-table-cell">Pemilik</th>
+                        <th scope="col" class="d-none d-md-table-cell">Dibuat</th>
+                        <th scope="col" class="pe-4 text-center u-w-64px">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {{-- Tampilkan Tombol Kembali Jika Sedang Berada di dalam Sub-Folder --}}
+                    {{-- Tombol kembali bila sedang berada di dalam sub-folder --}}
                     @if(isset($current_folder) && $current_folder)
                         <tr>
                             <td colspan="5" class="ps-4 py-3">
@@ -89,7 +95,6 @@
                         </tr>
                     @endif
 
-                    {{-- Kosong State --}}
                     @if($folders->isEmpty() && $files->isEmpty())
                         <tr>
                             <td colspan="5" class="text-center py-5 text-muted">
@@ -99,35 +104,40 @@
                         </tr>
                     @endif
 
-                    {{-- Iterasi Render Folder --}}
                     @foreach($folders as $folder)
                         @php
                             $isSystem        = in_array($folder->id, $systemFolderIds, true);
                             $ownLocked       = $folder->isLocked();
                             $protected       = $ownLocked || $parentProtected;
                             $hasLockedInside = in_array($folder->id, $lockedContentIds, true);
+                            $ownerName       = $folder->user->name ?? 'System';
                         @endphp
                         <tr>
-                            <td class="ps-4 py-3">
-                                <a href="{{ route('folders.show', $folder->id) }}" class="text-decoration-none text-dark fw-medium d-flex align-items-center">
-                                    <i class="bi bi-folder-fill text-warning fs-4 me-3"></i>
-                                    <span class="text-truncate">{{ $folder->name }}</span>
-                                    @if($isSystem)
-                                        <span class="badge bg-light text-secondary border ms-2 fw-normal">Sistem</span>
-                                    @endif
-                                    @if($ownLocked)
-                                        <i class="bi bi-lock-fill text-warning ms-2"
-                                           title="Dikunci oleh {{ $folder->lockedBy->name ?? 'pengguna yang sudah dihapus' }} pada {{ $folder->locked_at->format('d M Y H:i') }}"></i>
-                                    @endif
+                            <td class="ps-4">
+                                <a href="{{ route('folders.show', $folder->id) }}" class="drv-name text-decoration-none text-body">
+                                    <i class="bi bi-folder-fill text-primary drv-ico"></i>
+                                    <div>
+                                        <div class="drv-title">
+                                            {{ $folder->name }}
+                                            @if($isSystem)
+                                                <span class="badge-soft-secondary px-2 py-1 rounded-pill small fw-normal ms-1">Sistem</span>
+                                            @endif
+                                            @if($ownLocked)
+                                                <i class="bi bi-lock-fill text-warning ms-1"
+                                                   title="Dikunci oleh {{ $folder->lockedBy->name ?? 'pengguna yang sudah dihapus' }} pada {{ $folder->locked_at->format('d M Y H:i') }}"></i>
+                                            @endif
+                                        </div>
+                                        <div class="drv-meta-mobile d-md-none">Folder &middot; {{ $ownerName }} &middot; {{ $folder->created_at->format('d M Y') }}</div>
+                                    </div>
                                 </a>
                             </td>
-                            <td><span class="text-muted small">Folder</span></td>
-                            <td><span class="badge bg-light text-dark border">{{ $folder->user->name ?? 'System' }}</span></td>
-                            <td><span class="text-secondary small">{{ $folder->created_at->format('Y-m-d H:i') }}</span></td>
+                            <td class="d-none d-md-table-cell text-secondary small">Folder</td>
+                            <td class="d-none d-md-table-cell text-secondary small">{{ $ownerName }}</td>
+                            <td class="d-none d-md-table-cell text-secondary small">{{ $folder->created_at->format('d M Y H:i') }}</td>
                             <td class="pe-4 text-center">
                                 <div class="dropdown">
-                                    <button class="btn btn-link text-secondary p-1 m-0 border-0 shadow-none" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Aksi folder">
-                                        <i class="bi bi-three-dots-vertical fs-5"></i>
+                                    <button class="btn btn-sm btn-light text-secondary" type="button" data-row-menu data-bs-toggle="dropdown" aria-expanded="false" aria-label="Aksi folder">
+                                        <i class="bi bi-three-dots-vertical"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                                         <li><a class="dropdown-item small py-2" href="{{ route('folders.show', $folder->id) }}"><i class="bi bi-folder2-open me-2 text-muted"></i> Buka</a></li>
@@ -179,30 +189,35 @@
                         </tr>
                     @endforeach
 
-                    {{-- Iterasi Render Berkas Berbagi --}}
                     @foreach($files as $file)
                         @php
                             $fileLocked    = $file->isLocked();
                             $fileProtected = $fileLocked || $parentProtected;
+                            $ownerName     = $file->user->name ?? 'System';
                         @endphp
                         <tr>
-                            <td class="ps-4 py-3">
-                                <div class="d-flex align-items-center">
-                                    <i class="bi {{ $file->icon_class }} fs-4 me-3"></i>
-                                    <span class="fw-medium text-truncate">{{ $file->file_name }}</span>
-                                    @if($fileLocked)
-                                        <i class="bi bi-lock-fill text-warning ms-2"
-                                           title="Dikunci oleh {{ $file->lockedBy->name ?? 'pengguna yang sudah dihapus' }} pada {{ $file->locked_at->format('d M Y H:i') }}"></i>
-                                    @endif
+                            <td class="ps-4">
+                                <div class="drv-name">
+                                    <i class="bi {{ $file->icon_class }} drv-ico"></i>
+                                    <div>
+                                        <div class="drv-title">
+                                            {{ $file->file_name }}
+                                            @if($fileLocked)
+                                                <i class="bi bi-lock-fill text-warning ms-1"
+                                                   title="Dikunci oleh {{ $file->lockedBy->name ?? 'pengguna yang sudah dihapus' }} pada {{ $file->locked_at->format('d M Y H:i') }}"></i>
+                                            @endif
+                                        </div>
+                                        <div class="drv-meta-mobile d-md-none">{{ strtoupper($file->file_type) }} &middot; {{ $ownerName }} &middot; {{ $file->created_at->format('d M Y') }}</div>
+                                    </div>
                                 </div>
                             </td>
-                            <td><span class="badge bg-secondary text-uppercase small u-fs-0p75rem">{{ $file->file_type }}</span></td>
-                            <td><span class="badge bg-light text-dark border">{{ $file->user->name ?? 'System' }}</span></td>
-                            <td><span class="text-secondary small">{{ $file->created_at->format('Y-m-d H:i') }}</span></td>
+                            <td class="d-none d-md-table-cell"><span class="badge-soft-secondary px-2 py-1 rounded-pill small text-uppercase">{{ $file->file_type }}</span></td>
+                            <td class="d-none d-md-table-cell text-secondary small">{{ $ownerName }}</td>
+                            <td class="d-none d-md-table-cell text-secondary small">{{ $file->created_at->format('d M Y H:i') }}</td>
                             <td class="pe-4 text-center">
                                 <div class="dropdown">
-                                    <button class="btn btn-link text-secondary p-1 m-0 border-0 shadow-none" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Aksi file">
-                                        <i class="bi bi-three-dots-vertical fs-5"></i>
+                                    <button class="btn btn-sm btn-light text-secondary" type="button" data-row-menu data-bs-toggle="dropdown" aria-expanded="false" aria-label="Aksi file">
+                                        <i class="bi bi-three-dots-vertical"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                                         @if($file->preview_type && auth()->user()->hasPermission('data_integration', 'download'))

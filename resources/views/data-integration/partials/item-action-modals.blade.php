@@ -91,3 +91,4 @@
 </div>
 
 <script src="{{ \App\Support\AppAsset::url('js/data-integration/partials/item-action-modals.js') }}"></script>
+<script src="{{ \App\Support\AppAsset::url('js/data-integration/row-menu.js') }}"></script>

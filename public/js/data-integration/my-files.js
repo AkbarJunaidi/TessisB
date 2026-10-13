@@ -1,15 +1,12 @@
+// Pencarian langsung di daftar yang tampil. Memakai delegasi agar tetap jalan setelah tab diganti lewat AJAX.
 (function () {
     'use strict';
 
-    const input    = document.getElementById('drvSearch');
-    const noResult = document.getElementById('drvNoResult');
-    if (!input) return;
-
-    const rows   = Array.from(document.querySelectorAll('[data-drv-row]'));
-    const groups = Array.from(document.querySelectorAll('[data-drv-group]'));
-
-    input.addEventListener('input', function () {
-        const q = input.value.trim().toLowerCase();
+    function filter(input) {
+        const q        = input.value.trim().toLowerCase();
+        const rows     = Array.from(document.querySelectorAll('[data-drv-row]'));
+        const groups   = Array.from(document.querySelectorAll('[data-drv-group]'));
+        const noResult = document.getElementById('drvNoResult');
         let visible = 0;
 
         rows.forEach(function (row) {
@@ -29,6 +26,15 @@
             group.classList.toggle('d-none', !hasVisible);
         });
 
-        noResult.classList.toggle('d-none', !(q !== '' && rows.length > 0 && visible === 0));
+        if (noResult) noResult.classList.toggle('d-none', !(q !== '' && rows.length > 0 && visible === 0));
+    }
+
+    document.addEventListener('input', function (event) {
+        if (event.target.id === 'drvSearch') filter(event.target);
+    });
+
+    // Enter tidak boleh mengirim ulang form filter.
+    document.addEventListener('keydown', function (event) {
+        if (event.target.id === 'drvSearch' && event.key === 'Enter') event.preventDefault();
     });
 })();

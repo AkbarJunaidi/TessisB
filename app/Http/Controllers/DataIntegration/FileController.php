@@ -66,7 +66,6 @@ class FileController extends Controller
         $items         = collect();
         $currentFolder = null;
         $breadcrumb    = collect();
-        $moveGroups    = [];
 
         if ($tab === 'dibagikan') {
 
@@ -83,20 +82,21 @@ class FileController extends Controller
 
             $folders = $this->folderService->getPrivateFolders($currentFolder?->id);
             $files   = $this->fileService->getPrivateFiles($currentFolder?->id);
-
-            $moveGroups = [
-                [
-                    'label'   => 'File Saya (pribadi)',
-                    'warn'    => false,
-                    'options' => $this->folderService->pathMap(true),
-                ],
-                [
-                    'label'   => 'Ruang bersama',
-                    'warn'    => true,
-                    'options' => $this->folderService->pathMap(false),
-                ],
-            ];
         }
+
+        // Modal Pindahkan berada di luar wilayah tab AJAX, jadi pilihannya disiapkan untuk kedua tab.
+        $moveGroups = [
+            [
+                'label'   => 'File Saya (pribadi)',
+                'warn'    => false,
+                'options' => $this->folderService->pathMap(true),
+            ],
+            [
+                'label'   => 'Ruang bersama',
+                'warn'    => true,
+                'options' => $this->folderService->pathMap(false),
+            ],
+        ];
 
         return view(
             'data-integration.my-files',

@@ -120,6 +120,7 @@
     <script src="{{ \App\Support\AppAsset::url('js/layouts/page-feedback.js') }}"></script>
     <script src="{{ \App\Support\AppAsset::url('js/layouts/ajax-forms.js') }}"></script>
     <script src="{{ \App\Support\AppAsset::url('js/layouts/pager.js') }}"></script>
+    <script src="{{ \App\Support\AppAsset::url('js/layouts/ajax-tabs.js') }}"></script>
 
     @stack('scripts')
 </body>

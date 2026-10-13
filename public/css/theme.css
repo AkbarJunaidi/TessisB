@@ -620,6 +620,9 @@ button:focus-visible,
 .project-tabs::-webkit-scrollbar { display: none; }
 .project-tabs .nav-link { white-space: nowrap; }
 
+/* Tab AJAX (ajax-tabs.js): wilayah meredup selama isi tab baru dimuat. */
+[data-ajax-region].is-loading { opacity: .55; pointer-events: none; transition: opacity .15s ease; }
+
 /* Halaman Scan: pilihan aksi berupa 4 tombol besar. */
 .scan-mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
 .scan-mode-btn {

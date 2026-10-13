@@ -1,8 +1,9 @@
 // Kondisi barang: rincian servis dimuat saat baris dibuka, lalu disimpan di panelnya.
-document.addEventListener('DOMContentLoaded', () => {
-    const buttons = Array.from(document.querySelectorAll('.js-kondisi-toggle'));
+// Memakai delegasi agar tetap jalan setelah tab diganti lewat AJAX.
+(function () {
+    'use strict';
 
-    const toggle = async (button) => {
+    async function toggle(button) {
         const detail = button.closest('tr').nextElementSibling;
         const panel = detail.querySelector('.kondisi-panel');
         const opening = detail.classList.contains('d-none');
@@ -29,12 +30,19 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             panel.innerHTML = '<div class="text-danger small">Rincian gagal dimuat. Tutup lalu buka lagi.</div>';
         }
-    };
+    }
 
-    buttons.forEach((button) => button.addEventListener('click', () => toggle(button)));
+    document.addEventListener('click', function (event) {
+        const button = event.target.closest('.js-kondisi-toggle');
+        if (button) toggle(button);
+    });
 
     // Dari tautan satu barang (Daftar Harga), rinciannya langsung terbuka.
-    if (buttons.length === 1 && buttons[0].dataset.autoopen === '1') {
-        toggle(buttons[0]);
+    function autoOpen() {
+        const buttons = document.querySelectorAll('.js-kondisi-toggle');
+        if (buttons.length === 1 && buttons[0].dataset.autoopen === '1') toggle(buttons[0]);
     }
-});
+
+    document.addEventListener('DOMContentLoaded', autoOpen);
+    document.addEventListener('ajax-tabs:loaded', autoOpen);
+})();

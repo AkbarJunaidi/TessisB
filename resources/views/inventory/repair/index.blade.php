@@ -74,171 +74,172 @@
         </div>
     </div>
 
-    {{-- Filter --}}
-    <div class="card filter-card mb-4">
-        <div class="card-body">
-            <form action="{{ route('inventory.repairs.index') }}" method="GET" class="row g-3 align-items-end">
-                @if($kondisi)
-                    <input type="hidden" name="tampil" value="kondisi">
-                    @if($filterInventory)
-                        <input type="hidden" name="inventory_id" value="{{ $filterInventory->id }}">
+    {{-- Tab di luar panel, sama seperti halaman Project; pindah tab lewat AJAX (ajax-tabs.js) --}}
+    <ul class="nav nav-tabs mb-3" data-ajax-region="tabs">
+        <li class="nav-item">
+            <a class="nav-link {{ $kondisi ? '' : 'active' }}" href="{{ route('inventory.repairs.index') }}" data-ajax-tab data-no-progress @unless($kondisi) aria-current="page" @endunless>Surat perbaikan</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ $kondisi ? 'active' : '' }}" href="{{ route('inventory.repairs.index', ['tampil' => 'kondisi']) }}" data-ajax-tab data-no-progress @if($kondisi) aria-current="page" @endif>Kondisi barang</a>
+        </li>
+    </ul>
+
+    <div data-ajax-region="body">
+        {{-- Filter --}}
+        <div class="card filter-card mb-4">
+            <div class="card-body">
+                <form action="{{ route('inventory.repairs.index') }}" method="GET" class="row g-3 align-items-end">
+                    @if($kondisi)
+                        <input type="hidden" name="tampil" value="kondisi">
+                        @if($filterInventory)
+                            <input type="hidden" name="inventory_id" value="{{ $filterInventory->id }}">
+                        @endif
                     @endif
-                @endif
-                <div class="col-12 col-md">
-                    <label for="filterSearch" class="form-label">Cari</label>
-                    <div class="search-field">
-                        <i class="bi bi-search"></i>
-                        <input type="text" class="form-control" id="filterSearch" name="search"
-                               value="{{ $filters['search'] ?? '' }}" placeholder="{{ $kondisi ? 'Nama, brand, atau serial number...' : 'Kode, nama barang, atau tempat servis...' }}">
+                    <div class="col-12 col-md">
+                        <label for="filterSearch" class="form-label">Cari</label>
+                        <div class="search-field">
+                            <i class="bi bi-search"></i>
+                            <input type="text" class="form-control" id="filterSearch" name="search"
+                                   value="{{ $filters['search'] ?? '' }}" placeholder="{{ $kondisi ? 'Nama, brand, atau serial number...' : 'Kode, nama barang, atau tempat servis...' }}">
+                        </div>
                     </div>
-                </div>
-                @if($kondisi)
-                    <div class="col-6 col-md-3">
-                        <label for="filterPenanda" class="form-label">Penanda</label>
-                        <select class="form-select" id="filterPenanda" name="penanda">
-                            <option value="">Semua penanda</option>
-                            <option value="rawan" {{ ($filters['penanda'] ?? '') === 'rawan' ? 'selected' : '' }}>Rawan rusak</option>
-                            <option value="sulit" {{ ($filters['penanda'] ?? '') === 'sulit' ? 'selected' : '' }}>Sulit diperbaiki</option>
-                            @if($canPrice)
-                                <option value="mahal" {{ ($filters['penanda'] ?? '') === 'mahal' ? 'selected' : '' }}>Mahal diperbaiki</option>
-                            @endif
-                            <option value="aman" {{ ($filters['penanda'] ?? '') === 'aman' ? 'selected' : '' }}>Aman</option>
-                        </select>
-                    </div>
-                @else
-                    <div class="col-6 col-md-3">
-                        <label for="filterStatus" class="form-label">Status</label>
-                        <select class="form-select" id="filterStatus" name="status">
-                            <option value="">Semua status</option>
-                            @foreach(['Diservis', 'Selesai', 'Dibatalkan'] as $status)
-                                <option value="{{ $status }}" {{ ($filters['status'] ?? '') === $status ? 'selected' : '' }}>{{ $status }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                @endif
-                <div class="col-6 col-md-auto filter-actions">
-                    <a href="{{ route('inventory.repairs.index', $kondisi ? ['tampil' => 'kondisi'] : []) }}" class="btn btn-outline-secondary px-3">Reset</a>
-                    <button type="submit" class="btn btn-primary px-3"><i class="bi bi-search me-1"></i>Cari</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- Daftar --}}
-    <div class="app-panel overflow-hidden">
-        <div class="px-3 px-md-4 pt-3 pt-md-4 mb-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
-            <h6 class="fw-bold m-0">{{ $kondisi ? 'Kondisi Barang' : 'Semua Perbaikan' }}</h6>
-            <div class="btn-group btn-group-sm" role="group" aria-label="Tampilan perbaikan">
-                <a href="{{ route('inventory.repairs.index') }}"
-                   class="btn {{ $kondisi ? 'btn-outline-primary' : 'btn-primary' }}">Surat perbaikan</a>
-                <a href="{{ route('inventory.repairs.index', ['tampil' => 'kondisi']) }}"
-                   class="btn {{ $kondisi ? 'btn-primary' : 'btn-outline-primary' }}">Kondisi barang</a>
-            </div>
-        </div>
-        @if($kondisi && $filterInventory)
-            <div class="px-3 px-md-4 mb-3 small">
-                Barang: <span class="fw-semibold">{{ $filterInventory->name }}</span>
-                <a href="{{ route('inventory.repairs.index', ['tampil' => 'kondisi']) }}" class="text-decoration-none ms-2">Tampilkan semua barang</a>
-            </div>
-        @endif
-        @if($kondisi)
-            @include('inventory.repair.partials.condition-table', ['conditions' => $conditions])
-        @else
-        <div class="table-responsive">
-            <table class="table table-hover table-modern table-stack align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th class="ps-4 py-3">Kode</th>
-                        <th class="py-3">Barang</th>
-                        <th class="py-3">Tempat Servis</th>
-                        <th class="py-3">Diantar</th>
-                        <th class="py-3">Estimasi / Selesai</th>
-                        <th class="py-3 text-end">Biaya</th>
-                        <th class="py-3">Status</th>
-                        <th class="py-3 text-center pe-4">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="small">
-                    @forelse($repairs as $repair)
-                        @php
-                            $color = $statusClass[$repair->status] ?? 'secondary';
-                            $summary = $repair->items->groupBy('inventory_id')->map(function ($group) {
-                                $numbers = $group->map(fn ($i) => '#' . ($i->unit->unit_number ?? '?'))->implode(', ');
-                                return ($group->first()->inventory->name ?? 'Barang') . ' (' . $numbers . ')';
-                            });
-                        @endphp
-                        <tr>
-                            <td class="ps-4 py-3 fw-semibold" data-label="Kode">{{ $repair->code }}</td>
-                            <td class="u-minw-200px" data-label="Barang">
-                                @foreach($summary as $line)
-                                    <div>{{ $line }}</div>
+                    @if($kondisi)
+                        <div class="col-6 col-md-3">
+                            <label for="filterPenanda" class="form-label">Penanda</label>
+                            <select class="form-select" id="filterPenanda" name="penanda">
+                                <option value="">Semua penanda</option>
+                                <option value="rawan" {{ ($filters['penanda'] ?? '') === 'rawan' ? 'selected' : '' }}>Rawan rusak</option>
+                                <option value="sulit" {{ ($filters['penanda'] ?? '') === 'sulit' ? 'selected' : '' }}>Sulit diperbaiki</option>
+                                @if($canPrice)
+                                    <option value="mahal" {{ ($filters['penanda'] ?? '') === 'mahal' ? 'selected' : '' }}>Mahal diperbaiki</option>
+                                @endif
+                                <option value="aman" {{ ($filters['penanda'] ?? '') === 'aman' ? 'selected' : '' }}>Aman</option>
+                            </select>
+                        </div>
+                    @else
+                        <div class="col-6 col-md-3">
+                            <label for="filterStatus" class="form-label">Status</label>
+                            <select class="form-select" id="filterStatus" name="status">
+                                <option value="">Semua status</option>
+                                @foreach(['Diservis', 'Selesai', 'Dibatalkan'] as $status)
+                                    <option value="{{ $status }}" {{ ($filters['status'] ?? '') === $status ? 'selected' : '' }}>{{ $status }}</option>
                                 @endforeach
-                            </td>
-                            <td class="u-minw-160px" data-label="Tempat Servis">
-                                <div class="fw-semibold">{{ $repair->tempat_nama }}</div>
-                                @if($repair->vendor && $canContact)
-                                    <a href="{{ route('contacts.show', $repair->vendor) }}" class="text-decoration-none small">
-                                        <i class="bi bi-person-lines-fill me-1"></i>{{ $repair->vendor->name }}
-                                    </a>
-                                @endif
-                            </td>
-                            <td data-label="Diantar">
-                                {{ $repair->tanggal_masuk->format('d M Y') }}
-                                @if($repair->diantar_oleh)
-                                    <div class="text-muted small">oleh {{ $repair->diantar_oleh }}</div>
-                                @endif
-                            </td>
-                            <td data-label="Estimasi / Selesai">
-                                @if($repair->status === 'Selesai')
-                                    {{ $repair->tanggal_selesai?->format('d M Y') }}
-                                    @if($repair->diambil_oleh)
-                                        <div class="text-muted small">diambil {{ $repair->diambil_oleh }}</div>
-                                    @endif
-                                @elseif($repair->estimasi_selesai)
-                                    <span class="{{ $repair->isOverdue() ? 'text-danger fw-semibold' : '' }}">{{ $repair->estimasi_selesai->format('d M Y') }}</span>
-                                    @if($repair->isOverdue())
-                                        <div class="text-danger small">Lewat estimasi</div>
-                                    @endif
-                                @else
-                                    <span class="text-muted">-</span>
-                                @endif
-                            </td>
-                            <td class="text-end" data-label="Biaya">
-                                {{ $repair->biaya !== null ? \App\Support\Money::formatRupiah($repair->biaya) : '-' }}
-                            </td>
-                            <td data-label="Status">
-                                <span class="badge bg-{{ $color }} bg-opacity-10 text-{{ $color }} border border-{{ $color }}-subtle px-2 py-2 fw-medium">{{ $repair->status }}</span>
-                            </td>
-                            <td class="pe-4 text-center cell-block" data-label="Aksi">
-                                <div class="d-flex justify-content-center gap-2">
-                                    <a href="{{ route('inventory.repairs.show', $repair) }}"
-                                       class="btn btn-sm btn-outline-primary"
-                                       title="Lihat Detail" aria-label="Lihat detail perbaikan {{ $repair->code }}">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="8" class="text-center text-muted py-5">
-                                <i class="bi bi-tools fs-3 d-block mb-2 opacity-50"></i>
-                                Belum ada catatan perbaikan.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                            </select>
+                        </div>
+                    @endif
+                    <div class="col-6 col-md-auto filter-actions">
+                        <a href="{{ route('inventory.repairs.index', $kondisi ? ['tampil' => 'kondisi'] : []) }}" class="btn btn-outline-secondary px-3">Reset</a>
+                        <button type="submit" class="btn btn-primary px-3"><i class="bi bi-search me-1"></i>Cari</button>
+                    </div>
+                </form>
+            </div>
         </div>
-        @endif
-    </div>
 
-    <div class="mt-3">
-        {{ ($kondisi ? $conditions : $repairs)->links('pagination.app') }}
+        {{-- Daftar --}}
+        <div class="app-panel overflow-hidden">
+            @if($kondisi && $filterInventory)
+                <div class="px-3 px-md-4 py-3 small">
+                    Barang: <span class="fw-semibold">{{ $filterInventory->name }}</span>
+                    <a href="{{ route('inventory.repairs.index', ['tampil' => 'kondisi']) }}" class="text-decoration-none ms-2">Tampilkan semua barang</a>
+                </div>
+            @endif
+            @if($kondisi)
+                @include('inventory.repair.partials.condition-table', ['conditions' => $conditions])
+            @else
+            <div class="table-responsive">
+                <table class="table table-hover table-modern table-stack align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4 py-3">Kode</th>
+                            <th class="py-3">Barang</th>
+                            <th class="py-3">Tempat Servis</th>
+                            <th class="py-3">Diantar</th>
+                            <th class="py-3">Estimasi / Selesai</th>
+                            <th class="py-3 text-end">Biaya</th>
+                            <th class="py-3">Status</th>
+                            <th class="py-3 text-center pe-4">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="small">
+                        @forelse($repairs as $repair)
+                            @php
+                                $color = $statusClass[$repair->status] ?? 'secondary';
+                                $summary = $repair->items->groupBy('inventory_id')->map(function ($group) {
+                                    $numbers = $group->map(fn ($i) => '#' . ($i->unit->unit_number ?? '?'))->implode(', ');
+                                    return ($group->first()->inventory->name ?? 'Barang') . ' (' . $numbers . ')';
+                                });
+                            @endphp
+                            <tr>
+                                <td class="ps-4 py-3 fw-semibold" data-label="Kode">{{ $repair->code }}</td>
+                                <td class="u-minw-200px" data-label="Barang">
+                                    @foreach($summary as $line)
+                                        <div>{{ $line }}</div>
+                                    @endforeach
+                                </td>
+                                <td class="u-minw-160px" data-label="Tempat Servis">
+                                    <div class="fw-semibold">{{ $repair->tempat_nama }}</div>
+                                    @if($repair->vendor && $canContact)
+                                        <a href="{{ route('contacts.show', $repair->vendor) }}" class="text-decoration-none small">
+                                            <i class="bi bi-person-lines-fill me-1"></i>{{ $repair->vendor->name }}
+                                        </a>
+                                    @endif
+                                </td>
+                                <td data-label="Diantar">
+                                    {{ $repair->tanggal_masuk->format('d M Y') }}
+                                    @if($repair->diantar_oleh)
+                                        <div class="text-muted small">oleh {{ $repair->diantar_oleh }}</div>
+                                    @endif
+                                </td>
+                                <td data-label="Estimasi / Selesai">
+                                    @if($repair->status === 'Selesai')
+                                        {{ $repair->tanggal_selesai?->format('d M Y') }}
+                                        @if($repair->diambil_oleh)
+                                            <div class="text-muted small">diambil {{ $repair->diambil_oleh }}</div>
+                                        @endif
+                                    @elseif($repair->estimasi_selesai)
+                                        <span class="{{ $repair->isOverdue() ? 'text-danger fw-semibold' : '' }}">{{ $repair->estimasi_selesai->format('d M Y') }}</span>
+                                        @if($repair->isOverdue())
+                                            <div class="text-danger small">Lewat estimasi</div>
+                                        @endif
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td class="text-end" data-label="Biaya">
+                                    {{ $repair->biaya !== null ? \App\Support\Money::formatRupiah($repair->biaya) : '-' }}
+                                </td>
+                                <td data-label="Status">
+                                    <span class="badge bg-{{ $color }} bg-opacity-10 text-{{ $color }} border border-{{ $color }}-subtle px-2 py-2 fw-medium">{{ $repair->status }}</span>
+                                </td>
+                                <td class="pe-4 text-center cell-block" data-label="Aksi">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="{{ route('inventory.repairs.show', $repair) }}"
+                                           class="btn btn-sm btn-outline-primary"
+                                           title="Lihat Detail" aria-label="Lihat detail perbaikan {{ $repair->code }}">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-5">
+                                    <i class="bi bi-tools fs-3 d-block mb-2 opacity-50"></i>
+                                    Belum ada catatan perbaikan.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            @endif
+        </div>
+
+        <div class="mt-3">
+            {{ ($kondisi ? $conditions : $repairs)->links('pagination.app') }}
+        </div>
     </div>
 </div>
 
-@if($kondisi)
-    <script src="{{ \App\Support\AppAsset::url('js/inventory/repair-kondisi.js') }}"></script>
-@endif
+<script src="{{ \App\Support\AppAsset::url('js/inventory/repair-kondisi.js') }}"></script>
 @endsection
