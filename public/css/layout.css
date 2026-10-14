@@ -15,6 +15,8 @@
     gap: .65rem;
 }
 .sidebar-link i { font-size: 1.05rem; width: 1.1rem; text-align: center; }
+/* Pembungkus ikon + teks di menu dropdown: jarak ikon ke teks sama dengan menu halaman langsung (gap .sidebar-link). */
+.sidebar-link-main { display: flex; align-items: center; gap: .65rem; }
 .sidebar-link:hover { background: rgba(255,255,255,.08); opacity: 1; }
 .sidebar-link.active {
     background: var(--c-primary, #0b6fd6);

@@ -72,7 +72,7 @@
             @php $invActive = request()->routeIs('inventory.*') && !request()->routeIs('inventory.locations.*'); @endphp
             <li class="nav-item">
                 <a href="#menuInventory" data-bs-toggle="collapse" class="nav-link sidebar-link text-white d-flex align-items-center justify-content-between {{ $invActive ? 'active' : '' }}" aria-expanded="{{ $invActive ? 'true' : 'false' }}">
-                    <span><i class="bi bi-box-seam"></i> <span class="sidebar-link-text">Inventaris</span></span>
+                    <span class="sidebar-link-main"><i class="bi bi-box-seam"></i> <span class="sidebar-link-text">Inventaris</span></span>
                     <i class="bi bi-chevron-down sidebar-collapse-icon"></i>
                 </a>
                 <div class="collapse {{ $invActive ? 'show' : '' }}" id="menuInventory" data-bs-parent="#sidebarMenuAccordion">
@@ -117,7 +117,7 @@
         @endphp
         <li class="nav-item">
             <a href="#menuTracking" data-bs-toggle="collapse" class="nav-link sidebar-link text-white d-flex align-items-center justify-content-between {{ $trackActive ? 'active' : '' }}" aria-expanded="{{ $trackActive ? 'true' : 'false' }}">
-                <span><i class="bi bi-kanban"></i> <span class="sidebar-link-text">Project</span></span>
+                <span class="sidebar-link-main"><i class="bi bi-kanban"></i> <span class="sidebar-link-text">Project</span></span>
                 <i class="bi bi-chevron-down sidebar-collapse-icon"></i>
             </a>
             <div class="collapse {{ $trackActive ? 'show' : '' }}" id="menuTracking" data-bs-parent="#sidebarMenuAccordion">
@@ -185,7 +185,7 @@
         @php $intActive = request()->routeIs('folders.*') || request()->routeIs('files.*'); @endphp
         <li class="nav-item">
             <a href="#menuIntegrasi" data-bs-toggle="collapse" class="nav-link sidebar-link text-white d-flex align-items-center justify-content-between {{ $intActive ? 'active' : '' }}" aria-expanded="{{ $intActive ? 'true' : 'false' }}">
-                <span><i class="bi bi-database"></i> <span class="sidebar-link-text">Integrasi Data</span></span>
+                <span class="sidebar-link-main"><i class="bi bi-database"></i> <span class="sidebar-link-text">Integrasi Data</span></span>
                 <i class="bi bi-chevron-down sidebar-collapse-icon"></i>
             </a>
             <div class="collapse {{ $intActive ? 'show' : '' }}" id="menuIntegrasi" data-bs-parent="#sidebarMenuAccordion">
@@ -210,7 +210,7 @@
             @php $userActive = request()->routeIs('users.*'); @endphp
             <li class="nav-item">
                 <a href="#menuUser" data-bs-toggle="collapse" class="nav-link sidebar-link text-white d-flex align-items-center justify-content-between {{ $userActive ? 'active' : '' }}" aria-expanded="{{ $userActive ? 'true' : 'false' }}">
-                    <span><i class="bi bi-people"></i> <span class="sidebar-link-text">Kelola User</span></span>
+                    <span class="sidebar-link-main"><i class="bi bi-people"></i> <span class="sidebar-link-text">Kelola User</span></span>
                     <i class="bi bi-chevron-down sidebar-collapse-icon"></i>
                 </a>
                 <div class="collapse {{ $userActive ? 'show' : '' }}" id="menuUser" data-bs-parent="#sidebarMenuAccordion">
@@ -261,7 +261,7 @@
         @if($setShowUmum || $setShowLokasi)
             <li class="nav-item">
                 <a href="#menuPengaturan" data-bs-toggle="collapse" class="nav-link sidebar-link text-white d-flex align-items-center justify-content-between {{ $setActive ? 'active' : '' }}" aria-expanded="{{ $setActive ? 'true' : 'false' }}">
-                    <span><i class="bi bi-gear"></i> <span class="sidebar-link-text">Pengaturan</span></span>
+                    <span class="sidebar-link-main"><i class="bi bi-gear"></i> <span class="sidebar-link-text">Pengaturan</span></span>
                     <i class="bi bi-chevron-down sidebar-collapse-icon"></i>
                 </a>
                 <div class="collapse {{ $setActive ? 'show' : '' }}" id="menuPengaturan" data-bs-parent="#sidebarMenuAccordion">
