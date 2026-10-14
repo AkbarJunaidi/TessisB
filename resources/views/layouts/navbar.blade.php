@@ -44,9 +44,9 @@
                             <div class="text-center text-muted small py-4" id="navbarNotifLoading">Memuat notifikasi...</div>
                         </div>
                         {{-- Selalu tampil (juga saat kosong) supaya halaman Notifikasi lengkap, termasuk yang sudah dibaca, mudah dicapai. --}}
-                        <a href="{{ route('announcements.index') }}" class="dropdown-item d-flex align-items-center justify-content-center gap-2 py-2 border-top rounded-bottom small fw-semibold text-primary">
-                            <i class="bi bi-bell"></i> Lihat semua notifikasi <i class="bi bi-arrow-right"></i>
-                        </a>
+                        <div class="text-end px-3 pb-2 pt-1">
+                            <a href="{{ route('announcements.index') }}" class="small text-primary text-decoration-none d-inline-block py-1">Selengkapnya...</a>
+                        </div>
                     </div>
                 </div>
 
