@@ -76,7 +76,8 @@ class DashboardController extends Controller
         // Satu sumber: kartu "Perlu perhatian" dan feed memakai notifikasi yang sama dengan lonceng.
         $notifications = $this->notificationService->getActiveNotifications($user->id);
         $attention = $this->buildAttentionCards($user, $notifications);
-        $latestNotifications = array_slice($notifications, 0, 5);
+        // Hitungan "Perlu perhatian" tetap dari semua kondisi aktif; feed hanya yang belum dibaca.
+        $latestNotifications = array_slice(array_values(array_filter($notifications, fn ($n) => empty($n['read']))), 0, 5);
 
         return view(
             'dashboard.index',

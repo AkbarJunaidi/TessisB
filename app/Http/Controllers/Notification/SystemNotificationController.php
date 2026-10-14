@@ -39,6 +39,13 @@ class SystemNotificationController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function markRead(string $key): JsonResponse
+    {
+        $this->notificationService->markSystemNotificationRead(Auth::id(), $key);
+
+        return response()->json(['success' => true]);
+    }
+
     public function delete(string $key): JsonResponse
     {
         abort_unless(

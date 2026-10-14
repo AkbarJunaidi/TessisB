@@ -20,7 +20,7 @@
 
         </div>
 
-        <a
+        <a data-back
             href="{{ route('users.index') }}"
             class="btn btn-secondary"
         >

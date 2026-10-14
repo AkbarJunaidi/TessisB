@@ -67,7 +67,7 @@
                     <h6 class="fw-bold m-0">
                         <i class="bi bi-bell me-2 text-primary"></i>Semua Notifikasi
                     </h6>
-                    @if($inbox->isNotEmpty())
+                    @if($inbox->isNotEmpty() || !empty($systemNotifications))
                         <form method="POST" action="{{ route('announcements.read-all') }}" data-no-confirm>
                             @csrf
                             <button type="submit" class="btn btn-sm btn-link text-decoration-none">
@@ -87,18 +87,26 @@
                         <button type="button" class="btn btn-sm btn-primary" data-filter="all">Semua</button>
                         <button type="button" class="btn btn-sm btn-outline-primary" data-filter="important">Penting</button>
                         <button type="button" class="btn btn-sm btn-outline-primary" data-filter="unread">Belum dibaca</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" data-filter="read">Sudah dibaca</button>
                     </div>
                     <div class="list-group list-group-flush" id="notificationInboxList">
                         {{-- Notifikasi Sistem (butuh tindakan) ditampilkan sebelum Pengumuman. --}}
                         @if(!empty($systemNotifications))
                             @foreach($systemNotifications as $item)
-                                @php $isNewType = in_array($item['type'], ['inventory_new', 'project_new'], true); @endphp
-                                <div class="list-group-item p-3 system-notif-item" data-notif-key="{{ $item['id'] }}" data-important="{{ $isNewType ? '0' : '1' }}" data-unread="0">
+                                @php
+                                    $isNewType = in_array($item['type'], ['inventory_new', 'project_new'], true);
+                                    $isRead    = (bool) ($item['read'] ?? false);
+                                @endphp
+                                <div class="list-group-item p-3 system-notif-item {{ $isRead ? '' : 'notif-unread' }}" data-notif-key="{{ $item['id'] }}"
+                                     data-important="{{ $isNewType ? '0' : '1' }}" data-pinned="{{ ($item['pinned'] ?? false) ? '1' : '0' }}" data-unread="{{ $isRead ? '0' : '1' }}">
                                     <div class="d-flex justify-content-between align-items-start gap-3">
                                         <a href="{{ $item['url'] }}" class="d-flex align-items-start gap-3 text-decoration-none text-reset flex-grow-1">
                                             <i class="bi {{ $item['icon'] }} mt-1"></i>
                                             <div>
                                                 <div class="d-flex align-items-center gap-2">
+                                                    @unless($isRead)
+                                                        <span class="notif-dot" role="img" aria-label="Belum dibaca"></span>
+                                                    @endunless
                                                     @if($item['pinned'] ?? false)
                                                         <i class="bi bi-pin-angle-fill text-primary" title="Disematkan"></i>
                                                     @endif
@@ -108,8 +116,14 @@
                                                 <div class="text-secondary small">{{ $item['message'] }}</div>
                                             </div>
                                         </a>
+                                        <div class="d-flex flex-column gap-1 flex-shrink-0 align-items-end">
+                                        @unless($isRead)
+                                            <button type="button" class="btn btn-sm btn-outline-secondary btn-mark-system-read">
+                                                Tandai dibaca
+                                            </button>
+                                        @endunless
                                         @if($isAdminOrSuperAdmin)
-                                        <div class="btn-group btn-group-sm flex-shrink-0">
+                                        <div class="btn-group btn-group-sm">
                                             <button type="button"
                                                     class="btn btn-outline-secondary btn-toggle-system-pin" aria-label="Sematkan atau lepas sematan"
                                                     data-pinned="{{ ($item['pinned'] ?? false) ? '1' : '0' }}"
@@ -123,6 +137,7 @@
                                             @endif
                                         </div>
                                         @endif
+                                        </div>
                                     </div>
                                 </div>
                             @endforeach
@@ -131,7 +146,7 @@
                         @foreach($inbox as $item)
                             @php $isPinned = !is_null($item->pinned_at); @endphp
                             <div class="list-group-item p-3 notif-item {{ $item->read_at ? '' : 'notif-unread' }}"
-                                 data-notif-id="{{ $item->id }}" data-important="{{ $isPinned ? '1' : '0' }}" data-unread="{{ $item->read_at ? '0' : '1' }}">
+                                 data-notif-id="{{ $item->id }}" data-important="{{ $isPinned ? '1' : '0' }}" data-pinned="{{ $isPinned ? '1' : '0' }}" data-unread="{{ $item->read_at ? '0' : '1' }}">
                                 <div class="d-flex justify-content-between align-items-start gap-3">
                                     <div>
                                         <div class="d-flex align-items-center gap-2 mb-1">
@@ -281,6 +296,11 @@
         return document.querySelector('meta[name="csrf-token"]').content;
     }
 
+    // Beri tahu lonceng navbar bahwa daftar notifikasi berubah.
+    function notifyNavbar() {
+        document.dispatchEvent(new CustomEvent('notifications:changed'));
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         // Filter daftar di sisi browser: Semua / Penting / Belum dibaca.
         let activeFilter = 'all';
@@ -291,15 +311,19 @@
             const items = document.querySelectorAll('#notificationInboxList > [data-important]');
             let shown = 0;
             items.forEach(function (el) {
-                const ok = activeFilter === 'all'
+                // "Semua" = yang belum dibaca atau disematkan; yang sudah dibaca ada di filter "Sudah dibaca".
+                const ok = (activeFilter === 'all' && (el.dataset.unread === '1' || el.dataset.pinned === '1'))
                     || (activeFilter === 'important' && el.dataset.important === '1')
-                    || (activeFilter === 'unread' && el.dataset.unread === '1');
+                    || (activeFilter === 'unread' && el.dataset.unread === '1')
+                    || (activeFilter === 'read' && el.dataset.unread === '0');
                 el.classList.toggle('d-none', !ok);
                 if (ok) shown++;
             });
             const empty = document.getElementById('notifFilterEmpty');
             if (empty) empty.classList.toggle('d-none', shown > 0);
         }
+
+        applyFilter();
 
         if (filterBox) {
             filterBox.addEventListener('click', function (e) {
@@ -332,6 +356,7 @@
                         btn.remove();
                         item.querySelector('.notif-dot')?.remove();
                         applyFilter();
+                        notifyNavbar();
                     }
                 });
             });
@@ -356,7 +381,9 @@
                     btn.title = currentlyPinned ? 'Sematkan' : 'Lepas sematan';
                     btn.querySelector('i').className = currentlyPinned ? 'bi bi-pin-angle' : 'bi bi-pin-angle-fill';
                     item.dataset.important = currentlyPinned ? '0' : '1';
+                    item.dataset.pinned = currentlyPinned ? '0' : '1';
                     applyFilter();
+                    notifyNavbar();
                 });
             });
         });
@@ -377,6 +404,7 @@
                         if (data.success) {
                             item.remove();
                             applyFilter();
+                            notifyNavbar();
                         }
                     });
                 });
@@ -401,6 +429,31 @@
                     btn.dataset.pinned = currentlyPinned ? '0' : '1';
                     btn.title = currentlyPinned ? 'Sematkan' : 'Lepas sematan';
                     btn.querySelector('i').className = currentlyPinned ? 'bi bi-pin-angle' : 'bi bi-pin-angle-fill';
+                    item.dataset.pinned = currentlyPinned ? '0' : '1';
+                    applyFilter();
+                    notifyNavbar();
+                });
+            });
+        });
+
+        // Tandai dibaca notifikasi sistem (pribadi): hilang dari daftar "Semua" dan dari lonceng.
+        document.querySelectorAll('.btn-mark-system-read').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const item = btn.closest('.system-notif-item');
+                const key = encodeURIComponent(item.dataset.notifKey);
+
+                fetch(`/system-notifications/${key}/read`, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': csrfToken(), 'Accept': 'application/json' },
+                }).then(function (res) { return res.json(); }).then(function (data) {
+                    if (!data.success) return;
+
+                    item.classList.remove('notif-unread');
+                    item.dataset.unread = '0';
+                    btn.remove();
+                    item.querySelector('.notif-dot')?.remove();
+                    applyFilter();
+                    notifyNavbar();
                 });
             });
         });
@@ -420,6 +473,7 @@
                         if (data.success) {
                             item.remove();
                             applyFilter();
+                            notifyNavbar();
                         }
                     });
                 });

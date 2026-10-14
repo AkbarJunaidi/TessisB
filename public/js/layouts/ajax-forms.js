@@ -83,7 +83,8 @@
     function onSuccess(form, data) {
         data = data || {};
         if (data.reload) {
-            if (form.dataset.ajaxHash) window.location.hash = form.dataset.ajaxHash;
+            // replaceState (bukan location.hash) agar tab yang dibuka tidak menambah entri riwayat; tombol Kembali tetap sungguhan.
+            if (form.dataset.ajaxHash) history.replaceState(null, '', window.location.pathname + window.location.search + form.dataset.ajaxHash);
             window.location.reload();
             return;
         }

@@ -36,10 +36,17 @@
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none u-fs-p6rem" id="navbarNotifBadge"></span>
                     </button>
                     <div class="dropdown-menu dropdown-menu-end shadow-sm p-0 u-w-320px u-maxw-90vw">
-                        <div class="px-3 py-2 border-bottom fw-semibold small text-dark">Notifikasi</div>
+                        <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
+                            <span class="fw-semibold small text-dark">Notifikasi</span>
+                            <span class="small text-muted d-none" id="navbarNotifCount"></span>
+                        </div>
                         <div class="u-maxh-360px u-oy-auto" id="navbarNotifList">
                             <div class="text-center text-muted small py-4" id="navbarNotifLoading">Memuat notifikasi...</div>
                         </div>
+                        {{-- Selalu tampil (juga saat kosong) supaya halaman Notifikasi lengkap, termasuk yang sudah dibaca, mudah dicapai. --}}
+                        <a href="{{ route('announcements.index') }}" class="dropdown-item d-flex align-items-center justify-content-center gap-2 py-2 border-top rounded-bottom small fw-semibold text-primary">
+                            <i class="bi bi-bell"></i> Lihat semua notifikasi <i class="bi bi-arrow-right"></i>
+                        </a>
                     </div>
                 </div>
 
@@ -247,6 +254,7 @@
         const tickerEl = document.getElementById('navbarNotifTicker');
         const tickerContentEl = document.getElementById('navbarNotifTickerContent');
         const notifBtn = document.getElementById('navbarNotifBtn');
+        const countEl = document.getElementById('navbarNotifCount');
         if (!listEl || !badgeEl) return;
 
         const notifUrl = @json(route('notifications.active'));
@@ -272,6 +280,10 @@
         // Render daftar notifikasi di dropdown lonceng dan perbarui badge.
         function renderNotifications(notifications) {
             syncBottomBadge(notifications.length);
+            if (countEl) {
+                countEl.textContent = notifications.length + ' belum dibaca';
+                countEl.classList.toggle('d-none', notifications.length === 0);
+            }
             if (!notifications.length) {
                 listEl.innerHTML = '<div class="text-center text-muted small py-4">Tidak ada notifikasi saat ini.</div>';
                 badgeEl.classList.add('d-none');
@@ -398,6 +410,8 @@
         }
 
         loadNotifications();
+        // Halaman Notifikasi memicu ini setelah tandai dibaca, sematkan, atau hapus, agar lonceng, badge, dan ticker langsung ikut berubah.
+        document.addEventListener('notifications:changed', loadNotifications);
         setInterval(function () { if (!document.hidden) loadNotifications(); }, 60000);
         document.addEventListener('visibilitychange', function () { if (!document.hidden) loadNotifications(); });
     })();

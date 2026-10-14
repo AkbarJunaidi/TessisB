@@ -121,6 +121,7 @@
     <script src="{{ \App\Support\AppAsset::url('js/layouts/ajax-forms.js') }}"></script>
     <script src="{{ \App\Support\AppAsset::url('js/layouts/pager.js') }}"></script>
     <script src="{{ \App\Support\AppAsset::url('js/layouts/ajax-tabs.js') }}"></script>
+    <script src="{{ \App\Support\AppAsset::url('js/layouts/back-button.js') }}"></script>
 
     @stack('scripts')
 </body>

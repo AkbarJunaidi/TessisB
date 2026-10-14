@@ -239,20 +239,21 @@ class NotificationService
             ->pluck('notification_key')
             ->all();
 
-        // Sematan tetap preferensi pribadi, jadi tetap discoped ke user ini.
-        $pinnedKeys = NotificationState::where('user_id', $userId)
+        // Sematan dan status dibaca = preferensi pribadi, jadi discoped ke user ini.
+        $states = NotificationState::where('user_id', $userId)
             ->whereIn('notification_key', $keys)
-            ->whereNotNull('pinned_at')
-            ->pluck('notification_key')
-            ->all();
+            ->get()
+            ->keyBy('notification_key');
 
         $items = array_values(array_filter($items, function ($item) use ($deletedKeys) {
             return $item['type'] === 'announcement' || !in_array($item['id'], $deletedKeys, true);
         }));
 
         foreach ($items as &$item) {
-            $item['pinned'] = $item['type'] !== 'announcement'
-                && in_array($item['id'], $pinnedKeys, true);
+            $state = $item['type'] === 'announcement' ? null : $states->get($item['id']);
+
+            $item['pinned'] = $state?->pinned_at !== null;
+            $item['read']   = $state?->read_at !== null;
         }
         unset($item);
 
@@ -749,6 +750,29 @@ class NotificationService
             ['user_id' => $userId, 'notification_key' => $key],
             ['pinned_at' => null]
         );
+    }
+
+    /**
+     * Tandai 1 notifikasi OTOMATIS sudah dibaca oleh user ini saja (pribadi, tidak mempengaruhi user lain).
+     * Notifikasi yang sudah dibaca hilang dari lonceng; kuncinya per record (lihat migration
+     * create_notification_states_table), jadi tidak muncul lagi untuk project/barang yang sama.
+     */
+    public function markSystemNotificationRead(int $userId, string $key): void
+    {
+        NotificationState::updateOrCreate(
+            ['user_id' => $userId, 'notification_key' => $key],
+            ['read_at' => now()]
+        );
+    }
+
+    /** Tandai semua notifikasi OTOMATIS yang sedang aktif untuk user ini sebagai sudah dibaca. */
+    public function markAllSystemNotificationsRead(int $userId): void
+    {
+        foreach ($this->getActiveNotifications($userId) as $item) {
+            if ($item['type'] !== 'announcement' && empty($item['read'])) {
+                $this->markSystemNotificationRead($userId, $item['id']);
+            }
+        }
     }
 
     /**

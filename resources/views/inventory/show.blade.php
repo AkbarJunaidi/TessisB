@@ -15,7 +15,7 @@
             <p class="d-none d-md-block text-muted small m-0">Menampilkan informasi lengkap dan identitas aset barang.</p>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <a href="{{ route('inventory.index') }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 fw-medium">
+            <a data-back href="{{ route('inventory.index') }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 fw-medium">
                 <i class="bi bi-arrow-left"></i> Kembali ke Daftar
             </a>
             <a href="{{ route('inventory.preview-qr', $inventory->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 fw-medium">
@@ -46,7 +46,7 @@
         </div>
         <p class="text-muted small mb-2">Informasi lengkap aset barang</p>
         <div class="d-flex flex-wrap gap-2">
-            <a href="{{ route('inventory.index') }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-2 fw-medium">
+            <a data-back href="{{ route('inventory.index') }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-2 fw-medium">
                 <i class="bi bi-arrow-left"></i> Kembali
             </a>
             @if(auth()->user()->hasPermission('inventory', 'edit'))

@@ -8,7 +8,7 @@
             <h3>Edit Barang</h3>
             <p>Perbarui informasi utama, foto fisik, dan informasi tambahan aset.</p>
         </div>
-        <a href="{{ route('inventory.show', $inventory->id) }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2">
+        <a data-back href="{{ route('inventory.show', $inventory->id) }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2">
             <i class="bi bi-arrow-left"></i> Batal / Kembali
         </a>
     </div>

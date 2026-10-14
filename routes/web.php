@@ -516,6 +516,9 @@ Route::middleware('auth')->group(function () {
         Route::post('system-notifications/{key}/unpin', [SystemNotificationController::class, 'unpin'])
             ->name('system-notifications.unpin');
 
+        Route::post('system-notifications/{key}/read', [SystemNotificationController::class, 'markRead'])
+            ->name('system-notifications.read');
+
         Route::delete('system-notifications/{key}', [SystemNotificationController::class, 'delete'])
             ->name('system-notifications.destroy');
 

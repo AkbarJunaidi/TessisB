@@ -10,7 +10,7 @@
             <h3 class="fw-bold text-dark m-0">Tambah Task</h3>
             <p class="text-muted small m-0">Project: <strong title="{{ $project->name }}">{{ $project->short_name }}</strong></p>
         </div>
-        <a href="{{ route('projects.show', $project->id) }}" class="btn btn-sm btn-outline-secondary fw-medium">
+        <a data-back href="{{ route('projects.show', $project->id) }}" class="btn btn-sm btn-outline-secondary fw-medium">
             <i class="bi bi-arrow-left"></i> Kembali ke Board
         </a>
     </div>

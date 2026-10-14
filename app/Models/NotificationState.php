@@ -11,11 +11,13 @@ class NotificationState extends Model
         'user_id',
         'notification_key',
         'pinned_at',
+        'read_at',
         'dismissed_at',
     ];
 
     protected $casts = [
         'pinned_at'    => 'datetime',
+        'read_at'      => 'datetime',
         'dismissed_at' => 'datetime',
     ];
 

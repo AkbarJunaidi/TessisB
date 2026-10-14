@@ -29,7 +29,7 @@
         </div>
 
         <div class="d-flex gap-2">
-            <a href="{{ route('projects.index') }}" class="btn btn-sm btn-outline-secondary">
+            <a data-back href="{{ route('projects.index') }}" class="btn btn-sm btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> Kembali
             </a>
 

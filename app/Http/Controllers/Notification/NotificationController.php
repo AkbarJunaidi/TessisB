@@ -28,8 +28,12 @@ class NotificationController extends Controller
             403
         );
 
-        return response()->json([
-            'notifications' => $this->notificationService->getActiveNotifications(Auth::id()),
-        ]);
+        // Lonceng hanya menampilkan yang belum dibaca oleh user ini.
+        $unread = array_values(array_filter(
+            $this->notificationService->getActiveNotifications(Auth::id()),
+            fn ($item) => empty($item['read'])
+        ));
+
+        return response()->json(['notifications' => $unread]);
     }
 }

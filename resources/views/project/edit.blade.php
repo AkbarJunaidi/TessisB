@@ -9,7 +9,7 @@
         <div>
             <h3 class="fw-bold text-dark m-0">Edit Project</h3>
         </div>
-        <a href="{{ route('projects.show', $project) }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 fw-medium">
+        <a data-back href="{{ route('projects.show', $project) }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 fw-medium">
             <i class="bi bi-arrow-left"></i> Kembali ke Detail Project
         </a>
     </div>

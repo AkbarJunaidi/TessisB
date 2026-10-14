@@ -7,7 +7,7 @@
 
     <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
         <div>
-            <a href="{{ route('kwitansi.index') }}" class="text-decoration-none small text-muted d-inline-block mb-1">
+            <a data-back href="{{ route('kwitansi.index') }}" class="text-decoration-none small text-muted d-inline-block mb-1">
                 <i class="bi bi-arrow-left"></i> Kembali ke Keuangan
             </a>
             <h3 class="fw-bold mb-1">Detail Keuangan - {{ $project->short_name }}</h3>

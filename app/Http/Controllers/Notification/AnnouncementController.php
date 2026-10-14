@@ -104,6 +104,7 @@ class AnnouncementController extends Controller
     public function markAllAsRead(): RedirectResponse
     {
         $this->announcementService->markAllAsRead();
+        $this->notificationService->markAllSystemNotificationsRead(Auth::id());
 
         return back()->with('success', 'Semua notifikasi ditandai sudah dibaca.');
     }

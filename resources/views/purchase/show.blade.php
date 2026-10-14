@@ -31,7 +31,7 @@
         </div>
 
         <div class="d-flex flex-wrap gap-2">
-            <a href="{{ route('purchases.index') }}" class="btn btn-outline-secondary">
+            <a data-back href="{{ route('purchases.index') }}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-1"></i> Kembali
             </a>
 

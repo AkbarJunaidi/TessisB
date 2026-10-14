@@ -10,7 +10,7 @@
             <h3 class="fw-bold text-dark m-0">Tambah Project</h3>
             <p class="d-none d-md-block text-muted small m-0">Isi detail project.</p>
         </div>
-        <a href="{{ route('projects.index') }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 fw-medium">
+        <a data-back href="{{ route('projects.index') }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 fw-medium">
             <i class="bi bi-arrow-left"></i> Kembali ke Daftar
         </a>
     </div>

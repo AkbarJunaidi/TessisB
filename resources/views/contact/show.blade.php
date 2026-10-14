@@ -27,7 +27,7 @@
         </div>
 
         <div class="d-flex gap-2">
-            <a href="{{ route('contacts.index') }}" class="btn btn-outline-secondary">
+            <a data-back href="{{ route('contacts.index') }}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-1"></i> Kembali
             </a>
             <a href="{{ route('contacts.edit', $contact) }}" class="btn btn-warning">

@@ -10,7 +10,7 @@
             <span class="badge bg-primary mb-1" title="{{ $task->project->name }}"><i class="bi bi-folder2-open me-1"></i>{{ $task->project->short_name }}</span>
             <h3 class="fw-bold text-dark m-0">Detail Task</h3>
         </div>
-        <a href="{{ route('projects.show', $task->project_id) }}" class="btn btn-sm btn-outline-secondary fw-medium">
+        <a data-back href="{{ route('projects.show', $task->project_id) }}" class="btn btn-sm btn-outline-secondary fw-medium">
             <i class="bi bi-arrow-left"></i> Kembali ke Board
         </a>
     </div>
