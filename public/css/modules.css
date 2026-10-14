@@ -53,3 +53,59 @@
 /* ===== Approval: daftar menunggu ===== */
 .approval-empty { display: none; }
 .approval-list:not(:has(.approval-row)) .approval-empty { display: block; }
+
+/* ===== Dashboard ===== */
+.dash-value { font-size: clamp(1.05rem, 1.5vw, 1.5rem); font-weight: 700; white-space: nowrap; }
+
+.dash-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border: 1px solid var(--c-border); border-radius: var(--radius-md); overflow: hidden; }
+.dash-day { display: flex; flex-direction: column; gap: .5rem; min-height: 9rem; padding: .75rem; border-left: 1px solid var(--c-border); }
+.dash-day:first-child { border-left: 0; }
+.dash-day.is-today { background: var(--bg-soft); }
+.dash-day-head { display: flex; align-items: baseline; gap: .4rem; }
+.dash-day-name { font-size: .8125rem; color: var(--c-muted); }
+.dash-day-num { font-size: 1.1rem; font-weight: 700; line-height: 1; }
+.dash-day.is-today .dash-day-num { color: var(--c-primary); }
+.dash-day-tag { margin-left: auto; font-size: .6875rem; font-weight: 600; color: var(--c-primary); }
+.dash-day-events { display: flex; flex-direction: column; gap: .4rem; min-width: 0; }
+.dash-event { display: block; min-width: 0; padding: .35rem .5rem; background: var(--bg-white); border: 1px solid var(--c-border); border-left: 3px solid var(--c-primary); border-radius: var(--radius-sm); color: inherit; text-decoration: none; }
+.dash-event:hover { box-shadow: var(--shadow-sm); color: inherit; }
+.dash-event-name, .dash-event-meta { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dash-event-name { font-size: .8125rem; font-weight: 600; }
+.dash-event-meta { font-size: .75rem; color: var(--c-muted); }
+
+/* Di bawah 1200px kolom 7 hari terlalu sempit, jadi jadi daftar per hari. */
+@media (max-width: 1199.98px) {
+    .dash-week { grid-template-columns: 1fr; }
+    .dash-day { flex-direction: row; align-items: flex-start; gap: .75rem; min-height: 0; border-left: 0; border-top: 1px solid var(--c-border); }
+    .dash-day:first-child { border-top: 0; }
+    .dash-day-head { flex: 0 0 4.5rem; flex-direction: column; gap: .15rem; }
+    .dash-day-tag { margin-left: 0; }
+    .dash-day-events { flex: 1; }
+}
+
+.dash-row { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr) 2rem; align-items: center; gap: .75rem; padding: .5rem 0; border-top: 1px solid var(--c-border); color: inherit; text-decoration: none; font-size: .875rem; }
+.dash-row.has-value { grid-template-columns: 5.5rem minmax(0, 1fr) 2rem 5rem; }
+a.dash-row:hover { color: var(--c-primary); }
+.dash-row-count { font-weight: 600; text-align: right; }
+.dash-row-value { font-size: .8125rem; color: var(--c-muted); text-align: right; white-space: nowrap; }
+@media (max-width: 575.98px) {
+    .dash-row.has-value { grid-template-columns: 5.5rem minmax(0, 1fr) 2rem; }
+    .dash-row-value { display: none; }
+}
+
+/* Batang progres tanpa style inline; selektor webkit dan moz tidak bisa digabung. */
+.dash-bar { display: block; width: 100%; height: .5rem; border: 0; border-radius: var(--radius-pill); overflow: hidden; -webkit-appearance: none; appearance: none; background: var(--bg-soft); }
+.dash-bar::-webkit-progress-bar { background: var(--bg-soft); border-radius: var(--radius-pill); }
+.dash-bar::-webkit-progress-value { background: var(--c-primary); border-radius: var(--radius-pill); }
+.dash-bar::-moz-progress-bar { background: var(--c-primary); border-radius: var(--radius-pill); }
+.dash-bar-navy::-webkit-progress-value { background: var(--c-navy); }
+.dash-bar-navy::-moz-progress-bar { background: var(--c-navy); }
+.dash-bar-warn::-webkit-progress-value { background: var(--bs-warning); }
+.dash-bar-warn::-moz-progress-bar { background: var(--bs-warning); }
+.dash-bar-danger::-webkit-progress-value { background: var(--bs-danger); }
+.dash-bar-danger::-moz-progress-bar { background: var(--bs-danger); }
+.dash-bar-mute::-webkit-progress-value { background: #8fa1b8; }
+.dash-bar-mute::-moz-progress-bar { background: #8fa1b8; }
+
+.dash-event:focus-visible, .dash-row:focus-visible { outline: 2px solid var(--c-primary); outline-offset: 2px; }
+.min-w-0 { min-width: 0; }

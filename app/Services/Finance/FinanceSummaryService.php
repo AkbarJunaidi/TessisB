@@ -215,6 +215,40 @@ class FinanceSummaryService
     }
 
     /**
+     * Pemasukan dan pengeluaran per hari pada rentang tanggal, hari tanpa transaksi bernilai 0.
+     *
+     * @return array{labels: array<int, string>, income: array<int, float>, expense: array<int, float>}
+     */
+    public function daily(Carbon $from, Carbon $to): array
+    {
+        $buckets = [];
+        for ($d = $from->copy(); $d->lte($to); $d->addDay()) {
+            $buckets[$d->format('Y-m-d')] = ['label' => $d->format('j') . ' ' . self::MONTHS[$d->month - 1], 'income' => 0.0, 'expense' => 0.0];
+        }
+
+        $rows = $this->base($from, $to)
+            ->selectRaw('tanggal, type, SUM(amount) as total')
+            ->groupBy('tanggal', 'type')
+            ->get();
+
+        foreach ($rows as $row) {
+            $key = $row->tanggal->format('Y-m-d');
+
+            if (isset($buckets[$key])) {
+                $buckets[$key][$row->type] += (float) $row->total;
+            }
+        }
+
+        $buckets = array_values($buckets);
+
+        return [
+            'labels'  => array_column($buckets, 'label'),
+            'income'  => array_column($buckets, 'income'),
+            'expense' => array_column($buckets, 'expense'),
+        ];
+    }
+
+    /**
      * Pembelian yang sudah disetujui/diterima tetapi belum dibayar, terlama dulu.
      *
      * @return array{total: float, count: int, items: array<int, array<string, mixed>>}

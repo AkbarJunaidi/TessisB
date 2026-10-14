@@ -1,468 +1,389 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard Utama')
+@section('title', 'Dashboard')
 
 @section('content')
 
     @php
         $user = auth()->user();
+        $rp = fn ($v) => \App\Support\Money::formatRupiah($v);
+        $compact = fn ($v) => \App\Support\Money::compact($v);
+        $isManager = $user->hasRole('super_admin', 'admin');
+
+        $stageMap = collect($pipeline ?? [])->keyBy('status');
+        $activeProjects = collect($pipeline ?? [])->where('status', '!=', 'Done')->sum('count');
+        $borrowedCount = collect($equipment['items'] ?? [])->firstWhere('label', 'Dipinjam')['count'] ?? 0;
+
+        $stageBars = ['Draft' => 'dash-bar-mute', 'In Progress' => 'dash-bar-navy', 'Done' => 'dash-bar-mute'];
+        $unitBars = ['Dipinjam' => 'dash-bar-navy', 'Perbaikan' => 'dash-bar-warn', 'Rusak' => 'dash-bar-danger', 'Hilang' => 'dash-bar-mute', 'Lainnya' => 'dash-bar-mute'];
+
+        $hasPipeline = !empty($pipeline);
+        $hasEquipment = !empty($equipment);
+
+        // Rute Pipeline dan Inventaris khusus admin; role lain diarahkan ke halaman yang boleh dibuka.
+        $pipelineUrl = $isManager ? route('projects.pipeline') : route('projects.index');
+        $inventoryUrl = $isManager ? route('inventory.index') : null;
+        $borrowedUrl = $user->hasPermission('borrowed_items', 'view') ? route('borrowed-items.index') : $inventoryUrl;
+
+        // Pintasan fitur yang paling sering dipakai, sesuai izin user.
+        $shortcuts = array_filter([
+            $user->hasPermission('scan_barang', 'view') ? ['Scan Barang', 'bi-upc-scan', route('scan.index'), true] : null,
+            $user->hasPermission('tracking_progress', 'create_project') ? ['Project Baru', 'bi-plus-lg', route('projects.create'), false] : null,
+            $isManager && $user->hasPermission('inventory', 'create') ? ['Tambah Barang', 'bi-plus-lg', route('inventory.create'), false] : null,
+            $user->hasPermission('finance', 'manage') ? ['Catat Transaksi', 'bi-plus-lg', route('finance.transactions.index'), false] : null,
+        ]);
+
+        // Baris Ringkasan di sebelah kartu Keuangan: [label, ikon, nilai, keterangan, url, kelas warna nilai].
+        $summaryRows = array_filter([
+            $financeSummary ? ['Piutang Client', 'bi-person-lines-fill', $rp($financeSummary['receivables']['total']), $financeSummary['receivables']['count'] . ' project belum lunas', route('finance.summary'), 'text-primary'] : null,
+            $financeSummary ? ['Hutang Vendor', 'bi-bag-check', $rp($financeSummary['payables']['total']), $financeSummary['payables']['count'] . ' pembelian belum dibayar', $user->hasPermission('purchase', 'view') ? route('purchases.index') : route('finance.summary'), 'text-warning-emphasis'] : null,
+            $hasPipeline ? ['Project Berjalan', 'bi-kanban', $stageMap->get('In Progress')['count'] ?? 0, $activeProjects . ' project aktif', $pipelineUrl, ''] : null,
+            $hasEquipment ? ['Alat di Lapangan', 'bi-box-arrow-up-right', $borrowedCount, 'dari ' . $equipment['total'] . ' unit', $borrowedUrl, ''] : null,
+        ]);
+
+        $defaultPeriod = 'month';
+        $periodLabels = ['week' => '1 Minggu Terakhir', 'month' => '1 Bulan Terakhir', 'year' => '1 Tahun Terakhir'];
+        $fin = $financeSummary['periods'][$defaultPeriod] ?? null;
     @endphp
 
-    <div class="page-heading">
-        <div>
-            <h3>Ringkasan Dashboard</h3>
-            <p>Selamat datang, {{ $user->name }} berikut ringkasan sistem hari ini.</p>
-        </div>
-    </div>
+    <div class="container-fluid p-0">
 
-    {{-- Pusat pantau: kartu KPI "Perlu perhatian" (Super Admin/Admin) dan feed notifikasi terbaru. --}}
-    @if(!empty($attention) || !empty($latestNotifications))
-        <div class="row g-4 mb-4">
-            @if(!empty($attention))
-                <div class="col-xl-7">
-                    <div class="row g-3">
-                        @foreach($attention as $card)
-                            <div class="col-6">
-                                <a href="{{ route($card['route']) }}" class="stat-card p-3 p-md-4 d-block text-decoration-none">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">{{ $card['label'] }}</span>
-                                            <h3 class="fw-bolder text-navy mt-2 mb-0">{{ $card['text'] }}</h3>
-                                        </div>
-                                        <div class="icon-tile {{ $card['count'] > 0 ? 'icon-tile-danger' : '' }}">
-                                            <i class="bi {{ $card['icon'] }} fs-5"></i>
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+            <div>
+                <h3 class="fw-bold mb-1">Dashboard</h3>
+                <p class="d-none d-md-block text-muted mb-0">Ringkasan operasional dan keuangan.</p>
+            </div>
+            @if($shortcuts)
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach($shortcuts as [$label, $icon, $url, $primary])
+                        <a href="{{ $url }}" class="btn btn-sm {{ $primary ? 'btn-primary' : 'btn-outline-primary' }} rounded-pill px-3"><i class="bi {{ $icon }} me-1"></i>{{ $label }}</a>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+
+        {{-- Perlu perhatian: hitungan notifikasi otomatis per jenis (Super Admin dan Admin). --}}
+        @if(!empty($attention))
+            <div class="row g-2 mb-3">
+                @foreach($attention as $card)
+                    <div class="col-6 col-lg-3">
+                        <a href="{{ route($card['route']) }}" class="card border-0 shadow-sm rounded-3 text-decoration-none text-dark hover-lift h-100">
+                            <div class="card-body p-3 d-flex justify-content-between align-items-center gap-2">
+                                <span class="small"><i class="bi {{ $card['icon'] }} me-1 {{ $card['count'] > 0 ? 'text-danger' : 'text-muted' }}"></i>{{ $card['label'] }}</span>
+                                <span class="fs-5 fw-bold {{ $card['count'] > 0 ? 'text-danger' : 'text-muted' }}">{{ $card['text'] }}</span>
+                            </div>
+                        </a>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+
+        {{-- Keuangan satu kartu dengan pilihan periode, ditemani ringkasan angka penting. --}}
+        @if($fin || $summaryRows)
+            <div class="row g-3 mb-3">
+
+                @if($fin)
+                    <div class="col-12 col-xl-8">
+                        <div class="card border-0 shadow-sm rounded-3 h-100">
+                            <div class="card-body p-3" id="dashFinance" data-periods="{{ json_encode($financeSummary['periods']) }}">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                                    <h6 class="fw-bold mb-0">Keuangan</h6>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <select id="dashPeriod" class="form-select form-select-sm w-auto" aria-label="Periode keuangan">
+                                            @foreach($periodLabels as $key => $label)
+                                                <option value="{{ $key }}" @selected($key === $defaultPeriod)>{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                        <a href="{{ route('finance.summary') }}" class="small text-decoration-none text-nowrap">Detail</a>
+                                    </div>
+                                </div>
+
+                                <div class="row g-2 mb-3">
+                                    <div class="col-12 col-sm-4">
+                                        <div class="border rounded-3 p-3 h-100">
+                                            <div class="small text-muted mb-1"><i class="bi bi-arrow-down-circle text-success me-1"></i>Pemasukan</div>
+                                            <div class="dash-value text-success" data-f="income">{{ $rp($fin['income']) }}</div>
+                                            <div class="small" data-f="income-delta"></div>
                                         </div>
                                     </div>
-                                </a>
+                                    <div class="col-12 col-sm-4">
+                                        <div class="border rounded-3 p-3 h-100">
+                                            <div class="small text-muted mb-1"><i class="bi bi-arrow-up-circle text-danger me-1"></i>Pengeluaran</div>
+                                            <div class="dash-value text-danger" data-f="expense">{{ $rp($fin['expense']) }}</div>
+                                            <div class="small" data-f="expense-delta"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-sm-4">
+                                        <div class="rounded-3 p-3 h-100 {{ $fin['net'] >= 0 ? 'bg-success-subtle' : 'bg-danger-subtle' }}" data-f="net-tile">
+                                            <div class="small text-muted mb-1"><i class="bi me-1 {{ $fin['net'] >= 0 ? 'bi-graph-up-arrow text-success' : 'bi-graph-down-arrow text-danger' }}" data-f="net-icon"></i><span data-f="net-label">{{ $fin['net'] >= 0 ? 'Laba' : 'Rugi' }}</span></div>
+                                            <div class="dash-value {{ $fin['net'] >= 0 ? 'text-success' : 'text-danger' }}" data-f="net">{{ $rp(abs($fin['net'])) }}</div>
+                                            <div class="small text-muted" data-f="net-meta"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="u-pos-relative u-h-300px"><canvas id="dashTrendChart" aria-label="Grafik garis pemasukan dan pengeluaran"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                @if($summaryRows)
+                    <div class="col-12 {{ $fin ? 'col-xl-4' : '' }}">
+                        <div class="card border-0 shadow-sm rounded-3 h-100">
+                            <div class="card-body p-3">
+                                <h6 class="fw-bold mb-3">Ringkasan</h6>
+                                @foreach($summaryRows as [$label, $icon, $value, $note, $url, $tone])
+                                    @if($url)
+                                        <a href="{{ $url }}" class="d-flex align-items-center gap-3 py-2 text-decoration-none text-dark {{ $loop->first ? '' : 'border-top' }}">
+                                    @else
+                                        <div class="d-flex align-items-center gap-3 py-2 {{ $loop->first ? '' : 'border-top' }}">
+                                    @endif
+                                        <span class="avatar-initial u-w-30px u-h-30px"><i class="bi {{ $icon }}"></i></span>
+                                        <span class="flex-grow-1 min-w-0">
+                                            <span class="d-block small fw-semibold">{{ $label }}</span>
+                                            <span class="d-block text-muted small text-truncate">{{ $note }}</span>
+                                        </span>
+                                        <span class="fw-semibold text-nowrap {{ $tone }}">{{ $value }}</span>
+                                    @if($url)
+                                        </a>
+                                    @else
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+            </div>
+        @endif
+
+        {{-- Jadwal acara 7 hari ke depan, mulai hari ini. --}}
+        @if($week)
+            <div class="card border-0 shadow-sm rounded-3 mb-3">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold mb-0">Jadwal 7 Hari ke Depan</h6>
+                        <a href="{{ route('projects.index') }}" class="small text-decoration-none">Daftar Project</a>
+                    </div>
+
+                    <div class="dash-week">
+                        @foreach($week['days'] as $day)
+                            <div class="dash-day {{ $day['is_today'] ? 'is-today' : '' }}">
+                                <div class="dash-day-head">
+                                    <span class="dash-day-name">{{ $day['name'] }}</span>
+                                    <span class="dash-day-num">{{ $day['date']->format('j') }}</span>
+                                    @if($day['is_today'])
+                                        <span class="dash-day-tag">Hari ini</span>
+                                    @endif
+                                </div>
+
+                                <div class="dash-day-events">
+                                    @forelse($day['projects']->take(3) as $project)
+                                        <a href="{{ route('projects.show', $project->id) }}" class="dash-event" title="{{ $project->name }}">
+                                            <span class="dash-event-name">{{ $project->short_name }}</span>
+                                            <span class="dash-event-meta">{{ $project->event_time_start ? substr($project->event_time_start, 0, 5) . ' - ' : '' }}{{ $project->client ?: 'Tanpa client' }}</span>
+                                        </a>
+                                    @empty
+                                        <span class="small text-muted">Kosong</span>
+                                    @endforelse
+
+                                    @if($day['projects']->count() > 3)
+                                        <a href="{{ route('projects.index') }}" class="small fw-semibold text-decoration-none">+{{ $day['projects']->count() - 3 }} lagi</a>
+                                    @endif
+                                </div>
                             </div>
                         @endforeach
                     </div>
                 </div>
-            @endif
+            </div>
+        @endif
 
-            <div class="{{ !empty($attention) ? 'col-xl-5' : 'col-12' }}">
-                <div class="app-panel overflow-hidden h-100">
-                    <div class="app-panel-header">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="icon-tile">
-                                <i class="bi bi-bell fs-5"></i>
-                            </div>
-                            <h5 class="fw-bold text-navy m-0">Notifikasi Terbaru</h5>
-                        </div>
-                        <a href="{{ route('announcements.index') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Lihat Semua</a>
-                    </div>
+        {{-- Pipeline project per status dan kondisi unit alat. --}}
+        @if($hasPipeline || $hasEquipment)
+            <div class="row g-3 mb-3">
 
-                    <div class="list-group list-group-flush">
-                        @forelse($latestNotifications as $item)
-                            <a href="{{ $item['url'] }}" class="list-group-item list-group-item-action d-flex gap-3 align-items-start py-3">
-                                <i class="bi {{ $item['icon'] }} fs-5"></i>
-                                <div class="min-w-0">
-                                    <div class="fw-semibold small">{{ $item['title'] }}</div>
-                                    <div class="text-muted small text-truncate">{{ $item['message'] }}</div>
+                @if($hasPipeline)
+                    <div class="col-12 {{ $hasEquipment ? 'col-xl-7' : '' }}">
+                        <div class="card border-0 shadow-sm rounded-3 h-100">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="fw-bold mb-0">Pipeline Project</h6>
+                                    <a href="{{ $pipelineUrl }}" class="small text-decoration-none">{{ $isManager ? 'Buka Pipeline' : 'Daftar Project' }}</a>
                                 </div>
-                            </a>
-                        @empty
-                            <div class="empty-state">
-                                <div class="empty-icon"><i class="bi bi-inbox"></i></div>
-                                <span class="fw-medium">Tidak ada notifikasi.</span>
+                                @php $maxStage = max(1, collect($pipeline)->max('count')); @endphp
+                                @foreach($pipeline as $stage)
+                                    <a href="{{ route('projects.index', ['status' => $stage['status']]) }}" class="dash-row {{ $financeSummary ? 'has-value' : '' }}">
+                                        <span>{{ $stage['label'] }}</span>
+                                        <progress class="dash-bar {{ $stageBars[$stage['status']] ?? '' }}" max="100" value="{{ round(($stage['count'] / $maxStage) * 100) }}" aria-label="{{ $stage['label'] }}: {{ $stage['count'] }} project"></progress>
+                                        <span class="dash-row-count">{{ $stage['count'] }}</span>
+                                        @if($financeSummary)
+                                            <span class="dash-row-value">{{ $stage['count'] > 0 ? $compact($stage['value']) : '-' }}</span>
+                                        @endif
+                                    </a>
+                                @endforeach
                             </div>
-                        @endforelse
-                    </div>
-                </div>
-            </div>
-        </div>
-    @endif
-
-    {{-- Grid statistik permission-aware; jumlah kartu berbeda per role itu wajar (lihat .dashboard-stat-grid). --}}
-    <div class="dashboard-stat-grid mb-4">
-
-        @if($user->hasPermission('inventory', 'view'))
-            <div class="stat-card p-3 p-md-4">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">Inventaris</span>
-                        <h3 class="fw-bolder text-navy mt-2 mb-0">{{ $statistics['total_inventory'] }}</h3>
-                        @if($statistics['new_inventory_this_month'] > 0)
-                            <span class="badge-soft-success mt-2 d-inline-block">+{{ $statistics['new_inventory_this_month'] }} barang baru</span>
-                        @endif
-                    </div>
-                    <div class="icon-tile">
-                        <i class="bi bi-box-seam fs-5"></i>
-                    </div>
-                </div>
-            </div>
-        @endif
-
-        @if($user->hasPermission('tracking_progress', 'view'))
-            <div class="stat-card p-3 p-md-4">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">Project</span>
-                        <h3 class="fw-bolder text-navy mt-2 mb-0">{{ $statistics['total_project'] }}</h3>
-                        @if($statistics['new_projects_this_month'] > 0)
-                            <span class="badge-soft-success mt-2 d-inline-block">+{{ $statistics['new_projects_this_month'] }} project baru</span>
-                        @endif
-                    </div>
-                    <div class="icon-tile">
-                        <i class="bi bi-kanban fs-5"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card p-3 p-md-4">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">Task</span>
-                        <h3 class="fw-bolder text-navy mt-2 mb-0">{{ $statistics['total_task'] }}</h3>
-                    </div>
-                    <div class="icon-tile">
-                        <i class="bi bi-list-task fs-5"></i>
-                    </div>
-                </div>
-            </div>
-        @endif
-
-        @if($user->hasPermission('data_integration', 'view'))
-            <div class="stat-card p-3 p-md-4">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">File</span>
-                        <h3 class="fw-bolder text-navy mt-2 mb-0">{{ $statistics['total_files'] }}</h3>
-                    </div>
-                    <div class="icon-tile">
-                        <i class="bi bi-file-earmark-arrow-up fs-5"></i>
-                    </div>
-                </div>
-            </div>
-        @endif
-
-        {{-- Kontak tidak digate hasPermission(): aksesnya berbasis role (routes/web.php). --}}
-        <div class="stat-card p-3 p-md-4">
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">Kontak</span>
-                    <h3 class="fw-bolder text-navy mt-2 mb-0">{{ $statistics['total_contact'] }}</h3>
-                    @if($statistics['new_contacts_this_month'] > 0)
-                        <span class="badge-soft-success mt-2 d-inline-block">+{{ $statistics['new_contacts_this_month'] }} kontak baru</span>
-                    @endif
-                </div>
-                <div class="icon-tile">
-                    <i class="bi bi-person-lines-fill fs-5"></i>
-                </div>
-            </div>
-        </div>
-
-        @if($user->hasPermission('borrowed_items', 'view'))
-            <div class="stat-card p-3 p-md-4">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">Belum Dikembalikan</span>
-                        <h3 class="fw-bolder text-navy mt-2 mb-0">{{ $borrowedUnitsCount }}</h3>
-                    </div>
-                    <div class="icon-tile icon-tile-danger">
-                        <i class="bi bi-box-arrow-in-left fs-5"></i>
-                    </div>
-                </div>
-            </div>
-        @endif
-
-        @if($user->hasPermission('user_management', 'view_user'))
-            <div class="stat-card p-3 p-md-4">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">User</span>
-                        <h3 class="fw-bolder text-navy mt-2 mb-0">{{ $statistics['total_user'] }}</h3>
-                        @if($statistics['new_users_this_month'] > 0)
-                            <span class="badge-soft-success mt-2 d-inline-block">+{{ $statistics['new_users_this_month'] }} bulan ini</span>
-                        @endif
-                    </div>
-                    <div class="icon-tile icon-tile-navy">
-                        <i class="bi bi-people fs-5"></i>
-                    </div>
-                </div>
-            </div>
-        @endif
-
-    </div>
-
-    {{-- Task Saya dan Project 7 hari dalam dua kolom; tinggi tabel dibatasi scroll internal (.dashboard-list-panel). --}}
-    <div class="row g-4 mb-4">
-
-        @if($user->hasPermission('tracking_progress', 'view'))
-            <div class="col-lg-6">
-                <div class="app-panel dashboard-list-panel overflow-hidden h-100">
-                    <div class="app-panel-header">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="icon-tile">
-                                <i class="bi bi-list-task fs-5"></i>
-                            </div>
-                            <h5 class="fw-bold text-navy m-0">Task Saya</h5>
-                        </div>
-                        <a href="{{ route('projects.index') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                            <i class="bi bi-kanban me-1"></i>Lihat Project
-                        </a>
-                    </div>
-
-                    @if($myTasks->isEmpty())
-                        <div class="empty-state">
-                            <div class="empty-icon"><i class="bi bi-check2-circle"></i></div>
-                            <span class="fw-medium">Tidak ada task yang perlu dikerjakan saat ini. Mantap!</span>
-                        </div>
-                    @else
-                        <div class="table-responsive">
-                            <table class="table table-hover table-modern align-middle mb-0">
-                                <thead>
-                                    <tr>
-                                        <th class="ps-4 u-w-40pct">Task</th>
-                                        <th class="u-w-30pct">Project</th>
-                                        <th class="pe-4 u-w-30pct">Deadline</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="small">
-                                    @foreach($myTasks as $task)
-                                        @php
-                                            $deadline = \Carbon\Carbon::parse($task->deadline);
-                                            $isOverdue = $deadline->startOfDay()->lt(now()->startOfDay());
-                                        @endphp
-                                        <tr>
-                                            <td class="ps-4 py-2 fw-semibold text-dark">{{ $task->title }}</td>
-                                            <td class="py-2 text-secondary">{{ $task->project->short_name ?? '-' }}</td>
-                                            <td class="py-2 pe-4">
-                                                @if($isOverdue)
-                                                    <span class="badge-soft-danger">
-                                                        <i class="bi bi-exclamation-circle me-1"></i>{{ $deadline->format('d/m/Y') }}
-                                                    </span>
-                                                @else
-                                                    <span class="text-secondary">{{ $deadline->format('d/m/Y') }}</span>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @endif
-                </div>
-            </div>
-
-            <div class="col-lg-6">
-                <div class="app-panel dashboard-list-panel overflow-hidden h-100">
-                    <div class="app-panel-header">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="icon-tile">
-                                <i class="bi bi-calendar-event fs-5"></i>
-                            </div>
-                            <h5 class="fw-bold text-navy m-0">Project 7 Hari Ke Depan</h5>
                         </div>
                     </div>
+                @endif
 
-                    @if($upcomingProjects->isEmpty())
-                        <div class="empty-state">
-                            <div class="empty-icon"><i class="bi bi-calendar-x"></i></div>
-                            <span class="fw-medium">Belum ada Project dalam 7 hari ke depan.</span>
-                        </div>
-                    @else
-                        <div class="table-responsive">
-                            <table class="table table-hover table-modern align-middle mb-0">
-                                <thead>
-                                    <tr>
-                                        <th class="ps-4 u-w-40pct">Project</th>
-                                        <th class="u-w-30pct">Client</th>
-                                        <th class="pe-4 u-w-30pct">Tanggal Acara</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="small">
-                                    @foreach($upcomingProjects as $project)
-                                        @php
-                                            $eventDate = \Carbon\Carbon::parse($project->event_date);
-                                            $isToday = $eventDate->isToday();
-                                        @endphp
-                                        <tr>
-                                            <td class="ps-4 py-2 fw-semibold text-dark">
-                                                <a href="{{ route('projects.show', $project->id) }}" class="text-dark text-decoration-none" title="{{ $project->name }}">{{ $project->short_name }}</a>
-                                            </td>
-                                            <td class="py-2 text-secondary">{{ $project->client }}</td>
-                                            <td class="py-2 pe-4">
-                                                @if($isToday)
-                                                    <span class="badge-soft-warning">
-                                                        <i class="bi bi-star-fill me-1"></i>Hari Ini
-                                                    </span>
-                                                @else
-                                                    <span class="text-secondary">{{ $eventDate->format('d/m/Y') }}</span>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @endif
-                </div>
-            </div>
-        @endif
-
-    </div>
-
-    {{-- Data Keuangan + Surat Jalan Terbaru - dipasangkan 2 kolom juga. --}}
-    @if($financeSummary || $user->hasPermission('surat_jalan', 'view'))
-        <div class="row g-4 mb-4">
-
-            @if($financeSummary)
-                <div class="col-lg-5">
-                    <div class="app-panel overflow-hidden h-100">
-                        <div class="app-panel-header">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-tile">
-                                    <i class="bi bi-cash-coin fs-5"></i>
+                @if($hasEquipment)
+                    <div class="col-12 {{ $hasPipeline ? 'col-xl-5' : '' }}">
+                        <div class="card border-0 shadow-sm rounded-3 h-100">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="fw-bold mb-0">Kondisi Alat</h6>
+                                    @if($inventoryUrl)
+                                        <a href="{{ $inventoryUrl }}" class="small text-decoration-none">Inventaris</a>
+                                    @endif
                                 </div>
-                                <h5 class="fw-bold text-navy m-0">Data Keuangan</h5>
+                                @foreach($equipment['items'] as $unit)
+                                    <div class="dash-row">
+                                        <span>{{ $unit['label'] }}</span>
+                                        <progress class="dash-bar {{ $unitBars[$unit['label']] ?? '' }}" max="100" value="{{ $equipment['total'] > 0 ? round(($unit['count'] / $equipment['total']) * 100) : 0 }}" aria-label="{{ $unit['label'] }}: {{ $unit['count'] }} unit"></progress>
+                                        <span class="dash-row-count">{{ $unit['count'] }}</span>
+                                    </div>
+                                @endforeach
+                                <div class="text-muted small border-top pt-2">{{ $equipment['total'] }} unit tercatat</div>
                             </div>
                         </div>
-                        <div class="p-3 p-md-4">
-                            <div class="row g-3">
-                                <div class="col-sm-6">
-                                    <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">Pendapatan Bulan Ini</span>
-                                    <h3 class="fw-bolder text-navy mt-2 mb-0">{{ \App\Support\Money::formatRupiah($financeSummary['revenue_this_month']) }}</h3>
+                    </div>
+                @endif
+
+            </div>
+        @endif
+
+        {{-- Task saya, Surat Jalan terbaru, notifikasi terbaru. --}}
+        <div class="row g-3 mb-3">
+
+            @if($hasPipeline)
+                <div class="col-12 col-lg">
+                    <div class="card border-0 shadow-sm rounded-3 h-100">
+                        <div class="card-body p-3">
+                            <h6 class="fw-bold mb-3">Task Saya</h6>
+                            @forelse($myTasks as $task)
+                                @php
+                                    $deadline = \Carbon\Carbon::parse($task->deadline);
+                                    $isOverdue = $deadline->copy()->startOfDay()->lt(now()->startOfDay());
+                                @endphp
+                                <div class="d-flex justify-content-between gap-2 py-2 border-top">
+                                    <div class="min-w-0">
+                                        <a href="{{ route('projects.show', $task->project_id) }}" class="text-decoration-none text-dark d-block text-truncate">{{ $task->title }}</a>
+                                        <div class="text-muted small text-truncate">{{ $task->project->short_name ?? '-' }}</div>
+                                    </div>
+                                    <span class="{{ $isOverdue ? 'badge-soft-danger' : 'text-muted small' }} text-nowrap align-self-start">{{ $deadline->format('d/m/Y') }}</span>
                                 </div>
-                                <div class="col-sm-6">
-                                    <span class="text-muted text-uppercase fw-bold u-fs-p7rem u-ls-p06em">Estimasi Pipeline</span>
-                                    <h3 class="fw-bolder text-navy mt-2 mb-0">{{ \App\Support\Money::formatRupiah($financeSummary['pipeline_estimated_value']) }}</h3>
-                                    <small class="text-muted">Estimasi project berjalan, bukan pendapatan riil.</small>
-                                </div>
-                            </div>
+                            @empty
+                                <div class="text-muted small">Tidak ada task yang perlu dikerjakan.</div>
+                            @endforelse
                         </div>
                     </div>
                 </div>
             @endif
 
             @if($user->hasPermission('surat_jalan', 'view'))
-                <div class="{{ $financeSummary ? 'col-lg-7' : 'col-lg-12' }}">
-                    <div class="app-panel dashboard-list-panel overflow-hidden h-100">
-                        <div class="app-panel-header">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-tile">
-                                    <i class="bi bi-file-earmark-text fs-5"></i>
+                <div class="col-12 col-lg">
+                    <div class="card border-0 shadow-sm rounded-3 h-100">
+                        <div class="card-body p-3">
+                            <h6 class="fw-bold mb-3">Surat Jalan Terbaru</h6>
+                            @forelse($recentSuratJalan as $suratJalan)
+                                <div class="d-flex justify-content-between gap-2 py-2 border-top">
+                                    <div class="min-w-0">
+                                        <a href="{{ route('surat-jalan.show', $suratJalan->id) }}" class="text-decoration-none text-dark d-block text-truncate">{{ $suratJalan->nomor }}</a>
+                                        <div class="text-muted small text-truncate">{{ $suratJalan->project->short_name ?? '-' }}</div>
+                                    </div>
+                                    <span class="{{ $suratJalan->status === 'Selesai' ? 'badge-soft-success' : 'badge-soft-warning' }} text-nowrap align-self-start">{{ $suratJalan->status }}</span>
                                 </div>
-                                <h5 class="fw-bold text-navy m-0">Surat Jalan Terbaru</h5>
-                            </div>
+                            @empty
+                                <div class="text-muted small">Belum ada Surat Jalan.</div>
+                            @endforelse
                         </div>
-
-                        @if($recentSuratJalan->isEmpty())
-                            <div class="empty-state">
-                                <div class="empty-icon"><i class="bi bi-inbox"></i></div>
-                                <span class="fw-medium">Belum ada Surat Jalan yang dibuat.</span>
-                            </div>
-                        @else
-                            <div class="table-responsive">
-                                <table class="table table-hover table-modern align-middle mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th class="ps-4 u-w-25pct">Nomor</th>
-                                            <th class="u-w-30pct">Project</th>
-                                            <th class="u-w-25pct">Tanggal Acara</th>
-                                            <th class="pe-4 u-w-20pct">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="small">
-                                        @foreach($recentSuratJalan as $suratJalan)
-                                            <tr>
-                                                <td class="ps-4 py-2 fw-semibold text-dark">
-                                                    <a href="{{ route('surat-jalan.show', $suratJalan->id) }}" class="text-dark text-decoration-none">{{ $suratJalan->nomor }}</a>
-                                                </td>
-                                                <td class="py-2 text-secondary">{{ $suratJalan->project->short_name ?? '-' }}</td>
-                                                <td class="py-2 text-secondary">
-                                                    {{ $suratJalan->tanggal_acara ? \Carbon\Carbon::parse($suratJalan->tanggal_acara)->format('d/m/Y') : '-' }}
-                                                </td>
-                                                <td class="py-2 pe-4">
-                                                    @if($suratJalan->status === 'Selesai')
-                                                        <span class="badge-soft-success">{{ $suratJalan->status }}</span>
-                                                    @else
-                                                        <span class="badge-soft-warning">{{ $suratJalan->status }}</span>
-                                                    @endif
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        @endif
                     </div>
                 </div>
             @endif
 
-        </div>
-    @endif
-
-    {{-- Recent Activity - tetap full-width (log audit utama), tapi tinggi
-         tabel tetap dibatasi supaya tidak membengkak kalau datanya banyak. --}}
-    <div class="app-panel dashboard-list-panel overflow-hidden">
-        <div class="app-panel-header">
-            <div class="d-flex align-items-center gap-3">
-                <div class="icon-tile">
-                    <i class="bi bi-clock-history fs-5"></i>
+            <div class="col-12 col-lg">
+                <div class="card border-0 shadow-sm rounded-3 h-100">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0">Notifikasi Terbaru</h6>
+                            <a href="{{ route('announcements.index') }}" class="small text-decoration-none">Lihat Semua</a>
+                        </div>
+                        @forelse($latestNotifications as $item)
+                            <a href="{{ $item['url'] }}" class="d-flex gap-2 py-2 border-top text-decoration-none text-dark">
+                                <i class="bi {{ $item['icon'] }} text-primary"></i>
+                                <div class="min-w-0">
+                                    <div class="small fw-semibold text-truncate">{{ $item['title'] }}</div>
+                                    <div class="text-muted small text-truncate">{{ $item['message'] }}</div>
+                                </div>
+                            </a>
+                        @empty
+                            <div class="text-muted small">Tidak ada notifikasi baru.</div>
+                        @endforelse
+                    </div>
                 </div>
-                <h5 class="fw-bold text-navy m-0">
-                    {{ $user->hasRole('super_admin', 'admin') ? 'Log Aktivitas Terbaru' : 'Aktivitas Saya Terbaru' }}
-                </h5>
             </div>
-            {{-- Kondisi disamakan dengan helper hasRole() yang dipakai di sidebar,
-                 karena kolom `role` disimpan snake_case ('super_admin','admin'), bukan 'Super Admin'. --}}
-            @if($user->hasRole('super_admin', 'admin'))
-                <a href="{{ route('activity-logs.index') }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                    <i class="bi bi-eye me-1"></i>Lihat Semua
-                </a>
+
+        </div>
+
+        {{-- Aktivitas: Super Admin dan Admin melihat seluruh sistem, role lain hanya miliknya. --}}
+        <div class="card border-0 shadow-sm rounded-3 mb-3">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0">{{ $isManager ? 'Log Aktivitas Terbaru' : 'Aktivitas Saya Terbaru' }}</h6>
+                    @if($isManager)
+                        <a href="{{ route('activity-logs.index') }}" class="small text-decoration-none">Lihat Semua</a>
+                    @endif
+                </div>
+                @forelse($recentActivities as $activity)
+                    <div class="d-flex align-items-center gap-2 py-2 border-top">
+                        <div class="avatar-initial u-w-30px u-h-30px u-fs-p75rem">{{ strtoupper(substr($activity->user->name ?? 'SY', 0, 2)) }}</div>
+                        <div class="min-w-0 flex-grow-1">
+                            <span class="small fw-semibold">{{ $activity->user->name ?? 'System / Deleted User' }}</span>
+                            <span class="badge-soft-secondary ms-1">{{ $activity->module }}</span>
+                            @if(in_array($activity->action, ['Delete', 'Logout']))
+                                <span class="badge-soft-danger">{{ $activity->action }}</span>
+                            @elseif(in_array($activity->action, ['Create', 'Login', 'Upload']))
+                                <span class="badge-soft-success">{{ $activity->action }}</span>
+                            @else
+                                <span class="badge-soft-warning">{{ $activity->action }}</span>
+                            @endif
+                        </div>
+                        <span class="text-muted small text-nowrap">{{ $activity->created_at->format('d/m/Y H:i') }}</span>
+                    </div>
+                @empty
+                    <div class="text-muted small">Belum ada aktivitas.</div>
+                @endforelse
+            </div>
+        </div>
+
+        {{-- Jumlah data tersimpan, tidak menentukan keputusan harian jadi dibuat kecil. --}}
+        <div class="d-flex flex-wrap gap-3 small text-muted mb-2">
+            @if($user->hasPermission('inventory', 'view'))
+                <span>Inventaris <strong class="text-dark">{{ $statistics['total_inventory'] }}</strong></span>
+            @endif
+            @if($hasPipeline)
+                <span>Project <strong class="text-dark">{{ $statistics['total_project'] }}</strong></span>
+                <span>Task <strong class="text-dark">{{ $statistics['total_task'] }}</strong></span>
+            @endif
+            <span>Kontak <strong class="text-dark">{{ $statistics['total_contact'] }}</strong></span>
+            @if($user->hasPermission('data_integration', 'view'))
+                <span>File <strong class="text-dark">{{ $statistics['total_files'] }}</strong></span>
+            @endif
+            @if($user->hasPermission('user_management', 'view_user'))
+                <span>User <strong class="text-dark">{{ $statistics['total_user'] }}</strong></span>
             @endif
         </div>
 
-        <div class="table-responsive">
-            <table class="table table-hover table-modern align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th class="ps-4 u-w-20pct">Waktu</th>
-                        <th class="u-w-25pct">User</th>
-                        <th class="u-w-30pct">Modul</th>
-                        <th class="pe-4 u-w-25pct">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="small">
-                    @forelse($recentActivities as $activity)
-                        <tr>
-                            <td class="ps-4 py-2 fw-medium text-secondary">
-                                <i class="bi bi-calendar-event me-2 text-muted"></i>{{ $activity->created_at->format('d/m/Y H:i') }}
-                            </td>
-                            <td class="py-2">
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="avatar-initial u-w-30px u-h-30px u-fs-p75rem">
-                                        {{ strtoupper(substr($activity->user->name ?? 'SY', 0, 2)) }}
-                                    </div>
-                                    <span class="fw-semibold text-dark">{{ $activity->user->name ?? 'System / Deleted User' }}</span>
-                                </div>
-                            </td>
-                            <td class="py-2">
-                                <span class="badge-soft-secondary">{{ $activity->module }}</span>
-                            </td>
-                            <td class="py-2 pe-4">
-                                @if(in_array($activity->action, ['Delete', 'Logout']))
-                                    <span class="badge-soft-danger">{{ $activity->action }}</span>
-                                @elseif(in_array($activity->action, ['Create', 'Login', 'Upload']))
-                                    <span class="badge-soft-success">{{ $activity->action }}</span>
-                                @else
-                                    <span class="badge-soft-warning">{{ $activity->action }}</span>
-                                @endif
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4">
-                                <div class="empty-state">
-                                    <div class="empty-icon"><i class="bi bi-inbox"></i></div>
-                                    <span class="fw-medium">Belum ada rekaman aktivitas terbaru saat ini.</span>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
     </div>
+
+    {{-- Dimuat lewat stack agar berjalan setelah Bootstrap JS. --}}
+    @if($financeSummary)
+        @push('scripts')
+            {{ \App\Support\VendorAsset::script('chartjs') }}
+            <script src="{{ \App\Support\AppAsset::url('js/dashboard/index.js') }}"></script>
+        @endpush
+    @endif
+
 @endsection

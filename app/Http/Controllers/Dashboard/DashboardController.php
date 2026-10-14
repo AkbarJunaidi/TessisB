@@ -29,15 +29,8 @@ class DashboardController extends Controller
     }
 
     /**
-     * Dashboard permission-aware: tiap kartu hanya diambil datanya kalau
-     * user yang login memang punya akses ke modul tersebut - baik supaya
-     * tidak menampilkan data yang bukan urusannya, maupun supaya tidak
-     * menjalankan query yang hasilnya toh tidak akan ditampilkan.
-     *
-     * Statistik global (getStatistics()) tetap 1 query batch di-cache seperti
-     * semula karena angkanya sama untuk semua orang dan sangat ringan (COUNT).
-     * Bagian View yang memutuskan kartu statistik mana yang benar-benar
-     * dirender, berdasarkan hasPermission() masing-masing.
+     * Dashboard permission-aware: data tiap bagian hanya diambil bila user
+     * punya akses ke modulnya, jadi tidak ada query yang sia-sia.
      */
     public function index(): View
     {
@@ -45,38 +38,33 @@ class DashboardController extends Controller
 
         $statistics = $this->dashboardService->getStatistics();
 
-        $myTasks = $user->hasPermission('tracking_progress', 'view')
-            ? $this->dashboardService->getMyTasks($user)
-            : collect();
+        $canProject = $user->hasPermission('tracking_progress', 'view');
 
-        $upcomingProjects = $user->hasPermission('tracking_progress', 'view')
-            ? $this->dashboardService->getUpcomingProjects()
-            : collect();
+        $myTasks = $canProject ? $this->dashboardService->getMyTasks($user) : collect();
+        $week = $canProject ? $this->dashboardService->getWeekSchedule() : null;
+        $pipeline = $canProject ? $this->dashboardService->getPipeline() : null;
 
         $recentSuratJalan = $user->hasPermission('surat_jalan', 'view')
             ? $this->dashboardService->getRecentSuratJalan()
             : collect();
 
-        $borrowedUnitsCount = $user->hasPermission('borrowed_items', 'view')
-            ? $this->dashboardService->getBorrowedUnitsCount()
+        $equipment = $user->hasPermission('inventory', 'view')
+            ? $this->dashboardService->getEquipmentStatus()
             : null;
 
         $financeSummary = $user->hasPermission('finance', 'view')
             ? $this->dashboardService->getFinanceSummary()
             : null;
 
-        // Employee hanya boleh melihat jejak aktivitasnya sendiri di Dashboard;
-        // Super Admin & Admin tetap melihat aktivitas seluruh sistem seperti
-        // semula (kondisi role ini sudah dipakai juga untuk tombol "Lihat Semua").
+        // Employee hanya melihat jejak aktivitasnya sendiri; Super Admin dan Admin melihat semua.
         $recentActivities = $this->activityLogService->getLatestActivities(
-            4,
+            5,
             $user->hasRole('super_admin', 'admin') ? null : $user->id
         );
 
-        // Satu sumber: kartu "Perlu perhatian" dan feed memakai notifikasi yang sama dengan lonceng.
+        // Satu sumber dengan lonceng: hitungan "Perlu perhatian" dari semua kondisi aktif, feed hanya yang belum dibaca.
         $notifications = $this->notificationService->getActiveNotifications($user->id);
         $attention = $this->buildAttentionCards($user, $notifications);
-        // Hitungan "Perlu perhatian" tetap dari semua kondisi aktif; feed hanya yang belum dibaca.
         $latestNotifications = array_slice(array_values(array_filter($notifications, fn ($n) => empty($n['read']))), 0, 5);
 
         return view(
@@ -86,9 +74,10 @@ class DashboardController extends Controller
                 'latestNotifications',
                 'statistics',
                 'myTasks',
-                'upcomingProjects',
+                'week',
+                'pipeline',
+                'equipment',
                 'recentSuratJalan',
-                'borrowedUnitsCount',
                 'financeSummary',
                 'recentActivities'
             )
