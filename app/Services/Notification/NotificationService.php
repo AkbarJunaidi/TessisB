@@ -38,11 +38,14 @@ use Illuminate\Support\Facades\Cache;
  */
 class NotificationService
 {
-    /** Berapa hari ke depan dianggap "mendekati deadline" (H-3). */
-    private const DEADLINE_WARNING_DAYS = 3;
+    /** Bawaan "Client Belum Lunas": mulai H-3 sebelum deadline sampai H+3 sesudahnya (bisa diubah Super Admin). */
+    private const DEADLINE_DAYS_BEFORE = 3;
+    private const DEADLINE_DAYS_AFTER  = 3;
 
-    /** Notifikasi "pendapatan belum diisi" hanya tampil H-5 menjelang akhir bulan. */
+    /** Bawaan "pendapatan belum diisi": hanya tampil H-5 menjelang akhir bulan (bisa diubah Super Admin). */
     private const MONTH_END_WARNING_DAYS = 5;
+
+    private const SHARED_CACHE_KEY = 'notifications.active.shared';
 
     /** Barang/project dianggap "baru" selama N hari sejak dibuat. */
     private const NEW_ITEM_WINDOW_DAYS = 3;
@@ -68,8 +71,8 @@ class NotificationService
     public const TYPE_LABELS = [
         'password_reset_request' => 'Permintaan Lupa Password',
         'report_ready'           => 'Laporan Siap Diunduh',
-        'unpaid_deadline'        => 'Client Belum Lunas (H-3 Deadline)',
-        'finance_missing'        => 'Pendapatan Belum Diisi (H-5 Akhir Bulan)',
+        'unpaid_deadline'        => 'Client Belum Lunas (Sekitar Deadline)',
+        'finance_missing'        => 'Pendapatan Belum Diisi (Akhir Bulan)',
         'approval_pending'       => 'Permintaan Approval Menunggu',
         'schedule_conflict'      => 'Bentrok Jadwal Alat Antar Project',
         'servis_jatuh_tempo'     => 'Servis Alat Jatuh Tempo / Segera',
@@ -91,6 +94,9 @@ class NotificationService
     ];
 
     protected PasswordResetRequestService $passwordResetRequestService;
+
+    /** @var array<string, array<string, mixed>>|null Pengaturan jenis, dibaca 1x per request. */
+    private ?array $typeConfigMemo = null;
 
     public function __construct(PasswordResetRequestService $passwordResetRequestService)
     {
@@ -121,7 +127,7 @@ class NotificationService
         $typeConfig = $this->getTypeConfig();
 
         $grouped = Cache::remember(
-            'notifications.active.shared',
+            self::SHARED_CACHE_KEY,
             self::CACHE_SECONDS,
             fn () => [
                 'password_reset_request' => $this->getPendingPasswordResetNotifications(),
@@ -270,10 +276,75 @@ class NotificationService
      */
     private function getTypeConfig(): array
     {
-        return NotificationTypeSetting::all()
+        return $this->typeConfigMemo ??= NotificationTypeSetting::all()
             ->keyBy('type')
-            ->map(fn ($row) => ['enabled' => $row->enabled, 'sort_order' => $row->sort_order])
+            ->map(fn ($row) => [
+                'enabled'     => $row->enabled,
+                'sort_order'  => $row->sort_order,
+                'days_before' => $row->days_before,
+                'days_after'  => $row->days_after,
+            ])
             ->all();
+    }
+
+    /**
+     * Rentang hari "Client Belum Lunas" (sebelum, sesudah deadline) dari pengaturan Super Admin;
+     * kosong berarti memakai bawaan.
+     *
+     * @return array{0: int, 1: int}
+     */
+    private function unpaidWindowDays(): array
+    {
+        $config = $this->getTypeConfig()['unpaid_deadline'] ?? [];
+
+        return [
+            (int) ($config['days_before'] ?? self::DEADLINE_DAYS_BEFORE),
+            (int) ($config['days_after'] ?? self::DEADLINE_DAYS_AFTER),
+        ];
+    }
+
+    /** Jumlah hari menjelang akhir bulan saat "Pendapatan Belum Diisi" mulai tampil. */
+    private function monthEndWindowDays(): int
+    {
+        return (int) ($this->getTypeConfig()['finance_missing']['days_before'] ?? self::MONTH_END_WARNING_DAYS);
+    }
+
+    /** Sisa hari sampai akhir bulan ini (0 = hari terakhir). */
+    private function daysUntilMonthEnd(Carbon $now): int
+    {
+        return (int) $now->diffInDays($now->copy()->endOfMonth());
+    }
+
+    /**
+     * Apakah kartu Data Keuangan di Detail Project dibuka otomatis: project berstatus Selesai, atau project
+     * ini sedang memenuhi kondisi notifikasi "Client Belum Lunas" / "Pendapatan Belum Diisi" (jenisnya
+     * masih aktif). Dihapusnya notifikasi dari bel tidak mempengaruhi ini.
+     */
+    public function shouldOpenFinanceCard(Project $project): bool
+    {
+        if ($project->status === 'Done') {
+            return true;
+        }
+
+        if ($project->financeItems->where('type', 'income')->isNotEmpty()) {
+            return false;
+        }
+
+        $config = $this->getTypeConfig();
+        $today  = Carbon::today();
+
+        if (($config['unpaid_deadline']['enabled'] ?? true) && $project->deadline) {
+            [$before, $after] = $this->unpaidWindowDays();
+
+            if ($project->deadline->between($today->copy()->subDays($after), $today->copy()->addDays($before))) {
+                return true;
+            }
+        }
+
+        return ($config['finance_missing']['enabled'] ?? true)
+            && $project->event_date
+            && $project->event_date->format('Y-m') === $today->format('Y-m')
+            && $this->daysUntilMonthEnd(Carbon::now()) <= $this->monthEndWindowDays();
     }
 
     /**
@@ -482,19 +553,22 @@ class NotificationService
     }
 
     /**
-     * Notifikasi 1: Project dengan deadline H-3 (hari ini s.d. 3 hari lagi)
-     * tapi belum ada satupun data Pendapatan yang diisi di Data Keuangannya
+     * Notifikasi 1: Project yang deadline-nya ada dalam rentang H-sebelum s.d. H+sesudah (bawaan H-3 s.d. H+3,
+     * diatur Super Admin) tapi belum ada satupun data Pendapatan yang diisi di Data Keuangannya
      * - dianggap "client belum lunas".
      */
     private function getUnpaidNearDeadlineNotifications(): array
     {
+        [$before, $after] = $this->unpaidWindowDays();
+
         $today     = Carbon::today();
-        $limitDate = $today->copy()->addDays(self::DEADLINE_WARNING_DAYS);
+        $startDate = $today->copy()->subDays($after);
+        $limitDate = $today->copy()->addDays($before);
 
         $projects = Project::query()
             ->select(['id', 'name', 'client', 'deadline'])
             ->whereNotNull('deadline')
-            ->whereBetween('deadline', [$today, $limitDate])
+            ->whereBetween('deadline', [$startDate, $limitDate])
             ->whereDoesntHave('financeItems', fn ($query) => $query->where('type', 'income'))
             ->orderBy('deadline')
             ->limit(self::MAX_PER_TYPE)
@@ -502,7 +576,11 @@ class NotificationService
 
         return $projects->map(function (Project $project) use ($today) {
             $daysLeft = (int) $today->diffInDays($project->deadline, false);
-            $when     = $daysLeft <= 0 ? 'deadline hari ini' : "H-{$daysLeft} deadline";
+            $when     = match (true) {
+                $daysLeft > 0 => "H-{$daysLeft} deadline",
+                $daysLeft < 0 => 'H+' . abs($daysLeft) . ' deadline',
+                default       => 'deadline hari ini',
+            };
 
             return [
                 'id'      => "unpaid-{$project->id}",
@@ -511,7 +589,7 @@ class NotificationService
                 'title'   => 'Client Belum Lunas',
                 'message' => "{$project->client} - {$project->name} ({$when})",
                 'detail'  => $project->client,
-                'url'     => route('projects.show', $project),
+                'url'     => route('projects.show', ['project' => $project, 'buka' => 'keuangan']),
             ];
         })->all();
     }
@@ -527,9 +605,9 @@ class NotificationService
     private function getFinanceNotFilledThisMonthNotifications(): array
     {
         $now = Carbon::now();
-        $daysUntilMonthEnd = (int) $now->diffInDays($now->copy()->endOfMonth());
+        $daysUntilMonthEnd = $this->daysUntilMonthEnd($now);
 
-        if ($daysUntilMonthEnd > self::MONTH_END_WARNING_DAYS) {
+        if ($daysUntilMonthEnd > $this->monthEndWindowDays()) {
             return [];
         }
 
@@ -552,7 +630,7 @@ class NotificationService
             'title'   => 'Pendapatan Belum Diisi',
             'message' => "{$project->name} - pendapatan bulan ini belum diisi ({$when})",
             'detail'  => $project->short_name,
-            'url'     => route('projects.show', $project),
+            'url'     => route('projects.show', ['project' => $project, 'buka' => 'keuangan']),
         ])->all();
     }
 
@@ -607,6 +685,11 @@ class NotificationService
             'label'      => $label,
             'enabled'    => $config[$type]['enabled'] ?? true,
             'sort_order' => $config[$type]['sort_order'] ?? 999,
+            'window'     => match ($type) {
+                'unpaid_deadline' => ['before' => $this->unpaidWindowDays()[0], 'after' => $this->unpaidWindowDays()[1]],
+                'finance_missing' => ['before' => $this->monthEndWindowDays()],
+                default           => null,
+            },
         ])->values();
 
         return $types->sortBy('sort_order')->values()->all();
@@ -621,18 +704,28 @@ class NotificationService
      *                                            type yang TIDAK ada di sini otomatis
      *                                            dianggap dinonaktifkan (checkbox HTML
      *                                            yang tidak dicentang tidak ikut terkirim).
+     * @param  array<string, array{before?: mixed, after?: mixed}>  $windows  Rentang hari per jenis
+     *                                            ('unpaid_deadline', 'finance_missing'); kosong = bawaan.
      */
-    public function updateTypeSettings(array $orderedTypes, array $enabledTypes): void
+    public function updateTypeSettings(array $orderedTypes, array $enabledTypes, array $windows = []): void
     {
         foreach ($orderedTypes as $index => $type) {
-            NotificationTypeSetting::updateOrCreate(
-                ['type' => $type],
-                [
-                    'sort_order' => $index,
-                    'enabled'    => in_array($type, $enabledTypes, true),
-                ]
-            );
+            $values = [
+                'sort_order' => $index,
+                'enabled'    => in_array($type, $enabledTypes, true),
+            ];
+
+            if (isset($windows[$type])) {
+                $values['days_before'] = ($windows[$type]['before'] ?? '') === '' ? null : (int) $windows[$type]['before'];
+                $values['days_after']  = ($windows[$type]['after'] ?? '') === '' ? null : (int) $windows[$type]['after'];
+            }
+
+            NotificationTypeSetting::updateOrCreate(['type' => $type], $values);
         }
+
+        // Rentang hari ikut di-cache bersama hasil notifikasi; buang agar pengaturan baru langsung berlaku.
+        Cache::forget(self::SHARED_CACHE_KEY);
+        $this->typeConfigMemo = null;
     }
 
     /**

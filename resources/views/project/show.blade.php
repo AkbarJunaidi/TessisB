@@ -234,7 +234,23 @@
             <div class="col-12">
                 <div class="card border-0 shadow-sm rounded-3">
                     <div class="card-body">
-                        <h6 class="fw-bold mb-3">Data Keuangan</h6>
+                        {{-- Kartu bisa dilipat. Terbuka otomatis bila project Selesai, sedang memenuhi kondisi notifikasi
+                             keuangan ($openFinanceCard), datang dari notifikasi (?buka=keuangan), atau ada error validasi. --}}
+                        @php $financeOpen = ($openFinanceCard ?? false) || $errors->any() || request('buka') === 'keuangan'; @endphp
+                        <button type="button" id="financeToggle" class="btn w-100 d-flex justify-content-between align-items-center gap-3 text-start p-0 border-0 bg-transparent"
+                                data-bs-toggle="collapse" data-bs-target="#financeCollapse" aria-expanded="{{ $financeOpen ? 'true' : 'false' }}" aria-controls="financeCollapse">
+                            <span class="fw-bold">Data Keuangan</span>
+                            <span class="d-flex align-items-center gap-2 text-nowrap">
+                                <span id="financeSummary" class="small {{ $financeOpen ? 'd-none' : '' }}">
+                                    <span class="text-muted">Laba Bersih</span>
+                                    <span class="fw-bold {{ $project->profit >= 0 ? 'text-success' : 'text-danger' }}">{{ \App\Support\Money::formatRupiah($project->profit) }}</span>
+                                </span>
+                                <i class="bi {{ $financeOpen ? 'bi-chevron-up' : 'bi-chevron-down' }} finance-toggle-icon" aria-hidden="true"></i>
+                            </span>
+                        </button>
+
+                        <div class="collapse mt-3 {{ $financeOpen ? 'show' : '' }}" id="financeCollapse"
+                             @if(request('buka') === 'keuangan') data-scroll-to="1" @endif>
 
                         @if(auth()->user()->hasPermission('finance', 'manage'))
                         <form id="financeForm" action="{{ route('projects.finance.update', $project) }}" method="POST" data-track-changes>
@@ -429,10 +445,12 @@
                             <i class="bi bi-info-circle me-1"></i>Anda hanya memiliki akses lihat untuk data keuangan.
                         </small>
                         @endif
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+        <script src="{{ \App\Support\AppAsset::url('js/project/finance-collapse.js') }}"></script>
     @endif
 
     {{-- Tabs --}}

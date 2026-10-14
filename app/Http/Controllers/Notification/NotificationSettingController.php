@@ -45,7 +45,8 @@ class NotificationSettingController extends Controller
 
         $this->notificationService->updateTypeSettings(
             $validated['ordered_types'],
-            $validated['enabled_types'] ?? []
+            $validated['enabled_types'] ?? [],
+            $validated['window'] ?? []
         );
 
         if ($request->wantsJson()) {

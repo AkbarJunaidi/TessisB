@@ -211,14 +211,35 @@
                                             </button>
                                         </div>
 
-                                        <div class="form-check form-switch flex-grow-1 m-0">
-                                            <input class="form-check-input" type="checkbox" role="switch"
-                                                   name="enabled_types[]" value="{{ $item['type'] }}"
-                                                   id="notif-enable-{{ $item['type'] }}"
-                                                   {{ $item['enabled'] ? 'checked' : '' }}>
-                                            <label class="form-check-label fw-semibold" for="notif-enable-{{ $item['type'] }}">
-                                                {{ $item['label'] }}
-                                            </label>
+                                        <div class="flex-grow-1">
+                                            <div class="form-check form-switch m-0">
+                                                <input class="form-check-input" type="checkbox" role="switch"
+                                                       name="enabled_types[]" value="{{ $item['type'] }}"
+                                                       id="notif-enable-{{ $item['type'] }}"
+                                                       {{ $item['enabled'] ? 'checked' : '' }}>
+                                                <label class="form-check-label fw-semibold" for="notif-enable-{{ $item['type'] }}">
+                                                    {{ $item['label'] }}
+                                                </label>
+                                            </div>
+
+                                            @if($item['window'])
+                                                {{-- Rentang hari tampil; kartu Data Keuangan project ikut terbuka selama jenis ini aktif --}}
+                                                <div class="d-flex flex-wrap align-items-center gap-2 mt-2 small text-muted">
+                                                    <span>Tampil mulai H-</span>
+                                                    <input type="number" class="form-control form-control-sm w-auto" size="3" min="0"
+                                                           max="{{ $item['type'] === 'finance_missing' ? 27 : 30 }}"
+                                                           name="window[{{ $item['type'] }}][before]" value="{{ $item['window']['before'] }}"
+                                                           aria-label="Hari sebelum {{ $item['type'] === 'finance_missing' ? 'akhir bulan' : 'deadline' }}">
+                                                    <span>{{ $item['type'] === 'finance_missing' ? 'menjelang akhir bulan' : 'sebelum deadline' }}</span>
+                                                    @if(isset($item['window']['after']))
+                                                        <span>sampai H+</span>
+                                                        <input type="number" class="form-control form-control-sm w-auto" size="3" min="0" max="30"
+                                                               name="window[{{ $item['type'] }}][after]" value="{{ $item['window']['after'] }}"
+                                                               aria-label="Hari sesudah deadline">
+                                                        <span>sesudah deadline</span>
+                                                    @endif
+                                                </div>
+                                            @endif
                                         </div>
                                     </div>
                                 @endforeach

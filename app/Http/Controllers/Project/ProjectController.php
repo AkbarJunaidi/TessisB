@@ -8,6 +8,7 @@ use App\Http\Requests\Project\ProjectFinanceRequest;
 use App\Http\Requests\Project\ProjectRequest;
 use App\Models\Project;
 use App\Services\Inventory\LocationService;
+use App\Services\Notification\NotificationService;
 use App\Services\Project\ProjectCrewService;
 use App\Services\Project\ProjectFinanceService;
 use App\Services\Project\ProjectService;
@@ -28,7 +29,8 @@ class ProjectController extends Controller
         protected ProjectCrewService $projectCrewService,
         protected ProjectFinanceService $projectFinanceService,
         protected TaskService $taskService,
-        protected LocationService $locationService
+        protected LocationService $locationService,
+        protected NotificationService $notificationService
     ) {}
 
     /**
@@ -118,9 +120,11 @@ class ProjectController extends Controller
 
         $storageLocations = $this->locationService->getStorageLocations();
 
+        $openFinanceCard = $this->notificationService->shouldOpenFinanceCard($project);
+
         return view(
             'project.show',
-            compact('project', 'groupedTasks', 'allFolders', 'bookableInventories', 'storageLocations')
+            compact('project', 'groupedTasks', 'allFolders', 'bookableInventories', 'storageLocations', 'openFinanceCard')
         );
     }
 

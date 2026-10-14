@@ -23,6 +23,19 @@ class NotificationSettingUpdateRequest extends FormRequest
             'ordered_types.*' => ['required', 'string', Rule::in($validTypes)],
             'enabled_types'   => ['nullable', 'array'],
             'enabled_types.*' => ['string', Rule::in($validTypes)],
+
+            'window.unpaid_deadline.before' => ['nullable', 'integer', 'min:0', 'max:30'],
+            'window.unpaid_deadline.after'  => ['nullable', 'integer', 'min:0', 'max:30'],
+            'window.finance_missing.before' => ['nullable', 'integer', 'min:0', 'max:27'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'window.*.*.integer' => 'Jumlah hari harus berupa angka bulat.',
+            'window.*.*.min'     => 'Jumlah hari tidak boleh kurang dari :min.',
+            'window.*.*.max'     => 'Jumlah hari tidak boleh lebih dari :max.',
         ];
     }
 }

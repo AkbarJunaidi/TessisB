@@ -10,10 +10,14 @@ class NotificationTypeSetting extends Model
         'type',
         'enabled',
         'sort_order',
+        'days_before',
+        'days_after',
     ];
 
     protected $casts = [
         'enabled'    => 'boolean',
         'sort_order' => 'integer',
+        'days_before' => 'integer',
+        'days_after'  => 'integer',
     ];
 }
