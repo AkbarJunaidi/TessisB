@@ -122,7 +122,7 @@
                                     </div>
                                 </div>
 
-                                <div class="u-pos-relative u-h-300px"><canvas id="dashTrendChart" aria-label="Grafik garis pemasukan dan pengeluaran"></canvas></div>
+                                <div class="u-pos-relative u-h-200px"><canvas id="dashTrendChart" aria-label="Grafik garis pemasukan dan pengeluaran"></canvas></div>
                             </div>
                         </div>
                     </div>

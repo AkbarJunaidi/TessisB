@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
             },
             scales: {
                 x: { ticks: { maxTicksLimit: 8, maxRotation: 0 } },
-                y: { beginAtZero: true, ticks: { callback: (v) => short(v) } }
+                y: { beginAtZero: true, ticks: { maxTicksLimit: 5, callback: (v) => short(v) } }
             }
         }
     });
