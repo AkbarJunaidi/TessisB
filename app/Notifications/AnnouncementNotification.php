@@ -34,6 +34,7 @@ class AnnouncementNotification extends Notification
         public string $title,
         public string $message,
         public string $sentByName,
+        public ?string $url = null,
     ) {}
 
     /**
@@ -62,6 +63,7 @@ class AnnouncementNotification extends Notification
             'title'     => $this->title,
             'message'   => $this->message,
             'sent_by'   => $this->sentByName,
+            'url'       => $this->url,
         ];
     }
 
@@ -83,7 +85,7 @@ class AnnouncementNotification extends Notification
             ->title($this->title)
             ->icon('/image/logo1.png')
             ->body($this->message)
-            ->data(['notification_id' => $notification->id])
+            ->data(['notification_id' => $notification->id, 'url' => $this->url])
             ->options(['TTL' => 1000]);
     }
 }

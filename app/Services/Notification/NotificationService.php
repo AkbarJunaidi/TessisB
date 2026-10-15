@@ -664,7 +664,7 @@ class NotificationService
                 'icon'    => 'bi-megaphone text-primary',
                 'title'   => $notification->data['title'] ?? 'Pengumuman',
                 'message' => $notification->data['message'] ?? '',
-                'url'     => route('announcements.index'),
+                'url'     => $notification->data['url'] ?? route('announcements.index'),
             ])->all();
     }
 

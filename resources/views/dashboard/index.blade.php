@@ -159,42 +159,53 @@
             </div>
         @endif
 
-        {{-- Jadwal acara 7 hari ke depan, mulai hari ini. --}}
+        {{-- Minggu ini: 7 hari mulai hari ini; pilih hari untuk melihat acaranya. --}}
         @if($week)
+            @php $bulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']; @endphp
             <div class="card border-0 shadow-sm rounded-3 mb-3">
                 <div class="card-body p-3">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="fw-bold mb-0">Jadwal 7 Hari ke Depan</h6>
+                        <h6 class="fw-bold mb-0">Minggu Ini</h6>
                         <a href="{{ route('projects.index') }}" class="small text-decoration-none">Daftar Project</a>
                     </div>
 
-                    <div class="dash-week">
-                        @foreach($week['days'] as $day)
-                            <div class="dash-day {{ $day['is_today'] ? 'is-today' : '' }}">
-                                <div class="dash-day-head">
+                    <div class="dash-week" id="dashWeek">
+                        <div class="dash-week-strip" role="tablist" aria-label="Pilih hari">
+                            @foreach($week['days'] as $day)
+                                <button type="button" role="tab" id="dashDayTab{{ $loop->index }}" aria-controls="dashDayPanel{{ $loop->index }}"
+                                        class="dash-day {{ $day['is_today'] ? 'is-active' : '' }}"
+                                        aria-selected="{{ $day['is_today'] ? 'true' : 'false' }}" tabindex="{{ $day['is_today'] ? '0' : '-1' }}">
                                     <span class="dash-day-name">{{ $day['name'] }}</span>
                                     <span class="dash-day-num">{{ $day['date']->format('j') }}</span>
-                                    @if($day['is_today'])
-                                        <span class="dash-day-tag">Hari ini</span>
-                                    @endif
-                                </div>
+                                    <span class="dash-day-dot {{ $day['projects']->isNotEmpty() ? 'has-event' : '' }}"></span>
+                                </button>
+                            @endforeach
+                        </div>
 
-                                <div class="dash-day-events">
-                                    @forelse($day['projects']->take(3) as $project)
+                        <div class="dash-week-panels">
+                            @foreach($week['days'] as $day)
+                                <div role="tabpanel" id="dashDayPanel{{ $loop->index }}" aria-labelledby="dashDayTab{{ $loop->index }}" @if(!$day['is_today']) hidden @endif>
+                                    <div class="small text-muted mb-1">{{ $day['name'] }}, {{ $day['date']->format('j') }} {{ $bulan[$day['date']->month - 1] }}{{ $day['is_today'] ? ' - Hari ini' : '' }}</div>
+
+                                    @forelse($day['projects']->take(4) as $project)
                                         <a href="{{ route('projects.show', $project->id) }}" class="dash-event" title="{{ $project->name }}">
-                                            <span class="dash-event-name">{{ $project->short_name }}</span>
-                                            <span class="dash-event-meta">{{ $project->event_time_start ? substr($project->event_time_start, 0, 5) . ' - ' : '' }}{{ $project->client ?: 'Tanpa client' }}</span>
+                                            <span class="dash-event-dot"></span>
+                                            <span class="flex-grow-1 min-w-0">
+                                                <span class="dash-event-name">{{ $project->short_name }}</span>
+                                                <span class="dash-event-meta">{{ $project->event_time_start ? substr($project->event_time_start, 0, 5) . ' - ' : '' }}{{ $project->client ?: 'Tanpa client' }}</span>
+                                            </span>
+                                            <span class="dash-event-status">{{ \App\Models\Project::STATUS_LABELS[$project->status] ?? $project->status }}</span>
                                         </a>
                                     @empty
-                                        <span class="small text-muted">Kosong</span>
+                                        <p class="small text-muted mb-0 pt-2">Tidak ada acara.</p>
                                     @endforelse
 
-                                    @if($day['projects']->count() > 3)
-                                        <a href="{{ route('projects.index') }}" class="small fw-semibold text-decoration-none">+{{ $day['projects']->count() - 3 }} lagi</a>
+                                    @if($day['projects']->count() > 4)
+                                        <a href="{{ route('projects.index') }}" class="small fw-semibold text-decoration-none d-inline-block pt-2">+{{ $day['projects']->count() - 4 }} lagi</a>
                                     @endif
                                 </div>
-                            </div>
-                        @endforeach
+                            @endforeach
+                        </div>
                     </div>
                 </div>
             </div>
@@ -383,6 +394,12 @@
         @push('scripts')
             {{ \App\Support\VendorAsset::script('chartjs') }}
             <script src="{{ \App\Support\AppAsset::url('js/dashboard/index.js') }}"></script>
+        @endpush
+    @endif
+
+    @if($week)
+        @push('scripts')
+            <script src="{{ \App\Support\AppAsset::url('js/dashboard/week.js') }}"></script>
         @endpush
     @endif
 

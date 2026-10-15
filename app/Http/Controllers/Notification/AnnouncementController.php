@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Notification;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Notification\AnnouncementStoreRequest;
+use App\Http\Requests\Notification\ProjectNotifyRequest;
+use App\Models\Project;
 use App\Services\Notification\AnnouncementService;
 use App\Services\Notification\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class AnnouncementController extends Controller
@@ -88,6 +91,28 @@ class AnnouncementController extends Controller
         $recipients = $this->announcementService->send($validated['title'], $validated['message']);
 
         return back()->with('success', "Pengumuman berhasil dikirim ke {$recipients->count()} user.");
+    }
+
+    /**
+     * Kirim notifikasi sebuah project ke user terpilih (tombol di Detail Project).
+     * Izinnya sama dengan Kirim Pengumuman: notifikasi_sistem > kirim.
+     */
+    public function storeForProject(ProjectNotifyRequest $request, Project $project): RedirectResponse
+    {
+        if (!Auth::user()?->hasPermission('notifikasi_sistem', 'kirim')) {
+            return back()->with('error', 'Anda tidak memiliki hak akses untuk mengirim notifikasi.');
+        }
+
+        $validated = $request->validated();
+
+        $recipients = $this->announcementService->sendToUsers(
+            $validated['user_ids'],
+            'Project: ' . Str::limit($project->name, 135),
+            $validated['note'] ?? 'Mohon cek project ini.',
+            route('projects.show', $project, false),
+        );
+
+        return back()->with('success', "Notifikasi project dikirim ke {$recipients->count()} user.");
     }
 
     /**

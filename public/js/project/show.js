@@ -31,3 +31,33 @@ document.addEventListener('DOMContentLoaded', function () {
         if (trigger) bootstrap.Tab.getOrCreateInstance(trigger).show();
     }
 });
+
+// Modal Kirim Notifikasi: pilih semua, hitung terpilih, tombol kirim aktif bila ada penerima.
+document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('projectNotifyModal');
+    if (!modal) return;
+
+    const all = modal.querySelector('#notifyAll');
+    const boxes = Array.from(modal.querySelectorAll('.notify-user'));
+    const count = modal.querySelector('#notifyCount');
+    const submit = modal.querySelector('button[type="submit"]');
+
+    const sync = function () {
+        const n = boxes.filter(function (b) { return b.checked; }).length;
+        count.textContent = n + ' dipilih';
+        submit.disabled = n === 0;
+        all.checked = n === boxes.length;
+        all.indeterminate = n > 0 && n < boxes.length;
+    };
+
+    all.addEventListener('change', function () {
+        boxes.forEach(function (b) { b.checked = all.checked; });
+        sync();
+    });
+    boxes.forEach(function (b) { b.addEventListener('change', sync); });
+    modal.addEventListener('hidden.bs.modal', function () {
+        modal.querySelector('form').reset();
+        sync();
+    });
+    sync();
+});

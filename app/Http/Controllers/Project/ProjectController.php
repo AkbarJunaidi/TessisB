@@ -122,9 +122,14 @@ class ProjectController extends Controller
 
         $openFinanceCard = $this->notificationService->shouldOpenFinanceCard($project);
 
+        // Penerima untuk tombol Kirim Notifikasi; kosong kalau tidak punya izin kirim.
+        $notifyUsers = Auth::user()?->hasPermission('notifikasi_sistem', 'kirim')
+            ? \App\Models\User::where('status', 'active')->where('id', '!=', Auth::id())->orderBy('name')->get(['id', 'name'])
+            : collect();
+
         return view(
             'project.show',
-            compact('project', 'groupedTasks', 'allFolders', 'bookableInventories', 'storageLocations', 'openFinanceCard')
+            compact('project', 'groupedTasks', 'allFolders', 'bookableInventories', 'storageLocations', 'openFinanceCard', 'notifyUsers')
         );
     }
 

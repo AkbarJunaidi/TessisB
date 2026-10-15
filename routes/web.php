@@ -232,6 +232,10 @@ Route::middleware('auth')->group(function () {
         Route::post('projects/{project}/lists', [ProjectController::class, 'storeList'])
             ->name('projects.lists.store');
 
+        // Kirim notifikasi project ke user terpilih; izin notifikasi_sistem > kirim dicek di controller.
+        Route::post('projects/{project}/notify', [AnnouncementController::class, 'storeForProject'])
+            ->name('projects.notify');
+
         Route::post('projects/notes', [ProjectNoteController::class, 'store'])
             ->name('projects.notes.store');
 

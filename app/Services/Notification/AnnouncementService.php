@@ -171,4 +171,38 @@ class AnnouncementService
 
         return $recipients;
     }
+
+    /**
+     * Kirim notifikasi ke user terpilih (bukan semua), dengan tautan opsional
+     * (mis. ke halaman project). Hanya user aktif, pengirim tidak ikut menerima.
+     * Jejaknya ada di Log Aktivitas, bukan di kotak notifikasi pengirim.
+     *
+     * @param  array<int, int>  $userIds
+     */
+    public function sendToUsers(array $userIds, string $title, string $message, ?string $url = null): Collection
+    {
+        $sender = Auth::user();
+
+        $recipients = User::where('status', 'active')
+            ->whereIn('id', $userIds)
+            ->where('id', '!=', $sender->id)
+            ->get();
+
+        foreach ($recipients as $recipient) {
+            $recipient->notify(new AnnouncementNotification(
+                title: $title,
+                message: $message,
+                sentByName: $sender->name,
+                url: $url,
+            ));
+        }
+
+        $this->activityLogService->log(
+            $sender->id,
+            'Notifikasi',
+            "Mengirim notifikasi \"{$title}\" ke {$recipients->count()} user"
+        );
+
+        return $recipients;
+    }
 }

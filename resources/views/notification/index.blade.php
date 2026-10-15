@@ -159,6 +159,9 @@
                                             <span class="fw-semibold">{{ $item->data['title'] ?? '(Tanpa judul)' }}</span>
                                         </div>
                                         <div class="text-secondary small">{{ $item->data['message'] ?? '' }}</div>
+                                        @if(!empty($item->data['url']))
+                                            <a href="{{ $item->data['url'] }}" class="small fw-semibold text-decoration-none d-inline-block mt-1">Buka project <i class="bi bi-arrow-right"></i></a>
+                                        @endif
                                         <div class="text-muted small mt-1">
                                             Dikirim oleh {{ $item->data['sent_by'] ?? 'Sistem' }} &middot;
                                             {{ $item->created_at->diffForHumans() }}

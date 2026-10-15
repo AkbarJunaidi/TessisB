@@ -39,6 +39,12 @@
                 </a>
             @endif
 
+            @if($notifyUsers->isNotEmpty())
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#projectNotifyModal">
+                    <i class="bi bi-bell"></i> Kirim Notifikasi
+                </button>
+            @endif
+
             @if(auth()->user()->hasPermission('surat_jalan', 'view'))
                 <div class="dropdown">
                     <button class="btn btn-sm btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
@@ -503,6 +509,48 @@
     </div>
 
 </div>
+
+{{-- Kirim notifikasi project ke user terpilih. Modal ini sudah jadi langkah konfirmasi, jadi form lewati popup global. --}}
+@if($notifyUsers->isNotEmpty())
+    <div class="modal fade" id="projectNotifyModal" tabindex="-1" aria-labelledby="projectNotifyTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <form method="POST" action="{{ route('projects.notify', $project) }}" class="modal-content" data-no-confirm>
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="projectNotifyTitle"><i class="bi bi-bell text-primary me-2"></i>Kirim Notifikasi Project</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted mb-3">Penerima mendapat notifikasi di aplikasi (dan push bila sudah diaktifkan) yang membuka project ini.</p>
+
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <div class="form-check mb-0">
+                            <input class="form-check-input" type="checkbox" id="notifyAll">
+                            <label class="form-check-label small fw-semibold" for="notifyAll">Pilih semua</label>
+                        </div>
+                        <span class="small text-muted" id="notifyCount">0 dipilih</span>
+                    </div>
+
+                    <div class="mb-3">
+                        @foreach($notifyUsers as $user)
+                            <label class="d-flex align-items-center gap-2 py-2 border-top" for="notifyUser{{ $user->id }}">
+                                <input class="form-check-input mt-0 notify-user" type="checkbox" name="user_ids[]" value="{{ $user->id }}" id="notifyUser{{ $user->id }}">
+                                <span class="small">{{ $user->name }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+
+                    <label for="notifyNote" class="form-label small fw-semibold text-muted">Catatan (opsional)</label>
+                    <textarea name="note" id="notifyNote" rows="3" maxlength="500" class="form-control" placeholder="Mohon cek project ini."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary" disabled><i class="bi bi-send me-1"></i>Kirim</button>
+                </div>
+            </form>
+        </div>
+    </div>
+@endif
 
 <script src="{{ \App\Support\AppAsset::url('js/project/show.js') }}"></script>
 

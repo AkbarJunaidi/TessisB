@@ -37,6 +37,9 @@ self.addEventListener('push', function (event) {
 self.addEventListener('notificationclick', function (event) {
     event.notification.close();
 
+    // Tujuan klik: tautan di data notifikasi (mis. halaman project), default halaman Notifikasi.
+    const target = (event.notification.data && event.notification.data.url) || '/announcements';
+
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (windowClients) {
             // Kalau tab aplikasi ini sudah terbuka, fokuskan itu saja
@@ -45,14 +48,14 @@ self.addEventListener('notificationclick', function (event) {
                 if ('focus' in client) {
                     client.focus();
                     if ('navigate' in client) {
-                        client.navigate('/announcements');
+                        client.navigate(target);
                     }
                     return;
                 }
             }
 
             if (clients.openWindow) {
-                return clients.openWindow('/announcements');
+                return clients.openWindow(target);
             }
         })
     );
