@@ -87,11 +87,11 @@
 
     {{-- Kalender + Panel Tanggal Terpilih --}}
     <div class="row g-3 mb-4">
-        <div class="col-lg-7">
+        <div class="col-lg-8">
             @include('project.partials.calendar-card')
         </div>
 
-        <div class="col-lg-5">
+        <div class="col-lg-4">
             <div class="card border-0 shadow-sm rounded-3 h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -341,34 +341,59 @@
 @endif
 
 <script>
-document.addEventListener('click', function (event) {
-    const link = event.target.closest('a.js-calendar-nav');
-    if (!link || event.ctrlKey || event.metaKey || event.shiftKey) return;
+(function () {
+    // Muat ulang kartu kalender lewat AJAX; gagal apa pun jatuh ke muat ulang halaman biasa.
+    function loadCalendar(href) {
+        const card = document.getElementById('projectCalendarCard');
+        if (!card || card.dataset.loading) return;
 
-    const card = document.getElementById('projectCalendarCard');
-    if (!card || card.dataset.loading) return;
+        const focusKey = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.cal : null;
+        card.dataset.loading = '1';
+        card.style.opacity = '.6';
 
-    event.preventDefault();
-    card.dataset.loading = '1';
-    card.style.opacity = '.6';
+        fetch(href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (response) {
+                if (!response.ok) throw new Error('Gagal memuat kalender.');
+                return response.text();
+            })
+            .then(function (html) {
+                const tpl = document.createElement('template');
+                tpl.innerHTML = html.trim();
+                const fresh = tpl.content.querySelector('#projectCalendarCard');
+                if (!fresh) throw new Error('Respons bukan kartu kalender.');
+                card.replaceWith(fresh);
+                history.replaceState(null, '', href);
 
-    fetch(link.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-        .then(function (response) {
-            if (!response.ok) throw new Error('Gagal memuat kalender.');
-            return response.text();
-        })
-        .then(function (html) {
-            const tpl = document.createElement('template');
-            tpl.innerHTML = html.trim();
-            const fresh = tpl.content.querySelector('#projectCalendarCard');
-            if (!fresh) throw new Error('Respons bukan kartu kalender.');
-            card.replaceWith(fresh);
-            history.replaceState(null, '', link.href);
-        })
-        .catch(function () {
-            window.location.href = link.href;
-        });
-});
+                // Kembalikan fokus keyboard ke kontrol yang sama.
+                const next = focusKey && fresh.querySelector('[data-cal="' + focusKey + '"]');
+                if (next) next.focus();
+            })
+            .catch(function () {
+                window.location.href = href;
+            });
+    }
+
+    document.addEventListener('click', function (event) {
+        const link = event.target.closest('a.js-calendar-nav');
+        if (!link || event.ctrlKey || event.metaKey || event.shiftKey) return;
+
+        event.preventDefault();
+        loadCalendar(link.href);
+    });
+
+    // Dropdown bulan atau tahun berubah: buka bulan dan tahun yang dipilih.
+    document.addEventListener('change', function (event) {
+        if (!event.target.classList.contains('js-calendar-select')) return;
+
+        const card = document.getElementById('projectCalendarCard');
+        if (!card) return;
+
+        const url = new URL(window.location.href);
+        url.searchParams.set('cal_month', card.querySelector('[data-cal="month"]').value);
+        url.searchParams.set('cal_year', card.querySelector('[data-cal="year"]').value);
+        loadCalendar(url.href);
+    });
+})();
 </script>
 
 @if(auth()->user()->hasPermission('finance', 'export_report'))

@@ -49,10 +49,11 @@ class ProjectController extends Controller
         $calendarMonth = min(12, max(1, (int) $request->query('cal_month', now()->month)));
         $calendarYear  = min(2100, max(1970, (int) $request->query('cal_year', now()->year)));
         $calendarData  = $this->projectService->getCalendarData($calendarMonth, $calendarYear);
+        $calendarYears = $this->projectService->getCalendarYears($calendarYear);
 
         // Ganti bulan lewat AJAX: cukup kirim kartu kalender, bukan satu halaman penuh.
         if ($request->ajax()) {
-            return view('project.partials.calendar-card', compact('calendarData', 'calendarMonth', 'calendarYear'));
+            return view('project.partials.calendar-card', compact('calendarData', 'calendarMonth', 'calendarYear', 'calendarYears'));
         }
 
         $projects = $this->projectService->getAllPaginated($filters, 10);
@@ -63,7 +64,7 @@ class ProjectController extends Controller
         $allProjectsForPicker = Project::select('id', 'name')->orderBy('name')->get();
 
         return view('project.index', compact(
-            'projects', 'stats', 'calendarData', 'calendarMonth', 'calendarYear', 'pics', 'filters', 'allProjectsForPicker'
+            'projects', 'stats', 'calendarData', 'calendarMonth', 'calendarYear', 'calendarYears', 'pics', 'filters', 'allProjectsForPicker'
         ));
     }
 

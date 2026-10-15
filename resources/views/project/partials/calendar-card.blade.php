@@ -1,18 +1,34 @@
 {{-- Kartu Kalender Project. Dipakai index dan dikirim ulang saat ganti bulan via AJAX. --}}
 <div id="projectCalendarCard" class="card border-0 shadow-sm rounded-3 h-100">
     <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h6 class="fw-bold m-0"><i class="bi bi-calendar3 me-1"></i> Kalender Project</h6>
-            <div class="d-flex align-items-center gap-2">
-                @php
-                    $prevMonth = $calendarMonth - 1; $prevYear = $calendarYear;
-                    if ($prevMonth < 1) { $prevMonth = 12; $prevYear--; }
-                    $nextMonth = $calendarMonth + 1; $nextYear = $calendarYear;
-                    if ($nextMonth > 12) { $nextMonth = 1; $nextYear++; }
-                @endphp
-                <a href="{{ request()->fullUrlWithQuery(['cal_month' => $prevMonth, 'cal_year' => $prevYear]) }}" class="btn btn-sm btn-light js-calendar-nav"><i class="bi bi-chevron-left"></i></a>
-                <span class="fw-semibold small">{{ \Carbon\Carbon::createFromDate($calendarYear, $calendarMonth, 1)->translatedFormat('F Y') }}</span>
-                <a href="{{ request()->fullUrlWithQuery(['cal_month' => $nextMonth, 'cal_year' => $nextYear]) }}" class="btn btn-sm btn-light js-calendar-nav"><i class="bi bi-chevron-right"></i></a>
+        @php
+            $monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            $prevMonth = $calendarMonth - 1; $prevYear = $calendarYear;
+            if ($prevMonth < 1) { $prevMonth = 12; $prevYear--; }
+            $nextMonth = $calendarMonth + 1; $nextYear = $calendarYear;
+            if ($nextMonth > 12) { $nextMonth = 1; $nextYear++; }
+            $isCurrentMonth = $calendarMonth === (int) now()->month && $calendarYear === (int) now()->year;
+        @endphp
+
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+            <h6 class="fw-bold m-0 me-1"><i class="bi bi-calendar3 me-1" aria-hidden="true"></i>Kalender Project</h6>
+            <select class="form-select form-select-sm w-auto js-calendar-select" data-cal="month" aria-label="Bulan">
+                @foreach($monthNames as $i => $name)
+                    <option value="{{ $i + 1 }}" @selected($i + 1 === $calendarMonth)>{{ $name }}</option>
+                @endforeach
+            </select>
+            <select class="form-select form-select-sm w-auto js-calendar-select" data-cal="year" aria-label="Tahun">
+                @foreach($calendarYears as $year)
+                    <option value="{{ $year }}" @selected($year === $calendarYear)>{{ $year }}</option>
+                @endforeach
+            </select>
+
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                @unless($isCurrentMonth)
+                    <a href="{{ request()->fullUrlWithQuery(['cal_month' => now()->month, 'cal_year' => now()->year]) }}" class="btn btn-sm btn-light js-calendar-nav" data-cal="today">Hari Ini</a>
+                @endunless
+                <a href="{{ request()->fullUrlWithQuery(['cal_month' => $prevMonth, 'cal_year' => $prevYear]) }}" class="btn btn-sm btn-light js-calendar-nav" data-cal="prev" aria-label="Bulan sebelumnya"><i class="bi bi-chevron-left"></i></a>
+                <a href="{{ request()->fullUrlWithQuery(['cal_month' => $nextMonth, 'cal_year' => $nextYear]) }}" class="btn btn-sm btn-light js-calendar-nav" data-cal="next" aria-label="Bulan berikutnya"><i class="bi bi-chevron-right"></i></a>
             </div>
         </div>
 
@@ -39,10 +55,13 @@
                             $dateStr = sprintf('%04d-%02d-%02d', $calendarYear, $calendarMonth, $day);
                             $count = $calendarData[$dateStr] ?? 0;
                             $isToday = $dateStr === $today;
+                            $isSelected = request('date') === $dateStr;
                         @endphp
                         <td class="p-1">
                             <a href="{{ request()->fullUrlWithQuery(['date' => $dateStr]) }}"
-                               class="d-inline-flex flex-column align-items-center justify-content-center rounded-circle {{ $isToday ? 'bg-primary text-white' : ($count > 0 ? 'bg-light fw-semibold' : '') }} u-w-32px u-h-32px u-td-none u-c-inherit"
+                               class="d-inline-flex flex-column align-items-center justify-content-center rounded-circle {{ $isToday ? 'bg-primary text-white' : ($count > 0 ? 'bg-light fw-semibold' : '') }} {{ $isSelected ? 'border border-2 border-primary' : '' }} u-w-32px u-h-32px u-td-none u-c-inherit"
+                               @if($isToday) aria-current="date" @endif
+                               aria-label="{{ $day }} {{ $monthNames[$calendarMonth - 1] }}{{ $count > 0 ? ', ' . $count . ' project' : '' }}"
                               >
                                 {{ $day }}
                             </a>
@@ -57,19 +76,20 @@
                 </tr>
             </tbody>
         </table>
-        <div class="small text-muted">
-            <span class="text-primary">&#9679;</span> 1-2 Project &nbsp;
-            <span class="text-warning">&#9679;</span> 3-4 Project &nbsp;
-            <span class="text-danger">&#9679;</span> &gt; 4 Project
-        </div>
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div class="small text-muted">
+                <span class="text-primary">&#9679;</span> 1-2 Project &nbsp;
+                <span class="text-warning">&#9679;</span> 3-4 Project &nbsp;
+                <span class="text-danger">&#9679;</span> &gt; 4 Project
+            </div>
 
-        @if(auth()->user()->hasPermission('finance', 'export_report'))
-            <hr class="my-3">
-            <button type="button" id="exportMonthlyReportBtn" class="btn btn-outline-primary btn-sm w-100 d-flex align-items-center justify-content-center gap-2"
-                    data-month="{{ $calendarMonth }}" data-year="{{ $calendarYear }}">
-                <span class="btn-text"><i class="bi bi-file-earmark-pdf me-1"></i> Ekspor Laporan Bulanan</span>
-                <span class="spinner-border spinner-border-sm d-none" role="status"></span>
-            </button>
-        @endif
+            @if(auth()->user()->hasPermission('finance', 'export_report'))
+                <button type="button" id="exportMonthlyReportBtn" class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-center gap-2"
+                        data-month="{{ $calendarMonth }}" data-year="{{ $calendarYear }}">
+                    <span class="btn-text"><i class="bi bi-file-earmark-pdf me-1"></i> Ekspor Bulan Ini</span>
+                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                </button>
+            @endif
+        </div>
     </div>
 </div>
