@@ -48,7 +48,7 @@
 
             <div class="col-6 col-md-3">
                 <label for="status" class="form-label">Status</label>
-                <select name="status" id="status" class="form-select" onchange="this.form.submit()">
+                <select name="status" id="status" class="form-select">
                     <option value="Semua Status" {{ request('status') == 'Semua Status' || !request('status') ? 'selected' : '' }}>Semua Status</option>
                     @foreach(\App\Support\InventoryStatus::all() as $statusName)
                         <option value="{{ $statusName }}" {{ request('status') == $statusName ? 'selected' : '' }}>{{ $statusName }}</option>

@@ -9,7 +9,7 @@
     let ticker = null;
     let safety = null;
     let spinners = [];
-    let pageSpinner = null;
+    let loadingTimer = null;
 
     function ensureBar() {
         if (bar) return bar;
@@ -24,19 +24,10 @@
         bar.style.transform = 'scaleX(' + value + ')';
     }
 
-    // Konten meredup dan spinner di tengah area konten; muncul setelah jeda singkat (diatur CSS).
+    // Setelah jeda singkat layar diberi lapisan gelap tipis (diatur CSS); halaman cepat tidak berkedip.
     function enableLoading() {
-        const content = document.querySelector('.app-content');
-        if (!content) return;
-        if (!pageSpinner) {
-            pageSpinner = document.createElement('div');
-            pageSpinner.id = 'appSpinner';
-            pageSpinner.setAttribute('aria-hidden', 'true');
-            document.body.appendChild(pageSpinner);
-        }
-        const rect = content.getBoundingClientRect();
-        pageSpinner.style.left = (rect.left + rect.width / 2) + 'px';
-        document.documentElement.classList.add('is-loading');
+        if (loadingTimer) return;
+        loadingTimer = setTimeout(function () { document.documentElement.classList.add('is-loading'); }, 300);
     }
 
     // withLoading: true untuk klik link/submit form; false untuk navigasi yang tidak diketahui (mis. reload).
@@ -67,6 +58,8 @@
         clearInterval(ticker);
         clearTimeout(safety);
         ticker = safety = null;
+        clearTimeout(loadingTimer);
+        loadingTimer = null;
         document.documentElement.classList.remove('is-navigating', 'is-loading');
         clearSpinners();
         if (!bar || !bar.classList.contains('is-active')) return;

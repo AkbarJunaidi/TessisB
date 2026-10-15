@@ -342,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             document.getElementById('fFrom').value = from;
             document.getElementById('fTo').value = to;
-            document.getElementById('filterForm').submit();
+            document.getElementById('filterForm').requestSubmit();
         });
     });
 
@@ -393,11 +393,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('btnAddTransaction').addEventListener('click', function () { openForm({}, null); });
 
-    document.querySelectorAll('.btn-edit-transaction').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            const item = JSON.parse(btn.dataset.item);
-            openForm(item, item.id);
-        });
+    // Delegasi agar tombol Ubah tetap jalan setelah daftar diperbarui oleh filter langsung.
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.btn-edit-transaction');
+        if (!btn) return;
+        const item = JSON.parse(btn.dataset.item);
+        openForm(item, item.id);
     });
 
     field('tType').addEventListener('change', function () { fillCategories(this.value, null); });

@@ -135,7 +135,7 @@
 
                     <div class="col-6 col-md-3">
                         <label for="contactLetter" class="form-label">Huruf Awal Nama</label>
-                        <select id="contactLetter" name="letter" class="form-select" onchange="this.form.submit()">
+                        <select id="contactLetter" name="letter" class="form-select">
                             <option value="">Semua Huruf</option>
                             @foreach($letterOptions as $letter)
                                 <option value="{{ $letter }}" @selected($currentLetter === $letter)>{{ $letter }}</option>

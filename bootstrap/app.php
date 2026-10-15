@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\RoleMiddleware;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -22,6 +23,8 @@ return Application::configure(
 
         // Percayai header X-Forwarded-* dari proxy lokal (Cloudflare Tunnel) agar URL aset dan link memakai https.
         $middleware->trustProxies(at: ['127.0.0.1', '::1']);
+
+        $middleware->web(append: [SecurityHeaders::class]);
 
     })
 
