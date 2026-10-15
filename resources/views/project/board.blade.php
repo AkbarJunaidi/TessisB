@@ -14,7 +14,7 @@
             <p class="text-muted small m-0 mt-1">Deadline Project: <strong class="text-danger font-monospace">{{ $project->deadline }}</strong></p>
         </div>
 
-        <a href="{{ route('tasks.create', ['project_id' => $project->id]) }}" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm fw-medium">
+        <a href="{{ route('tasks.create', ['project_id' => $project->id]) }}" class="btn btn-primary d-flex align-items-center gap-2 fw-medium">
             <i class="bi bi-plus-lg"></i> Tambah Task
         </a>
     </div>

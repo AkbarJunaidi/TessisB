@@ -26,8 +26,8 @@
         </div>
 
         @if($canManage)
-            <button type="button" class="btn btn-primary px-3" id="btnAddLocation">
-                <i class="bi bi-plus-lg me-1"></i> Tambah Lokasi
+            <button type="button" class="btn btn-primary d-flex align-items-center gap-2 fw-medium" id="btnAddLocation">
+                <i class="bi bi-plus-lg"></i> Tambah Lokasi
             </button>
         @endif
     </div>

@@ -50,8 +50,8 @@
         </div>
 
         <div class="dropdown">
-            <button class="btn btn-primary dropdown-toggle px-3" type="button" id="btnNewDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="bi bi-plus-lg me-1"></i> Baru
+            <button class="btn btn-primary d-flex align-items-center gap-2 fw-medium dropdown-toggle" type="button" id="btnNewDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-plus-lg"></i> Baru
             </button>
             <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="btnNewDropdown">
                 <li>

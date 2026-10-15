@@ -8,6 +8,7 @@
     {{-- Header --}}
     <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-4">
         <div>
+            <a data-back href="{{ route('projects.index') }}" class="page-back"><i class="bi bi-arrow-left"></i> Daftar Project</a>
             <div class="d-flex align-items-center gap-2 mb-1">
                 <h3 class="fw-bold text-dark m-0">{{ $project->name }}</h3>
 
@@ -29,25 +30,15 @@
         </div>
 
         <div class="d-flex gap-2">
-            <a data-back href="{{ route('projects.index') }}" class="btn btn-sm btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Kembali
-            </a>
-
-            @if(auth()->user()->hasPermission('tracking_progress', 'edit_project'))
-                <a href="{{ route('projects.edit', $project) }}" class="btn btn-sm btn-outline-primary">
-                    <i class="bi bi-pencil"></i> Edit Project
-                </a>
-            @endif
-
             @if($notifyUsers->isNotEmpty())
-                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#projectNotifyModal">
+                <button type="button" class="btn btn-outline-primary d-flex align-items-center gap-2 fw-medium" data-bs-toggle="modal" data-bs-target="#projectNotifyModal">
                     <i class="bi bi-bell"></i> Kirim Notifikasi
                 </button>
             @endif
 
             @if(auth()->user()->hasPermission('surat_jalan', 'view'))
                 <div class="dropdown">
-                    <button class="btn btn-sm btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <button class="btn btn-outline-primary d-flex align-items-center gap-2 fw-medium dropdown-toggle" type="button" data-bs-toggle="dropdown">
                         <i class="bi bi-file-earmark-text"></i> Surat Jalan
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
@@ -61,6 +52,12 @@
                         </li>
                     </ul>
                 </div>
+            @endif
+
+            @if(auth()->user()->hasPermission('tracking_progress', 'edit_project'))
+                <a href="{{ route('projects.edit', $project) }}" class="btn btn-primary d-flex align-items-center gap-2 fw-medium">
+                    <i class="bi bi-pencil"></i> Edit Project
+                </a>
             @endif
         </div>
     </div>

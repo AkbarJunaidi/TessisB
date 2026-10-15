@@ -40,8 +40,8 @@
         @unless($isShared)
             @if($canUpload || $canMkdir)
                 <div class="dropdown">
-                    <button class="btn btn-primary px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-plus-lg me-1"></i> Baru
+                    <button class="btn btn-primary d-flex align-items-center gap-2 fw-medium dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-plus-lg"></i> Baru
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow">
                         @if($canMkdir)

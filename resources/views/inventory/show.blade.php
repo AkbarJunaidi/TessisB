@@ -8,6 +8,7 @@
     <!-- Header Page & Back Button (Hanya Tampil di Desktop) -->
     <div class="d-none d-md-flex justify-content-between align-items-center mb-4">
         <div>
+            <a data-back href="{{ route('inventory.index') }}" class="page-back"><i class="bi bi-arrow-left"></i> Daftar Barang</a>
             <h3 class="fw-bold text-dark m-0 d-flex align-items-center gap-2">
                 {{ $inventory->name }}
                 <span class="badge {{ \App\Support\InventoryStatus::subtleClass($inventory->display_status) }} px-2 py-1 rounded-pill fw-semibold u-fs-0p65rem"><i class="bi bi-circle-fill me-1 u-fs-0p45rem"></i>{{ strtoupper($inventory->display_status ?? 'TERSEDIA') }}</span>
@@ -15,14 +16,11 @@
             <p class="d-none d-md-block text-muted small m-0">Menampilkan informasi lengkap dan identitas aset barang.</p>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <a data-back href="{{ route('inventory.index') }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 fw-medium">
-                <i class="bi bi-arrow-left"></i> Kembali ke Daftar
-            </a>
-            <a href="{{ route('inventory.preview-qr', $inventory->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 fw-medium">
+            <a href="{{ route('inventory.preview-qr', $inventory->id) }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center gap-2 fw-medium">
                 <i class="bi bi-printer"></i> Cetak Label QR
             </a>
             <div class="dropdown">
-                <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-2 fw-medium" data-bs-toggle="dropdown" aria-expanded="false">
+                <button type="button" class="btn btn-outline-primary dropdown-toggle d-flex align-items-center gap-2 fw-medium" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-file-earmark-text"></i> Report
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow-sm">
@@ -31,7 +29,7 @@
                 </ul>
             </div>
             @if(auth()->user()->hasPermission('inventory', 'edit'))
-            <a href="{{ route('inventory.edit', $inventory->id) }}" class="btn btn-sm btn-primary d-flex align-items-center gap-2 fw-medium">
+            <a href="{{ route('inventory.edit', $inventory->id) }}" class="btn btn-primary d-flex align-items-center gap-2 fw-medium">
                 <i class="bi bi-pencil"></i> Edit Barang
             </a>
             @endif
@@ -40,25 +38,18 @@
 
     <!-- Header Page Mobile (Sederhana) -->
     <div class="d-md-none mb-3 px-1">
+        <a data-back href="{{ route('inventory.index') }}" class="page-back"><i class="bi bi-arrow-left"></i> Daftar Barang</a>
         <div class="d-flex align-items-center justify-content-between gap-2">
             <h4 class="fw-bold text-dark m-0">{{ $inventory->name }}</h4>
             <span class="badge {{ \App\Support\InventoryStatus::subtleClass($inventory->display_status) }} px-3 py-2 rounded-pill fw-semibold"><i class="bi bi-circle-fill me-1 u-fs-0p5rem"></i> {{ strtoupper($inventory->display_status ?? 'TERSEDIA') }}</span>
         </div>
         <p class="text-muted small mb-2">Informasi lengkap aset barang</p>
         <div class="d-flex flex-wrap gap-2">
-            <a data-back href="{{ route('inventory.index') }}" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-2 fw-medium">
-                <i class="bi bi-arrow-left"></i> Kembali
-            </a>
-            @if(auth()->user()->hasPermission('inventory', 'edit'))
-            <a href="{{ route('inventory.edit', $inventory->id) }}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-2 fw-medium">
-                <i class="bi bi-pencil"></i> Edit
-            </a>
-            @endif
-            <a href="{{ route('inventory.preview-qr', $inventory->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-2 fw-medium">
+            <a href="{{ route('inventory.preview-qr', $inventory->id) }}" target="_blank" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-2 fw-medium">
                 <i class="bi bi-qr-code"></i> Cetak QR
             </a>
             <div class="dropdown">
-                <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle d-inline-flex align-items-center gap-2 fw-medium" data-bs-toggle="dropdown" aria-expanded="false">
+                <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle d-inline-flex align-items-center gap-2 fw-medium" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-file-earmark-text"></i> Report
                 </button>
                 <ul class="dropdown-menu shadow-sm">
@@ -66,6 +57,11 @@
                     <li><a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('inventory.download', $inventory->id) }}"><i class="bi bi-download"></i> Unduh</a></li>
                 </ul>
             </div>
+            @if(auth()->user()->hasPermission('inventory', 'edit'))
+            <a href="{{ route('inventory.edit', $inventory->id) }}" class="btn btn-sm btn-primary d-inline-flex align-items-center gap-2 fw-medium">
+                <i class="bi bi-pencil"></i> Edit
+            </a>
+            @endif
         </div>
     </div>
 

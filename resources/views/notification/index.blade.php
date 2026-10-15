@@ -17,7 +17,7 @@
     <div class="page-heading">
         <h3>Notifikasi</h3>
         {{-- Disembunyikan; JS memunculkannya hanya jika browser dan server mendukung Web Push. --}}
-        <button type="button" id="btnEnablePush" class="btn btn-sm btn-outline-primary d-none">
+        <button type="button" id="btnEnablePush" class="btn btn-outline-primary fw-medium d-none">
             <i class="bi bi-bell me-1"></i>Aktifkan notifikasi browser
         </button>
     </div>

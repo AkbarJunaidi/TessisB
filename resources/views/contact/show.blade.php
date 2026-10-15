@@ -6,6 +6,8 @@
 
 <div class="container-fluid">
 
+    <a data-back href="{{ route('contacts.index') }}" class="page-back"><i class="bi bi-arrow-left"></i> Daftar Kontak</a>
+
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
 
         <div class="d-flex align-items-center gap-3">
@@ -27,12 +29,6 @@
         </div>
 
         <div class="d-flex gap-2">
-            <a data-back href="{{ route('contacts.index') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-1"></i> Kembali
-            </a>
-            <a href="{{ route('contacts.edit', $contact) }}" class="btn btn-warning">
-                <i class="bi bi-pencil-square me-1"></i> Edit
-            </a>
             <form
                 action="{{ route('contacts.destroy', $contact) }}"
                 method="POST"
@@ -40,10 +36,13 @@
             >
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn btn-danger">
-                    <i class="bi bi-trash me-1"></i> Hapus
+                <button type="submit" class="btn btn-outline-danger d-flex align-items-center gap-2 fw-medium">
+                    <i class="bi bi-trash"></i> Hapus
                 </button>
             </form>
+            <a href="{{ route('contacts.edit', $contact) }}" class="btn btn-primary d-flex align-items-center gap-2 fw-medium">
+                <i class="bi bi-pencil-square"></i> Edit
+            </a>
         </div>
 
     </div>

@@ -20,9 +20,9 @@
 
         <a
             href="{{ route('contacts.create', array_filter(['type' => $filters['type'] ?? null])) }}"
-            class="btn btn-primary"
+            class="btn btn-primary d-flex align-items-center gap-2 fw-medium"
         >
-            <i class="bi bi-person-plus me-2"></i>
+            <i class="bi bi-person-plus"></i>
             Tambah Kontak
         </a>
 

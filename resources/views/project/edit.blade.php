@@ -7,11 +7,9 @@
 
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
+            <a data-back href="{{ route('projects.show', $project) }}" class="page-back"><i class="bi bi-arrow-left"></i> Detail Project</a>
             <h3 class="fw-bold text-dark m-0">Edit Project</h3>
         </div>
-        <a data-back href="{{ route('projects.show', $project) }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 fw-medium">
-            <i class="bi bi-arrow-left"></i> Kembali ke Detail Project
-        </a>
     </div>
 
     <div class="card shadow-sm border-0 rounded-3 bg-white">

@@ -28,8 +28,8 @@
         </div>
 
         @if($canManage)
-            <a href="{{ route('inventory.repairs.create') }}" class="btn btn-primary px-3">
-                <i class="bi bi-plus-lg me-1"></i> Catat Perbaikan
+            <a href="{{ route('inventory.repairs.create') }}" class="btn btn-primary d-flex align-items-center gap-2 fw-medium">
+                <i class="bi bi-plus-lg"></i> Catat Perbaikan
             </a>
         @endif
     </div>

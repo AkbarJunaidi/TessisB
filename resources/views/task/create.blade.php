@@ -7,12 +7,10 @@
 
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
+            <a data-back href="{{ route('projects.show', $project->id) }}" class="page-back"><i class="bi bi-arrow-left"></i> Board Project</a>
             <h3 class="fw-bold text-dark m-0">Tambah Task</h3>
             <p class="text-muted small m-0">Project: <strong title="{{ $project->name }}">{{ $project->short_name }}</strong></p>
         </div>
-        <a data-back href="{{ route('projects.show', $project->id) }}" class="btn btn-sm btn-outline-secondary fw-medium">
-            <i class="bi bi-arrow-left"></i> Kembali ke Board
-        </a>
     </div>
 
     <div class="card shadow-sm border-0 rounded-3 bg-white">

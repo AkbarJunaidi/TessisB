@@ -11,8 +11,8 @@
             <p class="d-none d-md-block text-muted mb-0">Pembelian ke vendor.</p>
         </div>
         @if(auth()->user()->hasPermission('purchase', 'create'))
-            <a href="{{ route('purchases.create') }}" class="btn btn-primary">
-                <i class="bi bi-plus-lg me-1"></i> Buat Pembelian
+            <a href="{{ route('purchases.create') }}" class="btn btn-primary d-flex align-items-center gap-2 fw-medium">
+                <i class="bi bi-plus-lg"></i> Buat Pembelian
             </a>
         @endif
     </div>

@@ -7,13 +7,11 @@
 
     <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
         <div>
-            <a data-back href="{{ route('kwitansi.index') }}" class="text-decoration-none small text-muted d-inline-block mb-1">
-                <i class="bi bi-arrow-left"></i> Kembali ke Keuangan
-            </a>
+            <a data-back href="{{ route('kwitansi.index') }}" class="page-back"><i class="bi bi-arrow-left"></i> Keuangan</a>
             <h3 class="fw-bold mb-1">Detail Keuangan - {{ $project->short_name }}</h3>
             <p class="text-muted mb-0">{{ $project->client ?: $project->company ?: '-' }}</p>
         </div>
-        <a href="{{ route('projects.show', $project) }}" class="btn btn-outline-secondary btn-sm">
+        <a href="{{ route('projects.show', $project) }}" class="btn btn-outline-primary d-flex align-items-center gap-2 fw-medium">
             <i class="bi bi-kanban"></i> Buka Detail Project
         </a>
     </div>

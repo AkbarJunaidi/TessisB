@@ -10,23 +10,23 @@
         <p>Kelola dan pantau seluruh data aset barang fisik perusahaan.</p>
     </div>
     <div class="d-flex flex-wrap gap-2">
-        {{-- FITUR: Scan Barcode - izin SENDIRI (scan_barang.view), tidak
-             ikut permission 'inventory' - lihat InventoryController::scanLookup(). --}}
-        @if(auth()->user()->hasPermission('scan_barang', 'view'))
-        <a href="{{ route('scan.index') }}" id="btnScanBarcode" class="btn btn-outline-primary d-flex align-items-center gap-2">
-            <i class="bi bi-upc-scan"></i> <span class="d-none d-sm-inline">Scan Barcode</span>
-        </a>
-        @endif
         {{-- FITUR: Proses Laporan Massal (Semua Inventaris) bertahap via AJAX, notifikasi saat siap --}}
         <button
             type="button"
             id="btnGenerateAllReport"
-            class="btn btn-outline-danger d-flex align-items-center gap-2"
+            class="btn btn-outline-primary d-flex align-items-center gap-2 fw-medium"
         >
-            <i class="bi bi-file-earmark-pdf-fill"></i> <span class="d-none d-sm-inline">Proses Laporan Semua Inventory</span>
+            <i class="bi bi-file-earmark-pdf"></i> <span class="d-none d-sm-inline">Proses Laporan Semua</span>
         </button>
-        <a href="{{ route('inventory.create') }}" class="btn btn-primary d-flex align-items-center gap-2">
-            <i class="bi bi-plus-circle"></i> Tambah Inventory
+        {{-- FITUR: Scan Barang - izin SENDIRI (scan_barang.view), tidak
+             ikut permission 'inventory' - lihat InventoryController::scanLookup(). --}}
+        @if(auth()->user()->hasPermission('scan_barang', 'view'))
+        <a href="{{ route('scan.index') }}" id="btnScanBarcode" class="btn btn-outline-primary d-flex align-items-center gap-2 fw-medium">
+            <i class="bi bi-upc-scan"></i> <span class="d-none d-sm-inline">Scan Barang</span>
+        </a>
+        @endif
+        <a href="{{ route('inventory.create') }}" class="btn btn-primary d-flex align-items-center gap-2 fw-medium">
+            <i class="bi bi-plus-circle"></i> Tambah Barang
         </a>
     </div>
 </div>
@@ -153,7 +153,7 @@
                             <div class="empty-state">
                                 <div class="empty-icon"><i class="bi bi-box-seam"></i></div>
                                 <p class="mb-1 fw-bold text-dark">Belum Ada Data Inventory</p>
-                                <p class="text-muted small mb-0">Klik tombol "Tambah Inventory" di atas untuk menambahkan barang pertama Anda.</p>
+                                <p class="text-muted small mb-0">Klik tombol "Tambah Barang" di atas untuk menambahkan barang pertama Anda.</p>
                             </div>
                         </td>
                     </tr>

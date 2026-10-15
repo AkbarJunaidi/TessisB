@@ -5,12 +5,10 @@
 @section('content')
 <div class="page-heading">
         <div>
+            <a data-back href="{{ route('inventory.index') }}" class="page-back"><i class="bi bi-arrow-left"></i> Daftar Barang</a>
             <h3>Tambah Barang</h3>
             <p>Daftarkan aset barang fisik baru ke dalam sistem digital manajemen.</p>
         </div>
-        <a data-back href="{{ route('inventory.index') }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2">
-            <i class="bi bi-arrow-left"></i> Kembali ke Daftar
-        </a>
     </div>
 
     <!-- Error Validation Alert -->

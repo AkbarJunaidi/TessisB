@@ -16,7 +16,7 @@
                 </ol>
             </nav>
         </div>
-        <a href="{{ route('projects.index') }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 fw-medium">
+        <a href="{{ route('projects.index') }}" class="btn btn-outline-primary d-flex align-items-center gap-2 fw-medium">
             <i class="bi bi-list-ul"></i> Lihat Daftar
         </a>
     </div>

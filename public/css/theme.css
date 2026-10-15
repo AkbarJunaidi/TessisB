@@ -248,6 +248,11 @@ button:focus-visible,
 .page-heading h3 { font-weight: 700; letter-spacing: -.02em; color: var(--c-navy); margin: 0; }
 .page-heading p { color: var(--c-muted); margin: .15rem 0 0; font-size: .9rem; }
 
+/* Tombol kepala halaman: satu btn-primary di kanan, sisanya btn-outline-primary, berbahaya btn-outline-danger, ukuran normal.
+   Kembali bukan tombol aksi: pakai tautan kecil ini di atas judul halaman detail dan form. */
+.page-back { display: inline-flex; align-items: center; gap: .35rem; margin-bottom: .35rem; font-size: .875rem; color: var(--c-muted); text-decoration: none; }
+.page-back:hover { color: var(--c-primary); }
+
 /* --- Panel/Card umum pengganti card polos --- */
 .app-panel {
     background: var(--bg-white);

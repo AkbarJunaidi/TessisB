@@ -21,9 +21,9 @@
         @if(auth()->user()->isSuperAdmin())
         <a
             href="{{ route('users.create') }}"
-            class="btn btn-primary"
+            class="btn btn-primary d-flex align-items-center gap-2 fw-medium"
         >
-            <i class="bi bi-person-plus me-2"></i>
+            <i class="bi bi-person-plus"></i>
             Tambah User
         </a>
         @endif

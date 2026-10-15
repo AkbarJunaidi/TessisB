@@ -30,11 +30,11 @@
 
         @if($canManage && $repair->isActive())
             <div class="d-flex flex-wrap gap-2">
-                <button type="button" class="btn btn-outline-danger px-3" data-bs-toggle="modal" data-bs-target="#cancelRepairModal">
-                    <i class="bi bi-x-circle me-1"></i> Batalkan Catatan
+                <button type="button" class="btn btn-outline-danger d-flex align-items-center gap-2 fw-medium" data-bs-toggle="modal" data-bs-target="#cancelRepairModal">
+                    <i class="bi bi-x-circle"></i> Batalkan Catatan
                 </button>
-                <button type="button" class="btn btn-primary px-3" data-bs-toggle="modal" data-bs-target="#completeRepairModal">
-                    <i class="bi bi-check2-circle me-1"></i> Selesaikan Perbaikan
+                <button type="button" class="btn btn-primary d-flex align-items-center gap-2 fw-medium" data-bs-toggle="modal" data-bs-target="#completeRepairModal">
+                    <i class="bi bi-check2-circle"></i> Selesaikan Perbaikan
                 </button>
             </div>
         @endif

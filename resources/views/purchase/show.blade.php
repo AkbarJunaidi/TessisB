@@ -25,60 +25,67 @@
 
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
         <div>
+            <a data-back href="{{ route('purchases.index') }}" class="page-back"><i class="bi bi-arrow-left"></i> Pembelian</a>
             <h3 class="fw-bold mb-1">{{ $purchase->code }}</h3>
             <span class="badge {{ \App\Models\Purchase::STATUS_BADGES[$purchase->status] ?? 'bg-secondary' }}">{{ $purchase->status }}</span>
             <span class="badge {{ $purchase->payment_status === \App\Models\Purchase::PAYMENT_PAID ? 'bg-success' : 'bg-warning text-dark' }}">{{ $purchase->payment_status }}</span>
         </div>
 
         <div class="d-flex flex-wrap gap-2">
-            <a data-back href="{{ route('purchases.index') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-1"></i> Kembali
-            </a>
-
-            @if($canDecide)
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#approveModal">
-                    <i class="bi bi-check2-circle me-1"></i> Setujui
-                </button>
-                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
-                    <i class="bi bi-x-circle me-1"></i> Tolak
-                </button>
-            @endif
-
-            @if($purchase->isEditable() && $canEdit)
-                <a href="{{ route('purchases.edit', $purchase) }}" class="btn btn-warning">
-                    <i class="bi bi-pencil-square me-1"></i> Ubah
-                </a>
-                <form action="{{ route('purchases.submit', $purchase) }}" method="POST" data-confirm="Ajukan pembelian ini untuk approval?" data-confirm-label="Ajukan">
-                    @csrf
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-send me-1"></i> Ajukan Approval</button>
-                </form>
-            @endif
-
-            @if($purchase->canReceive() && $user->hasPermission('purchase', 'receive'))
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#receiveModal">
-                    <i class="bi bi-box-arrow-in-down me-1"></i> Barang Diterima
-                </button>
-            @endif
-
-            @if($purchase->canPay() && $user->hasPermission('purchase', 'pay'))
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#payModal">
-                    <i class="bi bi-cash-coin me-1"></i> Catat Pembayaran
-                </button>
-            @endif
-
-            @if($purchase->canCancel() && $canEdit)
-                <form action="{{ route('purchases.cancel', $purchase) }}" method="POST" data-confirm="Batalkan pembelian ini?" data-confirm-label="Ya, batalkan" data-confirm-danger>
-                    @csrf
-                    <button type="submit" class="btn btn-outline-danger"><i class="bi bi-x-circle me-1"></i> Batalkan</button>
-                </form>
-            @endif
+            @php
+                $canReceiveNow = $purchase->canReceive() && $user->hasPermission('purchase', 'receive');
+            @endphp
 
             @if($purchase->canDelete() && $user->hasPermission('purchase', 'delete'))
                 <form action="{{ route('purchases.destroy', $purchase) }}" method="POST" data-confirm="Hapus draft pembelian ini?" data-confirm-label="Hapus" data-confirm-danger>
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i> Hapus</button>
+                    <button type="submit" class="btn btn-outline-danger d-flex align-items-center gap-2 fw-medium"><i class="bi bi-trash"></i> Hapus</button>
                 </form>
+            @endif
+
+            @if($purchase->canCancel() && $canEdit)
+                <form action="{{ route('purchases.cancel', $purchase) }}" method="POST" data-confirm="Batalkan pembelian ini?" data-confirm-label="Ya, batalkan" data-confirm-danger>
+                    @csrf
+                    <button type="submit" class="btn btn-outline-danger d-flex align-items-center gap-2 fw-medium"><i class="bi bi-x-circle"></i> Batalkan</button>
+                </form>
+            @endif
+
+            @if($canDecide)
+                <button type="button" class="btn btn-outline-danger d-flex align-items-center gap-2 fw-medium" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                    <i class="bi bi-x-circle"></i> Tolak
+                </button>
+            @endif
+
+            @if($purchase->isEditable() && $canEdit)
+                <a href="{{ route('purchases.edit', $purchase) }}" class="btn btn-outline-primary d-flex align-items-center gap-2 fw-medium">
+                    <i class="bi bi-pencil-square"></i> Ubah
+                </a>
+            @endif
+
+            @if($purchase->canPay() && $user->hasPermission('purchase', 'pay'))
+                <button type="button" class="btn {{ $canReceiveNow ? 'btn-outline-primary' : 'btn-primary' }} d-flex align-items-center gap-2 fw-medium" data-bs-toggle="modal" data-bs-target="#payModal">
+                    <i class="bi bi-cash-coin"></i> Catat Pembayaran
+                </button>
+            @endif
+
+            @if($canDecide)
+                <button type="button" class="btn btn-primary d-flex align-items-center gap-2 fw-medium" data-bs-toggle="modal" data-bs-target="#approveModal">
+                    <i class="bi bi-check2-circle"></i> Setujui
+                </button>
+            @endif
+
+            @if($purchase->isEditable() && $canEdit)
+                <form action="{{ route('purchases.submit', $purchase) }}" method="POST" data-confirm="Ajukan pembelian ini untuk approval?" data-confirm-label="Ajukan">
+                    @csrf
+                    <button type="submit" class="btn btn-primary d-flex align-items-center gap-2 fw-medium"><i class="bi bi-send"></i> Ajukan Approval</button>
+                </form>
+            @endif
+
+            @if($canReceiveNow)
+                <button type="button" class="btn btn-primary d-flex align-items-center gap-2 fw-medium" data-bs-toggle="modal" data-bs-target="#receiveModal">
+                    <i class="bi bi-box-arrow-in-down"></i> Barang Diterima
+                </button>
             @endif
         </div>
     </div>

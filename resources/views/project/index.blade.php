@@ -16,15 +16,15 @@
                     <i class="bi bi-kanban"></i> Pipeline
                 </a>
             @endif
-            @if(auth()->user()->hasPermission('tracking_progress', 'create_project'))
-                <a href="{{ route('projects.create') }}" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm fw-medium">
-                    <i class="bi bi-folder-plus"></i> Tambah Project
-                </a>
-            @endif
             @if(auth()->user()->isSuperAdmin())
-                <button type="button" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm fw-medium" data-bs-toggle="modal" data-bs-target="#pickProjectModal">
+                <button type="button" class="btn btn-outline-primary d-flex align-items-center gap-2 fw-medium" data-bs-toggle="modal" data-bs-target="#pickProjectModal">
                     <i class="bi bi-file-earmark-text"></i> Buat Surat Jalan
                 </button>
+            @endif
+            @if(auth()->user()->hasPermission('tracking_progress', 'create_project'))
+                <a href="{{ route('projects.create') }}" class="btn btn-primary d-flex align-items-center gap-2 fw-medium">
+                    <i class="bi bi-folder-plus"></i> Tambah Project
+                </a>
             @endif
         </div>
     </div>

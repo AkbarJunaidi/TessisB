@@ -25,12 +25,12 @@
         $inventoryUrl = $isManager ? route('inventory.index') : null;
         $borrowedUrl = $user->hasPermission('borrowed_items', 'view') ? route('borrowed-items.index') : $inventoryUrl;
 
-        // Pintasan fitur yang paling sering dipakai, sesuai izin user.
+        // Pintasan sesuai izin; aksi utama (Scan Barang) satu-satunya yang penuh warna dan paling kanan.
         $shortcuts = array_filter([
-            $user->hasPermission('scan_barang', 'view') ? ['Scan Barang', 'bi-upc-scan', route('scan.index'), true] : null,
-            $user->hasPermission('tracking_progress', 'create_project') ? ['Project Baru', 'bi-plus-lg', route('projects.create'), false] : null,
-            $isManager && $user->hasPermission('inventory', 'create') ? ['Tambah Barang', 'bi-plus-lg', route('inventory.create'), false] : null,
             $user->hasPermission('finance', 'manage') ? ['Catat Transaksi', 'bi-plus-lg', route('finance.transactions.index'), false] : null,
+            $isManager && $user->hasPermission('inventory', 'create') ? ['Tambah Barang', 'bi-plus-circle', route('inventory.create'), false] : null,
+            $user->hasPermission('tracking_progress', 'create_project') ? ['Project Baru', 'bi-folder-plus', route('projects.create'), false] : null,
+            $user->hasPermission('scan_barang', 'view') ? ['Scan Barang', 'bi-upc-scan', route('scan.index'), true] : null,
         ]);
 
         // Baris Ringkasan di sebelah kartu Keuangan: [label, ikon, nilai, keterangan, url, kelas warna nilai].
@@ -48,15 +48,15 @@
 
     <div class="container-fluid p-0">
 
-        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
             <div>
-                <h3 class="fw-bold mb-1">Dashboard</h3>
-                <p class="d-none d-md-block text-muted mb-0">Ringkasan operasional dan keuangan.</p>
+                <h3 class="fw-bold text-dark m-0">Dashboard</h3>
+                <p class="d-none d-md-block text-muted small m-0">Ringkasan operasional dan keuangan.</p>
             </div>
             @if($shortcuts)
                 <div class="d-flex flex-wrap gap-2">
                     @foreach($shortcuts as [$label, $icon, $url, $primary])
-                        <a href="{{ $url }}" class="btn btn-sm {{ $primary ? 'btn-primary' : 'btn-outline-primary' }} rounded-pill px-3"><i class="bi {{ $icon }} me-1"></i>{{ $label }}</a>
+                        <a href="{{ $url }}" class="btn {{ $primary ? 'btn-primary' : 'btn-outline-primary' }} d-flex align-items-center gap-2 fw-medium"><i class="bi {{ $icon }}"></i> {{ $label }}</a>
                     @endforeach
                 </div>
             @endif

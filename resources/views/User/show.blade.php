@@ -9,6 +9,7 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
 
         <div>
+            <a data-back href="{{ route('users.index') }}" class="page-back"><i class="bi bi-arrow-left"></i> Kelola User</a>
 
             <h3 class="fw-bold mb-1">
                 Detail User
@@ -19,14 +20,6 @@
             </p>
 
         </div>
-
-        <a data-back
-            href="{{ route('users.index') }}"
-            class="btn btn-secondary"
-        >
-            <i class="bi bi-arrow-left me-2"></i>
-            Kembali
-        </a>
 
     </div>
 

@@ -35,8 +35,8 @@
             <p class="d-none d-md-block text-muted mb-0">Semua pemasukan dan pengeluaran perusahaan.</p>
         </div>
         @if($canManage)
-            <button type="button" class="btn btn-primary" id="btnAddTransaction">
-                <i class="bi bi-plus-lg me-1"></i> Catat Transaksi
+            <button type="button" class="btn btn-primary d-flex align-items-center gap-2 fw-medium" id="btnAddTransaction">
+                <i class="bi bi-plus-lg"></i> Catat Transaksi
             </button>
         @endif
     </div>

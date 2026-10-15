@@ -17,8 +17,8 @@
         </div>
 
         @if(auth()->user()->isSuperAdmin())
-            <button type="button" class="btn btn-sm btn-outline-danger fw-medium" data-bs-toggle="modal" data-bs-target="#deleteRangeModal">
-                <i class="bi bi-trash3 me-1"></i>Hapus Rentang Tanggal
+            <button type="button" class="btn btn-outline-danger d-flex align-items-center gap-2 fw-medium" data-bs-toggle="modal" data-bs-target="#deleteRangeModal">
+                <i class="bi bi-trash3"></i> Hapus Rentang Tanggal
             </button>
         @endif
     </div>
