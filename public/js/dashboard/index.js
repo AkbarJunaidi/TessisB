@@ -53,7 +53,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         const good = goodWhenUp ? value >= 0 : value <= 0;
         el.className = 'small fw-semibold ' + (good ? 'text-success' : 'text-danger');
-        el.innerHTML = '<i class="bi bi-arrow-' + (value >= 0 ? 'up' : 'down') + '-right"></i> ' + Math.abs(value) +
+        const pct = Math.abs(value) > 999 ? '>999' : Math.abs(value);
+        el.innerHTML = '<i class="bi bi-arrow-' + (value >= 0 ? 'up' : 'down') + '-right"></i> ' + pct +
             '% <span class="text-muted fw-normal">vs periode sebelumnya</span>';
     };
 

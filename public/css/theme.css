@@ -678,6 +678,8 @@ button:focus-visible,
    Lebar kolom diberi persen lewat u-w-Npct di <th> (jumlah 100) supaya ritme kolom sama di semua halaman; sel boleh turun baris
    (angka dan tanggal text-nowrap) dan tabel tidak melebihi wadah, jadi tanpa scrollbar horizontal. */
 .table td, .table th { overflow-wrap: anywhere; }
+/* Header kolom tidak boleh terpotong di tengah kata (turun baris hanya di spasi); bila lebar minimum kolom melebihi wadah, .table-responsive memberi scroll horizontal. */
+.table thead th { overflow-wrap: normal; word-break: normal; hyphens: none; }
 .table td.text-end, .table th.text-end { font-variant-numeric: tabular-nums; }
 
 /* Di bawah 1200px ruang sempit: tanggal ikut boleh turun baris, angka tetap utuh. */

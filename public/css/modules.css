@@ -86,6 +86,13 @@
 .dash-row.has-value { grid-template-columns: 5.5rem minmax(0, 1fr) 2rem 5rem; }
 a.dash-row:hover { color: var(--c-primary); }
 .dash-row-count { font-weight: 600; text-align: right; }
+/* Ringkasan di samping Keuangan: baris dibagi rata supaya tinggi kartu sama dan tidak ada ruang kosong. */
+@media (min-width: 1200px) {
+    .dash-summary { display: flex; flex-direction: column; }
+    .dash-summary-row { flex: 1 1 0; }
+}
+/* Deskripsi log dibatasi dua baris agar teks panjang tidak merusak daftar. */
+.dash-log-desc { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
 .dash-row-value { font-size: .8125rem; color: var(--c-muted); text-align: right; white-space: nowrap; }
 @media (max-width: 575.98px) {
     .dash-row.has-value { grid-template-columns: 5.5rem minmax(0, 1fr) 2rem; }

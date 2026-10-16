@@ -35,8 +35,8 @@
 
         // Baris Ringkasan di sebelah kartu Keuangan: [label, ikon, nilai, keterangan, url, kelas warna nilai].
         $summaryRows = array_filter([
-            $financeSummary ? ['Piutang Client', 'bi-person-lines-fill', $rp($financeSummary['receivables']['total']), $financeSummary['receivables']['count'] . ' project belum lunas', route('finance.summary'), 'text-primary'] : null,
-            $financeSummary ? ['Hutang Vendor', 'bi-bag-check', $rp($financeSummary['payables']['total']), $financeSummary['payables']['count'] . ' pembelian belum dibayar', $user->hasPermission('purchase', 'view') ? route('purchases.index') : route('finance.summary'), 'text-warning-emphasis'] : null,
+            $financeSummary ? ['Piutang Client', 'bi-person-lines-fill', $rp($financeSummary['receivables']['total']), $financeSummary['receivables']['count'] . ' belum lunas', route('finance.summary'), 'text-primary'] : null,
+            $financeSummary ? ['Hutang Vendor', 'bi-bag-check', $rp($financeSummary['payables']['total']), $financeSummary['payables']['count'] . ' belum dibayar', $user->hasPermission('purchase', 'view') ? route('purchases.index') : route('finance.summary'), 'text-warning-emphasis'] : null,
             $hasPipeline ? ['Project Berjalan', 'bi-kanban', $stageMap->get('In Progress')['count'] ?? 0, $activeProjects . ' project aktif', $pipelineUrl, ''] : null,
             $hasEquipment ? ['Alat di Lapangan', 'bi-box-arrow-up-right', $borrowedCount, 'dari ' . $equipment['total'] . ' unit', $borrowedUrl, ''] : null,
         ]);
@@ -64,18 +64,24 @@
 
         {{-- Perlu perhatian: hitungan notifikasi otomatis per jenis (Super Admin dan Admin). --}}
         @if(!empty($attention))
-            <div class="row g-2 mb-3">
-                @foreach($attention as $card)
-                    <div class="col-6 col-lg-3">
-                        <a href="{{ route($card['route']) }}" class="card border-0 shadow-sm rounded-3 text-decoration-none text-dark hover-lift h-100">
-                            <div class="card-body p-3 d-flex justify-content-between align-items-center gap-2">
-                                <span class="small"><i class="bi {{ $card['icon'] }} me-1 {{ $card['count'] > 0 ? 'text-danger' : 'text-muted' }}"></i>{{ $card['label'] }}</span>
-                                <span class="fs-5 fw-bold {{ $card['count'] > 0 ? 'text-danger' : 'text-muted' }}">{{ $card['text'] }}</span>
-                            </div>
-                        </a>
-                    </div>
-                @endforeach
-            </div>
+            @if(collect($attention)->sum('count') > 0)
+                <div class="row g-2 mb-3">
+                    @foreach($attention as $card)
+                        <div class="col-6 col-lg-3">
+                            <a href="{{ route($card['route']) }}" class="card border-0 shadow-sm rounded-3 text-decoration-none text-dark hover-lift h-100">
+                                <div class="card-body p-3 d-flex justify-content-between align-items-center gap-2">
+                                    <span class="small"><i class="bi {{ $card['icon'] }} me-1 {{ $card['count'] > 0 ? 'text-danger' : 'text-muted' }}"></i>{{ $card['label'] }}</span>
+                                    <span class="fs-5 fw-bold {{ $card['count'] > 0 ? 'text-danger' : 'text-muted' }}">{{ $card['text'] }}</span>
+                                </div>
+                            </a>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="card border-0 shadow-sm rounded-3 mb-3">
+                    <div class="card-body py-2 px-3 small text-muted"><i class="bi bi-check-circle text-success me-1"></i>Tidak ada yang perlu perhatian saat ini.</div>
+                </div>
+            @endif
         @endif
 
         {{-- Keuangan satu kartu dengan pilihan periode, ditemani ringkasan angka penting. --}}
@@ -131,18 +137,18 @@
                 @if($summaryRows)
                     <div class="col-12 {{ $fin ? 'col-xl-4' : '' }}">
                         <div class="card border-0 shadow-sm rounded-3 h-100">
-                            <div class="card-body p-3">
+                            <div class="card-body p-3 dash-summary">
                                 <h6 class="fw-bold mb-3">Ringkasan</h6>
                                 @foreach($summaryRows as [$label, $icon, $value, $note, $url, $tone])
                                     @if($url)
-                                        <a href="{{ $url }}" class="d-flex align-items-center gap-3 py-2 text-decoration-none text-dark {{ $loop->first ? '' : 'border-top' }}">
+                                        <a href="{{ $url }}" class="dash-summary-row d-flex align-items-center gap-3 py-2 text-decoration-none text-dark {{ $loop->first ? '' : 'border-top' }}">
                                     @else
-                                        <div class="d-flex align-items-center gap-3 py-2 {{ $loop->first ? '' : 'border-top' }}">
+                                        <div class="dash-summary-row d-flex align-items-center gap-3 py-2 {{ $loop->first ? '' : 'border-top' }}">
                                     @endif
                                         <span class="avatar-initial u-w-30px u-h-30px"><i class="bi {{ $icon }}"></i></span>
                                         <span class="flex-grow-1 min-w-0">
                                             <span class="d-block small fw-semibold">{{ $label }}</span>
-                                            <span class="d-block text-muted small text-truncate">{{ $note }}</span>
+                                            <span class="d-block text-muted small">{{ $note }}</span>
                                         </span>
                                         <span class="fw-semibold text-nowrap {{ $tone }}">{{ $value }}</span>
                                     @if($url)
@@ -265,44 +271,69 @@
             </div>
         @endif
 
-        {{-- Task saya, Surat Jalan terbaru, notifikasi terbaru. --}}
-        <div class="row g-3 mb-3">
+        {{-- Task saya dan notifikasi bertumpuk (tinggi mengikuti isi); Surat Jalan terbaru di sebelahnya. --}}
+        @php $showSuratJalan = $user->hasPermission('surat_jalan', 'view'); @endphp
+        <div class="row g-3 mb-3 align-items-start">
 
-            @if($hasPipeline)
-                <div class="col-12 col-lg">
-                    <div class="card border-0 shadow-sm rounded-3 h-100">
-                        <div class="card-body p-3">
-                            <h6 class="fw-bold mb-3">Task Saya</h6>
-                            @forelse($myTasks as $task)
-                                @php
-                                    $deadline = \Carbon\Carbon::parse($task->deadline);
-                                    $isOverdue = $deadline->copy()->startOfDay()->lt(now()->startOfDay());
-                                @endphp
-                                <div class="d-flex justify-content-between gap-2 py-2 border-top">
-                                    <div class="min-w-0">
-                                        <a href="{{ route('projects.show', $task->project_id) }}" class="text-decoration-none text-dark d-block text-truncate">{{ $task->title }}</a>
-                                        <div class="text-muted small text-truncate">{{ $task->project->short_name ?? '-' }}</div>
+            <div class="col-12 {{ $showSuratJalan ? 'col-lg-5' : '' }}">
+                <div class="d-flex flex-column gap-3">
+
+                    @if($hasPipeline)
+                        <div class="card border-0 shadow-sm rounded-3">
+                            <div class="card-body p-3">
+                                <h6 class="fw-bold mb-3">Task Saya</h6>
+                                @forelse($myTasks as $task)
+                                    @php
+                                        $deadline = \Carbon\Carbon::parse($task->deadline);
+                                        $isOverdue = $deadline->copy()->startOfDay()->lt(now()->startOfDay());
+                                    @endphp
+                                    <div class="d-flex justify-content-between gap-2 py-2 border-top">
+                                        <div class="min-w-0">
+                                            <a href="{{ route('projects.show', $task->project_id) }}" class="text-decoration-none text-dark d-block text-truncate">{{ $task->title }}</a>
+                                            <div class="text-muted small text-truncate">{{ $task->project->short_name ?? '-' }}</div>
+                                        </div>
+                                        <span class="{{ $isOverdue ? 'badge-soft-danger' : 'text-muted small' }} text-nowrap align-self-start">{{ $deadline->format('d/m/Y') }}</span>
                                     </div>
-                                    <span class="{{ $isOverdue ? 'badge-soft-danger' : 'text-muted small' }} text-nowrap align-self-start">{{ $deadline->format('d/m/Y') }}</span>
-                                </div>
+                                @empty
+                                    <div class="text-muted small">Tidak ada task yang perlu dikerjakan.</div>
+                                @endforelse
+                            </div>
+                        </div>
+                    @endif
+
+                    <div class="card border-0 shadow-sm rounded-3">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold mb-0">Notifikasi Terbaru</h6>
+                                <a href="{{ route('announcements.index') }}" class="small text-decoration-none">Lihat Semua</a>
+                            </div>
+                            @forelse($latestNotifications as $item)
+                                <a href="{{ $item['url'] }}" class="d-flex gap-2 py-2 border-top text-decoration-none text-dark">
+                                    <i class="bi {{ $item['icon'] }} text-primary"></i>
+                                    <div class="min-w-0">
+                                        <div class="small fw-semibold text-truncate">{{ $item['title'] }}</div>
+                                        <div class="text-muted small text-truncate">{{ $item['message'] }}</div>
+                                    </div>
+                                </a>
                             @empty
-                                <div class="text-muted small">Tidak ada task yang perlu dikerjakan.</div>
+                                <div class="text-muted small">Tidak ada notifikasi baru.</div>
                             @endforelse
                         </div>
                     </div>
-                </div>
-            @endif
 
-            @if($user->hasPermission('surat_jalan', 'view'))
-                <div class="col-12 col-lg">
-                    <div class="card border-0 shadow-sm rounded-3 h-100">
+                </div>
+            </div>
+
+            @if($showSuratJalan)
+                <div class="col-12 col-lg-7">
+                    <div class="card border-0 shadow-sm rounded-3">
                         <div class="card-body p-3">
                             <h6 class="fw-bold mb-3">Surat Jalan Terbaru</h6>
                             @forelse($recentSuratJalan as $suratJalan)
                                 <div class="d-flex justify-content-between gap-2 py-2 border-top">
                                     <div class="min-w-0">
                                         <a href="{{ route('surat-jalan.show', $suratJalan->id) }}" class="text-decoration-none text-dark d-block text-truncate">{{ $suratJalan->nomor }}</a>
-                                        <div class="text-muted small text-truncate">{{ $suratJalan->project->short_name ?? '-' }}</div>
+                                        <div class="text-muted small text-truncate">{{ $suratJalan->referensiLabel() }} &middot; {{ \Carbon\Carbon::parse($suratJalan->tanggal_terbit)->format('d/m/Y') }}</div>
                                     </div>
                                     <span class="{{ $suratJalan->status === 'Selesai' ? 'badge-soft-success' : 'badge-soft-warning' }} text-nowrap align-self-start">{{ $suratJalan->status }}</span>
                                 </div>
@@ -313,28 +344,6 @@
                     </div>
                 </div>
             @endif
-
-            <div class="col-12 col-lg">
-                <div class="card border-0 shadow-sm rounded-3 h-100">
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="fw-bold mb-0">Notifikasi Terbaru</h6>
-                            <a href="{{ route('announcements.index') }}" class="small text-decoration-none">Lihat Semua</a>
-                        </div>
-                        @forelse($latestNotifications as $item)
-                            <a href="{{ $item['url'] }}" class="d-flex gap-2 py-2 border-top text-decoration-none text-dark">
-                                <i class="bi {{ $item['icon'] }} text-primary"></i>
-                                <div class="min-w-0">
-                                    <div class="small fw-semibold text-truncate">{{ $item['title'] }}</div>
-                                    <div class="text-muted small text-truncate">{{ $item['message'] }}</div>
-                                </div>
-                            </a>
-                        @empty
-                            <div class="text-muted small">Tidak ada notifikasi baru.</div>
-                        @endforelse
-                    </div>
-                </div>
-            </div>
 
         </div>
 
@@ -348,18 +357,26 @@
                     @endif
                 </div>
                 @forelse($recentActivities as $activity)
-                    <div class="d-flex align-items-center gap-2 py-2 border-top">
+                    @php $isShortAction = mb_strlen($activity->action) <= 16; @endphp
+                    <div class="d-flex align-items-start gap-2 py-2 border-top">
                         <div class="avatar-initial u-w-30px u-h-30px u-fs-p75rem">{{ strtoupper(substr($activity->user->name ?? 'SY', 0, 2)) }}</div>
                         <div class="min-w-0 flex-grow-1">
-                            <span class="small fw-semibold">{{ $activity->user->name ?? 'System / Deleted User' }}</span>
-                            <span class="badge-soft-secondary ms-1">{{ $activity->module }}</span>
-                            @if(in_array($activity->action, ['Delete', 'Logout']))
-                                <span class="badge-soft-danger">{{ $activity->action }}</span>
-                            @elseif(in_array($activity->action, ['Create', 'Login', 'Upload']))
-                                <span class="badge-soft-success">{{ $activity->action }}</span>
-                            @else
-                                <span class="badge-soft-warning">{{ $activity->action }}</span>
-                            @endif
+                            <div class="d-flex flex-wrap align-items-center gap-1">
+                                <span class="small fw-semibold">{{ $activity->user->name ?? 'System / Deleted User' }}</span>
+                                <span class="badge-soft-secondary">{{ $activity->module }}</span>
+                                @if($isShortAction)
+                                    @if(in_array($activity->action, ['Delete', 'Logout']))
+                                        <span class="badge-soft-danger">{{ $activity->action }}</span>
+                                    @elseif(in_array($activity->action, ['Create', 'Login', 'Upload']))
+                                        <span class="badge-soft-success">{{ $activity->action }}</span>
+                                    @else
+                                        <span class="badge-soft-warning">{{ $activity->action }}</span>
+                                    @endif
+                                @endif
+                            </div>
+                            @unless($isShortAction)
+                                <div class="dash-log-desc small text-muted" title="{{ $activity->action }}">{{ $activity->action }}</div>
+                            @endunless
                         </div>
                         <span class="text-muted small text-nowrap">{{ $activity->created_at->format('d/m/Y H:i') }}</span>
                     </div>

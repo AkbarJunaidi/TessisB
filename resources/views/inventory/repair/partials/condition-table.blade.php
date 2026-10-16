@@ -12,8 +12,8 @@
                 <th class="text-end u-w-8pct" title="Unit yang dikirim servis dan sudah selesai; unit yang sama dihitung lagi tiap kali dikirim">Diservis</th>
                 <th class="text-end u-w-8pct">Berhasil</th>
                 <th class="text-end u-w-7pct">Gagal</th>
-                <th class="text-end u-w-9pct">% Berhasil</th>
-                <th class="text-end u-w-8pct">% Gagal</th>
+                <th class="text-end u-w-9pct">%&nbsp;Berhasil</th>
+                <th class="text-end u-w-8pct">%&nbsp;Gagal</th>
                 <th class="u-w-12pct">Terakhir</th>
                 <th class="u-w-11pct">Penanda</th>
                 <th class="pe-4 text-center u-w-8pct">Rincian</th>

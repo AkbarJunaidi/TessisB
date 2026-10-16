@@ -235,11 +235,12 @@ class DashboardService
         return ['days' => $result, 'total' => $projects->count()];
     }
 
-    /** Surat Jalan terbaru lintas project. */
+    /** Surat Jalan terbaru lintas project; yang belum selesai tampil lebih dulu. */
     public function getRecentSuratJalan(int $limit = 5): Collection
     {
         return SuratJalan::query()
-            ->with('project:id,name')
+            ->with(['project:id,name', 'dipinjamOleh:id,name'])
+            ->orderByRaw("CASE WHEN status = 'Selesai' THEN 1 ELSE 0 END")
             ->latest()
             ->take($limit)
             ->get();
