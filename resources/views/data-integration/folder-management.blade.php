@@ -76,11 +76,11 @@
             <table class="table table-hover table-modern align-middle mb-0">
                 <thead>
                     <tr>
-                        <th scope="col" class="ps-4 py-3">Nama</th>
-                        <th scope="col" class="d-none d-md-table-cell">Tipe</th>
-                        <th scope="col" class="d-none d-md-table-cell">Pemilik</th>
-                        <th scope="col" class="d-none d-md-table-cell">Dibuat</th>
-                        <th scope="col" class="pe-4 text-center u-w-64px">Aksi</th>
+                        <th scope="col" class="ps-4 py-3 u-w-40pct">Nama</th>
+                        <th scope="col" class="d-none d-md-table-cell u-w-12pct">Tipe</th>
+                        <th scope="col" class="d-none d-md-table-cell u-w-18pct">Pemilik</th>
+                        <th scope="col" class="d-none d-md-table-cell u-w-18pct">Dibuat</th>
+                        <th scope="col" class="pe-4 u-w-64px text-center u-w-12pct">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -124,16 +124,16 @@
                                             @endif
                                             @if($ownLocked)
                                                 <i class="bi bi-lock-fill text-warning ms-1"
-                                                   title="Dikunci oleh {{ $folder->lockedBy->name ?? 'pengguna yang sudah dihapus' }} pada {{ $folder->locked_at->format('d M Y H:i') }}"></i>
+                                                   title="Dikunci oleh {{ $folder->lockedBy->name ?? 'pengguna yang sudah dihapus' }} pada {{ $folder->locked_at->translatedFormat('d M Y H:i') }}"></i>
                                             @endif
                                         </div>
-                                        <div class="drv-meta-mobile d-md-none">Folder &middot; {{ $ownerName }} &middot; {{ $folder->created_at->format('d M Y') }}</div>
+                                        <div class="drv-meta-mobile d-md-none">Folder &middot; {{ $ownerName }} &middot; {{ $folder->created_at->translatedFormat('d M Y') }}</div>
                                     </div>
                                 </a>
                             </td>
                             <td class="d-none d-md-table-cell text-secondary small">Folder</td>
                             <td class="d-none d-md-table-cell text-secondary small">{{ $ownerName }}</td>
-                            <td class="d-none d-md-table-cell text-secondary small">{{ $folder->created_at->format('d M Y H:i') }}</td>
+                            <td class="d-none d-md-table-cell text-secondary small text-nowrap">{{ $folder->created_at->translatedFormat('d M Y H:i') }}</td>
                             <td class="pe-4 text-center">
                                 <div class="dropdown">
                                     <button class="btn btn-sm btn-light text-secondary" type="button" data-row-menu data-bs-toggle="dropdown" aria-expanded="false" aria-label="Aksi folder">
@@ -204,16 +204,16 @@
                                             {{ $file->file_name }}
                                             @if($fileLocked)
                                                 <i class="bi bi-lock-fill text-warning ms-1"
-                                                   title="Dikunci oleh {{ $file->lockedBy->name ?? 'pengguna yang sudah dihapus' }} pada {{ $file->locked_at->format('d M Y H:i') }}"></i>
+                                                   title="Dikunci oleh {{ $file->lockedBy->name ?? 'pengguna yang sudah dihapus' }} pada {{ $file->locked_at->translatedFormat('d M Y H:i') }}"></i>
                                             @endif
                                         </div>
-                                        <div class="drv-meta-mobile d-md-none">{{ strtoupper($file->file_type) }} &middot; {{ $ownerName }} &middot; {{ $file->created_at->format('d M Y') }}</div>
+                                        <div class="drv-meta-mobile d-md-none">{{ strtoupper($file->file_type) }} &middot; {{ $ownerName }} &middot; {{ $file->created_at->translatedFormat('d M Y') }}</div>
                                     </div>
                                 </div>
                             </td>
                             <td class="d-none d-md-table-cell"><span class="badge-soft-secondary px-2 py-1 rounded-pill small text-uppercase">{{ $file->file_type }}</span></td>
                             <td class="d-none d-md-table-cell text-secondary small">{{ $ownerName }}</td>
-                            <td class="d-none d-md-table-cell text-secondary small">{{ $file->created_at->format('d M Y H:i') }}</td>
+                            <td class="d-none d-md-table-cell text-secondary small text-nowrap">{{ $file->created_at->translatedFormat('d M Y H:i') }}</td>
                             <td class="pe-4 text-center">
                                 <div class="dropdown">
                                     <button class="btn btn-sm btn-light text-secondary" type="button" data-row-menu data-bs-toggle="dropdown" aria-expanded="false" aria-label="Aksi file">

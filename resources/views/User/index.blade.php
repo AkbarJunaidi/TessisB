@@ -44,21 +44,21 @@
 
                     <tr>
 
-                        <th width="60" class="ps-4">#</th>
+                        <th width="60" class="ps-4 u-w-5pct">#</th>
 
-                        <th>Nama</th>
+                        <th class="u-w-17pct">Nama</th>
 
-                        <th>Email</th>
+                        <th class="u-w-22pct">Email</th>
 
-                        <th>Role</th>
+                        <th class="u-w-10pct">Role</th>
 
-                        <th>Status</th>
+                        <th class="u-w-10pct">Status</th>
 
-                        <th>Login Terakhir</th>
+                        <th class="u-w-14pct">Login Terakhir</th>
 
-                        <th>Info</th>
+                        <th class="u-w-12pct">Info</th>
 
-                        <th class="text-center pe-4">
+                        <th class="pe-4 text-center u-w-10pct">
                             Aksi
                         </th>
 
@@ -90,7 +90,7 @@
 
                             </td>
 
-                            <td data-label="Role">
+                            <td class="" data-label="Role">
 
                                 @switch($user->role)
 
@@ -120,7 +120,7 @@
 
                             </td>
 
-                            <td data-label="Status">
+                            <td class="" data-label="Status">
 
                                 @if($user->status == 'active')
 
@@ -138,9 +138,9 @@
 
                             </td>
 
-                            <td data-label="Login Terakhir">
+                            <td class="text-nowrap" data-label="Login Terakhir">
 
-                                {{ $user->last_login_at?->format('d M Y H:i') ?? '-' }}
+                                {{ $user->last_login_at?->translatedFormat('d M Y H:i') ?? '-' }}
 
                             </td>
 
@@ -155,7 +155,7 @@
 
                             </td>
 
-                            <td class="text-center pe-4 cell-block" data-label="Aksi">
+                            <td class="pe-4 cell-block text-center" data-label="Aksi">
 
                                 <div class="d-flex justify-content-center gap-2">
 

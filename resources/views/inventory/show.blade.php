@@ -129,11 +129,11 @@
                             </tr>
                             <tr>
                                 <td class="text-muted py-2 ps-0"><i class="bi bi-calendar-event text-secondary me-2"></i>Tanggal Input</td>
-                                <td class="text-dark py-2 text-end">{{ $inventory->created_at ? $inventory->created_at->format('d M Y, H:i') . ' WIB' : '-' }}</td>
+                                <td class="text-dark py-2 text-end">{{ $inventory->created_at ? $inventory->created_at->translatedFormat('d M Y, H:i') . ' WIB' : '-' }}</td>
                             </tr>
                             <tr>
                                 <td class="text-muted py-2 ps-0"><i class="bi bi-clock text-secondary me-2"></i>Terakhir Diperbarui</td>
-                                <td class="text-dark py-2 text-end">{{ $inventory->updated_at ? $inventory->updated_at->format('d M Y, H:i') . ' WIB' : '-' }}</td>
+                                <td class="text-dark py-2 text-end">{{ $inventory->updated_at ? $inventory->updated_at->translatedFormat('d M Y, H:i') . ' WIB' : '-' }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -579,11 +579,11 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead>
                             <tr class="text-muted small text-uppercase">
-                                <th>Project / Peminjam</th>
-                                <th>No. Surat Jalan</th>
-                                <th class="text-center">Jumlah</th>
-                                <th>Tanggal Pinjam</th>
-                                <th>Status</th>
+                                <th class="u-w-30pct">Project / Peminjam</th>
+                                <th class="u-w-22pct">No. Surat Jalan</th>
+                                <th class="text-end u-w-12pct">Jumlah</th>
+                                <th class="u-w-18pct">Tanggal Pinjam</th>
+                                <th class="u-w-18pct">Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -598,7 +598,7 @@
                                 @endphp
                                 <tr>
                                     <td class="fw-semibold text-dark">{{ $item->suratJalan->referensiLabel() }}</td>
-                                    <td>
+                                    <td class="text-nowrap">
                                         {{-- Peminjaman langsung (tanpa Project) tidak punya halaman
                                              detail Surat Jalan yang valid - tampilkan teks saja. --}}
                                         @if($item->suratJalan->isPeminjamanLangsung())
@@ -609,9 +609,9 @@
                                             </a>
                                         @endif
                                     </td>
-                                    <td class="text-center">{{ $item->qty_dipakai }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($item->suratJalan->tanggal_terbit)->format('d/m/Y') }}</td>
-                                    <td>
+                                    <td class="text-end text-nowrap">{{ $item->qty_dipakai }}</td>
+                                    <td class="text-nowrap">{{ \Carbon\Carbon::parse($item->suratJalan->tanggal_terbit)->format('d/m/Y') }}</td>
+                                    <td class="">
                                         <span class="badge {{ $statusBadge[1] }} border px-2 py-1 rounded-pill fw-semibold u-fs-p7rem">{{ $statusBadge[0] }}</span>
                                     </td>
                                 </tr>

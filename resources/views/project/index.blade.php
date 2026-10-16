@@ -179,14 +179,14 @@
             <table class="table table-hover table-modern table-stack align-middle mb-0">
                 <thead>
                     <tr>
-                        <th class="ps-4 py-3">No</th>
-                        <th class="py-3">Nama Project</th>
-                        <th class="py-3">PIC</th>
-                        <th class="py-3">Tanggal</th>
-                        <th class="py-3">Lokasi</th>
-                        <th class="py-3">Status</th>
-                        <th class="py-3">Surat Jalan</th>
-                        <th class="py-3 text-center pe-4">Aksi</th>
+                        <th class="ps-4 py-3 u-w-5pct">No</th>
+                        <th class="py-3 u-w-24pct">Nama Project</th>
+                        <th class="py-3 u-w-12pct">PIC</th>
+                        <th class="py-3 u-w-12pct">Tanggal</th>
+                        <th class="py-3 u-w-20pct">Lokasi</th>
+                        <th class="py-3 u-w-10pct">Status</th>
+                        <th class="py-3 u-w-9pct">Surat Jalan</th>
+                        <th class="py-3 pe-4 text-center u-w-8pct">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="small">
@@ -199,19 +199,19 @@
                                 </div>
                             </td>
                             <td class="py-3" data-label="PIC">{{ $project->pic }}</td>
-                            <td class="py-3" data-label="Tanggal">{{ optional($project->event_date)->translatedFormat('d M Y') }}</td>
+                            <td class="py-3 text-nowrap" data-label="Tanggal">{{ optional($project->event_date)->translatedFormat('d M Y') }}</td>
                             <td class="py-3" data-label="Lokasi">{{ $project->location }}</td>
                             <td class="py-3" data-label="Status">
                                 <span class="badge bg-light text-dark border">{{ \App\Models\Project::STATUS_LABELS[$project->status] ?? $project->status }}</span>
                             </td>
-                            <td class="py-3" data-label="Surat Jalan">
+                            <td class="py-3 text-nowrap" data-label="Surat Jalan">
                                 @if($project->suratJalans->isNotEmpty())
                                     <a href="{{ route('projects.show', $project) }}#tab-suratjalan" class="text-primary">{{ $project->suratJalans->first()->nomor }}</a>
                                 @else
                                     <span class="text-muted">-</span>
                                 @endif
                             </td>
-                            <td class="py-3 text-center pe-3 cell-block" data-label="Aksi">
+                            <td class="py-3 pe-3 cell-block text-center" data-label="Aksi">
                                 <div class="d-flex justify-content-center gap-2">
                                     <a href="{{ route('projects.show', $project) }}"
                                        class="btn btn-sm btn-outline-primary"

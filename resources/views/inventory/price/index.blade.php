@@ -95,14 +95,14 @@
             <table class="table table-hover table-modern table-stack align-middle mb-0">
                 <thead>
                     <tr>
-                        <th class="ps-4 py-3">Foto</th>
-                        <th>Barang</th>
-                        <th class="text-end">Harga Beli</th>
-                        <th class="text-end">Servis Termahal</th>
-                        <th class="text-end">Rata-rata Servis</th>
-                        <th class="text-center">Servis</th>
-                        <th>Penanda</th>
-                        <th class="text-center pe-4">Aksi</th>
+                        <th class="ps-4 py-3 u-w-6pct">Foto</th>
+                        <th class="u-w-26pct">Barang</th>
+                        <th class="text-end u-w-12pct">Harga Beli</th>
+                        <th class="text-end u-w-14pct">Servis Termahal</th>
+                        <th class="text-end u-w-14pct">Rata-rata Servis</th>
+                        <th class="text-end u-w-6pct">Servis</th>
+                        <th class="u-w-12pct">Penanda</th>
+                        <th class="pe-4 text-center u-w-10pct">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="small">
@@ -130,7 +130,7 @@
                                 <a href="{{ route('inventory.show', $inventory) }}" class="text-decoration-none fw-semibold">{{ $inventory->name }}</a>
                                 <div class="text-muted small">{{ $inventory->brand ?: '' }} SN {{ $inventory->serial_number }}</div>
                             </td>
-                            <td class="text-end" data-label="Harga Beli">
+                            <td class="text-end text-nowrap" data-label="Harga Beli">
                                 @if($cost['last_price'] !== null)
                                     <div class="fw-semibold">{{ \App\Support\Money::formatRupiah($cost['last_price']) }}</div>
                                     @if($cost['last_date'])
@@ -145,7 +145,7 @@
                                     <span class="text-muted">Belum ada</span>
                                 @endif
                             </td>
-                            <td class="text-end" data-label="Servis Termahal">
+                            <td class="text-end text-nowrap" data-label="Servis Termahal">
                                 @if($cost['worst_unit'])
                                     {{ \App\Support\Money::formatRupiah($cost['worst_unit']['total']) }}
                                     <div class="text-muted small">Unit #{{ $cost['worst_unit']['number'] }}{{ $cost['servis_estimasi'] ? ', perkiraan' : '' }}</div>
@@ -153,7 +153,7 @@
                                     -
                                 @endif
                             </td>
-                            <td class="text-end" data-label="Rata-rata Servis">
+                            <td class="text-end text-nowrap" data-label="Rata-rata Servis">
                                 @if($cost['units'])
                                     {{ \App\Support\Money::formatRupiah(\App\Services\Inventory\RepairService::averagePerUnit($cost)) }}
                                     <div class="text-muted small">dari {{ count($cost['units']) }} unit</div>
@@ -161,7 +161,7 @@
                                     -
                                 @endif
                             </td>
-                            <td class="text-center" data-label="Servis">
+                            <td class="text-end text-nowrap" data-label="Servis">
                                 @if($servis > 0)
                                     <a href="{{ route('inventory.repairs.index', ['tampil' => 'kondisi', 'inventory_id' => $inventory->id]) }}"
                                        class="text-decoration-none" title="Lihat kondisi barang">{{ $servis }}x</a>
@@ -169,7 +169,7 @@
                                     -
                                 @endif
                             </td>
-                            <td data-label="Penanda">
+                            <td class="" data-label="Penanda">
                                 @if($pct === null)
                                     <span class="text-muted">{{ $cost['worst_unit'] ? 'Harga beli belum ada' : '-' }}</span>
                                 @else
@@ -185,7 +185,7 @@
                                     <div class="text-muted small">ambang {{ $inventory->ambang_ganti_persen }}%</div>
                                 @endif
                             </td>
-                            <td class="text-center pe-4" data-label="Aksi">
+                            <td class="pe-4 text-center" data-label="Aksi">
                                 @if($canEdit)
                                     <button type="button" class="btn btn-sm btn-light border"
                                             data-bs-toggle="modal" data-bs-target="#priceModal"

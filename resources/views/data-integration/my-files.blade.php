@@ -132,10 +132,10 @@
                 <table class="table table-hover table-modern align-middle mb-0">
                     <thead>
                         <tr>
-                            <th scope="col" class="ps-4 py-3">Nama</th>
-                            <th scope="col" class="d-none d-md-table-cell">Ukuran</th>
-                            <th scope="col" class="d-none d-md-table-cell">Dibuat</th>
-                            <th scope="col" class="text-center pe-4 u-w-64px">Aksi</th>
+                            <th scope="col" class="ps-4 py-3 u-w-50pct">Nama</th>
+                            <th scope="col" class="d-none d-md-table-cell u-w-14pct">Ukuran</th>
+                            <th scope="col" class="d-none d-md-table-cell u-w-22pct">Dibuat</th>
+                            <th scope="col" class="pe-4 u-w-64px text-center u-w-14pct">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -147,13 +147,13 @@
                                         <i class="bi bi-folder-fill text-primary drv-ico"></i>
                                         <div class="min-w-0">
                                             <div class="drv-title">{{ $folder->name }}</div>
-                                            <div class="drv-meta-mobile d-md-none">Folder &middot; {{ $folder->created_at->format('d M Y') }}</div>
+                                            <div class="drv-meta-mobile d-md-none">Folder &middot; {{ $folder->created_at->translatedFormat('d M Y') }}</div>
                                         </div>
                                     </a>
                                 </td>
-                                <td class="d-none d-md-table-cell text-secondary small">-</td>
-                                <td class="d-none d-md-table-cell text-secondary small">{{ $folder->created_at->format('d M Y H:i') }}</td>
-                                <td class="text-center pe-4">
+                                <td class="d-none d-md-table-cell text-secondary small text-nowrap">-</td>
+                                <td class="d-none d-md-table-cell text-secondary small text-nowrap">{{ $folder->created_at->translatedFormat('d M Y H:i') }}</td>
+                                <td class="pe-4 text-center">
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-light text-secondary" type="button" data-row-menu data-bs-toggle="dropdown" aria-expanded="false" aria-label="Aksi folder">
                                             <i class="bi bi-three-dots-vertical"></i>
@@ -197,13 +197,13 @@
                                         <div class="min-w-0">
                                             <div class="drv-title">{{ $file->file_name }}</div>
                                             {{-- Mobile: info sekunder di bawah nama --}}
-                                            <div class="drv-meta-mobile d-md-none">{{ $file->readable_size }} &middot; {{ $file->created_at->format('d M Y') }}</div>
+                                            <div class="drv-meta-mobile d-md-none">{{ $file->readable_size }} &middot; {{ $file->created_at->translatedFormat('d M Y') }}</div>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="d-none d-md-table-cell text-secondary small">{{ $file->readable_size }}</td>
-                                <td class="d-none d-md-table-cell text-secondary small">{{ $file->created_at->format('d M Y H:i') }}</td>
-                                <td class="text-center pe-4">
+                                <td class="d-none d-md-table-cell text-secondary small text-nowrap">{{ $file->readable_size }}</td>
+                                <td class="d-none d-md-table-cell text-secondary small text-nowrap">{{ $file->created_at->translatedFormat('d M Y H:i') }}</td>
+                                <td class="pe-4 text-center">
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-light text-secondary" type="button" data-row-menu data-bs-toggle="dropdown" aria-expanded="false" aria-label="Aksi file">
                                             <i class="bi bi-three-dots-vertical"></i>
@@ -261,11 +261,11 @@
                 <table class="table table-hover table-modern align-middle mb-0">
                     <thead>
                         <tr>
-                            <th scope="col" class="ps-4 py-3">Nama</th>
-                            <th scope="col" class="d-none d-md-table-cell">Lokasi</th>
-                            <th scope="col" class="d-none d-md-table-cell">Sumber</th>
-                            <th scope="col" class="d-none d-md-table-cell">Tanggal</th>
-                            <th scope="col" class="text-center pe-4 u-w-64px">Aksi</th>
+                            <th scope="col" class="ps-4 py-3 u-w-38pct">Nama</th>
+                            <th scope="col" class="d-none d-md-table-cell u-w-20pct">Lokasi</th>
+                            <th scope="col" class="d-none d-md-table-cell u-w-14pct">Sumber</th>
+                            <th scope="col" class="d-none d-md-table-cell u-w-18pct">Tanggal</th>
+                            <th scope="col" class="pe-4 u-w-64px text-center u-w-10pct">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -295,13 +295,13 @@
                                                 {{ $item['name'] }}
                                                 @if($model->isLocked())
                                                     <i class="bi bi-lock-fill text-warning ms-1"
-                                                       title="Dikunci oleh {{ $model->lockedBy->name ?? 'pengguna yang sudah dihapus' }} pada {{ $model->locked_at->format('d M Y H:i') }}"></i>
+                                                       title="Dikunci oleh {{ $model->lockedBy->name ?? 'pengguna yang sudah dihapus' }} pada {{ $model->locked_at->translatedFormat('d M Y H:i') }}"></i>
                                                 @endif
                                             </div>
                                             {{-- Mobile: lokasi, sumber, dan tanggal di bawah nama --}}
                                             <div class="drv-meta-mobile d-md-none">
                                                 <i class="bi bi-geo-alt"></i> {{ $item['location'] }}
-                                                &middot; {{ $item['source_label'] }} &middot; {{ $item['date']->format('d M') }}
+                                                &middot; {{ $item['source_label'] }} &middot; {{ $item['date']->translatedFormat('d M') }}
                                             </div>
                                         </div>
                                     </div>
@@ -316,8 +316,8 @@
                                     @endif
                                 </td>
                                 <td class="d-none d-md-table-cell text-secondary small">{{ $item['source_label'] }}</td>
-                                <td class="d-none d-md-table-cell text-secondary small">{{ $item['date']->format('d M Y H:i') }}</td>
-                                <td class="text-center pe-4">
+                                <td class="d-none d-md-table-cell text-secondary small text-nowrap">{{ $item['date']->translatedFormat('d M Y H:i') }}</td>
+                                <td class="pe-4 text-center">
                                     <div class="dropdown">
                                         <button class="btn btn-sm btn-light text-secondary" type="button" data-row-menu data-bs-toggle="dropdown" aria-expanded="false" aria-label="Aksi">
                                             <i class="bi bi-three-dots-vertical"></i>

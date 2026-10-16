@@ -104,14 +104,14 @@
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover table-stack align-middle mb-0 text-nowrap">
+                <table class="table table-hover table-stack align-middle mb-0">
                     <thead class="table-light text-secondary small text-uppercase">
                         <tr>
                             <th class="ps-4 py-3 u-w-18pct">Dihapus Pada</th>
-                            <th class="u-w-27pct">Nama Data</th>
-                            <th class="u-w-12pct">Tipe</th>
+                            <th class="u-w-32pct">Nama Data</th>
+                            <th class="u-w-16pct">Tipe</th>
                             <th class="u-w-20pct">Dihapus Oleh</th>
-                            <th class="pe-4 text-center u-w-23pct">Aksi</th>
+                            <th class="pe-4 text-center u-w-14pct">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="small text-dark" id="trashTableBody">

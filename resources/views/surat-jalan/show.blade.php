@@ -36,11 +36,11 @@
                 <table class="table table-sm align-middle">
                     <thead>
                         <tr class="text-muted small">
-                            <th>Barang</th>
-                            <th class="text-center">Dipakai</th>
-                            <th class="text-center">Dikembalikan</th>
-                            <th class="text-center">Sisa</th>
-                            <th class="text-end">Aksi</th>
+                            <th class="u-w-40pct">Barang</th>
+                            <th class="text-end u-w-15pct">Dipakai</th>
+                            <th class="text-end u-w-17pct">Dikembalikan</th>
+                            <th class="text-end u-w-12pct">Sisa</th>
+                            <th class="text-center u-w-16pct">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -48,12 +48,12 @@
                             @php $sisa = $item->qty_dipakai - $item->qty_dikembalikan; @endphp
                             <tr>
                                 <td>{{ $item->inventory->name }}</td>
-                                <td class="text-center">{{ $item->qty_dipakai }}</td>
-                                <td class="text-center">{{ $item->qty_dikembalikan }}</td>
-                                <td class="text-center">
+                                <td class="text-end text-nowrap">{{ $item->qty_dipakai }}</td>
+                                <td class="text-end text-nowrap">{{ $item->qty_dikembalikan }}</td>
+                                <td class="text-end text-nowrap">
                                     <span class="badge {{ $sisa > 0 ? 'bg-warning-subtle text-warning' : 'bg-success-subtle text-success' }}">{{ $sisa }}</span>
                                 </td>
-                                <td class="text-end">
+                                <td class="text-center">
                                     @if($sisa > 0 && auth()->user()->hasPermission('borrowed_items', 'process_return'))
                                         <form action="{{ route('surat-jalan.items.return', $item) }}" method="POST" data-sj-return class="d-inline-flex gap-1">
                                             @csrf

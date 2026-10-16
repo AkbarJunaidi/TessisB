@@ -46,7 +46,7 @@
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover table-stack align-middle mb-0 text-nowrap">
+                <table class="table table-hover table-stack align-middle mb-0">
                     <thead class="table-light text-secondary small text-uppercase">
                         <tr>
                             <th class="ps-4 py-3 u-w-20pct">Waktu</th>

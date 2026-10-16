@@ -23,11 +23,11 @@
             <table class="table table-sm align-middle">
                 <thead>
                     <tr class="text-muted small">
-                        <th>Barang</th>
-                        <th class="text-center">Dipakai</th>
-                        <th class="text-center">Dikembalikan</th>
-                        <th class="text-center">Status</th>
-                        <th class="text-center">Stok Saat Ini</th>
+                        <th class="u-w-36pct">Barang</th>
+                        <th class="text-end u-w-16pct">Dipakai</th>
+                        <th class="text-end u-w-18pct">Dikembalikan</th>
+                        <th class="u-w-15pct">Status</th>
+                        <th class="text-end u-w-15pct">Stok Saat Ini</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -35,14 +35,14 @@
                         @php $sisa = $usage['qty_dipakai'] - $usage['qty_kembali']; @endphp
                         <tr>
                             <td>{{ $usage['inventory']->name ?? '-' }}</td>
-                            <td class="text-center">{{ $usage['qty_dipakai'] }}</td>
-                            <td class="text-center">{{ $usage['qty_kembali'] }}</td>
-                            <td class="text-center">
+                            <td class="text-end text-nowrap">{{ $usage['qty_dipakai'] }}</td>
+                            <td class="text-end text-nowrap">{{ $usage['qty_kembali'] }}</td>
+                            <td class="">
                                 <span class="badge {{ $sisa > 0 ? 'bg-warning-subtle text-warning' : 'bg-success-subtle text-success' }}">
                                     {{ $sisa > 0 ? 'Masih Dipakai ('.$sisa.')' : 'Sudah Kembali' }}
                                 </span>
                             </td>
-                            <td class="text-center">
+                            <td class="text-end text-nowrap">
                                 @if($usage['inventory'])
                                     {{ $usage['inventory']->qty_available }} / {{ $usage['inventory']->quantity_total }} unit tersedia
                                 @else

@@ -150,14 +150,14 @@
                 <table class="table table-hover table-modern table-stack align-middle mb-0">
                     <thead>
                         <tr>
-                            <th class="ps-4 py-3">Kode</th>
-                            <th class="py-3">Barang</th>
-                            <th class="py-3">Tempat Servis</th>
-                            <th class="py-3">Diantar</th>
-                            <th class="py-3">Estimasi / Selesai</th>
-                            <th class="py-3 text-end">Biaya</th>
-                            <th class="py-3">Status</th>
-                            <th class="py-3 text-center pe-4">Aksi</th>
+                            <th class="ps-4 py-3 u-w-10pct">Kode</th>
+                            <th class="py-3 u-w-20pct">Barang</th>
+                            <th class="py-3 u-w-20pct">Tempat Servis</th>
+                            <th class="py-3 u-w-12pct">Diantar</th>
+                            <th class="py-3 u-w-12pct">Estimasi / Selesai</th>
+                            <th class="py-3 text-end u-w-10pct">Biaya</th>
+                            <th class="py-3 u-w-8pct">Status</th>
+                            <th class="py-3 pe-4 text-center u-w-8pct">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="small">
@@ -184,20 +184,20 @@
                                         </a>
                                     @endif
                                 </td>
-                                <td data-label="Diantar">
-                                    {{ $repair->tanggal_masuk->format('d M Y') }}
+                                <td class="text-nowrap" data-label="Diantar">
+                                    {{ $repair->tanggal_masuk->translatedFormat('d M Y') }}
                                     @if($repair->diantar_oleh)
                                         <div class="text-muted small">oleh {{ $repair->diantar_oleh }}</div>
                                     @endif
                                 </td>
-                                <td data-label="Estimasi / Selesai">
+                                <td class="text-nowrap" data-label="Estimasi / Selesai">
                                     @if($repair->status === 'Selesai')
-                                        {{ $repair->tanggal_selesai?->format('d M Y') }}
+                                        {{ $repair->tanggal_selesai?->translatedFormat('d M Y') }}
                                         @if($repair->diambil_oleh)
                                             <div class="text-muted small">diambil {{ $repair->diambil_oleh }}</div>
                                         @endif
                                     @elseif($repair->estimasi_selesai)
-                                        <span class="{{ $repair->isOverdue() ? 'text-danger fw-semibold' : '' }}">{{ $repair->estimasi_selesai->format('d M Y') }}</span>
+                                        <span class="{{ $repair->isOverdue() ? 'text-danger fw-semibold' : '' }}">{{ $repair->estimasi_selesai->translatedFormat('d M Y') }}</span>
                                         @if($repair->isOverdue())
                                             <div class="text-danger small">Lewat estimasi</div>
                                         @endif
@@ -205,13 +205,13 @@
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
-                                <td class="text-end" data-label="Biaya">
+                                <td class="text-end text-nowrap" data-label="Biaya">
                                     {{ $repair->biaya !== null ? \App\Support\Money::formatRupiah($repair->biaya) : '-' }}
                                 </td>
-                                <td data-label="Status">
+                                <td class="" data-label="Status">
                                     <span class="badge bg-{{ $color }} bg-opacity-10 text-{{ $color }} border border-{{ $color }}-subtle px-2 py-2 fw-medium">{{ $repair->status }}</span>
                                 </td>
-                                <td class="pe-4 text-center cell-block" data-label="Aksi">
+                                <td class="pe-4 cell-block text-center" data-label="Aksi">
                                     <div class="d-flex justify-content-center gap-2">
                                         <a href="{{ route('inventory.repairs.show', $repair) }}"
                                            class="btn btn-sm btn-outline-primary"

@@ -29,7 +29,7 @@
 
 <div class="container-fluid p-0">
 
-    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
         <div>
             <h3 class="fw-bold mb-1">Keuangan</h3>
             <p class="d-none d-md-block text-muted mb-0">Semua pemasukan dan pengeluaran perusahaan.</p>
@@ -161,12 +161,12 @@
             <table class="table table-hover table-modern align-middle mb-0">
                 <thead>
                     <tr>
-                        <th class="ps-4 text-nowrap">Tanggal</th>
-                        <th>Keterangan</th>
-                        <th>Kategori</th>
-                        <th class="text-end">Masuk</th>
-                        <th class="text-end">Keluar</th>
-                        <th class="text-center pe-4">Aksi</th>
+                        <th class="ps-4 u-w-12pct">Tanggal</th>
+                        <th class="u-w-30pct">Keterangan</th>
+                        <th class="u-w-16pct">Kategori</th>
+                        <th class="text-end u-w-15pct">Masuk</th>
+                        <th class="text-end u-w-15pct">Keluar</th>
+                        <th class="pe-4 text-center u-w-12pct">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="small">
@@ -187,10 +187,10 @@
                                     <div class="text-muted small">{{ $meta }}</div>
                                 @endif
                             </td>
-                            <td><span class="badge bg-light text-dark border">{{ $t->category }}</span></td>
-                            <td class="text-end text-nowrap text-success fw-semibold">{{ $t->type === 'income' ? $rp($t->amount) : '' }}</td>
-                            <td class="text-end text-nowrap text-danger fw-semibold">{{ $t->type === 'expense' ? $rp($t->amount) : '' }}</td>
-                            <td class="pe-4 text-center text-nowrap">
+                            <td class=""><span class="badge bg-light text-dark border">{{ $t->category }}</span></td>
+                            <td class="text-success fw-semibold text-end text-nowrap">{{ $t->type === 'income' ? $rp($t->amount) : '' }}</td>
+                            <td class="text-danger fw-semibold text-end text-nowrap">{{ $t->type === 'expense' ? $rp($t->amount) : '' }}</td>
+                            <td class="pe-4 text-center">
                                 <div class="d-flex justify-content-center gap-2">
                                     @if($t->isAuto())
                                         @if($t->source_type === \App\Models\ProjectFinanceItem::SOURCE_PURCHASE)

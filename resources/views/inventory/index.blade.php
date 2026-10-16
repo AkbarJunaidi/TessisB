@@ -74,11 +74,11 @@
             <thead>
                 <tr>
                     <th class="ps-4 u-w-10pct">Foto</th>
-                    <th class="u-w-25pct">Nama Barang</th>
-                    <th class="u-w-20pct">No. Seri</th>
-                    <th class="u-w-15pct">Status</th>
-                    <th class="u-w-15pct">Tanggal Input</th>
-                    <th class="text-center pe-4 u-w-15pct">Aksi</th>
+                    <th class="u-w-30pct">Nama Barang</th>
+                    <th class="u-w-18pct">No. Seri</th>
+                    <th class="u-w-14pct">Status</th>
+                    <th class="u-w-16pct">Tanggal Input</th>
+                    <th class="pe-4 text-center u-w-12pct">Aksi</th>
                 </tr>
             </thead>
             <tbody class="small">
@@ -100,7 +100,7 @@
 
                         <td class="py-3 fw-bold text-dark" data-label="Nama Barang">{{ $item->name }}</td>
 
-                        <td class="py-3 text-secondary" data-label="No. Seri">
+                        <td class="py-3 text-secondary text-nowrap" data-label="No. Seri">
                             <span class="badge bg-light text-dark border px-2 py-1 font-monospace fw-medium">
                                 {{ $item->serial_number }}
                             </span>
@@ -120,9 +120,9 @@
                             @endif
                         </td>
 
-                        <td class="py-3 text-secondary" data-label="Tanggal Input">{{ $item->created_at ? $item->created_at->format('d M Y') : '-' }}</td>
+                        <td class="py-3 text-secondary text-nowrap" data-label="Tanggal Input">{{ $item->created_at ? $item->created_at->translatedFormat('d M Y') : '-' }}</td>
 
-                        <td class="py-3 text-center pe-4 cell-block" data-label="Aksi">
+                        <td class="py-3 pe-4 cell-block text-center" data-label="Aksi">
                             <div class="d-flex justify-content-center gap-2">
                                 <a href="{{ route('inventory.show', $item->id) }}"
                                    class="btn btn-sm btn-outline-primary"

@@ -31,7 +31,7 @@
                 <i class="bi bi-key-fill me-2"></i>
                 <strong>User ini mengajukan Lupa Password</strong>
                 <div class="small text-muted mt-1">
-                    Diajukan {{ $pendingPasswordReset->created_at->format('d M Y H:i') }}.
+                    Diajukan {{ $pendingPasswordReset->created_at->translatedFormat('d M Y H:i') }}.
                     Reset password di bawah ini untuk menandai permintaan selesai.
                 </div>
             </div>
@@ -267,7 +267,7 @@
                 </div>
 
                 <div class="col-md-9">
-                    {{ $user->last_login_at?->format('d M Y H:i:s') ?? '-' }}
+                    {{ $user->last_login_at?->translatedFormat('d M Y H:i:s') ?? '-' }}
                 </div>
 
             </div>
@@ -281,7 +281,7 @@
                 </div>
 
                 <div class="col-md-9">
-                    {{ $user->created_at->format('d M Y H:i:s') }}
+                    {{ $user->created_at->translatedFormat('d M Y H:i:s') }}
                 </div>
 
             </div>
@@ -295,7 +295,7 @@
                 </div>
 
                 <div class="col-md-9">
-                    {{ $user->updated_at->format('d M Y H:i:s') }}
+                    {{ $user->updated_at->translatedFormat('d M Y H:i:s') }}
                 </div>
 
             </div>

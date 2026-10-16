@@ -23,7 +23,7 @@
         </div>
     @endif
 
-    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
         <div>
             <a data-back href="{{ route('purchases.index') }}" class="page-back"><i class="bi bi-arrow-left"></i> Pembelian</a>
             <h3 class="fw-bold mb-1">{{ $purchase->code }}</h3>

@@ -104,26 +104,26 @@
             <table class="table table-hover table-modern align-middle mb-0">
                 <thead>
                     <tr>
-                        <th class="ps-4">Kode</th>
-                        <th>Tanggal</th>
-                        <th>Vendor</th>
-                        <th>Project</th>
-                        <th class="text-end">Total</th>
-                        <th>Status</th>
-                        <th>Pembayaran</th>
-                        <th class="text-center pe-4">Aksi</th>
+                        <th class="ps-4 u-w-11pct">Kode</th>
+                        <th class="u-w-12pct">Tanggal</th>
+                        <th class="u-w-18pct">Vendor</th>
+                        <th class="u-w-18pct">Project</th>
+                        <th class="text-end u-w-14pct">Total</th>
+                        <th class="u-w-10pct">Status</th>
+                        <th class="u-w-10pct">Pembayaran</th>
+                        <th class="pe-4 text-center u-w-7pct">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="small">
                     @forelse($purchases as $purchase)
                         <tr>
-                            <td class="ps-4 fw-semibold">{{ $purchase->code }}</td>
-                            <td>{{ $purchase->purchase_date->format('d/m/Y') }}</td>
+                            <td class="ps-4 fw-semibold text-nowrap">{{ $purchase->code }}</td>
+                            <td class="text-nowrap">{{ $purchase->purchase_date->format('d/m/Y') }}</td>
                             <td>{{ $purchase->vendor_name }}</td>
                             <td title="{{ $purchase->project?->name }}">{{ $purchase->project?->short_name ?? '-' }}</td>
-                            <td class="text-end">{{ \App\Support\Money::formatRupiah($purchase->total) }}</td>
-                            <td><span class="badge {{ \App\Models\Purchase::STATUS_BADGES[$purchase->status] ?? 'bg-secondary' }}">{{ $purchase->status }}</span></td>
-                            <td>
+                            <td class="text-end text-nowrap">{{ \App\Support\Money::formatRupiah($purchase->total) }}</td>
+                            <td class=""><span class="badge {{ \App\Models\Purchase::STATUS_BADGES[$purchase->status] ?? 'bg-secondary' }}">{{ $purchase->status }}</span></td>
+                            <td class="">
                                 <span class="badge {{ $purchase->payment_status === \App\Models\Purchase::PAYMENT_PAID ? 'bg-success' : 'bg-warning text-dark' }}">{{ $purchase->payment_status }}</span>
                             </td>
                             <td class="pe-4 text-center">

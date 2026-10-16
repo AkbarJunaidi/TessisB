@@ -95,28 +95,28 @@
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover table-stack align-middle mb-0 text-nowrap">
+                <table class="table table-hover table-stack align-middle mb-0">
                     <thead class="table-light text-secondary small text-uppercase">
                         <tr>
-                            <th class="ps-4 py-3">Tanggal</th>
-                            <th>Barang</th>
-                            <th>Jumlah</th>
-                            <th>Kejadian</th>
-                            <th>Referensi</th>
-                            <th class="pe-4">Keterangan</th>
+                            <th class="ps-4 py-3 u-w-14pct">Tanggal</th>
+                            <th class="u-w-22pct">Barang</th>
+                            <th class="text-end u-w-8pct">Jumlah</th>
+                            <th class="u-w-14pct">Kejadian</th>
+                            <th class="u-w-16pct">Referensi</th>
+                            <th class="pe-4 u-w-26pct">Keterangan</th>
                         </tr>
                     </thead>
                     <tbody class="small text-dark">
                         @forelse($mutations as $m)
                             <tr>
-                                <td class="ps-4 py-3 text-secondary fw-medium" data-label="Tanggal">
+                                <td class="ps-4 py-3 text-secondary fw-medium text-nowrap" data-label="Tanggal">
                                     <i class="bi bi-calendar-event me-2"></i>{{ $m->created_at->format('d/m/Y H:i') }}
                                 </td>
                                 <td data-label="Barang" class="fw-semibold">
                                     {{ $m->inventory->name ?? '(Barang dihapus)' }}
                                 </td>
-                                <td data-label="Jumlah">{{ $m->qty }} unit</td>
-                                <td data-label="Kejadian">
+                                <td class="text-end text-nowrap" data-label="Jumlah">{{ $m->qty }} unit</td>
+                                <td class="" data-label="Kejadian">
                                     @if($m->event_type === 'status_berubah')
                                         @php $color = $statusLabels[$m->status_after] ?? 'secondary'; @endphp
                                         <span class="badge bg-{{ $color }} bg-opacity-10 text-{{ $color }} border border-{{ $color }}-subtle px-2 py-2 fw-medium u-fs-0p8rem">
@@ -129,7 +129,7 @@
                                         </span>
                                     @endif
                                 </td>
-                                <td data-label="Referensi">
+                                <td class="text-nowrap" data-label="Referensi">
                                     {{-- Peminjaman langsung (tanpa Project) tidak punya halaman
                                          detail Surat Jalan yang valid - tampilkan teks saja. --}}
                                     @if($m->suratJalan && !$m->suratJalan->isPeminjamanLangsung())

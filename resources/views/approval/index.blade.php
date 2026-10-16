@@ -96,11 +96,11 @@
                     <table class="table table-hover table-modern align-middle mb-0">
                         <thead>
                             <tr>
-                                <th class="ps-4">Permintaan</th>
-                                <th>Diajukan Oleh</th>
-                                <th>Diputuskan Oleh</th>
-                                <th>Status</th>
-                                <th class="pe-4">Catatan</th>
+                                <th class="ps-4 u-w-30pct">Permintaan</th>
+                                <th class="u-w-18pct">Diajukan Oleh</th>
+                                <th class="u-w-18pct">Diputuskan Oleh</th>
+                                <th class="u-w-12pct">Status</th>
+                                <th class="pe-4 u-w-22pct">Catatan</th>
                             </tr>
                         </thead>
                         <tbody class="small">
@@ -115,7 +115,7 @@
                                         {{ $req->decidedBy->name ?? '-' }}
                                         <span class="text-muted small d-block">{{ $req->decided_at?->translatedFormat('d M Y H:i') }}</span>
                                     </td>
-                                    <td><span class="badge {{ $req->status === 'approved' ? 'bg-success' : 'bg-secondary' }}">{{ $req->status === 'approved' ? 'Disetujui' : 'Ditolak' }}</span></td>
+                                    <td class=""><span class="badge {{ $req->status === 'approved' ? 'bg-success' : 'bg-secondary' }}">{{ $req->status === 'approved' ? 'Disetujui' : 'Ditolak' }}</span></td>
                                     <td class="pe-4">{{ $req->decision_note ?: '-' }}</td>
                                 </tr>
                             @empty

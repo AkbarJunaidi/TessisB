@@ -6,7 +6,7 @@
 <div class="container-fluid p-0">
 
     {{-- Header --}}
-    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <div>
             <a data-back href="{{ route('projects.index') }}" class="page-back"><i class="bi bi-arrow-left"></i> Daftar Project</a>
             <div class="d-flex align-items-center gap-2 mb-1">

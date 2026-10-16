@@ -38,14 +38,14 @@
             <table class="table table-hover table-modern align-middle mb-0">
                 <thead>
                     <tr>
-                        <th class="ps-4">Project</th>
-                        <th>Estimasi</th>
-                        <th>Pendapatan Tercatat</th>
-                        <th>Kwitansi</th>
-                        <th>Total Diterima</th>
-                        <th>Sisa</th>
-                        <th>Status</th>
-                        <th class="text-center pe-4">Aksi</th>
+                        <th class="ps-4 u-w-20pct">Project</th>
+                        <th class="text-end u-w-12pct">Estimasi</th>
+                        <th class="text-end u-w-13pct">Pendapatan Tercatat</th>
+                        <th class="text-end u-w-12pct">Kwitansi</th>
+                        <th class="text-end u-w-13pct">Total Diterima</th>
+                        <th class="text-end u-w-12pct">Sisa</th>
+                        <th class="u-w-10pct">Status</th>
+                        <th class="pe-4 text-center u-w-8pct">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="small">
@@ -70,12 +70,12 @@
                                 <div class="fw-semibold" title="{{ $project->name }}">{{ $project->short_name }}</div>
                                 <div class="text-muted small">{{ $project->client ?: $project->company ?: '-' }}</div>
                             </td>
-                            <td>{{ \App\Support\Money::formatRupiah($estimasi) }}</td>
-                            <td class="text-success">{{ \App\Support\Money::formatRupiah($pendapatanTercatat) }}</td>
-                            <td class="text-success">{{ \App\Support\Money::formatRupiah($kwitansiDibayar) }}</td>
-                            <td class="text-success fw-semibold">{{ \App\Support\Money::formatRupiah($totalDiterima) }}</td>
-                            <td class="{{ $sisa > 0 ? 'text-danger' : 'text-muted' }}">{{ \App\Support\Money::formatRupiah($sisa) }}</td>
-                            <td><span class="badge {{ $badgeClass }}">{{ $statusPembayaran }}</span></td>
+                            <td class="text-end text-nowrap">{{ \App\Support\Money::formatRupiah($estimasi) }}</td>
+                            <td class="text-success text-end text-nowrap">{{ \App\Support\Money::formatRupiah($pendapatanTercatat) }}</td>
+                            <td class="text-success text-end text-nowrap">{{ \App\Support\Money::formatRupiah($kwitansiDibayar) }}</td>
+                            <td class="text-success fw-semibold text-end text-nowrap">{{ \App\Support\Money::formatRupiah($totalDiterima) }}</td>
+                            <td class="{{ $sisa > 0 ? 'text-danger' : 'text-muted' }} text-end text-nowrap">{{ \App\Support\Money::formatRupiah($sisa) }}</td>
+                            <td class=""><span class="badge {{ $badgeClass }}">{{ $statusPembayaran }}</span></td>
                             <td class="pe-4 text-center">
                                 <div class="d-flex justify-content-center gap-2">
                                     <a href="{{ route('kwitansi.show-project', $project) }}" class="btn btn-sm btn-outline-primary"

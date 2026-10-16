@@ -26,23 +26,23 @@
             <table class="table table-sm align-middle mb-0">
                 <thead>
                     <tr class="text-muted small">
-                        <th>Barang</th>
-                        <th class="text-center">Jumlah</th>
-                        <th>Status</th>
-                        <th class="text-end">Aksi</th>
+                        <th class="u-w-44pct">Barang</th>
+                        <th class="text-end u-w-14pct">Jumlah</th>
+                        <th class="u-w-22pct">Status</th>
+                        <th class="text-center u-w-20pct">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($project->bookings as $booking)
                         <tr>
                             <td>{{ $booking->inventory->name ?? '(barang dihapus)' }}</td>
-                            <td class="text-center">{{ $booking->qty }}</td>
-                            <td>
+                            <td class="text-end text-nowrap">{{ $booking->qty }}</td>
+                            <td class="">
                                 <span class="badge {{ \App\Models\EquipmentBooking::STATUS_BADGES[$booking->status] ?? 'bg-secondary' }}">
                                     {{ $booking->status }}
                                 </span>
                             </td>
-                            <td class="text-end">
+                            <td class="text-center">
                                 @if($booking->isEditable() && $canBook)
                                     <form action="{{ route('projects.bookings.destroy', [$project, $booking]) }}" method="POST"
                                           data-confirm="Batalkan booking ini?" data-confirm-label="Ya, batalkan" data-confirm-danger class="d-inline">

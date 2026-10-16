@@ -7,16 +7,16 @@
     <table class="table table-hover table-modern table-stack align-middle mb-0">
         <thead>
             <tr>
-                <th class="ps-4 py-3">Barang</th>
-                <th class="text-center">Unit</th>
-                <th class="text-center" title="Unit yang dikirim servis dan sudah selesai; unit yang sama dihitung lagi tiap kali dikirim">Diservis</th>
-                <th class="text-center">Berhasil</th>
-                <th class="text-center">Gagal</th>
-                <th class="text-center">% Berhasil</th>
-                <th class="text-center">% Gagal</th>
-                <th>Terakhir</th>
-                <th>Penanda</th>
-                <th class="text-center pe-4">Rincian</th>
+                <th class="ps-4 py-3 u-w-22pct">Barang</th>
+                <th class="text-end u-w-7pct">Unit</th>
+                <th class="text-end u-w-8pct" title="Unit yang dikirim servis dan sudah selesai; unit yang sama dihitung lagi tiap kali dikirim">Diservis</th>
+                <th class="text-end u-w-8pct">Berhasil</th>
+                <th class="text-end u-w-7pct">Gagal</th>
+                <th class="text-end u-w-9pct">% Berhasil</th>
+                <th class="text-end u-w-8pct">% Gagal</th>
+                <th class="u-w-12pct">Terakhir</th>
+                <th class="u-w-11pct">Penanda</th>
+                <th class="pe-4 text-center u-w-8pct">Rincian</th>
             </tr>
         </thead>
         <tbody class="small">
@@ -27,19 +27,19 @@
                         <a href="{{ route('inventory.show', $inventory) }}" class="text-decoration-none fw-semibold">{{ $inventory->name }}</a>
                         <div class="text-muted small">{{ $inventory->brand ?: '' }} SN {{ $inventory->serial_number }}</div>
                     </td>
-                    <td class="text-center" data-label="Unit">{{ $row->units }}</td>
-                    <td class="text-center" data-label="Diservis">
+                    <td class="text-end text-nowrap" data-label="Unit">{{ $row->units }}</td>
+                    <td class="text-end text-nowrap" data-label="Diservis">
                         {{ $row->diservis }}
                         @if($row->aktif > 0)
                             <div class="text-muted small">+{{ $row->aktif }} sedang diservis</div>
                         @endif
                     </td>
-                    <td class="text-center" data-label="Berhasil">{{ $row->berhasil }}</td>
-                    <td class="text-center {{ $row->gagal > 0 ? 'text-danger fw-semibold' : '' }}" data-label="Gagal">{{ $row->gagal }}</td>
-                    <td class="text-center" data-label="% Berhasil">{{ $row->persen_berhasil !== null ? $row->persen_berhasil . '%' : '-' }}</td>
-                    <td class="text-center" data-label="% Gagal">{{ $row->persen_gagal !== null ? $row->persen_gagal . '%' : '-' }}</td>
-                    <td data-label="Terakhir">{{ $row->terakhir ? $row->terakhir->translatedFormat('d M Y') : '-' }}</td>
-                    <td data-label="Penanda">
+                    <td class="text-end text-nowrap" data-label="Berhasil">{{ $row->berhasil }}</td>
+                    <td class="{{ $row->gagal > 0 ? 'text-danger fw-semibold' : '' }} text-end text-nowrap" data-label="Gagal">{{ $row->gagal }}</td>
+                    <td class="text-end text-nowrap" data-label="% Berhasil">{{ $row->persen_berhasil !== null ? $row->persen_berhasil . '%' : '-' }}</td>
+                    <td class="text-end text-nowrap" data-label="% Gagal">{{ $row->persen_gagal !== null ? $row->persen_gagal . '%' : '-' }}</td>
+                    <td class="text-nowrap" data-label="Terakhir">{{ $row->terakhir ? $row->terakhir->translatedFormat('d M Y') : '-' }}</td>
+                    <td class="" data-label="Penanda">
                         @if($row->diservis === 0)
                             <span class="text-muted">-</span>
                         @elseif($row->flags === [])
@@ -66,7 +66,7 @@
                             </div>
                         @endif
                     </td>
-                    <td class="text-center pe-4 cell-block" data-label="Rincian">
+                    <td class="pe-4 cell-block text-center" data-label="Rincian">
                         <button type="button" class="btn btn-sm btn-outline-primary js-kondisi-toggle"
                                 data-url="{{ route('inventory.repairs.kondisi', $inventory) }}"
                                 data-autoopen="{{ !empty($filters['inventory_id']) ? '1' : '0' }}"

@@ -97,19 +97,19 @@
             <h6 class="fw-bold mb-3">Semua Lokasi</h6>
         </div>
         <div class="table-responsive">
-            <table class="table table-hover table-modern table-stack align-middle mb-0 text-nowrap">
+            <table class="table table-hover table-modern table-stack align-middle mb-0">
                 <thead>
                     <tr>
-                        <th class="ps-4 py-3">Lokasi</th>
-                        <th>Jenis</th>
-                        <th>Alamat</th>
-                        <th>Koordinat</th>
-                        <th>Radius</th>
-                        <th class="text-center">Unit di Lokasi</th>
-                        <th class="text-center">Belum di Lokasi Utama</th>
-                        <th>Status</th>
+                        <th class="ps-4 py-3 u-w-18pct">Lokasi</th>
+                        <th class="u-w-9pct">Jenis</th>
+                        <th class="u-w-18pct">Alamat</th>
+                        <th class="u-w-14pct">Koordinat</th>
+                        <th class="text-end u-w-7pct">Radius</th>
+                        <th class="text-end u-w-8pct">Unit di Lokasi</th>
+                        <th class="text-end u-w-8pct">Belum di Lokasi Utama</th>
+                        <th class="u-w-8pct">Status</th>
                         @if($canManage)
-                            <th class="text-center pe-4">Aksi</th>
+                            <th class="pe-4 text-center u-w-10pct">Aksi</th>
                         @endif
                     </tr>
                 </thead>
@@ -126,11 +126,11 @@
                                     <span class="badge bg-light text-dark border ms-1 fw-normal">Lokasi awal</span>
                                 @endif
                             </td>
-                            <td data-label="Jenis">
+                            <td class="" data-label="Jenis">
                                 <span class="badge bg-{{ $color }} bg-opacity-10 text-{{ $color }} border border-{{ $color }}-subtle px-2 py-2 fw-medium">{{ $loc->jenis_label }}</span>
                             </td>
                             <td data-label="Alamat" class="text-wrap u-minw-180px">{{ $loc->address ?: '-' }}</td>
-                            <td data-label="Koordinat">
+                            <td class="text-nowrap" data-label="Koordinat">
                                 @if($loc->hasCoordinates())
                                     <a href="{{ $loc->mapsUrl() }}" target="_blank" rel="noopener" class="text-decoration-none">
                                         <i class="bi bi-map me-1"></i>{{ $loc->coordinateText() }}
@@ -139,8 +139,8 @@
                                     <span class="text-muted">Belum diisi</span>
                                 @endif
                             </td>
-                            <td data-label="Radius">{{ $loc->hasCoordinates() ? $loc->radius_m . ' m' : '-' }}</td>
-                            <td class="text-center" data-label="Unit di Lokasi">
+                            <td class="text-end text-nowrap" data-label="Radius">{{ $loc->hasCoordinates() ? $loc->radius_m . ' m' : '-' }}</td>
+                            <td class="text-end text-nowrap" data-label="Unit di Lokasi">
                                 @if($loc->can_store_units)
                                     {{ $st['di_lokasi'] }}
                                     <span class="text-muted">({{ $st['tersedia'] }} tersedia)</span>
@@ -148,14 +148,14 @@
                                     <span class="text-muted">-</span>
                                 @endif
                             </td>
-                            <td class="text-center" data-label="Belum di Lokasi Utama">
+                            <td class="text-end text-nowrap" data-label="Belum di Lokasi Utama">
                                 @if($loc->can_store_units && $st['perlu_kembali'] > 0)
                                     <span class="badge bg-warning bg-opacity-10 text-warning border border-warning-subtle px-2 py-2">{{ $st['perlu_kembali'] }} unit</span>
                                 @else
                                     <span class="text-muted">-</span>
                                 @endif
                             </td>
-                            <td data-label="Status">
+                            <td class="" data-label="Status">
                                 @if($loc->is_active)
                                     <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle px-2 py-2">Aktif</span>
                                 @else
@@ -166,7 +166,7 @@
                                 @endif
                             </td>
                             @if($canManage)
-                                <td class="pe-4 text-center cell-block" data-label="Aksi">
+                                <td class="pe-4 cell-block text-center" data-label="Aksi">
                                     <div class="d-flex justify-content-center gap-2">
                                         <button type="button" class="btn btn-sm btn-outline-secondary btn-edit-location"
                                                 data-location="{{ json_encode($loc->toFormArray()) }}"

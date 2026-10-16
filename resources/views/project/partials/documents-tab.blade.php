@@ -16,11 +16,11 @@
                 <table class="table table-sm align-middle">
                     <thead>
                         <tr class="text-muted small">
-                            <th>Nama File</th>
-                            <th>Ukuran</th>
-                            <th>Diunggah Oleh</th>
-                            <th>Tanggal</th>
-                            <th class="text-end">Aksi</th>
+                            <th class="u-w-36pct">Nama File</th>
+                            <th class="u-w-12pct">Ukuran</th>
+                            <th class="u-w-20pct">Diunggah Oleh</th>
+                            <th class="u-w-18pct">Tanggal</th>
+                            <th class="text-center u-w-14pct">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -30,13 +30,13 @@
                                     <i class="bi bi-file-earmark-text me-1 text-secondary"></i> {{ $file->file_name }}
                                     @if($file->isLocked())
                                         <i class="bi bi-lock-fill text-warning ms-1"
-                                           title="Dikunci oleh {{ $file->lockedBy->name ?? 'pengguna yang sudah dihapus' }} pada {{ $file->locked_at->format('d M Y H:i') }}"></i>
+                                           title="Dikunci oleh {{ $file->lockedBy->name ?? 'pengguna yang sudah dihapus' }} pada {{ $file->locked_at->translatedFormat('d M Y H:i') }}"></i>
                                     @endif
                                 </td>
-                                <td>{{ $file->readable_size }}</td>
+                                <td class="text-nowrap">{{ $file->readable_size }}</td>
                                 <td>{{ $file->user->name ?? '-' }}</td>
-                                <td>{{ $file->created_at->translatedFormat('d M Y') }}</td>
-                                <td class="text-end text-nowrap">
+                                <td class="text-nowrap">{{ $file->created_at->translatedFormat('d M Y') }}</td>
+                                <td class="text-center">
                                     @if($file->preview_type && auth()->user()->hasPermission('data_integration', 'download'))
                                         <a href="{{ route('files.preview', $file) }}" target="_blank" rel="noopener"
                                            class="btn btn-sm btn-outline-secondary" title="Pratinjau" aria-label="Pratinjau">

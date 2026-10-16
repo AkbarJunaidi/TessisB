@@ -9,7 +9,7 @@
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2 small">
             <div>
                 <a href="{{ route('inventory.repairs.show', $repair) }}" class="fw-semibold text-decoration-none">{{ $repair->code }}</a>
-                <span class="text-muted ms-1">{{ $repair->tanggal_masuk->format('d M Y') }} di {{ $repair->tempat_nama }}</span>
+                <span class="text-muted ms-1">{{ $repair->tanggal_masuk->translatedFormat('d M Y') }} di {{ $repair->tempat_nama }}</span>
             </div>
             <span class="badge bg-{{ $color }} bg-opacity-10 text-{{ $color }} border border-{{ $color }}-subtle px-2 py-1 fw-medium">{{ $repair->status }}</span>
         </div>

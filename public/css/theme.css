@@ -674,6 +674,17 @@ button:focus-visible,
 .icon-tile-danger { background: rgba(var(--bs-danger-rgb), .12); color: var(--bs-danger); }
 .icon-tile-navy { background: rgba(11, 36, 71, .1); color: var(--c-navy); }
 
+/* Kolom tabel: teks rata kiri, angka rata kanan (text-end), Aksi di tengah (text-center); header mengikuti rata isinya.
+   Lebar kolom diberi persen lewat u-w-Npct di <th> (jumlah 100) supaya ritme kolom sama di semua halaman; sel boleh turun baris
+   (angka dan tanggal text-nowrap) dan tabel tidak melebihi wadah, jadi tanpa scrollbar horizontal. */
+.table td, .table th { overflow-wrap: anywhere; }
+.table td.text-end, .table th.text-end { font-variant-numeric: tabular-nums; }
+
+/* Di bawah 1200px ruang sempit: tanggal ikut boleh turun baris, angka tetap utuh. */
+@media (max-width: 1199.98px) {
+    .table:not(.table-stack) td.text-nowrap:not(.text-end) { white-space: normal !important; }
+}
+
 /* Latar halaman biru muda ada di body; komponen Bootstrap (kartu, tabel, modal) tetap putih. */
 .table, .table-modern { --bs-table-bg: var(--bg-white); }
 
@@ -957,6 +968,25 @@ html.is-loading body::after { opacity: 1; pointer-events: auto; }
 .u-td-none { text-decoration: none !important; }
 .u-top-100pct { top: 100% !important; }
 .u-w-100pct { width: 100% !important; }
+.u-w-5pct { width: 5% !important; }
+.u-w-6pct { width: 6% !important; }
+.u-w-7pct { width: 7% !important; }
+.u-w-8pct { width: 8% !important; }
+.u-w-9pct { width: 9% !important; }
+.u-w-11pct { width: 11% !important; }
+.u-w-13pct { width: 13% !important; }
+.u-w-14pct { width: 14% !important; }
+.u-w-16pct { width: 16% !important; }
+.u-w-17pct { width: 17% !important; }
+.u-w-22pct { width: 22% !important; }
+.u-w-24pct { width: 24% !important; }
+.u-w-26pct { width: 26% !important; }
+.u-w-28pct { width: 28% !important; }
+.u-w-32pct { width: 32% !important; }
+.u-w-36pct { width: 36% !important; }
+.u-w-38pct { width: 38% !important; }
+.u-w-44pct { width: 44% !important; }
+.u-w-50pct { width: 50% !important; }
 .u-w-10pct { width: 10% !important; }
 .u-w-10px { width: 10px !important; }
 .u-w-12pct { width: 12% !important; }

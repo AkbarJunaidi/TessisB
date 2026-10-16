@@ -7,7 +7,7 @@
     $canContact = auth()->user()->hasPermission('kontak', 'view');
     $statusClass = ['Diservis' => 'warning', 'Selesai' => 'success', 'Dibatalkan' => 'secondary'];
     $color = $statusClass[$repair->status] ?? 'secondary';
-    $fmtDate = fn ($d) => $d ? $d->format('d M Y') : '-';
+    $fmtDate = fn ($d) => $d ? $d->translatedFormat('d M Y') : '-';
 @endphp
 
 <div class="container-fluid px-4 py-3">

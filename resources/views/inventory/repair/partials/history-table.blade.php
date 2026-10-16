@@ -3,15 +3,15 @@
     <table class="table table-hover table-modern table-stack align-middle mb-0">
         <thead>
             <tr>
-                <th class="ps-4 py-3">Barang</th>
-                <th class="py-3">Unit</th>
-                <th class="py-3">Kode</th>
-                <th class="py-3">Tempat Servis</th>
-                <th class="py-3">Masuk</th>
-                <th class="py-3">Selesai</th>
-                <th class="py-3">Keluhan</th>
-                <th class="py-3">Hasil</th>
-                <th class="py-3 text-end pe-4">Biaya</th>
+                <th class="ps-4 py-3 u-w-16pct">Barang</th>
+                <th class="py-3 u-w-6pct">Unit</th>
+                <th class="py-3 u-w-10pct">Kode</th>
+                <th class="py-3 u-w-14pct">Tempat Servis</th>
+                <th class="py-3 u-w-11pct">Masuk</th>
+                <th class="py-3 u-w-11pct">Selesai</th>
+                <th class="py-3 u-w-14pct">Keluhan</th>
+                <th class="py-3 u-w-8pct">Hasil</th>
+                <th class="py-3 pe-4 text-end u-w-10pct">Biaya</th>
             </tr>
         </thead>
         <tbody class="small">
@@ -30,10 +30,10 @@
                         <a href="{{ route('inventory.repairs.show', $repair) }}" class="text-decoration-none">{{ $repair->code }}</a>
                     </td>
                     <td class="u-minw-160px" data-label="Tempat Servis">{{ $repair->tempat_nama }}</td>
-                    <td data-label="Masuk">{{ $repair->tanggal_masuk->format('d M Y') }}</td>
-                    <td data-label="Selesai">{{ $repair->tanggal_selesai?->format('d M Y') ?? '-' }}</td>
+                    <td class="text-nowrap" data-label="Masuk">{{ $repair->tanggal_masuk->translatedFormat('d M Y') }}</td>
+                    <td class="text-nowrap" data-label="Selesai">{{ $repair->tanggal_selesai?->translatedFormat('d M Y') ?? '-' }}</td>
                     <td class="u-minw-180px" data-label="Keluhan">{{ $repair->keluhan ? \Illuminate\Support\Str::limit($repair->keluhan, 60) : '-' }}</td>
-                    <td data-label="Hasil">
+                    <td class="" data-label="Hasil">
                         @if($item->hasil === 'Tersedia')
                             <span class="badge-soft-success px-2 py-1 rounded-pill text-nowrap">Kembali tersedia</span>
                         @elseif($item->hasil === 'Rusak')
@@ -42,7 +42,7 @@
                             <span class="badge-soft-warning px-2 py-1 rounded-pill text-nowrap">Sedang diservis</span>
                         @endif
                     </td>
-                    <td class="text-end pe-4" data-label="Biaya">
+                    <td class="pe-4 text-end text-nowrap" data-label="Biaya">
                         @if($item->biaya !== null)
                             {{ \App\Support\Money::formatRupiah($item->biaya) }}
                             @if($item->biaya_estimasi)

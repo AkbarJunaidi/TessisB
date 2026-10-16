@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-fluid p-0">
 
-    <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
             <a data-back href="{{ route('kwitansi.index') }}" class="page-back"><i class="bi bi-arrow-left"></i> Keuangan</a>
             <h3 class="fw-bold mb-1">Detail Keuangan - {{ $project->short_name }}</h3>

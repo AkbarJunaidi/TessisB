@@ -166,23 +166,23 @@
     <table class="table align-middle">
         <thead>
             <tr class="text-muted small">
-                <th>Nomor</th>
-                <th>Tanggal</th>
-                <th>Jumlah</th>
-                <th>Keterangan</th>
-                <th>Status</th>
-                <th class="text-end">Aksi</th>
+                <th class="u-w-18pct">Nomor</th>
+                <th class="u-w-14pct">Tanggal</th>
+                <th class="text-end u-w-16pct">Jumlah</th>
+                <th class="u-w-28pct">Keterangan</th>
+                <th class="u-w-14pct">Status</th>
+                <th class="text-center u-w-10pct">Aksi</th>
             </tr>
         </thead>
         <tbody>
             @forelse($project->kwitansis as $kw)
                 <tr class="border-top">
-                    <td class="fw-semibold">{{ $kw->nomor }}</td>
-                    <td>{{ $kw->tanggal->translatedFormat('d M Y') }}</td>
-                    <td class="fw-semibold text-success">{{ \App\Support\Money::formatRupiah($kw->jumlah) }}</td>
+                    <td class="fw-semibold text-nowrap">{{ $kw->nomor }}</td>
+                    <td class="text-nowrap">{{ $kw->tanggal->translatedFormat('d M Y') }}</td>
+                    <td class="fw-semibold text-success text-end text-nowrap">{{ \App\Support\Money::formatRupiah($kw->jumlah) }}</td>
                     <td>{{ $kw->keterangan ?: '-' }}</td>
-                    <td><span class="badge {{ $kw->status === 'Aktif' ? 'bg-success' : 'bg-secondary' }}">{{ $kw->status }}</span></td>
-                    <td class="text-end">
+                    <td class=""><span class="badge {{ $kw->status === 'Aktif' ? 'bg-success' : 'bg-secondary' }}">{{ $kw->status }}</span></td>
+                    <td class="text-center">
                         <a href="{{ route('kwitansi.preview', $kw) }}" target="_blank" class="btn btn-sm btn-outline-primary" title="Cetak"><i class="bi bi-printer"></i></a>
                         <a href="{{ route('kwitansi.download', $kw) }}" class="btn btn-sm btn-primary" title="Unduh"><i class="bi bi-download"></i></a>
                         @if($canVoidKwitansi && $kw->status === 'Aktif')

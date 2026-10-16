@@ -8,7 +8,7 @@
 
     <a data-back href="{{ route('contacts.index') }}" class="page-back"><i class="bi bi-arrow-left"></i> Daftar Kontak</a>
 
-    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
 
         <div class="d-flex align-items-center gap-3">
             <div class="rounded-circle bg-{{ $contact->avatar_color }}-subtle text-{{ $contact->avatar_color }} d-flex align-items-center justify-content-center fw-bold flex-shrink-0 u-w-56px u-h-56px u-fs-1p1rem">
