@@ -361,7 +361,7 @@ class InventoryService
 
             \App\Models\InventoryUnit::whereIn('id', $unitsToRemove->pluck('id'))->delete();
 
-            $this->mutationService->record($inventory->id, 'dihapus', $currentCount - $targetQuantity);
+            $this->mutationService->record($inventory->id, 'dihapus', $currentCount - $targetQuantity, null, $keterangan);
         }
     }
 
@@ -380,6 +380,33 @@ class InventoryService
                 Auth::id(),
                 'Inventory',
                 "Menambah stok barang \"{$locked->name}\" +{$qty} unit ({$keterangan})"
+            );
+
+            return $locked;
+        });
+    }
+
+    /**
+     * Mengurangi stok barang (mis. retur Pembelian ke vendor) - unit dengan nomor tertinggi dihapus
+     * dan mutasi tercatat. Gagal dengan pesan jelas bila unit yang harus dihapus sedang dipinjam atau rusak.
+     */
+    public function reduceStock(Inventory $inventory, int $qty, string $keterangan): Inventory
+    {
+        return DB::transaction(function () use ($inventory, $qty, $keterangan) {
+            $locked = Inventory::lockForUpdate()->findOrFail($inventory->id);
+
+            if ($qty > $locked->quantity_total) {
+                throw new \Exception("Stok \"{$locked->name}\" hanya {$locked->quantity_total} unit, tidak bisa dikurangi {$qty}.");
+            }
+
+            $locked->update(['quantity_total' => $locked->quantity_total - $qty]);
+
+            $this->syncUnits($locked, $locked->quantity_total, $keterangan);
+
+            $this->activityLogService->log(
+                Auth::id(),
+                'Inventory',
+                "Mengurangi stok barang \"{$locked->name}\" -{$qty} unit ({$keterangan})"
             );
 
             return $locked;

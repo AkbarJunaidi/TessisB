@@ -235,6 +235,7 @@ class UserController extends Controller
             : ($roleDefaults['employee'] ?? []);
 
         return [
+            'customRoles'          => \App\Models\CustomRole::query()->orderBy('name')->get(['name', 'slug']),
             'permissionCatalog'    => $catalog,
             'roleDefaults'         => $roleDefaults,
             'effectivePermissions' => $effectivePermissions,

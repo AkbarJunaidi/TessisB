@@ -173,10 +173,10 @@ return [
             'actions' => [
                 'view'    => 'Melihat data pembelian',
                 'create'  => 'Membuat pembelian baru',
-                'edit'    => 'Ubah, ajukan, dan batalkan pembelian',
+                'edit'    => 'Ubah, ajukan, batalkan, dan tandai dipesan',
                 'delete'  => 'Hapus draft pembelian',
                 'receive' => 'Menandai pembelian diterima (stok masuk Inventory)',
-                'pay'     => 'Mencatat pembayaran pembelian',
+                'pay'     => 'Mencatat pembayaran pembelian (peran finance)',
             ],
         ],
 

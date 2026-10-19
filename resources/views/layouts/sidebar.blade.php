@@ -207,7 +207,7 @@
         <li class="sidebar-group-label sidebar-link-text" role="presentation">Administrasi</li>
 
         @if(auth()->user()->isSuperAdmin())
-            @php $userActive = request()->routeIs('users.*'); @endphp
+            @php $userActive = request()->routeIs('users.*') || request()->routeIs('roles.*'); @endphp
             <li class="nav-item">
                 <a href="#menuUser" data-bs-toggle="collapse" class="nav-link sidebar-link text-white d-flex align-items-center justify-content-between {{ $userActive ? 'active' : '' }}" aria-expanded="{{ $userActive ? 'true' : 'false' }}">
                     <span class="sidebar-link-main"><i class="bi bi-people"></i> <span class="sidebar-link-text">Kelola User</span></span>
@@ -223,6 +223,11 @@
                         <li class="nav-item">
                             <a href="{{ route('users.create') }}" class="nav-link sidebar-sublink {{ request()->routeIs('users.create') ? 'active' : '' }}">
                                 <i class="bi bi-person-plus"></i> Tambah User
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('roles.index') }}" class="nav-link sidebar-sublink {{ request()->routeIs('roles.*') ? 'active' : '' }}">
+                                <i class="bi bi-shield-check"></i> Role &amp; Hak Akses
                             </a>
                         </li>
                     </ul>

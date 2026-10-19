@@ -17,7 +17,7 @@
             <div class="small">
                 Role Bawaan
                 <span id="summary-role-badge" class="badge bg-primary ms-1">
-                    {{ ucwords(str_replace('_', ' ', old('role', $user->role ?? 'employee'))) }}
+                    {{ \App\Support\RolePermissions::label(old('role', $user->role ?? 'employee')) }}
                 </span>
             </div>
             <div class="small mt-1">

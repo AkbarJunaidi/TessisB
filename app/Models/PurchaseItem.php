@@ -21,7 +21,10 @@ class PurchaseItem extends Model
         'purchase_id',
         'name',
         'qty',
+        'qty_received',
+        'qty_returned',
         'unit_price',
+        'po_unit_price',
         'subtotal',
         'stock_mode',
         'inventory_id',
@@ -29,8 +32,9 @@ class PurchaseItem extends Model
     ];
 
     protected $casts = [
-        'unit_price' => 'decimal:2',
-        'subtotal'   => 'decimal:2',
+        'unit_price'    => 'decimal:2',
+        'po_unit_price' => 'decimal:2',
+        'subtotal'      => 'decimal:2',
     ];
 
     public function purchase(): BelongsTo
@@ -41,5 +45,23 @@ class PurchaseItem extends Model
     public function inventory(): BelongsTo
     {
         return $this->belongsTo(Inventory::class);
+    }
+
+    /** Jumlah yang belum datang. */
+    public function remaining(): int
+    {
+        return max($this->qty - $this->qty_received, 0);
+    }
+
+    /** Jumlah yang sudah datang dan belum diretur. */
+    public function returnable(): int
+    {
+        return max($this->qty_received - $this->qty_returned, 0);
+    }
+
+    /** Nilai yang masih berlaku (jumlah dikurangi retur, dikali harga sekarang). */
+    public function netValue(): float
+    {
+        return round(max($this->qty - $this->qty_returned, 0) * (float) $this->unit_price, 2);
     }
 }

@@ -59,7 +59,7 @@
                                                 {{ strtoupper(substr($comment->user->name, 0, 2)) }}
                                             </div>
                                             <span class="fw-bold text-dark small">{{ $comment->user->name }}</span>
-                                            <span class="badge bg-secondary text-white u-fs-0p65rem">{{ $comment->user->role }}</span>
+                                            <span class="badge bg-secondary text-white u-fs-0p65rem">{{ $comment->user->role_label }}</span>
                                         </div>
                                         <small class="text-muted font-monospace u-fs-0p7rem">
                                             <i class="bi bi-clock me-1"></i>{{ $comment->created_at->diffForHumans() }}

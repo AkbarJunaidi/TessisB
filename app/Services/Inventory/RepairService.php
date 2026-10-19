@@ -564,7 +564,7 @@ class RepairService
     {
         return PurchaseItem::query()
             ->join('purchases', 'purchases.id', '=', 'purchase_items.purchase_id')
-            ->where('purchases.status', Purchase::STATUS_RECEIVED)
+            ->whereIn('purchases.status', [Purchase::STATUS_RECEIVED, Purchase::STATUS_PARTIAL])
             ->whereNotNull('purchase_items.inventory_id')
             ->orderByDesc('purchases.purchase_date')
             ->orderByDesc('purchases.id');

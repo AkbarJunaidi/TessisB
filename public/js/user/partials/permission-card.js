@@ -71,9 +71,8 @@
     if (roleSelect) {
         roleSelect.addEventListener('change', function () {
             if (roleBadge) {
-                roleBadge.textContent = this.value
-                    ? this.value.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase())
-                    : '-';
+                const selected = this.options[this.selectedIndex];
+                roleBadge.textContent = this.value && selected ? selected.text.trim() : '-';
             }
             applyDefaultsForRole(this.value);
         });

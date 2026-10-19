@@ -33,6 +33,7 @@ use App\Http\Controllers\Task\CommentController;
 use App\Http\Controllers\Task\TaskController;
 use App\Http\Controllers\Tracking\BorrowedItemController;
 use App\Http\Controllers\Trash\TrashController;
+use App\Http\Controllers\Role\RoleController;
 use App\Http\Controllers\User\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -353,6 +354,27 @@ Route::middleware('auth')->group(function () {
         Route::post('purchases/{purchase}/cancel', [PurchaseController::class, 'cancel'])
             ->name('purchases.cancel');
 
+        Route::post('purchases/{purchase}/order', [PurchaseController::class, 'order'])
+            ->name('purchases.order');
+
+        Route::post('purchases/{purchase}/return', [PurchaseController::class, 'returnItems'])
+            ->name('purchases.return');
+
+        Route::get('purchases/{purchase}/pdf', [PurchaseController::class, 'pdf'])
+            ->name('purchases.pdf');
+
+        Route::post('purchases/{purchase}/fund', [PurchaseController::class, 'fund'])
+            ->name('purchases.fund');
+
+        Route::post('purchases/{purchase}/files', [PurchaseController::class, 'storeFile'])
+            ->name('purchases.files.store');
+
+        Route::get('purchases/{purchase}/files/{file}', [PurchaseController::class, 'showFile'])
+            ->name('purchases.files.show');
+
+        Route::delete('purchases/{purchase}/files/{file}', [PurchaseController::class, 'destroyFile'])
+            ->name('purchases.files.destroy');
+
         Route::get('purchases/{purchase}/attachment', [PurchaseController::class, 'attachment'])
             ->name('purchases.attachment');
 
@@ -665,6 +687,16 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('contacts', ContactController::class);
 
+    });
+
+    // Modul Role kustom - hanya Super Admin (menentukan hak akses semua orang).
+    Route::middleware('role:super_admin')->group(function () {
+        Route::get('roles', [RoleController::class, 'index'])->name('roles.index');
+        Route::get('roles/create', [RoleController::class, 'create'])->name('roles.create');
+        Route::post('roles', [RoleController::class, 'store'])->name('roles.store');
+        Route::get('roles/{role}/edit', [RoleController::class, 'edit'])->name('roles.edit');
+        Route::put('roles/{role}', [RoleController::class, 'update'])->name('roles.update');
+        Route::delete('roles/{role}', [RoleController::class, 'destroy'])->name('roles.destroy');
     });
 
     // Modul User Management

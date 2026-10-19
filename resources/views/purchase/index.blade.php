@@ -52,9 +52,19 @@
         </div>
     </div>
 
+    @if(!empty($filters['due']))
+        <div class="alert alert-warning py-2 small d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-calendar-event me-1"></i> Menampilkan pembelian yang segera jatuh tempo atau sudah terlambat.</span>
+            <a href="{{ route('purchases.index') }}" class="text-decoration-none">Tampilkan semua</a>
+        </div>
+    @endif
+
     <div class="card filter-card mb-4">
         <div class="card-body">
             <form method="GET" class="row g-3 align-items-end">
+                @if(!empty($filters['due']))
+                    <input type="hidden" name="due" value="1">
+                @endif
                 <div class="col-12 col-md-6">
                     <label for="fSearch" class="form-label">Cari</label>
                     <div class="search-field">
@@ -125,6 +135,13 @@
                             <td class=""><span class="badge {{ \App\Models\Purchase::STATUS_BADGES[$purchase->status] ?? 'bg-secondary' }}">{{ $purchase->status }}</span></td>
                             <td class="">
                                 <span class="badge {{ $purchase->payment_status === \App\Models\Purchase::PAYMENT_PAID ? 'bg-success' : 'bg-warning text-dark' }}">{{ $purchase->payment_status }}</span>
+                                @php $dueState = $purchase->dueState(); @endphp
+                                @if($dueState)
+                                    <div class="small mt-1 {{ $dueState === 'overdue' ? 'text-danger fw-semibold' : 'text-warning-emphasis' }}">
+                                        <i class="bi bi-calendar-event"></i>
+                                        {{ $dueState === 'overdue' ? 'Terlambat ' . abs($purchase->daysToDue()) . ' hari' : 'Jatuh tempo ' . $purchase->due_date->format('d/m') }}
+                                    </div>
+                                @endif
                             </td>
                             <td class="pe-4 text-center">
                                 <div class="d-flex justify-content-center gap-2">

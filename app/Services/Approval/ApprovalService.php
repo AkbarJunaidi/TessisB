@@ -35,6 +35,12 @@ class ApprovalService
         'purchase_approve' => [PurchaseService::class, 'markRejected'],
     ];
 
+    /**
+     * Jenis approval yang catatan penolakannya wajib diisi, supaya pengaju tahu
+     * apa yang harus diperbaiki sebelum mengajukan lagi.
+     */
+    private const REJECT_NOTE_REQUIRED = ['purchase_approve'];
+
     public function __construct(protected ActivityLogService $activityLogService)
     {
     }
@@ -84,7 +90,7 @@ class ApprovalService
             $handler = self::HANDLERS[$request->type] ?? null;
 
             if ($handler && $request->requestable) {
-                app($handler[0])->{$handler[1]}($request->requestable);
+                app($handler[0])->{$handler[1]}($request->requestable, $note);
             }
 
             $request->update([
@@ -106,11 +112,15 @@ class ApprovalService
             throw new Exception('Permintaan ini sudah diproses.');
         }
 
+        if (in_array($request->type, self::REJECT_NOTE_REQUIRED, true) && trim((string) $note) === '') {
+            throw new Exception('Catatan penolakan wajib diisi.');
+        }
+
         DB::transaction(function () use ($request, $note) {
             $handler = self::REJECT_HANDLERS[$request->type] ?? null;
 
             if ($handler && $request->requestable) {
-                app($handler[0])->{$handler[1]}($request->requestable);
+                app($handler[0])->{$handler[1]}($request->requestable, $note);
             }
 
             $request->update([

@@ -1,0 +1,35 @@
+@extends('layouts.app')
+
+@section('title', 'Tambah Role')
+
+@section('content')
+<div class="container-fluid p-0">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <a data-back href="{{ route('roles.index') }}" class="page-back"><i class="bi bi-arrow-left"></i> Daftar Role</a>
+            <h3 class="fw-bold text-dark m-0">Tambah Role</h3>
+            <p class="d-none d-md-block text-muted small m-0">Beri nama role baru dan pilih apa saja yang boleh dilakukan.</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3 bg-white">
+        <div class="card-body p-4">
+            <form action="{{ route('roles.store') }}" method="POST">
+                @csrf
+                @include('role.partials.form')
+
+                <hr class="border-light my-4">
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{{ route('roles.index') }}" class="btn btn-light px-4 fw-medium">Batal</a>
+                    <button type="submit" class="btn btn-primary px-4 fw-medium shadow-sm">
+                        <i class="bi bi-check2-circle me-1"></i> Simpan Role
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+@endsection

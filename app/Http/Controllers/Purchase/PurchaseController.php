@@ -3,6 +3,12 @@
 namespace App\Http\Controllers\Purchase;
 
 use App\Http\Controllers\Controller;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Http\Requests\Purchase\PurchaseAttachmentRequest;
+use App\Http\Requests\Purchase\PurchaseCancelRequest;
+use App\Http\Requests\Purchase\PurchaseReturnRequest;
+use App\Http\Requests\Purchase\PurchaseFundRequest;
+use App\Http\Requests\Purchase\PurchaseOrderRequest;
 use App\Http\Requests\Purchase\PurchasePaymentRequest;
 use App\Http\Requests\Purchase\PurchaseReceiveRequest;
 use App\Http\Requests\Purchase\PurchaseRequest;
@@ -10,6 +16,7 @@ use App\Models\Contact;
 use App\Models\Inventory;
 use App\Models\Project;
 use App\Models\Purchase;
+use App\Models\PurchaseAttachment;
 use App\Services\Inventory\RepairService;
 use App\Services\Purchase\PurchaseService;
 use Illuminate\Http\RedirectResponse;
@@ -31,7 +38,7 @@ class PurchaseController extends Controller
     {
         $this->authorizeAction('view', 'melihat data pembelian');
 
-        $filters = $request->only('search', 'status', 'payment_status', 'from', 'to');
+        $filters = $request->only('search', 'status', 'payment_status', 'from', 'to', 'due');
 
         $purchases = $this->purchaseService->getAllPaginated($filters);
         $stats = $this->purchaseService->getStats();
@@ -65,6 +72,10 @@ class PurchaseController extends Controller
             'creator:id,name',
             'receiver:id,name',
             'payer:id,name',
+            'orderer:id,name',
+            'fundTransferrer:id,name',
+            'statusLogs.user:id,name',
+            'attachments.uploader:id,name',
             'items.inventory:id,name',
             'approvalRequests' => fn ($q) => $q->with('decidedBy:id,name')->latest(),
         ]);
@@ -121,26 +132,115 @@ class PurchaseController extends Controller
 
     public function receive(PurchaseReceiveRequest $request, Purchase $purchase): RedirectResponse
     {
+        $data = $request->validated();
+
         return $this->run(
-            fn () => $this->purchaseService->receive($purchase, $request->validated()['serials'] ?? []),
-            'Pembelian ditandai diterima dan stok Inventory diperbarui.'
+            fn () => $this->purchaseService->receive($purchase, $data['qty'] ?? [], $data['serials'] ?? [], $data['price'] ?? []),
+            'Penerimaan barang tercatat dan stok Inventory diperbarui.'
         );
+    }
+
+    public function returnItems(PurchaseReturnRequest $request, Purchase $purchase): RedirectResponse
+    {
+        $data = $request->validated();
+
+        return $this->run(
+            fn () => $this->purchaseService->returnItems(
+                $purchase,
+                $data['qty'],
+                $data['reason'],
+                isset($data['refund_amount']) ? (float) $data['refund_amount'] : null,
+                $data['refunded_on'] ?? null
+            ),
+            'Retur tercatat, stok dan total pembelian diperbarui.'
+        );
+    }
+
+    public function pdf(Purchase $purchase)
+    {
+        $this->authorizeAction('view', 'melihat data pembelian');
+
+        abort_unless($purchase->canPrintPo(), 404);
+
+        $purchase->load(['items', 'vendor', 'project:id,name', 'creator:id,name', 'approvalRequests.decidedBy:id,name']);
+
+        return Pdf::loadView('purchase.pdf', ['purchase' => $purchase])
+            ->setPaper('a4', 'portrait')
+            ->stream($purchase->code . '.pdf');
     }
 
     public function pay(PurchasePaymentRequest $request, Purchase $purchase): RedirectResponse
     {
         return $this->run(
-            fn () => $this->purchaseService->recordPayment($purchase, $request->validated()),
+            fn () => $this->purchaseService->recordPayment($purchase, $request->validated(), $request->file('proof')),
             'Pembayaran tercatat.'
         );
     }
 
-    public function cancel(Purchase $purchase): RedirectResponse
+    public function order(PurchaseOrderRequest $request, Purchase $purchase): RedirectResponse
     {
-        $this->authorizeAction('edit', 'membatalkan pembelian');
+        $first = $purchase->canOrder();
 
         return $this->run(
-            fn () => $this->purchaseService->cancel($purchase),
+            fn () => $this->purchaseService->order($purchase, $request->validated(), $request->file('proof')),
+            $first ? 'Pembelian ditandai dipesan.' : 'Info pesanan diperbarui.'
+        );
+    }
+
+    public function fund(PurchaseFundRequest $request, Purchase $purchase): RedirectResponse
+    {
+        return $this->run(
+            fn () => $this->purchaseService->recordFundTransfer($purchase, $request->validated(), $request->file('proof')),
+            'Transfer dana ke finance tercatat.'
+        );
+    }
+
+    public function storeFile(PurchaseAttachmentRequest $request, Purchase $purchase): RedirectResponse
+    {
+        return $this->run(
+            fn () => $this->purchaseService->addAttachment($purchase, $request->validated()['stage'], $request->file('file')),
+            'Lampiran ditambahkan.'
+        );
+    }
+
+    public function showFile(Purchase $purchase, PurchaseAttachment $file)
+    {
+        $this->authorizeAction('view', 'melihat data pembelian');
+
+        abort_unless($file->purchase_id === $purchase->id && Storage::disk('local')->exists($file->path), 404);
+
+        return Storage::disk('local')->response($file->path, $file->original_name);
+    }
+
+    public function destroyFile(Purchase $purchase, PurchaseAttachment $file): RedirectResponse
+    {
+        $user = Auth::user();
+
+        abort_unless($file->purchase_id === $purchase->id, 404);
+        abort_unless(
+            ($user?->hasPermission('purchase', 'edit') || $user?->hasPermission('purchase', 'pay'))
+                && ($file->uploaded_by === $user->id || $user->isSuperAdmin()),
+            403,
+            'Anda tidak memiliki hak akses untuk menghapus lampiran ini.'
+        );
+
+        return $this->run(
+            fn () => $this->purchaseService->removeAttachment($file),
+            'Lampiran dihapus.'
+        );
+    }
+
+    public function cancel(PurchaseCancelRequest $request, Purchase $purchase): RedirectResponse
+    {
+        $data = $request->validated();
+
+        return $this->run(
+            fn () => $this->purchaseService->cancel(
+                $purchase,
+                $data['reason'] ?? null,
+                isset($data['refund_amount']) ? (float) $data['refund_amount'] : null,
+                $data['refunded_on'] ?? null
+            ),
             'Pembelian dibatalkan.'
         );
     }

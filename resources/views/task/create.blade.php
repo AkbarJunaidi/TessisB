@@ -67,7 +67,7 @@
                     <select name="assigned_to" id="assigned_to" class="form-select">
                         <option value="">-- Pilih Anggota Tim (Unassigned) --</option>
                         @foreach($users as $user)
-                            <option value="{{ $user->id }}" {{ old('assigned_to') == $user->id ? 'selected' : '' }}>{{ $user->name }} ({{ $user->role }})</option>
+                            <option value="{{ $user->id }}" {{ old('assigned_to') == $user->id ? 'selected' : '' }}>{{ $user->name }} ({{ $user->role_label }})</option>
                         @endforeach
                     </select>
                 </div>

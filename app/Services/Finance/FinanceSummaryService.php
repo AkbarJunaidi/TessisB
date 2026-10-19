@@ -256,7 +256,7 @@ class FinanceSummaryService
     public function payables(int $limit = 5): array
     {
         $q = Purchase::query()
-            ->whereIn('status', [Purchase::STATUS_APPROVED, Purchase::STATUS_RECEIVED])
+            ->whereIn('status', Purchase::VALID_STATUSES)
             ->where('payment_status', Purchase::PAYMENT_UNPAID);
 
         $items = (clone $q)

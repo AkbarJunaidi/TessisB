@@ -102,6 +102,7 @@ class DashboardController extends Controller
             ['type' => 'servis_jatuh_tempo', 'label' => 'Servis alat',       'icon' => 'bi-tools',       'route' => 'inventory.index', 'allowed' => $user->hasPermission('inventory', 'view')],
             ['type' => 'schedule_conflict',  'label' => 'Bentrok jadwal',    'icon' => 'bi-calendar2-x', 'route' => 'projects.index', 'allowed' => $user->hasPermission('tracking_progress', 'view')],
             ['type' => 'unpaid_deadline',    'label' => 'Belum lunas',       'icon' => 'bi-cash-coin',   'route' => 'projects.index', 'allowed' => $user->hasPermission('tracking_progress', 'view')],
+            ['type' => 'purchase_due',       'label' => 'Pembelian jatuh tempo', 'icon' => 'bi-calendar-x', 'route' => 'purchases.index', 'params' => ['due' => 1], 'allowed' => $user->hasPermission('purchase', 'view')],
         ];
 
         $cards = [];
@@ -115,6 +116,7 @@ class DashboardController extends Controller
                 'label' => $def['label'],
                 'icon'  => $def['icon'],
                 'route' => $def['route'],
+                'params' => $def['params'] ?? [],
                 'count' => $count,
                 // Daftar notifikasi dibatasi per jenis, jadi angka maksimum ditampilkan "10+".
                 'text'  => $count >= NotificationService::MAX_PER_TYPE ? NotificationService::MAX_PER_TYPE . '+' : (string) $count,

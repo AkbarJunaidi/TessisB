@@ -25,8 +25,8 @@ class RoleMiddleware
             abort(401);
         }
 
-        // Memastikan role pengguna termasuk dalam daftar role yang diizinkan
-        if (!in_array(Auth::user()?->role, $roles, true)) {
+        // Memastikan role dasar pengguna (role kustom ikut role dasarnya) termasuk dalam daftar yang diizinkan
+        if (!in_array(Auth::user()?->baseRole(), $roles, true)) {
             abort(403, 'Anda tidak memiliki hak akses.');
         }
 

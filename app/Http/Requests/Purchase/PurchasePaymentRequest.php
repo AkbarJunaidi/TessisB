@@ -16,6 +16,7 @@ class PurchasePaymentRequest extends FormRequest
         return [
             'paid_at'        => ['required', 'date'],
             'payment_method' => ['nullable', 'string', 'max:50'],
+            'proof'          => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:5120'],
         ];
     }
 
@@ -23,6 +24,8 @@ class PurchasePaymentRequest extends FormRequest
     {
         return [
             'paid_at.required' => 'Tanggal pembayaran wajib diisi.',
+            'proof.mimes'      => 'Bukti harus berupa JPG, PNG, WEBP, atau PDF.',
+            'proof.max'        => 'Ukuran bukti maksimal 5MB.',
         ];
     }
 }

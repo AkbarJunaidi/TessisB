@@ -82,6 +82,33 @@
                 @endif
             </div>
 
+            @php $paymentTiming = old('payment_timing', $purchase->payment_timing ?? \App\Models\Purchase::TIMING_ON_RECEIPT); @endphp
+            <div class="col-md-4">
+                <label for="shopping_channel" class="form-label">Cara Belanja <span class="text-danger">*</span></label>
+                <select name="shopping_channel" id="shopping_channel" class="form-select" required>
+                    @foreach(\App\Models\Purchase::SHOP_CHANNELS as $value => $label)
+                        <option value="{{ $value }}" @selected(old('shopping_channel', $purchase->shopping_channel ?? \App\Models\Purchase::SHOP_VENDOR) === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                <div class="form-text">Toko online: nomor pesanan diisi saat ditandai Dipesan.</div>
+            </div>
+
+            <div class="col-md-4">
+                <label for="payment_timing" class="form-label">Waktu Bayar <span class="text-danger">*</span></label>
+                <select name="payment_timing" id="payment_timing" class="form-select" required>
+                    @foreach(\App\Models\Purchase::PAYMENT_TIMINGS as $value => $label)
+                        <option value="{{ $value }}" @selected($paymentTiming === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                <div class="form-text">Bayar dulu: dana otomatis diminta setelah disetujui.</div>
+            </div>
+
+            <div class="col-md-4 {{ $paymentTiming === \App\Models\Purchase::TIMING_TERM ? '' : 'd-none' }}" id="dueDateGroup">
+                <label for="due_date" class="form-label">Jatuh Tempo <span class="text-danger">*</span></label>
+                <input type="date" name="due_date" id="due_date" class="form-control"
+                       value="{{ old('due_date', isset($purchase) ? $purchase->due_date?->format('Y-m-d') : '') }}">
+            </div>
+
             <div class="col-12">
                 <label for="notes" class="form-label">Catatan</label>
                 <textarea name="notes" id="notes" rows="2" class="form-control" maxlength="2000">{{ old('notes', $purchase->notes ?? '') }}</textarea>
@@ -266,6 +293,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     list.querySelectorAll('.purchase-item').forEach(syncName);
     recalculate();
+
+    // Jatuh tempo hanya muncul dan wajib untuk pembayaran tempo.
+    const timing = document.getElementById('payment_timing');
+    const dueGroup = document.getElementById('dueDateGroup');
+    const dueInput = document.getElementById('due_date');
+    const syncTiming = () => {
+        const term = timing.value === '{{ \App\Models\Purchase::TIMING_TERM }}';
+        dueGroup.classList.toggle('d-none', !term);
+        dueInput.required = term;
+    };
+    timing.addEventListener('change', syncTiming);
+    syncTiming();
 });
 </script>
 @endpush

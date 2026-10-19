@@ -173,9 +173,9 @@
 
                         @default
 
-                            <span class="badge bg-secondary">
-                                Employee
-                            </span>
+                            <span class="badge {{ $user->role === 'employee' ? 'bg-secondary' : 'bg-info text-dark' }}">
+                                            {{ $user->role_label }}
+                                        </span>
 
                     @endswitch
 

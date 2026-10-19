@@ -131,7 +131,7 @@ class ContactService
 
         $totals = $vendorIds->isEmpty() ? collect() : DB::table('purchases')
             ->whereIn('vendor_id', $vendorIds)
-            ->whereIn('status', [Purchase::STATUS_APPROVED, Purchase::STATUS_RECEIVED])
+            ->whereIn('status', Purchase::VALID_STATUSES)
             ->select('vendor_id', DB::raw('SUM(total) as total'))
             ->groupBy('vendor_id')
             ->pluck('total', 'vendor_id');

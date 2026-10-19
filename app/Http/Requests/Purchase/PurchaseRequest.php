@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Purchase;
 
+use App\Models\Purchase;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -43,6 +44,9 @@ class PurchaseRequest extends FormRequest
         return [
             'vendor_id'         => ['required', Rule::exists('contacts', 'id')->where('is_vendor', true)],
             'project_id'        => ['nullable', Rule::exists('projects', 'id')->whereNull('deleted_at')],
+            'shopping_channel'  => ['required', Rule::in(array_keys(Purchase::SHOP_CHANNELS))],
+            'payment_timing'    => ['required', Rule::in(array_keys(Purchase::PAYMENT_TIMINGS))],
+            'due_date'          => ['nullable', 'required_if:payment_timing,' . Purchase::TIMING_TERM, 'date'],
             'purchase_date'     => ['required', 'date'],
             'notes'             => ['nullable', 'string', 'max:2000'],
             'attachment'        => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:5120'],
@@ -84,6 +88,9 @@ class PurchaseRequest extends FormRequest
             'vendor_id.required'             => 'Vendor wajib dipilih.',
             'vendor_id.exists'               => 'Vendor tidak valid. Pastikan kontaknya bertag Vendor.',
             'purchase_date.required'         => 'Tanggal pembelian wajib diisi.',
+            'shopping_channel.required'      => 'Cara belanja wajib dipilih.',
+            'payment_timing.required'        => 'Waktu bayar wajib dipilih.',
+            'due_date.required_if'           => 'Tanggal jatuh tempo wajib diisi untuk pembayaran tempo.',
             'items.required'                 => 'Minimal 1 item pembelian.',
             'items.min'                      => 'Minimal 1 item pembelian.',
             'items.*.name.required'          => 'Nama item wajib diisi.',

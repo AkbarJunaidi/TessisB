@@ -165,8 +165,9 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            <label class="form-label small">Catatan (opsional)</label>
-                            <textarea name="note" class="form-control" rows="2"></textarea>
+                            @php $noteRequired = $req->type === 'purchase_approve'; @endphp
+                            <label class="form-label small">Catatan {{ $noteRequired ? 'penolakan' : '' }} {!! $noteRequired ? '<span class="text-danger">*</span>' : '(opsional)' !!}</label>
+                            <textarea name="note" class="form-control" rows="2" @required($noteRequired)></textarea>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>

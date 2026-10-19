@@ -191,6 +191,10 @@ class UserService
      */
     public function changeRole(User $user, string $role): bool
     {
+        if (!\App\Support\RolePermissions::isValid($role)) {
+            throw new Exception('Role tidak dikenal.');
+        }
+
         if ($user->id === Auth::id()) {
             throw new Exception(
                 'Anda tidak dapat mengubah role akun sendiri.'

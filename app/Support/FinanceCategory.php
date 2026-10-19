@@ -14,10 +14,12 @@ class FinanceCategory
     public const PROJECT_EXPENSE = 'Biaya Project';
     public const PURCHASE        = 'Pembelian';
     public const REPAIR          = 'Servis Alat';
+    public const PURCHASE_REFUND = 'Pengembalian Pembelian';
 
     public const SYSTEM = [
         'Pendapatan Project' => 'income',
         'Pendapatan Lain'    => 'income',
+        'Pengembalian Pembelian' => 'income',
         'Biaya Project'      => 'expense',
         'Pembelian'          => 'expense',
         'Servis Alat'        => 'expense',
@@ -27,7 +29,7 @@ class FinanceCategory
         'Lainnya'            => 'expense',
     ];
 
-    public const AUTO = [self::PURCHASE, self::REPAIR];
+    public const AUTO = [self::PURCHASE, self::REPAIR, self::PURCHASE_REFUND];
 
     public const TYPES = ['income' => 'Pemasukan', 'expense' => 'Pengeluaran'];
 

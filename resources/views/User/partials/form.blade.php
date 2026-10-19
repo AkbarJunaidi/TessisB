@@ -126,6 +126,19 @@
                 Employee
             </option>
 
+            @if(!empty($customRoles) && $customRoles->isNotEmpty())
+                <optgroup label="Role buatan sendiri">
+                    @foreach($customRoles as $customRole)
+                        <option
+                            value="{{ $customRole->slug }}"
+                            @selected(old('role', $user->role ?? '') === $customRole->slug)
+                        >
+                            {{ $customRole->name }}
+                        </option>
+                    @endforeach
+                </optgroup>
+            @endif
+
         </select>
 
         @error('role')
@@ -136,7 +149,7 @@
         @else
         {{-- Hanya Super Admin yang boleh mengubah role; field readonly tetap dikirim agar validasi lolos,
              nilainya diabaikan server bila pengirim bukan Super Admin (UserService::updateUser). --}}
-        <input type="text" class="form-control" value="{{ ucwords(str_replace('_', ' ', $user->role ?? '')) }}" disabled>
+        <input type="text" class="form-control" value="{{ \App\Support\RolePermissions::label($user->role ?? '') }}" disabled>
         <input type="hidden" name="role" value="{{ $user->role ?? '' }}">
         <small class="text-muted">Hanya Super Admin yang dapat mengubah role.</small>
         @endif

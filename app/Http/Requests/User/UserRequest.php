@@ -48,11 +48,7 @@ class UserRequest extends FormRequest
 
             'role' => [
                 'required',
-                Rule::in([
-                    'super_admin',
-                    'admin',
-                    'employee',
-                ]),
+                Rule::in(\App\Support\RolePermissions::slugs()),
             ],
 
             'status' => [

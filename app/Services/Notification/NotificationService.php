@@ -5,6 +5,7 @@ namespace App\Services\Notification;
 use App\Models\NotificationState;
 use App\Models\NotificationTypeSetting;
 use App\Models\Project;
+use App\Models\Purchase;
 use App\Models\ReportExport;
 use App\Notifications\AnnouncementNotification;
 use App\Services\Auth\PasswordResetRequestService;
@@ -73,6 +74,7 @@ class NotificationService
         'report_ready'           => 'Laporan Siap Diunduh',
         'unpaid_deadline'        => 'Client Belum Lunas (Sekitar Deadline)',
         'finance_missing'        => 'Pendapatan Belum Diisi (Akhir Bulan)',
+        'purchase_due'           => 'Pembelian Jatuh Tempo / Segera',
         'approval_pending'       => 'Permintaan Approval Menunggu',
         'schedule_conflict'      => 'Bentrok Jadwal Alat Antar Project',
         'servis_jatuh_tempo'     => 'Servis Alat Jatuh Tempo / Segera',
@@ -87,6 +89,7 @@ class NotificationService
         'report_ready'           => 'Laporan siap',
         'unpaid_deadline'        => 'Belum lunas',
         'finance_missing'        => 'Pendapatan belum diisi',
+        'purchase_due'           => 'Pembelian jatuh tempo',
         'approval_pending'       => 'Approval menunggu',
         'schedule_conflict'      => 'Bentrok jadwal',
         'inventory_new'          => 'Barang baru',
@@ -134,6 +137,7 @@ class NotificationService
                 'report_ready'           => $this->getReadyReportNotifications(),
                 'unpaid_deadline'        => $this->getUnpaidNearDeadlineNotifications(),
                 'finance_missing'        => $this->getFinanceNotFilledThisMonthNotifications(),
+                'purchase_due'           => $this->getPurchaseDueNotifications(),
                 'approval_pending'       => $this->getPendingApprovalNotifications(),
                 'schedule_conflict'      => $this->getScheduleConflictNotifications(),
                 'servis_jatuh_tempo'     => $this->getServiceDueNotifications(),
@@ -591,6 +595,44 @@ class NotificationService
                 'message' => "{$project->client} - {$project->name} ({$when})",
                 'detail'  => $project->client,
                 'url'     => route('projects.show', ['project' => $project, 'buka' => 'keuangan']),
+            ];
+        })->all();
+    }
+
+    /**
+     * Pembelian tempo yang belum dibayar dan jatuh tempo dalam Purchase::DUE_SOON_DAYS hari
+     * atau sudah lewat. Hanya terlihat oleh Super Admin dan Admin, seperti jenis lain.
+     */
+    private function getPurchaseDueNotifications(): array
+    {
+        $today = Carbon::today();
+
+        $purchases = Purchase::query()
+            ->select(['id', 'code', 'vendor_name', 'due_date'])
+            ->whereIn('status', Purchase::VALID_STATUSES)
+            ->where('payment_status', Purchase::PAYMENT_UNPAID)
+            ->whereNotNull('due_date')
+            ->whereDate('due_date', '<=', $today->copy()->addDays(Purchase::DUE_SOON_DAYS))
+            ->orderBy('due_date')
+            ->limit(self::MAX_PER_TYPE)
+            ->get();
+
+        return $purchases->map(function (Purchase $purchase) use ($today) {
+            $daysLeft = (int) $today->diffInDays($purchase->due_date, false);
+            $when     = match (true) {
+                $daysLeft > 0 => "jatuh tempo {$daysLeft} hari lagi",
+                $daysLeft < 0 => 'terlambat ' . abs($daysLeft) . ' hari',
+                default       => 'jatuh tempo hari ini',
+            };
+
+            return [
+                'id'      => "purchase-due-{$purchase->id}",
+                'type'    => 'purchase_due',
+                'icon'    => 'bi-calendar-x text-danger',
+                'title'   => 'Pembelian Jatuh Tempo',
+                'message' => "{$purchase->code} - {$purchase->vendor_name} ({$when})",
+                'detail'  => $purchase->vendor_name,
+                'url'     => route('purchases.show', $purchase),
             ];
         })->all();
     }

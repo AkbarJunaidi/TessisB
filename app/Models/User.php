@@ -136,7 +136,23 @@ class User extends Authenticatable
      */
     public function hasRole(string ...$roles): bool
     {
-        return in_array($this->role, $roles);
+        return in_array($this->baseRole(), $roles);
+    }
+
+    /**
+     * Role dasar: role bawaan apa adanya, atau role dasar milik role kustom (admin/employee).
+     * Dipakai semua pengecekan tingkat role, jadi role kustom ikut aturan halaman role dasarnya
+     * sementara izin rincinya tetap dari role kustom itu sendiri.
+     */
+    public function baseRole(): string
+    {
+        return \App\Support\RolePermissions::baseRoleOf($this->role);
+    }
+
+    /** Nama role yang enak dibaca (Super Admin, Admin, Employee, atau nama role kustom). */
+    public function getRoleLabelAttribute(): string
+    {
+        return \App\Support\RolePermissions::label($this->role);
     }
 
     /**
@@ -144,7 +160,7 @@ class User extends Authenticatable
      */
     public function isSuperAdmin(): bool
     {
-        return $this->role === 'super_admin';
+        return $this->baseRole() === 'super_admin';
     }
 
     /**
@@ -152,7 +168,7 @@ class User extends Authenticatable
      */
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->baseRole() === 'admin';
     }
 
     /**
@@ -160,7 +176,7 @@ class User extends Authenticatable
      */
     public function isEmployee(): bool
     {
-        return $this->role === 'employee';
+        return $this->baseRole() === 'employee';
     }
 
     /**

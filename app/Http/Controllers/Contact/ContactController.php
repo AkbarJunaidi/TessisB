@@ -116,7 +116,7 @@ class ContactController extends Controller
         if ($canSeePurchases) {
             $purchases = $contact->purchases()->latest('purchase_date')->latest('id')->limit(10)->get();
             $purchaseTotal = (float) $contact->purchases()
-                ->whereIn('status', [Purchase::STATUS_APPROVED, Purchase::STATUS_RECEIVED])
+                ->whereIn('status', Purchase::VALID_STATUSES)
                 ->sum('total');
         }
 
