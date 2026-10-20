@@ -22,6 +22,7 @@ class Inventory extends Model
     protected $fillable = [
         'name',
         'serial_number',
+        'serial_pending', // true = serial sementara dari Pembelian, harus segera dilengkapi
         'description',
         'status',
         'brand',
@@ -37,6 +38,7 @@ class Inventory extends Model
     ];
 
     protected $casts = [
+        'serial_pending'  => 'boolean',
         'harga_manual'    => 'decimal:2',
         'harga_manual_at' => 'datetime',
         'ambang_ganti_persen' => 'integer',

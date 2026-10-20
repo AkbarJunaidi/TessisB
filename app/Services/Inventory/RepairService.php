@@ -524,7 +524,7 @@ class RepairService
         }
 
         $purchases = $this->receivedPrices()
-            ->get(['purchase_items.inventory_id', 'purchase_items.unit_price', 'purchases.code', 'purchases.id as purchase_id', 'purchases.purchase_date'])
+            ->get(['purchase_items.inventory_id', DB::raw('COALESCE(purchase_items.actual_unit_price, purchase_items.unit_price) as unit_price'), 'purchases.code', 'purchases.id as purchase_id', 'purchases.purchase_date'])
             ->unique('inventory_id')
             ->keyBy('inventory_id');
 
@@ -564,7 +564,8 @@ class RepairService
     {
         return PurchaseItem::query()
             ->join('purchases', 'purchases.id', '=', 'purchase_items.purchase_id')
-            ->where('purchases.status', Purchase::STATUS_RECEIVED)
+            ->whereIn('purchases.status', [Purchase::STATUS_PARTIAL, Purchase::STATUS_RECEIVED])
+            ->where('purchase_items.received_qty', '>', 0)
             ->whereNotNull('purchase_items.inventory_id')
             ->orderByDesc('purchases.purchase_date')
             ->orderByDesc('purchases.id');
@@ -581,7 +582,7 @@ class RepairService
         $inventories = collect($inventories);
         $purchases   = $this->receivedPrices()
             ->whereIn('purchase_items.inventory_id', $inventories->pluck('id')->all())
-            ->get(['purchase_items.inventory_id', 'purchase_items.unit_price', 'purchases.code', 'purchases.id as purchase_id', 'purchases.purchase_date'])
+            ->get(['purchase_items.inventory_id', DB::raw('COALESCE(purchase_items.actual_unit_price, purchase_items.unit_price) as unit_price'), 'purchases.code', 'purchases.id as purchase_id', 'purchases.purchase_date'])
             ->unique('inventory_id')
             ->keyBy('inventory_id');
 

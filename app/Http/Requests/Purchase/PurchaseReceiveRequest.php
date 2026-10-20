@@ -11,23 +11,43 @@ class PurchaseReceiveRequest extends FormRequest
         return $this->user()?->hasPermission('purchase', 'receive') ?? false;
     }
 
+    /** Harga tampil bertitik ribuan di form; hilangkan titiknya sebelum divalidasi. */
+    protected function prepareForValidation(): void
+    {
+        $lines = $this->input('lines');
+
+        if (is_array($lines)) {
+            $this->merge(['lines' => array_map(function ($line) {
+                if (is_array($line) && isset($line['price'])) {
+                    $line['price'] = str_replace('.', '', (string) $line['price']);
+                }
+
+                return $line;
+            }, $lines)]);
+        }
+    }
+
     /**
-     * serials[itemId] - serial number barang baru, diisi saat barang benar-benar tiba.
+     * lines[itemId] - qty diterima, serial (barang baru, penerimaan pertama), dan harga aktual per unit.
+     * Serial dicek di service karena hanya relevan untuk item yang diterima dan belum terdaftar.
      */
     public function rules(): array
     {
         return [
-            'serials'   => ['nullable', 'array'],
-            'serials.*' => ['required', 'string', 'max:255', 'distinct', 'unique:inventories,serial_number'],
+            'lines'          => ['required', 'array'],
+            'lines.*.qty'    => ['nullable', 'integer', 'min:0', 'max:1000000'],
+            'lines.*.serial' => ['nullable', 'string', 'max:255'],
+            'lines.*.price'  => ['nullable', 'numeric', 'min:0', 'max:9999999999999.99'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'serials.*.required' => 'Serial number wajib diisi.',
-            'serials.*.distinct' => 'Serial number tidak boleh kembar antar item.',
-            'serials.*.unique'   => 'Serial number ini sudah terdaftar di Inventory.',
+            'lines.required'      => 'Isi jumlah barang yang diterima.',
+            'lines.*.qty.integer' => 'Jumlah diterima harus berupa angka bulat.',
+            'lines.*.qty.min'     => 'Jumlah diterima tidak boleh negatif.',
+            'lines.*.price.numeric' => 'Harga aktual harus berupa angka.',
         ];
     }
 }

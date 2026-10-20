@@ -96,6 +96,13 @@
         </div>
     </div>
 
+    @if(!empty($filters['due']))
+        <div class="small text-muted mb-2">
+            <i class="bi bi-funnel me-1"></i>Menampilkan pembelian tempo yang jatuh tempo atau segera jatuh tempo.
+            <a href="{{ route('purchases.index') }}" class="text-decoration-none">Hapus filter</a>
+        </div>
+    @endif
+
     <div class="app-panel overflow-hidden">
         <div class="px-3 px-md-4 pt-3 pt-md-4">
             <h6 class="fw-bold mb-3">Semua Pembelian</h6>
@@ -124,7 +131,11 @@
                             <td class="text-end text-nowrap">{{ \App\Support\Money::formatRupiah($purchase->total) }}</td>
                             <td class=""><span class="badge {{ \App\Models\Purchase::STATUS_BADGES[$purchase->status] ?? 'bg-secondary' }}">{{ $purchase->status }}</span></td>
                             <td class="">
-                                <span class="badge {{ $purchase->payment_status === \App\Models\Purchase::PAYMENT_PAID ? 'bg-success' : 'bg-warning text-dark' }}">{{ $purchase->payment_status }}</span>
+                                @if(in_array($purchase->status, \App\Models\Purchase::COMMITTED, true))
+                                    <span class="badge {{ $purchase->money_badge }}">{{ $purchase->money_stage }}</span>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
                             </td>
                             <td class="pe-4 text-center">
                                 <div class="d-flex justify-content-center gap-2">

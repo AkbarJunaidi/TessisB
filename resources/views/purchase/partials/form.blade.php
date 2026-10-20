@@ -62,6 +62,31 @@
             </div>
 
             <div class="col-md-4">
+                <label for="shopping_type" class="form-label">Cara Belanja <span class="text-danger">*</span></label>
+                <select name="shopping_type" id="shopping_type" class="form-select" required>
+                    @foreach(\App\Models\Purchase::SHOP_TYPES as $value => $label)
+                        <option value="{{ $value }}" @selected(old('shopping_type', $purchase->shopping_type ?? 'vendor') === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label for="payment_timing" class="form-label">Waktu Bayar <span class="text-danger">*</span></label>
+                <select name="payment_timing" id="payment_timing" class="form-select" required>
+                    <option value="">- Pilih waktu bayar -</option>
+                    @foreach(\App\Models\Purchase::PAYMENT_TIMINGS as $value => $label)
+                        <option value="{{ $value }}" @selected(old('payment_timing', $purchase->payment_timing ?? '') === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="col-md-4" id="dueDateWrap">
+                <label for="due_date" class="form-label">Jatuh Tempo <span class="text-danger">*</span></label>
+                <input type="date" name="due_date" id="due_date" class="form-control"
+                       value="{{ old('due_date', isset($purchase) && $purchase->due_date ? $purchase->due_date->format('Y-m-d') : '') }}">
+            </div>
+
+            <div class="col-md-4">
                 <label for="purchase_date" class="form-label">Tanggal Pembelian <span class="text-danger">*</span></label>
                 <input type="date" name="purchase_date" id="purchase_date" class="form-control"
                        value="{{ old('purchase_date', isset($purchase) ? $purchase->purchase_date->format('Y-m-d') : now()->format('Y-m-d')) }}" required>
@@ -226,6 +251,18 @@ document.addEventListener('DOMContentLoaded', function () {
         row.querySelector('.item-new').classList.toggle('d-none', mode !== 'new');
         syncName(row);
     }
+
+    // Jatuh tempo hanya relevan untuk pembayaran tempo.
+    const timing = document.getElementById('payment_timing');
+    const dueWrap = document.getElementById('dueDateWrap');
+    const dueInput = document.getElementById('due_date');
+    function syncDue() {
+        const credit = timing.value === 'credit';
+        dueWrap.classList.toggle('d-none', !credit);
+        dueInput.required = credit;
+    }
+    timing.addEventListener('change', syncDue);
+    syncDue();
 
     document.getElementById('addItem').addEventListener('click', function () {
         list.insertAdjacentHTML('beforeend', template.innerHTML.replaceAll('__INDEX__', nextIndex++));

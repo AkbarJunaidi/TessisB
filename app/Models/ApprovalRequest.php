@@ -54,7 +54,7 @@ class ApprovalRequest extends Model
     {
         return Attribute::get(fn () => match ($this->type) {
             'kwitansi_void' => "Pembatalan Kwitansi {$this->payload['nomor']}",
-            'purchase_approve' => "Pembelian {$this->payload['code']}",
+            'purchase_approve' => "Pembelian {$this->payload['code']}" . (($this->payload['attempt'] ?? 1) > 1 ? " (Diajukan ulang ke-{$this->payload['attempt']})" : ''),
             default => class_basename($this->requestable_type) . " #{$this->requestable_id}",
         });
     }

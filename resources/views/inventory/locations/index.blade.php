@@ -245,6 +245,19 @@
                             <textarea class="form-control" id="locAddress" name="address" rows="2" maxlength="500">{{ old('address') }}</textarea>
                         </div>
 
+                        <div class="col-12">
+                            <label for="locMapSearch" class="form-label fw-medium text-secondary">Pilih di Peta <span class="fw-normal text-muted">(opsional)</span></label>
+                            <div class="input-group">
+                                <input type="search" class="form-control" id="locMapSearch" placeholder="Cari tempat atau alamat" autocomplete="off">
+                                <button type="button" class="btn btn-outline-secondary" id="btnMapSearch">
+                                    <i class="bi bi-search me-1"></i> Cari
+                                </button>
+                            </div>
+                            <div id="locMapResults" class="list-group mt-1"></div>
+                            <div id="locMap" class="rounded border mt-2 u-h-300px"></div>
+                            <div class="form-text small">Klik peta atau geser pin untuk menentukan titik. Lingkaran menunjukkan radius deteksi.</div>
+                        </div>
+
                         <div class="col-md-8">
                             <label for="locKoordinat" class="form-label fw-medium text-secondary">Koordinat <span class="fw-normal text-muted">(opsional)</span></label>
                             <div class="input-group">
@@ -255,7 +268,7 @@
                                 </button>
                             </div>
                             <div class="form-text small" id="locGpsStatus">
-                                Tempel koordinat atau tautan Google Maps, atau tekan tombol di atas saat Anda berada di lokasi.
+                                Titik terisi otomatis dari peta. Bisa juga tempel koordinat atau tautan Google Maps, atau tekan tombol di atas saat Anda berada di lokasi.
                             </div>
                         </div>
 
@@ -329,7 +342,14 @@
     </div>
 
     {{-- Dimuat lewat stack agar berjalan SETELAH Bootstrap JS (layout memuatnya di akhir body). --}}
+    @push('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+    @endpush
+
     @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script>
         (function () {
             'use strict';
@@ -352,7 +372,7 @@
             const suggestBox = document.getElementById('locSuggestions');
             const suggestHint = document.getElementById('locSuggestHint');
 
-            const GPS_HELP = 'Tempel koordinat atau tautan Google Maps, atau tekan tombol di atas saat Anda berada di lokasi.';
+            const GPS_HELP = 'Titik terisi otomatis dari peta. Bisa juga tempel koordinat atau tautan Google Maps, atau tekan tombol di atas saat Anda berada di lokasi.';
             let mode = 'create';          // 'create' | 'edit'
             let storeTouched = false;     // user sudah mengubah kotak "menyimpan unit" secara manual
             let debounceTimer = null;
@@ -391,6 +411,7 @@
                 canStoreEl.checked = !!data.can_store_units;
                 defaultEl.checked  = !!data.is_default;
                 activeEl.checked   = data.is_active !== false;
+                if (modalEl.classList.contains('show')) syncMapFromInput(true);
             }
 
             // Siapkan modal untuk menambah lokasi baru.
@@ -504,12 +525,143 @@
                     const lat = pos.coords.latitude.toFixed(7).replace(/0+$/, '').replace(/\.$/, '');
                     const lng = pos.coords.longitude.toFixed(7).replace(/0+$/, '').replace(/\.$/, '');
                     coordEl.value = lat + ', ' + lng;
+                    syncMapFromInput(true);
                     gpsStatus.textContent = 'Koordinat terisi (akurasi sekitar ' + Math.round(pos.coords.accuracy) + ' m).';
                 }, function (err) {
                     gpsStatus.textContent = err.code === 1
                         ? 'Izin lokasi ditolak. Isi koordinat secara manual.'
                         : 'Lokasi tidak dapat dibaca. Isi koordinat secara manual.';
                 }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+            });
+
+            // ---- Peta OpenStreetMap (Leaflet): klik/geser pin mengisi kolom koordinat ----
+            const mapEl        = document.getElementById('locMap');
+            const mapSearchEl  = document.getElementById('locMapSearch');
+            const mapResultsEl = document.getElementById('locMapResults');
+            const DEFAULT_CENTER = [-7.2575, 112.7521];
+            let map = null, marker = null, circle = null;
+
+            function fmtCoord(n) { return n.toFixed(7).replace(/0+$/, '').replace(/\.$/, ''); }
+
+            // Format sama dengan server: "lat, lng" atau tautan Google Maps.
+            function parseCoords(text) {
+                const num = '(-?\\d{1,3}(?:\\.\\d+)?)';
+                const patterns = [
+                    new RegExp('!3d' + num + '!4d' + num),
+                    new RegExp('@' + num + ',' + num),
+                    new RegExp('[?&]q=' + num + ',' + num),
+                    new RegExp('^\\s*' + num + '\\s*[,;\\s]\\s*' + num + '\\s*$')
+                ];
+                for (const re of patterns) {
+                    const m = String(text || '').replace(/[\u2212\u2013]/g, '-').match(re);
+                    if (m) {
+                        const lat = parseFloat(m[1]), lng = parseFloat(m[2]);
+                        return (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) ? [lat, lng] : null;
+                    }
+                }
+                return null;
+            }
+
+            function ensureMap() {
+                if (map || typeof L === 'undefined') return;
+                map = L.map(mapEl).setView(DEFAULT_CENTER, 12);
+                // Awalan atribusi bawaan Leaflet memuat bendera; sisakan tautan Leaflet dan atribusi OSM.
+                map.attributionControl.setPrefix('<a href="https://leafletjs.com" target="_blank" rel="noopener noreferrer">Leaflet</a>');
+                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+                map.on('click', function (e) { pick(e.latlng.lat, e.latlng.lng); });
+            }
+
+            function radiusValue() { return Number(radiusEl.value) || 100; }
+
+            // Pindahkan pin dan lingkaran radius tanpa mengubah kolom koordinat.
+            function placeMarker(lat, lng, recenter) {
+                const pos = [lat, lng];
+                if (!marker) {
+                    marker = L.marker(pos, { draggable: true }).addTo(map);
+                    marker.on('dragend', function () { const p = marker.getLatLng(); pick(p.lat, p.lng); });
+                    circle = L.circle(pos, { radius: radiusValue(), weight: 1 }).addTo(map);
+                } else {
+                    marker.setLatLng(pos);
+                    circle.setLatLng(pos);
+                    circle.setRadius(radiusValue());
+                }
+                if (recenter) map.setView(pos, Math.max(map.getZoom(), 16));
+            }
+
+            function pick(lat, lng) {
+                coordEl.value = fmtCoord(lat) + ', ' + fmtCoord(lng);
+                placeMarker(lat, lng, false);
+                gpsStatus.textContent = 'Titik dipilih di peta.';
+            }
+
+            function syncMapFromInput(recenter) {
+                ensureMap();
+                if (!map) return;
+                const c = parseCoords(coordEl.value);
+                if (c) {
+                    placeMarker(c[0], c[1], recenter);
+                } else if (marker) {
+                    map.removeLayer(marker); map.removeLayer(circle);
+                    marker = circle = null;
+                }
+            }
+
+            function searchPlace() {
+                const q = mapSearchEl.value.trim();
+                if (q.length < 3) return;
+                mapResultsEl.replaceChildren(el('div', 'small text-muted', 'Mencari...'));
+
+                fetch('https://nominatim.openstreetmap.org/search?' + new URLSearchParams({
+                    format: 'jsonv2', limit: '5', countrycodes: 'id', 'accept-language': 'id', q: q
+                }))
+                    .then(function (res) { return res.ok ? res.json() : []; })
+                    .then(function (items) {
+                        mapResultsEl.replaceChildren();
+                        if (!items.length) {
+                            mapResultsEl.appendChild(el('div', 'small text-muted', 'Tempat tidak ditemukan. Klik langsung di peta.'));
+                            return;
+                        }
+                        items.forEach(function (item) {
+                            const btn = el('button', 'list-group-item list-group-item-action small py-2', item.display_name);
+                            btn.type = 'button';
+                            btn.addEventListener('click', function () {
+                                const lat = parseFloat(item.lat), lng = parseFloat(item.lon);
+                                pick(lat, lng);
+                                placeMarker(lat, lng, true);
+                                if (!addressEl.value.trim()) addressEl.value = item.display_name;
+                                mapResultsEl.replaceChildren();
+                            });
+                            mapResultsEl.appendChild(btn);
+                        });
+                    })
+                    .catch(function () {
+                        mapResultsEl.replaceChildren(el('div', 'small text-danger', 'Pencarian gagal. Klik langsung di peta.'));
+                    });
+            }
+
+            document.getElementById('btnMapSearch').addEventListener('click', searchPlace);
+            mapSearchEl.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') { e.preventDefault(); searchPlace(); }
+            });
+            coordEl.addEventListener('input', function () { syncMapFromInput(true); });
+            radiusEl.addEventListener('input', function () { if (circle) circle.setRadius(radiusValue()); });
+
+            // Peta baru bisa dihitung ukurannya setelah modal tampil.
+            modalEl.addEventListener('shown.bs.modal', function () {
+                mapSearchEl.value = '';
+                mapResultsEl.replaceChildren();
+                ensureMap();
+                if (!map) {
+                    mapEl.classList.add('d-flex', 'align-items-center', 'justify-content-center', 'text-muted', 'small');
+                    mapEl.textContent = 'Peta tidak dapat dimuat. Isi koordinat secara manual.';
+                    return;
+                }
+                map.invalidateSize();
+                syncMapFromInput(true);
+                if (!marker) map.setView(DEFAULT_CENTER, 12);
             });
 
             // Validasi server gagal: buka kembali modal dengan input sebelumnya.

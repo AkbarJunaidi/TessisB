@@ -63,6 +63,9 @@
                                     @if($req->reason)
                                         <div class="small mt-1"><span class="text-muted">Alasan:</span> {{ $req->reason }}</div>
                                     @endif
+                                    @if($req->type === 'purchase_approve' && ($req->payload['attempt'] ?? 1) > 1 && !empty($req->payload['prev_note']))
+                                        <div class="small mt-1"><span class="text-muted">Ditolak sebelumnya:</span> {{ $req->payload['prev_note'] }}</div>
+                                    @endif
                                     @if($req->type === 'purchase_approve' && auth()->user()->hasPermission('purchase', 'view'))
                                         <a href="{{ route('purchases.show', $req->requestable_id) }}" class="small text-decoration-none">
                                             <i class="bi bi-box-arrow-up-right"></i> Lihat detail pembelian
@@ -165,8 +168,11 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            <label class="form-label small">Catatan (opsional)</label>
-                            <textarea name="note" class="form-control" rows="2"></textarea>
+                            @php
+                                $noteRequired = $req->type === 'purchase_approve';
+                            @endphp
+                            <label class="form-label small">Catatan {{ $noteRequired ? '' : '(opsional)' }}</label>
+                            <textarea name="note" class="form-control" rows="2" maxlength="255" @required($noteRequired)></textarea>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>

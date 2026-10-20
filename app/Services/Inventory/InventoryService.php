@@ -64,6 +64,10 @@ class InventoryService
             });
         }
 
+        if (!empty($filters['serial_pending'])) {
+            $query->where('serial_pending', true);
+        }
+
         // Filter berdasarkan Dropdown Status
         if (!empty($filters['status']) && $filters['status'] !== 'Semua Status') {
             $status = $filters['status'];
@@ -124,6 +128,7 @@ class InventoryService
             $inventory = Inventory::create([
                 'name'          => $data['name'],
                 'serial_number' => $data['serial_number'],
+                'serial_pending' => (bool) ($data['serial_pending'] ?? false),
                 'description'   => $data['description'] ?? null,
                 'status'        => $data['status'] ?? 'Tersedia',
                 'brand'         => $data['brand'] ?? null,
@@ -213,6 +218,8 @@ class InventoryService
             $inventory->update([
                 'name'          => $data['name'],
                 'serial_number' => $data['serial_number'],
+                // Serial yang diubah berarti sudah dilengkapi.
+                'serial_pending' => $data['serial_number'] !== $oldSerialNumber ? false : $inventory->serial_pending,
                 'description'   => $data['description'] ?? null,
                 'status'        => $data['status'] ?? $inventory->status,
                 'brand'         => $data['brand'] ?? null,
@@ -380,6 +387,68 @@ class InventoryService
                 Auth::id(),
                 'Inventory',
                 "Menambah stok barang \"{$locked->name}\" +{$qty} unit ({$keterangan})"
+            );
+
+            return $locked;
+        });
+    }
+
+    /**
+     * Melengkapi serial number sementara (barang dari Pembelian); QR label dibuat ulang dari serial baru.
+     */
+    public function assignSerial(Inventory $inventory, string $serial): Inventory
+    {
+        $serial = trim($serial);
+
+        if ($serial === '') {
+            throw new \Exception('Serial number wajib diisi.');
+        }
+
+        if (Inventory::withTrashed()->where('serial_number', $serial)->where('id', '!=', $inventory->id)->exists()) {
+            throw new \Exception("Serial number \"{$serial}\" sudah terdaftar di Inventory.");
+        }
+
+        return DB::transaction(function () use ($inventory, $serial) {
+            $oldQrPath = $inventory->qr_code;
+
+            $inventory->update(['serial_number' => $serial, 'serial_pending' => false]);
+
+            if ($oldQrPath) {
+                $this->qrCodeService->delete($oldQrPath);
+            }
+
+            $inventory->update(['qr_code' => $this->qrCodeService->generate($serial)]);
+
+            $this->activityLogService->log(
+                Auth::id(),
+                'Inventory',
+                "Melengkapi serial number barang \"{$inventory->name}\" ({$serial})"
+            );
+
+            return $inventory;
+        });
+    }
+
+    /**
+     * Mengurangi stok (mis. retur Pembelian); unit yang sedang dipinjam atau diservis menggagalkan pengurangan.
+     */
+    public function removeStock(Inventory $inventory, int $qty, string $keterangan): Inventory
+    {
+        return DB::transaction(function () use ($inventory, $qty, $keterangan) {
+            $locked = Inventory::lockForUpdate()->findOrFail($inventory->id);
+
+            if ($qty > $locked->quantity_total) {
+                throw new \Exception("Stok \"{$locked->name}\" hanya {$locked->quantity_total} unit, tidak cukup untuk dikurangi {$qty}.");
+            }
+
+            $locked->update(['quantity_total' => $locked->quantity_total - $qty]);
+
+            $this->syncUnits($locked, $locked->quantity_total, $keterangan);
+
+            $this->activityLogService->log(
+                Auth::id(),
+                'Inventory',
+                "Mengurangi stok barang \"{$locked->name}\" -{$qty} unit ({$keterangan})"
             );
 
             return $locked;

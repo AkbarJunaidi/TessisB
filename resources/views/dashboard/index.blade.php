@@ -68,7 +68,7 @@
                 <div class="row g-2 mb-3">
                     @foreach($attention as $card)
                         <div class="col-6 col-lg-3">
-                            <a href="{{ route($card['route']) }}" class="card border-0 shadow-sm rounded-3 text-decoration-none text-dark hover-lift h-100">
+                            <a href="{{ route($card['route'], $card['params'] ?? []) }}" class="card border-0 shadow-sm rounded-3 text-decoration-none text-dark hover-lift h-100">
                                 <div class="card-body p-3 d-flex justify-content-between align-items-center gap-2">
                                     <span class="small"><i class="bi {{ $card['icon'] }} me-1 {{ $card['count'] > 0 ? 'text-danger' : 'text-muted' }}"></i>{{ $card['label'] }}</span>
                                     <span class="fs-5 fw-bold {{ $card['count'] > 0 ? 'text-danger' : 'text-muted' }}">{{ $card['text'] }}</span>

@@ -3,6 +3,11 @@
 namespace App\Http\Controllers\Purchase;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Purchase\PurchaseAttachmentRequest;
+use App\Http\Requests\Purchase\PurchaseCancelRequest;
+use App\Http\Requests\Purchase\PurchaseFundRequest;
+use App\Http\Requests\Purchase\PurchaseOrderRequest;
+use App\Http\Requests\Purchase\PurchaseReturnRequest;
 use App\Http\Requests\Purchase\PurchasePaymentRequest;
 use App\Http\Requests\Purchase\PurchaseReceiveRequest;
 use App\Http\Requests\Purchase\PurchaseRequest;
@@ -10,6 +15,7 @@ use App\Models\Contact;
 use App\Models\Inventory;
 use App\Models\Project;
 use App\Models\Purchase;
+use App\Models\PurchaseAttachment;
 use App\Services\Inventory\RepairService;
 use App\Services\Purchase\PurchaseService;
 use Illuminate\Http\RedirectResponse;
@@ -31,7 +37,7 @@ class PurchaseController extends Controller
     {
         $this->authorizeAction('view', 'melihat data pembelian');
 
-        $filters = $request->only('search', 'status', 'payment_status', 'from', 'to');
+        $filters = $request->only('search', 'status', 'payment_status', 'from', 'to', 'due');
 
         $purchases = $this->purchaseService->getAllPaginated($filters);
         $stats = $this->purchaseService->getStats();
@@ -65,11 +71,17 @@ class PurchaseController extends Controller
             'creator:id,name',
             'receiver:id,name',
             'payer:id,name',
-            'items.inventory:id,name',
+            'orderer:id,name',
+            'funder:id,name',
+            'items.inventory:id,name,serial_pending',
+            'histories.user:id,name',
+            'attachments.uploader:id,name',
             'approvalRequests' => fn ($q) => $q->with('decidedBy:id,name')->latest(),
         ]);
 
-        return view('purchase.show', compact('purchase'));
+        $nextSteps = $this->purchaseService->nextSteps($purchase, Auth::user());
+
+        return view('purchase.show', compact('purchase', 'nextSteps'));
     }
 
     public function edit(Purchase $purchase): View|RedirectResponse
@@ -122,25 +134,96 @@ class PurchaseController extends Controller
     public function receive(PurchaseReceiveRequest $request, Purchase $purchase): RedirectResponse
     {
         return $this->run(
-            fn () => $this->purchaseService->receive($purchase, $request->validated()['serials'] ?? []),
-            'Pembelian ditandai diterima dan stok Inventory diperbarui.'
+            fn () => $this->purchaseService->receive($purchase, $request->validated()['lines']),
+            'Penerimaan barang tercatat dan stok Inventory diperbarui.'
+        );
+    }
+
+    public function returnGoods(PurchaseReturnRequest $request, Purchase $purchase): RedirectResponse
+    {
+        return $this->run(
+            fn () => $this->purchaseService->returnGoods(
+                $purchase,
+                $request->validated()['lines'],
+                $request->validated()['note'],
+                isset($request->validated()['refund']) ? (float) $request->validated()['refund'] : null,
+                $request->validated()['refunded_on'] ?? null
+            ),
+            'Retur barang tercatat dan stok Inventory dikurangi.'
+        );
+    }
+
+    public function po(Purchase $purchase)
+    {
+        $this->authorizeAction('view', 'melihat data pembelian');
+
+        try {
+            return $this->purchaseService->generatePoPdf($purchase);
+        } catch (Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function order(PurchaseOrderRequest $request, Purchase $purchase): RedirectResponse
+    {
+        return $this->run(
+            fn () => $this->purchaseService->order(
+                $purchase,
+                $request->validated(),
+                $request->file('order_proof'),
+                $request->file('receipt_file')
+            ),
+            'Pembelian ditandai dipesan.'
+        );
+    }
+
+    public function fund(PurchaseFundRequest $request, Purchase $purchase): RedirectResponse
+    {
+        return $this->run(
+            fn () => $this->purchaseService->fund($purchase, $request->validated(), $request->file('proof')),
+            'Transfer dana ke finance tercatat.'
         );
     }
 
     public function pay(PurchasePaymentRequest $request, Purchase $purchase): RedirectResponse
     {
         return $this->run(
-            fn () => $this->purchaseService->recordPayment($purchase, $request->validated()),
+            fn () => $this->purchaseService->recordPayment($purchase, $request->validated(), $request->file('proof')),
             'Pembayaran tercatat.'
         );
     }
 
-    public function cancel(Purchase $purchase): RedirectResponse
+    public function storeAttachment(PurchaseAttachmentRequest $request, Purchase $purchase): RedirectResponse
     {
-        $this->authorizeAction('edit', 'membatalkan pembelian');
+        return $this->run(
+            fn () => $this->purchaseService->addAttachment($purchase, $request->file('file'), $request->validated()['stage']),
+            'Lampiran ditambahkan.'
+        );
+    }
+
+    public function destroyAttachment(PurchaseAttachment $attachment): RedirectResponse
+    {
+        $this->authorizeAction('edit', 'menghapus lampiran pembelian');
 
         return $this->run(
-            fn () => $this->purchaseService->cancel($purchase),
+            fn () => $this->purchaseService->removeAttachment($attachment),
+            'Lampiran dihapus.'
+        );
+    }
+
+    public function showAttachment(PurchaseAttachment $attachment)
+    {
+        $this->authorizeAction('view', 'melihat data pembelian');
+
+        abort_unless(Storage::disk('local')->exists($attachment->path), 404);
+
+        return Storage::disk('local')->response($attachment->path, $attachment->original_name);
+    }
+
+    public function cancel(PurchaseCancelRequest $request, Purchase $purchase): RedirectResponse
+    {
+        return $this->run(
+            fn () => $this->purchaseService->cancel($purchase, $request->validated()['reason'] ?? null),
             'Pembelian dibatalkan.'
         );
     }

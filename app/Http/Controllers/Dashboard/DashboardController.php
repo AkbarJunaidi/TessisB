@@ -99,6 +99,9 @@ class DashboardController extends Controller
 
         $definitions = [
             ['type' => 'approval_pending',   'label' => 'Approval menunggu', 'icon' => 'bi-patch-check', 'route' => 'approval.index', 'allowed' => true],
+            ['type' => 'serial_pending',   'label' => 'Serial belum diisi', 'icon' => 'bi-upc-scan',   'route' => 'inventory.index', 'params' => ['serial_pending' => 1], 'allowed' => $user->hasPermission('inventory', 'edit')],
+            ['type' => 'purchase_due',      'label' => 'Jatuh tempo',       'icon' => 'bi-calendar-x',  'route' => 'purchases.index', 'params' => ['due' => 1], 'allowed' => $user->hasPermission('purchase', 'pay') || $user->hasPermission('approval', 'decide')],
+            ['type' => 'purchase_to_order',  'label' => 'Belum dipesan',     'icon' => 'bi-bag-check',   'route' => 'purchases.index', 'params' => ['status' => 'Disetujui'], 'allowed' => $user->hasPermission('purchase', 'view')],
             ['type' => 'servis_jatuh_tempo', 'label' => 'Servis alat',       'icon' => 'bi-tools',       'route' => 'inventory.index', 'allowed' => $user->hasPermission('inventory', 'view')],
             ['type' => 'schedule_conflict',  'label' => 'Bentrok jadwal',    'icon' => 'bi-calendar2-x', 'route' => 'projects.index', 'allowed' => $user->hasPermission('tracking_progress', 'view')],
             ['type' => 'unpaid_deadline',    'label' => 'Belum lunas',       'icon' => 'bi-cash-coin',   'route' => 'projects.index', 'allowed' => $user->hasPermission('tracking_progress', 'view')],
@@ -115,6 +118,7 @@ class DashboardController extends Controller
                 'label' => $def['label'],
                 'icon'  => $def['icon'],
                 'route' => $def['route'],
+                'params' => $def['params'] ?? [],
                 'count' => $count,
                 // Daftar notifikasi dibatasi per jenis, jadi angka maksimum ditampilkan "10+".
                 'text'  => $count >= NotificationService::MAX_PER_TYPE ? NotificationService::MAX_PER_TYPE . '+' : (string) $count,

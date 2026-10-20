@@ -39,7 +39,7 @@ class InventoryController extends Controller
             'Anda tidak memiliki hak akses untuk melihat data inventory.'
         );
 
-        $filters = $request->only(['search', 'status']);
+        $filters = $request->only(['search', 'status', 'serial_pending']);
         $inventories = $this->inventoryService->getAllPaginated($filters, 10);
 
         return view('inventory.index', compact('inventories'));
@@ -403,6 +403,27 @@ class InventoryController extends Controller
     /**
      * Memperbarui data inventory.
      */
+    public function updateSerial(Request $request, Inventory $inventory): RedirectResponse
+    {
+        abort_unless(
+            Auth::user()?->hasPermission('inventory', 'edit'),
+            403,
+            'Anda tidak memiliki hak akses untuk mengubah data inventory.'
+        );
+
+        $data = $request->validate(['serial_number' => ['required', 'string', 'max:255']], [
+            'serial_number.required' => 'Serial number wajib diisi.',
+        ]);
+
+        try {
+            $this->inventoryService->assignSerial($inventory, $data['serial_number']);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+
+        return redirect()->back()->with('success', 'Serial number dilengkapi dan QR label diperbarui.');
+    }
+
     public function update(
         InventoryRequest $request,
         Inventory $inventory
@@ -546,6 +567,12 @@ class InventoryController extends Controller
      */
     public function previewQr(Inventory $inventory)
     {
+        // Label berisi serial; serial sementara akan berubah, sehingga label yang dicetak jadi tidak terbaca.
+        if ($inventory->serial_pending) {
+            return redirect()->route('inventory.show', $inventory)
+                ->with('error', 'Serial number belum diisi. Lengkapi dulu sebelum mencetak label QR.');
+        }
+
         // Langsung arahkan ke logic renderer PDF dengan mode stream inline
         return $this->inventoryService->generateLabelPdf($inventory, $stream = true);
     }

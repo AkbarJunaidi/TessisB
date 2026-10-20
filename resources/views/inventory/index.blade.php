@@ -104,6 +104,9 @@
                             <span class="badge bg-light text-dark border px-2 py-1 font-monospace fw-medium">
                                 {{ $item->serial_number }}
                             </span>
+                            @if($item->serial_pending)
+                                <div><span class="badge bg-warning text-dark mt-1">Belum diisi</span></div>
+                            @endif
                         </td>
 
                         {{-- Status Barang - otomatis "Tersedia" jika masih ada unit available (logika tidak diubah) --}}

@@ -156,6 +156,9 @@ Route::middleware('auth')->group(function () {
         Route::resource('inventory', InventoryController::class);
 
         // Route Preview & Export QR Label
+        Route::patch('inventory/{inventory}/serial', [InventoryController::class, 'updateSerial'])
+            ->name('inventory.serial');
+
         Route::get('inventory/{inventory}/preview-qr', [InventoryController::class, 'previewQr'])
             ->name('inventory.preview-qr');
 
@@ -353,8 +356,29 @@ Route::middleware('auth')->group(function () {
         Route::post('purchases/{purchase}/cancel', [PurchaseController::class, 'cancel'])
             ->name('purchases.cancel');
 
+        Route::post('purchases/{purchase}/order', [PurchaseController::class, 'order'])
+            ->name('purchases.order');
+
+        Route::post('purchases/{purchase}/fund', [PurchaseController::class, 'fund'])
+            ->name('purchases.fund');
+
+        Route::post('purchases/{purchase}/return', [PurchaseController::class, 'returnGoods'])
+            ->name('purchases.return');
+
+        Route::get('purchases/{purchase}/po', [PurchaseController::class, 'po'])
+            ->name('purchases.po');
+
         Route::get('purchases/{purchase}/attachment', [PurchaseController::class, 'attachment'])
             ->name('purchases.attachment');
+
+        Route::post('purchases/{purchase}/attachments', [PurchaseController::class, 'storeAttachment'])
+            ->name('purchases.attachments.store');
+
+        Route::get('purchases/attachments/{attachment}', [PurchaseController::class, 'showAttachment'])
+            ->name('purchases.attachments.show');
+
+        Route::delete('purchases/attachments/{attachment}', [PurchaseController::class, 'destroyAttachment'])
+            ->name('purchases.attachments.destroy');
 
     });
 

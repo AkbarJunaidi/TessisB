@@ -74,6 +74,9 @@ class NotificationService
         'unpaid_deadline'        => 'Client Belum Lunas (Sekitar Deadline)',
         'finance_missing'        => 'Pendapatan Belum Diisi (Akhir Bulan)',
         'approval_pending'       => 'Permintaan Approval Menunggu',
+        'purchase_to_order'      => 'Pembelian Disetujui Belum Dipesan',
+        'purchase_due'           => 'Pembelian Jatuh Tempo',
+        'serial_pending'         => 'Serial Number Belum Diisi',
         'schedule_conflict'      => 'Bentrok Jadwal Alat Antar Project',
         'servis_jatuh_tempo'     => 'Servis Alat Jatuh Tempo / Segera',
         'inventory_new'          => 'Barang Baru',
@@ -88,6 +91,9 @@ class NotificationService
         'unpaid_deadline'        => 'Belum lunas',
         'finance_missing'        => 'Pendapatan belum diisi',
         'approval_pending'       => 'Approval menunggu',
+        'purchase_to_order'      => 'Belum dipesan',
+        'purchase_due'           => 'Jatuh tempo',
+        'serial_pending'         => 'Serial belum diisi',
         'schedule_conflict'      => 'Bentrok jadwal',
         'inventory_new'          => 'Barang baru',
         'project_new'            => 'Project baru',
@@ -135,6 +141,9 @@ class NotificationService
                 'unpaid_deadline'        => $this->getUnpaidNearDeadlineNotifications(),
                 'finance_missing'        => $this->getFinanceNotFilledThisMonthNotifications(),
                 'approval_pending'       => $this->getPendingApprovalNotifications(),
+                'purchase_to_order'      => $this->getPurchaseToOrderNotifications(),
+                'purchase_due'           => $this->getPurchaseDueNotifications(),
+                'serial_pending'         => $this->getSerialPendingNotifications(),
                 'schedule_conflict'      => $this->getScheduleConflictNotifications(),
                 'servis_jatuh_tempo'     => $this->getServiceDueNotifications(),
                 'inventory_new'          => $this->getNewInventoryNotifications(),
@@ -170,6 +179,21 @@ class NotificationService
         // seorang Admin akses approval.decide walau default-nya nonaktif.
         if (!$user?->hasPermission('approval', 'decide')) {
             unset($grouped['approval_pending']);
+        }
+
+        // Serial belum diisi: untuk yang boleh mengubah data inventory.
+        if (!$user?->hasPermission('inventory', 'edit')) {
+            unset($grouped['serial_pending']);
+        }
+
+        // Jatuh tempo: untuk yang membayar (finance) atau menyetujui (bos).
+        if (!$user?->hasPermission('purchase', 'pay') && !$user?->hasPermission('approval', 'decide')) {
+            unset($grouped['purchase_due']);
+        }
+
+        // Pembelian belum dipesan: untuk yang bisa menandai Dipesan (izin edit Pembelian).
+        if (!$user?->hasPermission('purchase', 'edit')) {
+            unset($grouped['purchase_to_order']);
         }
 
         // Buang jenis yang Super Admin nonaktifkan - dicek di sini
@@ -409,6 +433,74 @@ class NotificationService
             'detail'  => $request->display_title,
             'url'     => route('approval.index'),
         ])->all();
+    }
+
+    /**
+     * Notifikasi: barang dari Pembelian yang serial numbernya masih sementara, terlama dulu.
+     */
+    private function getSerialPendingNotifications(): array
+    {
+        return \App\Models\Inventory::where('serial_pending', true)
+            ->orderBy('created_at')
+            ->limit(self::MAX_PER_TYPE)
+            ->get(['id', 'name'])
+            ->map(fn ($inventory) => [
+                'id'      => "serial-pending-{$inventory->id}",
+                'type'    => 'serial_pending',
+                'icon'    => 'bi-upc-scan text-warning',
+                'title'   => 'Serial Number Belum Diisi',
+                'message' => $inventory->name,
+                'detail'  => $inventory->name,
+                'url'     => route('inventory.show', $inventory, false),
+            ])->all();
+    }
+
+    /**
+     * Notifikasi: pembelian tempo belum dibayar yang jatuh tempo dalam beberapa hari atau sudah lewat.
+     */
+    private function getPurchaseDueNotifications(): array
+    {
+        return \App\Models\Purchase::where('payment_timing', \App\Models\Purchase::TIMING_CREDIT)
+            ->where('payment_status', \App\Models\Purchase::PAYMENT_UNPAID)
+            ->whereIn('status', \App\Models\Purchase::COMMITTED)
+            ->whereDate('due_date', '<=', now()->addDays(\App\Models\Purchase::DUE_SOON_DAYS))
+            ->orderBy('due_date')
+            ->limit(self::MAX_PER_TYPE)
+            ->get(['id', 'code', 'vendor_name', 'due_date'])
+            ->map(function ($purchase) {
+                $days = (int) now()->startOfDay()->diffInDays($purchase->due_date->startOfDay(), false);
+                $when = $days < 0 ? 'terlambat ' . abs($days) . ' hari' : ($days === 0 ? 'hari ini' : "{$days} hari lagi");
+
+                return [
+                    'id'      => "purchase-due-{$purchase->id}",
+                    'type'    => 'purchase_due',
+                    'icon'    => 'bi-calendar-x ' . ($days < 0 ? 'text-danger' : 'text-warning'),
+                    'title'   => 'Pembelian Jatuh Tempo',
+                    'message' => "{$purchase->code} - {$purchase->vendor_name}, {$when}",
+                    'detail'  => $purchase->code,
+                    'url'     => route('purchases.show', $purchase, false),
+                ];
+            })->all();
+    }
+
+    /**
+     * Notifikasi: pembelian Disetujui yang belum ditandai Dipesan, terlama dulu.
+     */
+    private function getPurchaseToOrderNotifications(): array
+    {
+        return \App\Models\Purchase::where('status', \App\Models\Purchase::STATUS_APPROVED)
+            ->orderBy('approved_at')
+            ->limit(self::MAX_PER_TYPE)
+            ->get(['id', 'code', 'vendor_name'])
+            ->map(fn ($purchase) => [
+                'id'      => "purchase-to-order-{$purchase->id}",
+                'type'    => 'purchase_to_order',
+                'icon'    => 'bi-bag-check text-warning',
+                'title'   => 'Pembelian Belum Dipesan',
+                'message' => "{$purchase->code} - {$purchase->vendor_name}",
+                'detail'  => $purchase->code,
+                'url'     => route('purchases.show', $purchase, false),
+            ])->all();
     }
 
     /**

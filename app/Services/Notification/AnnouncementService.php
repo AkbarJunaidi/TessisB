@@ -179,7 +179,7 @@ class AnnouncementService
      *
      * @param  array<int, int>  $userIds
      */
-    public function sendToUsers(array $userIds, string $title, string $message, ?string $url = null): Collection
+    public function sendToUsers(array $userIds, string $title, string $message, ?string $url = null, bool $log = true): Collection
     {
         $sender = Auth::user();
 
@@ -197,11 +197,13 @@ class AnnouncementService
             ));
         }
 
-        $this->activityLogService->log(
-            $sender->id,
-            'Notifikasi',
-            "Mengirim notifikasi \"{$title}\" ke {$recipients->count()} user"
-        );
+        if ($log) {
+            $this->activityLogService->log(
+                $sender->id,
+                'Notifikasi',
+                "Mengirim notifikasi \"{$title}\" ke {$recipients->count()} user"
+            );
+        }
 
         return $recipients;
     }

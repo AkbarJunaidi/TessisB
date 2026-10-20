@@ -6,6 +6,8 @@ use App\Http\Controllers\Concerns\RespondsToAjax;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Approval\ApprovalDecisionRequest;
 use App\Models\ApprovalRequest;
+use App\Models\Purchase;
+use App\Services\Purchase\PurchaseService;
 use App\Services\Approval\ApprovalService;
 use App\Services\Auth\PasswordResetRequestService;
 use Illuminate\Http\JsonResponse;
@@ -57,7 +59,7 @@ class ApprovalController extends Controller
             return $this->failed($request, $e->getMessage());
         }
 
-        return $this->done($request, 'Permintaan disetujui.');
+        return $this->done($request, $this->approvedMessage($request, $approvalRequest));
     }
 
     public function reject(ApprovalDecisionRequest $request, ApprovalRequest $approvalRequest): RedirectResponse|JsonResponse
@@ -69,5 +71,26 @@ class ApprovalController extends Controller
         }
 
         return $this->done($request, 'Permintaan ditolak.');
+    }
+
+    /**
+     * Pembelian: pesan sukses memuat ringkasan langkah berikutnya.
+     */
+    private function approvedMessage(ApprovalDecisionRequest $request, ApprovalRequest $approvalRequest): string
+    {
+        if ($approvalRequest->type !== 'purchase_approve') {
+            return 'Permintaan disetujui.';
+        }
+
+        $purchase = Purchase::find($approvalRequest->requestable_id);
+
+        if (!$purchase) {
+            return 'Permintaan disetujui.';
+        }
+
+        // Dari halaman detail, popup menjelaskan langkah berikutnya; dari daftar Approval, ringkasannya ikut di pesan.
+        return $request->expectsJson()
+            ? "Pembelian {$purchase->code} disetujui. Langkah berikutnya: " . app(PurchaseService::class)->approvalSummary($purchase)
+            : "Pembelian {$purchase->code} disetujui.";
     }
 }

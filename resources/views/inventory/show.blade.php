@@ -16,9 +16,15 @@
             <p class="d-none d-md-block text-muted small m-0">Menampilkan informasi lengkap dan identitas aset barang.</p>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <a href="{{ route('inventory.preview-qr', $inventory->id) }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center gap-2 fw-medium">
-                <i class="bi bi-printer"></i> Cetak Label QR
-            </a>
+            @if($inventory->serial_pending)
+                <button type="button" class="btn btn-outline-secondary d-flex align-items-center gap-2 fw-medium" disabled title="Isi serial number dulu">
+                    <i class="bi bi-printer"></i> Cetak Label QR
+                </button>
+            @else
+                <a href="{{ route('inventory.preview-qr', $inventory->id) }}" target="_blank" class="btn btn-outline-primary d-flex align-items-center gap-2 fw-medium">
+                    <i class="bi bi-printer"></i> Cetak Label QR
+                </a>
+            @endif
             <div class="dropdown">
                 <button type="button" class="btn btn-outline-primary dropdown-toggle d-flex align-items-center gap-2 fw-medium" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-file-earmark-text"></i> Report
@@ -45,9 +51,15 @@
         </div>
         <p class="text-muted small mb-2">Informasi lengkap aset barang</p>
         <div class="d-flex flex-wrap gap-2">
-            <a href="{{ route('inventory.preview-qr', $inventory->id) }}" target="_blank" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-2 fw-medium">
-                <i class="bi bi-qr-code"></i> Cetak QR
-            </a>
+            @if($inventory->serial_pending)
+                <button type="button" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-2 fw-medium" disabled title="Isi serial number dulu">
+                    <i class="bi bi-qr-code"></i> Cetak QR
+                </button>
+            @else
+                <a href="{{ route('inventory.preview-qr', $inventory->id) }}" target="_blank" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-2 fw-medium">
+                    <i class="bi bi-qr-code"></i> Cetak QR
+                </a>
+            @endif
             <div class="dropdown">
                 <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle d-inline-flex align-items-center gap-2 fw-medium" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-file-earmark-text"></i> Report
@@ -64,6 +76,20 @@
             @endif
         </div>
     </div>
+
+    @if($inventory->serial_pending)
+        <div class="alert alert-warning border-0 shadow-sm d-flex justify-content-between align-items-center flex-wrap gap-2" role="alert">
+            <div>
+                <div class="fw-semibold"><i class="bi bi-upc-scan me-1"></i>Serial number belum diisi</div>
+                <div class="small">Serial sementara masih dipakai. Lengkapi sebelum mencetak label QR.</div>
+            </div>
+            @if(auth()->user()->hasPermission('inventory', 'edit'))
+                <button type="button" class="btn btn-sm btn-warning fw-medium" data-bs-toggle="modal" data-bs-target="#serialModal">
+                    <i class="bi bi-pencil-square me-1"></i> Isi Serial Number
+                </button>
+            @endif
+        </div>
+    @endif
 
     <!-- Alert Success -->
 
@@ -125,7 +151,12 @@
                             @endif
                             <tr>
                                 <td class="text-muted py-2 ps-0 u-w-40pct"><i class="bi bi-hash text-secondary me-2"></i>Serial Number</td>
-                                <td class="fw-bold text-dark py-2 text-end font-monospace">{{ $inventory->serial_number }}</td>
+                                <td class="fw-bold text-dark py-2 text-end font-monospace">
+                                    {{ $inventory->serial_number }}
+                                    @if($inventory->serial_pending)
+                                        <div><span class="badge bg-warning text-dark fw-normal">Sementara</span></div>
+                                    @endif
+                                </td>
                             </tr>
                             <tr>
                                 <td class="text-muted py-2 ps-0"><i class="bi bi-calendar-event text-secondary me-2"></i>Tanggal Input</td>
@@ -624,4 +655,28 @@
     </div>
 
 </div>
+@if($inventory->serial_pending && auth()->user()->hasPermission('inventory', 'edit'))
+    <div class="modal fade" id="serialModal" tabindex="-1" aria-labelledby="serialModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form action="{{ route('inventory.serial', $inventory) }}" method="POST" class="modal-content">
+                @csrf
+                @method('PATCH')
+                <div class="modal-header">
+                    <h5 class="modal-title" id="serialModalTitle">Isi Serial Number</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="serialNumberInput" class="form-label small">Serial number <span class="text-danger">*</span></label>
+                    <input type="text" id="serialNumberInput" name="serial_number" class="form-control" maxlength="255" required>
+                    <div class="form-text">QR label dibuat ulang dari serial yang baru.</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+@endif
+
 @endsection

@@ -256,22 +256,27 @@ class FinanceSummaryService
     public function payables(int $limit = 5): array
     {
         $q = Purchase::query()
-            ->whereIn('status', [Purchase::STATUS_APPROVED, Purchase::STATUS_RECEIVED])
+            ->whereIn('status', Purchase::COMMITTED)
             ->where('payment_status', Purchase::PAYMENT_UNPAID);
 
-        $items = (clone $q)
+        // Nominal mengikuti penerimaan: harga aktual dan retur ikut dihitung (lihat Purchase::payableTotal).
+        $rows = $q->with('items')
             ->orderByRaw('COALESCE(approved_at, purchase_date) asc')
-            ->limit($limit)
-            ->get(['id', 'code', 'vendor_name', 'total', 'approved_at', 'purchase_date'])
-            ->map(fn ($p) => [
-                'id'     => $p->id,
-                'code'   => $p->code,
-                'vendor' => $p->vendor_name,
-                'total'  => (float) $p->total,
-                'age'    => (int) Carbon::parse($p->approved_at ?? $p->purchase_date)->startOfDay()->diffInDays(Carbon::today()),
+            ->get()
+            ->map(fn ($p) => ['purchase' => $p, 'amount' => $p->payableTotal()])
+            ->filter(fn ($row) => $row['amount'] > 0)
+            ->values();
+
+        $items = $rows->take($limit)
+            ->map(fn ($row) => [
+                'id'     => $row['purchase']->id,
+                'code'   => $row['purchase']->code,
+                'vendor' => $row['purchase']->vendor_name,
+                'total'  => (float) $row['amount'],
+                'age'    => (int) Carbon::parse($row['purchase']->approved_at ?? $row['purchase']->purchase_date)->startOfDay()->diffInDays(Carbon::today()),
             ])->all();
 
-        return ['total' => (float) (clone $q)->sum('total'), 'count' => (int) $q->count(), 'items' => $items];
+        return ['total' => round((float) $rows->sum('amount'), 2), 'count' => $rows->count(), 'items' => $items];
     }
 
     /**

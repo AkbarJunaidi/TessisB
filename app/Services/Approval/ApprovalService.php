@@ -84,7 +84,7 @@ class ApprovalService
             $handler = self::HANDLERS[$request->type] ?? null;
 
             if ($handler && $request->requestable) {
-                app($handler[0])->{$handler[1]}($request->requestable);
+                app($handler[0])->{$handler[1]}($request->requestable, $note);
             }
 
             $request->update([
@@ -110,7 +110,7 @@ class ApprovalService
             $handler = self::REJECT_HANDLERS[$request->type] ?? null;
 
             if ($handler && $request->requestable) {
-                app($handler[0])->{$handler[1]}($request->requestable);
+                app($handler[0])->{$handler[1]}($request->requestable, $note);
             }
 
             $request->update([
