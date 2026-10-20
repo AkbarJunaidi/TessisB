@@ -47,6 +47,7 @@ class InventoryRequest extends FormRequest
                 'required',
                 'integer',
                 'min:1',
+                'max:' . config('limits.stock_max'),
                 function ($attribute, $value, $fail) use ($inventoryId) {
                     if (!$inventoryId) {
                         return;
@@ -80,7 +81,7 @@ class InventoryRequest extends FormRequest
 
         // Harga mengikuti izin lihat Pembelian; tanpa izin, field diabaikan dan harga lama tidak tersentuh.
         if ($this->user()?->hasPermission('purchase', 'view')) {
-            $rules['harga_manual'] = ['nullable', 'integer', 'min:0', 'max:999999999999'];
+            $rules['harga_manual'] = ['nullable', 'integer', 'min:0', 'max:' . config('limits.money_max')];
         }
 
         return $rules;

@@ -16,7 +16,7 @@ class EquipmentBookingRequest extends FormRequest
     {
         return [
             'inventory_id' => ['required', Rule::exists('inventories', 'id')->whereNull('deleted_at')],
-            'qty'          => ['required', 'integer', 'min:1', 'max:10000'],
+            'qty'          => ['required', 'integer', 'min:1', 'max:' . config('limits.qty_max')],
         ];
     }
 

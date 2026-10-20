@@ -17,7 +17,7 @@ class KwitansiRequest extends FormRequest
     {
         return [
             'tanggal'             => ['required', 'date'],
-            'jumlah'              => ['required', 'numeric', 'min:1'],
+            'jumlah'              => ['required', 'numeric', 'min:1', 'max:' . config('limits.money_max')],
             'metode_pembayaran'   => ['nullable', 'string', 'max:50'],
             'keterangan'          => ['nullable', 'string', 'max:255'],
             'kategori_pembayaran' => ['nullable', 'in:booking_fee,dp,pelunasan'],

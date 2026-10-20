@@ -35,9 +35,9 @@ class PurchaseReceiveRequest extends FormRequest
     {
         return [
             'lines'          => ['required', 'array'],
-            'lines.*.qty'    => ['nullable', 'integer', 'min:0', 'max:1000000'],
+            'lines.*.qty'    => ['nullable', 'integer', 'min:0', 'max:' . config('limits.qty_max')],
             'lines.*.serial' => ['nullable', 'string', 'max:255'],
-            'lines.*.price'  => ['nullable', 'numeric', 'min:0', 'max:9999999999999.99'],
+            'lines.*.price'  => ['nullable', 'numeric', 'min:0', 'max:' . config('limits.money_max')],
         ];
     }
 

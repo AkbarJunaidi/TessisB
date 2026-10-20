@@ -406,7 +406,7 @@
                 jenisEl.value    = data.jenis || 'kantor';
                 addressEl.value  = data.address || '';
                 coordEl.value    = data.koordinat || '';
-                radiusEl.value   = data.radius_m || 100;
+                NumberInput.set(radiusEl, data.radius_m || 100);
                 notesEl.value    = data.notes || '';
                 canStoreEl.checked = !!data.can_store_units;
                 defaultEl.checked  = !!data.is_default;
@@ -574,7 +574,7 @@
                 map.on('click', function (e) { pick(e.latlng.lat, e.latlng.lng); });
             }
 
-            function radiusValue() { return Number(radiusEl.value) || 100; }
+            function radiusValue() { return NumberInput.parse(radiusEl.value) || 100; }
 
             // Pindahkan pin dan lingkaran radius tanpa mengubah kolom koordinat.
             function placeMarker(lat, lng, recenter) {

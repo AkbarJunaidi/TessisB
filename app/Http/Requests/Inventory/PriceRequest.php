@@ -19,7 +19,7 @@ class PriceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'harga_manual'        => ['nullable', 'integer', 'min:0', 'max:999999999999'],
+            'harga_manual'        => ['nullable', 'integer', 'min:0', 'max:' . config('limits.money_max')],
             'ambang_ganti_persen' => ['nullable', 'integer', 'between:10,200'],
         ];
     }

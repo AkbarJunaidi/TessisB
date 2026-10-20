@@ -11,11 +11,11 @@
         </div>
         <div class="col-4 col-md-2">
             <label class="form-label small mb-1">Jumlah</label>
-            <input type="number" name="items[{{ $i }}][qty]" class="form-control form-control-sm item-qty" min="1" max="10000" value="{{ $item['qty'] ?? 1 }}" required>
+            <input type="number" name="items[{{ $i }}][qty]" class="form-control form-control-sm item-qty" min="1" max="{{ config('limits.qty_max') }}" value="{{ $item['qty'] ?? 1 }}" required>
         </div>
         <div class="col-8 col-md-3">
             <label class="form-label small mb-1">Harga Satuan (Rp)</label>
-            <input type="text" inputmode="numeric" name="items[{{ $i }}][unit_price]" class="form-control form-control-sm item-price" value="{{ $priceDisplay }}" placeholder="0" required>
+            <input type="text" inputmode="numeric" name="items[{{ $i }}][unit_price]" max="{{ config('limits.money_max') }}" class="form-control form-control-sm item-price" value="{{ $priceDisplay }}" placeholder="0" required>
         </div>
         <div class="col-8 col-md-2">
             <label class="form-label small mb-1">Subtotal</label>

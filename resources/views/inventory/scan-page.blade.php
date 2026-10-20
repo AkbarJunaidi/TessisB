@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!name) {
             text = locationPicker.isBusy() ? 'Menunggu lokasi saat ini...' : 'Pilih lokasi terlebih dahulu untuk melanjutkan.';
         } else if (currentMode === 'pinjam' && pinjamData) {
-            const qty = parseInt((document.getElementById('scanPinjamQty') || {}).value, 10) || 0;
+            const qty = NumberInput.parse((document.getElementById('scanPinjamQty') || {}).value);
             const here = (pinjamData.available_by_location || []).find(function (l) { return l.id === locationPicker.locationId(); });
             const atLocation = here ? here.qty : 0;
 
@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.getElementById('btnConfirmScanPinjam').addEventListener('click', function () {
             const qtyInput = document.getElementById('scanPinjamQty');
-            const qty = parseInt(qtyInput.value, 10);
+            const qty = NumberInput.parse(qtyInput.value);
 
             if (!qty || qty < 1 || qty > data.available_qty) {
                 showWarning('Jumlah tidak valid.');

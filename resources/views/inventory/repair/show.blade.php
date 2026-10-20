@@ -195,7 +195,7 @@
                         </div>
                         <div class="col-12">
                             <label for="biayaTotal" class="form-label fw-medium text-secondary">Total Biaya (Rp)</label>
-                            <input type="number" id="biayaTotal" class="form-control" min="0" step="1"
+                            <input type="number" id="biayaTotal" class="form-control" min="0" max="{{ config('limits.money_max') }}"
                                    placeholder="Isi total untuk dibagi rata ke semua unit">
                             <div class="form-text">Biaya tiap unit bisa diubah di bawah, total ikut menyesuaikan. Kosongkan bila belum diketahui.</div>
                         </div>
@@ -220,7 +220,7 @@
                                             <div class="input-group input-group-sm">
                                                 <span class="input-group-text">Rp</span>
                                                 <input type="number" name="biaya_item[{{ $item->id }}]" class="form-control repair-unit-biaya"
-                                                       min="0" step="1" value="{{ old('biaya_item.' . $item->id) }}" placeholder="0"
+                                                       min="0" max="{{ config('limits.money_max') }}" value="{{ old('biaya_item.' . $item->id) }}" placeholder="0"
                                                        aria-label="Biaya unit">
                                             </div>
                                         </div>

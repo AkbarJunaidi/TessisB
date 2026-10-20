@@ -53,16 +53,16 @@ class ProjectFinanceRequest extends FormRequest
 
             'incomes'                 => ['nullable', 'array'],
             'incomes.*.id'            => ['nullable', 'integer'],
-            'incomes.*.amount'        => ['required_with:incomes', 'numeric', 'min:0', 'max:999999999999.99'],
+            'incomes.*.amount'        => ['required_with:incomes', 'numeric', 'min:0', 'max:' . config('limits.money_max')],
             'incomes.*.description'   => ['nullable', 'string', 'max:255'],
 
             'expenses'                => ['nullable', 'array'],
             'expenses.*.id'           => ['nullable', 'integer'],
-            'expenses.*.amount'       => ['required_with:expenses', 'numeric', 'min:0', 'max:999999999999.99'],
+            'expenses.*.amount'       => ['required_with:expenses', 'numeric', 'min:0', 'max:' . config('limits.money_max')],
             'expenses.*.description'  => ['nullable', 'string', 'max:255'],
 
-            'estimated_value' => ['nullable', 'numeric', 'min:0', 'max:999999999999.99'],
-            'budget'          => ['nullable', 'numeric', 'min:0', 'max:999999999999.99'],
+            'estimated_value' => ['nullable', 'numeric', 'min:0', 'max:' . config('limits.money_max')],
+            'budget'          => ['nullable', 'numeric', 'min:0', 'max:' . config('limits.money_max')],
         ];
     }
 

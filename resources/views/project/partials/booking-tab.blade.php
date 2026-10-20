@@ -76,7 +76,7 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label small mb-1">Jumlah</label>
-                    <input type="number" name="qty" class="form-control form-control-sm" min="1" value="1" required>
+                    <input type="number" name="qty" class="form-control form-control-sm" min="1" max="{{ config('limits.qty_max') }}" value="1" required>
                 </div>
                 <div class="col-md-2">
                     <button type="submit" class="btn btn-sm btn-primary w-100">

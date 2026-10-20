@@ -84,7 +84,7 @@
         const items = Array.from(rowsWrapper.querySelectorAll('.item-row')).map(function (row) {
             return {
                 inventory_id: parseInt(row.querySelector('.item-select').value, 10),
-                qty: parseInt(row.querySelector('.item-qty').value, 10),
+                qty: NumberInput.parse(row.querySelector('.item-qty').value),
             };
         }).filter(function (it) { return it.inventory_id && it.qty > 0; });
 

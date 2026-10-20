@@ -23,7 +23,7 @@ class PurchaseFundRequest extends FormRequest
     {
         return [
             'fund_at' => ['required', 'date'],
-            'amount'  => ['required', 'numeric', 'min:1', 'max:9999999999999.99'],
+            'amount'  => ['required', 'numeric', 'min:1', 'max:' . config('limits.money_max')],
             'note'    => ['nullable', 'string', 'max:255'],
             'proof'   => ['required', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:5120'],
         ];

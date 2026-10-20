@@ -22,9 +22,9 @@ class PurchaseReturnRequest extends FormRequest
     {
         return [
             'lines'       => ['required', 'array'],
-            'lines.*.qty' => ['nullable', 'integer', 'min:0', 'max:1000000'],
+            'lines.*.qty' => ['nullable', 'integer', 'min:0', 'max:' . config('limits.qty_max')],
             'note'        => ['required', 'string', 'max:500'],
-            'refund'      => ['nullable', 'numeric', 'min:0', 'max:9999999999999.99'],
+            'refund'      => ['nullable', 'numeric', 'min:0', 'max:' . config('limits.money_max')],
             'refunded_on' => ['nullable', 'date', 'required_with:refund'],
         ];
     }

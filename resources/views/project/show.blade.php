@@ -295,7 +295,7 @@
                                         <i class="bi bi-pencil"></i>
                                     </button>
 
-                                    <input type="text" inputmode="numeric" name="estimated_value" id="estimatedValueInput" data-change-label="Estimasi Pendapatan" data-change-prefix="Rp "
+                                    <input type="text" inputmode="numeric" name="estimated_value" id="estimatedValueInput" max="{{ config('limits.money_max') }}" data-change-label="Estimasi Pendapatan" data-change-prefix="Rp "
                                            class="form-control form-control-sm finance-amount-input d-none u-w-140px"
                                           
                                            value="{{ $project->estimated_value ? number_format((float) $project->estimated_value, 0, ',', '.') : '' }}">
@@ -327,7 +327,7 @@
                                             <i class="bi bi-pencil"></i>
                                         </button>
 
-                                        <input type="text" inputmode="numeric" name="budget" id="budgetInput" data-change-label="Anggaran Biaya" data-change-prefix="Rp "
+                                        <input type="text" inputmode="numeric" name="budget" id="budgetInput" max="{{ config('limits.money_max') }}" data-change-label="Anggaran Biaya" data-change-prefix="Rp "
                                                class="form-control form-control-sm finance-amount-input d-none u-w-140px" placeholder="0"
                                                value="{{ $project->budget ? number_format($budget, 0, ',', '.') : '' }}">
 
@@ -596,7 +596,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return `
             <div class="row g-2 mb-2 finance-row">
                 <div class="col-4">
-                    <input type="text" inputmode="numeric" name="${group}[${index}][amount]" class="form-control form-control-sm finance-amount-input" data-change-prefix="Rp " placeholder="0" required>
+                    <input type="text" inputmode="numeric" name="${group}[${index}][amount]" max="{{ config('limits.money_max') }}" class="form-control form-control-sm finance-amount-input" data-change-prefix="Rp " placeholder="0" required>
                 </div>
                 <div class="col-7">
                     <input type="text" name="${group}[${index}][description]" class="form-control form-control-sm" placeholder="Keterangan">
@@ -655,15 +655,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('financeForm').addEventListener('input', function (e) {
         if (e.target.classList.contains('finance-amount-input')) {
-            const cursorFromEnd = e.target.value.length - e.target.selectionStart;
-            const rawValue = parseAmount(e.target.value);
-
-            e.target.value = rawValue === 0 ? '' : rawValue.toLocaleString('id-ID');
-
-            // Pertahankan posisi kursor relatif dari akhir teks, supaya tidak "lompat" ke ujung
-            const newPos = Math.max(e.target.value.length - cursorFromEnd, 0);
-            e.target.setSelectionRange(newPos, newPos);
-
             recalculate();
         }
     });

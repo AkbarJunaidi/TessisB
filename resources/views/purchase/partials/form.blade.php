@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        const qty = parseInt(row.querySelector('.item-qty').value, 10) || 0;
+        const qty = NumberInput.parse(row.querySelector('.item-qty').value);
         const price = toNumber(row.querySelector('.item-price').value);
         const info = repairCosts[inventoryId];
         const cell = (label, value) => `<div class="col-12 col-md-4"><div class="text-muted">${label}</div><div class="fw-semibold">${value}</div></div>`;
@@ -218,7 +218,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function recalculate() {
         let total = 0;
         list.querySelectorAll('.purchase-item').forEach(function (row) {
-            const qty = parseInt(row.querySelector('.item-qty').value, 10) || 0;
+            const qty = NumberInput.parse(row.querySelector('.item-qty').value);
             const subtotal = qty * toNumber(row.querySelector('.item-price').value);
             row.querySelector('.item-subtotal').textContent = rupiah(subtotal);
             renderCompare(row);
@@ -292,11 +292,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     list.addEventListener('input', function (e) {
         if (e.target.classList.contains('item-price')) {
-            const fromEnd = e.target.value.length - e.target.selectionStart;
-            const value = toNumber(e.target.value);
-            e.target.value = value === 0 ? '' : value.toLocaleString('id-ID');
-            const pos = Math.max(e.target.value.length - fromEnd, 0);
-            e.target.setSelectionRange(pos, pos);
         }
         recalculate();
     });

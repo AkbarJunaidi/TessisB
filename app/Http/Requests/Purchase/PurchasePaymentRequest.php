@@ -24,7 +24,7 @@ class PurchasePaymentRequest extends FormRequest
     {
         return [
             'paid_at'        => ['required', 'date'],
-            'amount'         => ['required', 'numeric', 'min:1', 'max:9999999999999.99'],
+            'amount'         => ['required', 'numeric', 'min:1', 'max:' . config('limits.money_max')],
             'payment_method' => ['required', Rule::in(Purchase::PAYMENT_METHODS)],
             'proof'          => ['nullable', 'required_if:payment_method,Transfer', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:5120'],
         ];

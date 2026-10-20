@@ -78,6 +78,7 @@
 
     {{ \App\Support\VendorAsset::script('bootstrap-js') }}
     <script src="{{ \App\Support\AppAsset::url('js/layouts/app-1.js') }}"></script>
+    <script src="{{ \App\Support\AppAsset::url('js/layouts/number-input.js') }}"></script>
 
     {{-- Registrasi Service Worker Web Push (pasif, tanpa meminta izin); permintaan izin ada di halaman Notifikasi. --}}
     @auth

@@ -53,7 +53,7 @@
         <label class="app-pager-goto">
             <span>Ke halaman</span>
             <input type="number" class="form-control form-control-sm" min="1" max="{{ $last }}" value="{{ $current }}"
-                   data-pager-goto data-pager-current="{{ $current }}" aria-label="Ke halaman nomor">
+                   data-no-format data-pager-goto data-pager-current="{{ $current }}" aria-label="Ke halaman nomor">
         </label>
     </nav>
 @endif

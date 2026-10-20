@@ -143,7 +143,7 @@
 
     <div class="col-md-6">
         <label for="estimated_duration_minutes" class="form-label fw-semibold small text-secondary">Estimasi Durasi (menit) <span class="text-danger">*</span></label>
-        <input type="number" min="1" name="estimated_duration_minutes" id="estimated_duration_minutes"
+        <input type="number" min="1" max="{{ config('limits.duration_max') }}" name="estimated_duration_minutes" id="estimated_duration_minutes"
                class="form-control @error('estimated_duration_minutes') is-invalid @enderror"
                placeholder="Contoh: 840 (=14 jam)"
                value="{{ $old('estimated_duration_minutes') }}" required>
@@ -170,7 +170,7 @@
 
     <div class="col-md-4">
         <label for="estimated_value" class="form-label fw-semibold small text-secondary">Estimasi Pendapatan (Rp)</label>
-        <input type="number" min="0" step="1000" name="estimated_value" id="estimated_value"
+        <input type="number" min="0" max="{{ config('limits.money_max') }}" name="estimated_value" id="estimated_value"
                class="form-control @error('estimated_value') is-invalid @enderror"
                placeholder="Contoh: 15000000"
                value="{{ $old('estimated_value') }}">

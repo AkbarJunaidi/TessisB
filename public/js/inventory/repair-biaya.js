@@ -9,20 +9,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const syncTotal = () => {
         const filled = units.some((input) => input.value !== '');
-        total.value = filled ? units.reduce((sum, input) => sum + (parseInt(input.value, 10) || 0), 0) : '';
+        NumberInput.set(total, filled ? units.reduce((sum, input) => sum + NumberInput.parse(input.value), 0) : '');
     };
 
     total.addEventListener('input', () => {
         if (total.value === '') {
-            units.forEach((input) => { input.value = ''; });
+            units.forEach((input) => NumberInput.set(input, ''));
             return;
         }
 
-        const value = Math.max(0, parseInt(total.value, 10) || 0);
+        const value = NumberInput.parse(total.value);
         const share = Math.floor(value / units.length);
 
         units.forEach((input, index) => {
-            input.value = share + (index === units.length - 1 ? value - share * units.length : 0);
+            NumberInput.set(input, share + (index === units.length - 1 ? value - share * units.length : 0));
         });
     });
 
