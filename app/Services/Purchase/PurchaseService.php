@@ -304,6 +304,12 @@ class PurchaseService
         }
 
         return DB::transaction(function () use ($purchase, $data, $first, $orderNumber, $orderProof, $receiptFile) {
+            $this->lockFresh($purchase);
+
+            if ($first ? !$purchase->canOrder() : !$purchase->canEditOrder()) {
+                throw new Exception('Status pembelian sudah berubah. Muat ulang halaman.');
+            }
+
             $changes = [
                 'expected_at'     => $data['expected_at'] ?? null,
                 'store_name'      => $data['store_name'] ?? null,
@@ -366,6 +372,12 @@ class PurchaseService
         }
 
         return DB::transaction(function () use ($purchase, $data, $proof) {
+            $this->lockFresh($purchase);
+
+            if (!$purchase->canFund()) {
+                throw new Exception('Pembelian ini tidak sedang meminta dana.');
+            }
+
             $purchase->update([
                 'fund_status' => Purchase::FUND_AT_FINANCE,
                 'fund_amount' => $data['amount'],
@@ -405,6 +417,12 @@ class PurchaseService
         }
 
         return DB::transaction(function () use ($purchase, $lines) {
+            $this->lockFresh($purchase);
+
+            if (!$purchase->canReceive()) {
+                throw new Exception('Hanya pembelian yang sudah dipesan yang bisa ditandai diterima.');
+            }
+
             $purchase->load('items');
 
             $parts = [];
@@ -531,6 +549,13 @@ class PurchaseService
         }
 
         return DB::transaction(function () use ($purchase, $lines, $note, $refund, $refundedOn) {
+            $this->lockFresh($purchase);
+            $purchase->load('items');
+
+            if (!$purchase->canReturn()) {
+                throw new Exception('Pembelian ini tidak punya barang yang bisa diretur.');
+            }
+
             $parts = [];
 
             foreach ($purchase->items as $item) {
@@ -626,6 +651,12 @@ class PurchaseService
         FinanceLock::assertOpen($data['paid_at']);
 
         return DB::transaction(function () use ($purchase, $data, $proof) {
+            $this->lockFresh($purchase);
+
+            if (!$purchase->canPayBy(Auth::user())) {
+                throw new Exception('Pembelian ini sudah dibayar atau belum bisa dibayar.');
+            }
+
             $amount = round((float) ($data['amount'] ?? $purchase->payableTotal()), 2);
 
             $purchase->update([
@@ -681,22 +712,30 @@ class PurchaseService
             throw new Exception('Alasan pembatalan wajib diisi.');
         }
 
-        $fundAtFinance = $purchase->fund_status === Purchase::FUND_AT_FINANCE;
-        $fundNote = $fundAtFinance ? 'Dana ' . Money::formatRupiah($purchase->fund_amount) . ' sudah di finance dan perlu dikembalikan.' : null;
+        return DB::transaction(function () use ($purchase, $reason) {
+            $this->lockFresh($purchase);
 
-        $purchase->update(['status' => Purchase::STATUS_CANCELLED]);
+            if (!$purchase->canCancel()) {
+                throw new Exception('Pembelian ini tidak bisa dibatalkan.');
+            }
 
-        $this->record($purchase, 'cancelled', 'Dibatalkan', trim($reason . ' ' . $fundNote) ?: null);
-        $this->log("Membatalkan pembelian {$purchase->code}");
+            $fundAtFinance = $purchase->fund_status === Purchase::FUND_AT_FINANCE;
+            $fundNote = $fundAtFinance ? 'Dana ' . Money::formatRupiah($purchase->fund_amount) . ' sudah di finance dan perlu dikembalikan.' : null;
 
-        $this->notify(
-            array_unique(array_merge([$purchase->created_by], $fundAtFinance ? $this->usersWith('purchase', 'pay') : [])),
-            $purchase,
-            "Pembelian {$purchase->code} dibatalkan",
-            trim(($reason !== '' ? "Alasan: {$reason}. " : '') . $fundNote)
-        );
+            $purchase->update(['status' => Purchase::STATUS_CANCELLED]);
 
-        return $purchase;
+            $this->record($purchase, 'cancelled', 'Dibatalkan', trim($reason . ' ' . $fundNote) ?: null);
+            $this->log("Membatalkan pembelian {$purchase->code}");
+
+            $this->notify(
+                array_unique(array_merge([$purchase->created_by], $fundAtFinance ? $this->usersWith('purchase', 'pay') : [])),
+                $purchase,
+                "Pembelian {$purchase->code} dibatalkan",
+                trim(($reason !== '' ? "Alasan: {$reason}. " : '') . $fundNote)
+            );
+
+            return $purchase;
+        });
     }
 
     /**
@@ -917,6 +956,15 @@ class PurchaseService
                 'brand'        => $mode === PurchaseItem::STOCK_NEW ? ($row['brand'] ?? null) : null,
             ];
         })->values();
+    }
+
+    /** Muat status terbaru dengan kunci baris agar klik ganda tidak mencatat dua kali. */
+    private function lockFresh(Purchase $purchase): void
+    {
+        $fresh = Purchase::query()->lockForUpdate()->findOrFail($purchase->id);
+
+        $purchase->setRawAttributes($fresh->getAttributes(), true);
+        $purchase->unsetRelations()->load('items');
     }
 
     private function generateCode(): string
