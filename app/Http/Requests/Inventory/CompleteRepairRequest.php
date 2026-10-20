@@ -18,7 +18,7 @@ class CompleteRepairRequest extends FormRequest
             'tanggal_selesai' => ['required', 'date', 'before_or_equal:today'],
             'diambil_oleh'    => ['nullable', 'string', 'max:150'],
             'biaya_item'      => ['nullable', 'array'],
-            'biaya_item.*'    => ['nullable', 'numeric', 'min:0', 'max:' . config('limits.money_max')],
+            'biaya_item.*'    => ['nullable', 'numeric', 'min:0', 'max:' . \App\Support\Limits::money()],
             'catatan_hasil'   => ['nullable', 'string', 'max:1000'],
             'hasil'           => ['nullable', 'array'],
             'hasil.*'         => ['in:Tersedia,Rusak'],

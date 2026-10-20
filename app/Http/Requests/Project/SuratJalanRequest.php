@@ -35,7 +35,7 @@ class SuratJalanRequest extends FormRequest
 
             'items'                     => ['required', 'array', 'min:1'],
             'items.*.inventory_id'      => ['required', 'integer', 'exists:inventories,id'],
-            'items.*.qty'               => ['required', 'integer', 'min:1', 'max:' . config('limits.stock_max')],
+            'items.*.qty'               => ['required', 'integer', 'min:1', 'max:' . \App\Support\Limits::stock()],
         ];
     }
 

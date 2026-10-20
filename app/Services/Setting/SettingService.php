@@ -19,6 +19,7 @@ class SettingService
         'company_footer_tagline', 'company_footer_contact', 'company_website', 'company_instagram', 'company_tiktok',
         'servis_segera_hari', 'repair_warn_percent', 'repair_rawan_hari', 'repair_rawan_kali', 'repair_rawan_percent', 'repair_gagal_percent', 'location_default_radius',
         'upload_max_mb', 'upload_allowed_extensions', 'finance_lock_date',
+        'limit_money_max', 'limit_qty_max', 'limit_stock_max', 'limit_duration_max',
     ];
 
     public function __construct(

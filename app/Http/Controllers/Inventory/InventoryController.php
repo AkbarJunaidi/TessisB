@@ -303,7 +303,7 @@ class InventoryController extends Controller
 
         $data = $request->validate([
             'inventory_id' => ['required', 'integer', 'exists:inventories,id'],
-            'qty'          => ['required', 'integer', 'min:1', 'max:' . config('limits.stock_max')],
+            'qty'          => ['required', 'integer', 'min:1', 'max:' . \App\Support\Limits::stock()],
         ] + LocationService::INPUT_RULES);
 
         try {
@@ -492,7 +492,7 @@ class InventoryController extends Controller
         $data = $request->validate([
             'items'                => ['required', 'array', 'min:1', 'max:50'],
             'items.*.inventory_id' => ['required', 'integer', 'exists:inventories,id'],
-            'items.*.qty'          => ['required', 'integer', 'min:1', 'max:' . config('limits.stock_max')],
+            'items.*.qty'          => ['required', 'integer', 'min:1', 'max:' . \App\Support\Limits::stock()],
             'prefer_location_id'   => ['nullable', 'integer'],
         ]);
 

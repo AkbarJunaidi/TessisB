@@ -243,7 +243,7 @@
                     <label for="hargaManual" class="form-label fw-semibold small text-secondary">Harga Beli per Unit</label>
                     <div class="input-group">
                         <span class="input-group-text">Rp</span>
-                        <input type="text" inputmode="numeric" max="{{ config('limits.money_max') }}" name="harga_manual" id="hargaManual" class="form-control" placeholder="Contoh: 150.000" autocomplete="off">
+                        <input type="text" inputmode="numeric" max="{{ \App\Support\Limits::money() }}" name="harga_manual" id="hargaManual" class="form-control" placeholder="Contoh: 150.000" autocomplete="off">
                     </div>
                     <div class="form-text">
                         Disimpan sebagai harga manual dengan tanggal hari ini. Kosongkan untuk menghapus harga manual.

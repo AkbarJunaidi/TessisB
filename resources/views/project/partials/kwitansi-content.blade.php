@@ -112,7 +112,7 @@
             </div>
             <div class="col-md-3">
                 <label class="form-label small">Jumlah (Rp)</label>
-                <input type="number" name="jumlah" min="1" max="{{ config('limits.money_max') }}" class="form-control form-control-sm" value="{{ old('jumlah') }}" required>
+                <input type="number" name="jumlah" min="1" max="{{ \App\Support\Limits::money() }}" class="form-control form-control-sm" value="{{ old('jumlah') }}" required>
             </div>
             <div class="col-md-3">
                 <label class="form-label small">Metode Pembayaran</label>
@@ -220,7 +220,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label small">Jumlah (Rp)</label>
-                                <input type="number" name="jumlah" min="1" max="{{ config('limits.money_max') }}" class="form-control" value="{{ (int) $item->amount }}" required>
+                                <input type="number" name="jumlah" min="1" max="{{ \App\Support\Limits::money() }}" class="form-control" value="{{ (int) $item->amount }}" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label small">Metode Pembayaran</label>

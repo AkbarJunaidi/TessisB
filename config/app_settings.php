@@ -29,6 +29,12 @@ return [
         'finance_lock_date'         => '',
         'upload_allowed_extensions' => 'pdf,doc,docx,xls,xlsx,jpg,jpeg,png',
 
+        // Batas input per isian; rentang yang boleh diatur ada di config/limits.php.
+        'limit_money_max'    => 999999999999,
+        'limit_qty_max'      => 10000,
+        'limit_stock_max'    => 100000,
+        'limit_duration_max' => 100000,
+
         'inventory_statuses' => [],
         'finance_categories' => [],
 

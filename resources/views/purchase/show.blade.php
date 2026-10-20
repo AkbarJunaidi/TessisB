@@ -413,7 +413,7 @@
                                             <label class="form-label small mb-1">Harga aktual per unit</label>
                                             <div class="input-group input-group-sm">
                                                 <span class="input-group-text">Rp</span>
-                                                <input type="text" inputmode="numeric" name="lines[{{ $item->id }}][price]" max="{{ config('limits.money_max') }}" class="form-control text-end js-money"
+                                                <input type="text" inputmode="numeric" name="lines[{{ $item->id }}][price]" max="{{ \App\Support\Limits::money() }}" class="form-control text-end js-money"
                                                        placeholder="{{ number_format($item->effective_price, 0, ',', '.') }}" value="{{ old("lines.{$item->id}.price") }}">
                                             </div>
                                         </div>
@@ -452,7 +452,7 @@
                                 <label class="form-label small">Nominal Dibayar <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <span class="input-group-text">Rp</span>
-                                    <input type="text" inputmode="numeric" name="amount" max="{{ config('limits.money_max') }}" class="form-control js-money" value="{{ old('amount', number_format($purchase->payableTotal(), 0, ',', '.')) }}" required>
+                                    <input type="text" inputmode="numeric" name="amount" max="{{ \App\Support\Limits::money() }}" class="form-control js-money" value="{{ old('amount', number_format($purchase->payableTotal(), 0, ',', '.')) }}" required>
                                 </div>
                                 <div class="form-text">
                                     Nominal PO {{ \App\Support\Money::formatRupiah($purchase->total) }}@if(abs($purchase->payableTotal() - (float) $purchase->total) >= 0.005), sesuai penerimaan {{ \App\Support\Money::formatRupiah($purchase->payableTotal()) }}@endif.

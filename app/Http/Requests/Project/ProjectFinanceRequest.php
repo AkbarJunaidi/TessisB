@@ -53,16 +53,16 @@ class ProjectFinanceRequest extends FormRequest
 
             'incomes'                 => ['nullable', 'array'],
             'incomes.*.id'            => ['nullable', 'integer'],
-            'incomes.*.amount'        => ['required_with:incomes', 'numeric', 'min:0', 'max:' . config('limits.money_max')],
+            'incomes.*.amount'        => ['required_with:incomes', 'numeric', 'min:0', 'max:' . \App\Support\Limits::money()],
             'incomes.*.description'   => ['nullable', 'string', 'max:255'],
 
             'expenses'                => ['nullable', 'array'],
             'expenses.*.id'           => ['nullable', 'integer'],
-            'expenses.*.amount'       => ['required_with:expenses', 'numeric', 'min:0', 'max:' . config('limits.money_max')],
+            'expenses.*.amount'       => ['required_with:expenses', 'numeric', 'min:0', 'max:' . \App\Support\Limits::money()],
             'expenses.*.description'  => ['nullable', 'string', 'max:255'],
 
-            'estimated_value' => ['nullable', 'numeric', 'min:0', 'max:' . config('limits.money_max')],
-            'budget'          => ['nullable', 'numeric', 'min:0', 'max:' . config('limits.money_max')],
+            'estimated_value' => ['nullable', 'numeric', 'min:0', 'max:' . \App\Support\Limits::money()],
+            'budget'          => ['nullable', 'numeric', 'min:0', 'max:' . \App\Support\Limits::money()],
         ];
     }
 

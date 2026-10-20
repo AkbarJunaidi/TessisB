@@ -54,8 +54,8 @@ class PurchaseRequest extends FormRequest
 
             'items'                => ['required', 'array', 'min:1', 'max:50'],
             'items.*.name'         => ['required', 'string', 'max:150'],
-            'items.*.qty'          => ['required', 'integer', 'min:1', 'max:' . config('limits.qty_max')],
-            'items.*.unit_price'   => ['required', 'numeric', 'min:0', 'max:' . config('limits.money_max')],
+            'items.*.qty'          => ['required', 'integer', 'min:1', 'max:' . \App\Support\Limits::qty()],
+            'items.*.unit_price'   => ['required', 'numeric', 'min:0', 'max:' . \App\Support\Limits::money()],
             'items.*.stock_mode'   => ['required', Rule::in(['none', 'existing', 'new'])],
             'items.*.inventory_id' => [
                 'nullable',

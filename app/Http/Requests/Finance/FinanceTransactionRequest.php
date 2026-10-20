@@ -30,7 +30,7 @@ class FinanceTransactionRequest extends FormRequest
 
         return [
             'type'           => ['required', 'in:income,expense'],
-            'amount'         => ['required', 'numeric', 'min:1', 'max:' . config('limits.money_max')],
+            'amount'         => ['required', 'numeric', 'min:1', 'max:' . \App\Support\Limits::money()],
             'tanggal'        => ['required', 'date', 'before_or_equal:today'],
             'category'       => ['required', 'string', Rule::in(FinanceCategory::manual(in_array($type, ['income', 'expense'], true) ? $type : null))],
             'project_id'     => ['nullable', 'integer', Rule::exists('projects', 'id')->whereNull('deleted_at')],

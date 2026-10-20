@@ -204,7 +204,7 @@
                                     <label class="form-label small">Uang Kembali dari Vendor</label>
                                     <div class="input-group">
                                         <span class="input-group-text">Rp</span>
-                                        <input type="text" inputmode="numeric" name="refund" max="{{ config('limits.money_max') }}" class="form-control js-money" value="{{ old('refund') }}" placeholder="Opsional">
+                                        <input type="text" inputmode="numeric" name="refund" max="{{ \App\Support\Limits::money() }}" class="form-control js-money" value="{{ old('refund') }}" placeholder="Opsional">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -247,7 +247,7 @@
                             <label class="form-label small">Nominal <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text">Rp</span>
-                                <input type="text" inputmode="numeric" name="amount" max="{{ config('limits.money_max') }}" class="form-control js-money" value="{{ old('amount', number_format($purchase->total, 0, ',', '.')) }}" required>
+                                <input type="text" inputmode="numeric" name="amount" max="{{ \App\Support\Limits::money() }}" class="form-control js-money" value="{{ old('amount', number_format($purchase->total, 0, ',', '.')) }}" required>
                             </div>
                         </div>
                         <div class="col-12">

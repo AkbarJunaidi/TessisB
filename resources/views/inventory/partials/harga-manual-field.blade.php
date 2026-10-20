@@ -15,7 +15,7 @@
             @else
                 <input type="text"
                        inputmode="numeric"
-                       max="{{ config('limits.money_max') }}"
+                       max="{{ \App\Support\Limits::money() }}"
                        name="harga_manual"
                        id="hargaManual"
                        class="form-control @error('harga_manual') is-invalid @enderror"

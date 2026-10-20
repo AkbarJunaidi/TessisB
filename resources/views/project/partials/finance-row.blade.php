@@ -5,7 +5,7 @@
     <div class="col-4">
         <input type="text" inputmode="numeric"
                name="{{ $group }}[{{ $index }}][amount]"
-               max="{{ config('limits.money_max') }}"
+               max="{{ \App\Support\Limits::money() }}"
                class="form-control form-control-sm finance-amount-input" data-change-prefix="Rp "
                value="{{ number_format((float) $item->amount, 0, ',', '.') }}" placeholder="0" required>
     </div>

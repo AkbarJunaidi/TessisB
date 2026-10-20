@@ -1,16 +1,12 @@
 <?php
 
-// Batas angka input. Dipakai FormRequest (backend) dan atribut max di view (frontend), jadi selalu sama.
+// Rentang batas input yang boleh diatur Super Admin di Pengaturan: [terendah, tertinggi].
+// Tertinggi menjaga kolom database (uang decimal(15,2) = 13 digit) tetap muat. Nilai bawaan ada di config/app_settings.php.
 return [
-    // Rupiah: kolom DB decimal(15,2) muat 13 digit; 12 digit disisakan agar hasil penjumlahan tetap muat.
-    'money_max'    => 999999999999,
-
-    // Jumlah per transaksi: item Pembelian, penerimaan, retur, Booking Alat.
-    'qty_max'      => 10000,
-
-    // Jumlah stok barang dan barang per Surat Jalan / peminjaman.
-    'stock_max'    => 100000,
-
-    // Estimasi durasi project (menit).
-    'duration_max' => 100000,
+    'range' => [
+        'money_max'    => [1000000, 9999999999999],
+        'qty_max'      => [100, 1000000],
+        'stock_max'    => [100, 1000000],
+        'duration_max' => [1440, 1000000],
+    ],
 ];

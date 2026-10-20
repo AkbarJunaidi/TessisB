@@ -44,11 +44,11 @@ class ProjectRequest extends FormRequest
             'location' => ['required', 'string', 'max:255'],
             'address'  => ['required', 'string'],
 
-            'estimated_duration_minutes' => ['required', 'integer', 'min:1', 'max:' . config('limits.duration_max')],
+            'estimated_duration_minutes' => ['required', 'integer', 'min:1', 'max:' . \App\Support\Limits::duration()],
 
             'priority' => ['required', 'in:Rendah,Normal,Tinggi'],
 
-            'estimated_value' => ['nullable', 'numeric', 'min:0', 'max:' . config('limits.money_max')],
+            'estimated_value' => ['nullable', 'numeric', 'min:0', 'max:' . \App\Support\Limits::money()],
 
             'description' => ['nullable', 'string'],
 

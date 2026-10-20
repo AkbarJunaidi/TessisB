@@ -77,7 +77,7 @@
                         <label for="quantity_total" class="form-label fw-semibold small text-secondary">Jumlah Barang (Unit) <span class="text-danger">*</span></label>
                         <input type="number"
                                min="1"
-                               max="{{ config('limits.stock_max') }}"
+                               max="{{ \App\Support\Limits::stock() }}"
                                name="quantity_total"
                                id="quantity_total"
                                class="form-control @error('quantity_total') is-invalid @enderror"

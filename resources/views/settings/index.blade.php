@@ -291,45 +291,53 @@
             </div>
         </div>
 
-        {{-- Batas Input: hanya tampilan, nilainya dari config/limits.php (dipakai backend dan frontend) --}}
+        {{-- Batas Input: nilainya dibaca backend dan view lewat App\Support\Limits --}}
         <div class="card border-0 shadow-sm rounded-3 mb-4">
             <div class="card-body p-4">
                 <h6 class="fw-bold mb-1"><i class="bi bi-rulers me-2"></i>Batas Input</h6>
-                <p class="text-muted small mb-3">Batas untuk satu isian, bukan kapasitas sistem: jumlah data tidak dibatasi. Melebihi batas, isian dipotong di batas dan server menolak penyimpanan.</p>
-                <div class="table-responsive">
-                    <table class="table table-sm align-middle mb-2">
-                        <thead>
-                            <tr class="small text-secondary">
-                                <th>Isian</th>
-                                <th class="text-nowrap">Batas maksimal</th>
-                                <th>Berlaku di</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="fw-semibold">Nominal uang</td>
-                                <td class="text-nowrap">Rp {{ number_format(config('limits.money_max'), 0, ',', '.') }}</td>
-                                <td class="small text-muted">Keuangan, Pembelian (harga, dana, pembayaran, refund), Project (pendapatan, anggaran, item keuangan), Kwitansi, Daftar Harga, biaya Perbaikan</td>
-                            </tr>
-                            <tr>
-                                <td class="fw-semibold">Jumlah per transaksi</td>
-                                <td class="text-nowrap">{{ number_format(config('limits.qty_max'), 0, ',', '.') }}</td>
-                                <td class="small text-muted">Item Pembelian, penerimaan, retur, Booking Alat</td>
-                            </tr>
-                            <tr>
-                                <td class="fw-semibold">Jumlah stok</td>
-                                <td class="text-nowrap">{{ number_format(config('limits.stock_max'), 0, ',', '.') }}</td>
-                                <td class="small text-muted">Jumlah barang di Inventory, jumlah di Surat Jalan dan peminjaman</td>
-                            </tr>
-                            <tr>
-                                <td class="fw-semibold">Estimasi durasi project</td>
-                                <td class="text-nowrap">{{ number_format(config('limits.duration_max'), 0, ',', '.') }} menit</td>
-                                <td class="small text-muted">Form Project</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <p class="text-muted small mb-3">Batas untuk satu isian, bukan kapasitas sistem: jumlah data tidak dibatasi. Berlaku untuk input baru; data lama tidak berubah. Melebihi batas, isian dipotong di batas dan server menolak penyimpanan.</p>
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label for="limit_money_max" class="form-label fw-semibold small text-secondary">Nominal Uang Maksimal</label>
+                        <div class="input-group">
+                            <span class="input-group-text">Rp</span>
+                            <input type="number" name="limit_money_max" id="limit_money_max" min="{{ \App\Support\Limits::range('money_max')[0] }}" max="{{ \App\Support\Limits::range('money_max')[1] }}"
+                                   class="form-control @error('limit_money_max') is-invalid @enderror" value="{{ $v('limit_money_max') }}" required>
+                        </div>
+                        @error('limit_money_max')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        <div class="form-text small">Keuangan, Pembelian (harga, dana, pembayaran, refund), Project (pendapatan, anggaran, item keuangan), Kwitansi, Daftar Harga, biaya Perbaikan. Rentang: {{ number_format(\App\Support\Limits::range('money_max')[0], 0, ',', '.') }} sampai {{ number_format(\App\Support\Limits::range('money_max')[1], 0, ',', '.') }}.</div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="limit_qty_max" class="form-label fw-semibold small text-secondary">Jumlah per Transaksi Maksimal</label>
+                        <div class="input-group">
+                            <input type="number" name="limit_qty_max" id="limit_qty_max" min="{{ \App\Support\Limits::range('qty_max')[0] }}" max="{{ \App\Support\Limits::range('qty_max')[1] }}"
+                                   class="form-control @error('limit_qty_max') is-invalid @enderror" value="{{ $v('limit_qty_max') }}" required>
+                            <span class="input-group-text">unit</span>
+                        </div>
+                        @error('limit_qty_max')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        <div class="form-text small">Item Pembelian, penerimaan, retur, Booking Alat. Rentang: {{ number_format(\App\Support\Limits::range('qty_max')[0], 0, ',', '.') }} sampai {{ number_format(\App\Support\Limits::range('qty_max')[1], 0, ',', '.') }}.</div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="limit_stock_max" class="form-label fw-semibold small text-secondary">Jumlah Stok Maksimal</label>
+                        <div class="input-group">
+                            <input type="number" name="limit_stock_max" id="limit_stock_max" min="{{ \App\Support\Limits::range('stock_max')[0] }}" max="{{ \App\Support\Limits::range('stock_max')[1] }}"
+                                   class="form-control @error('limit_stock_max') is-invalid @enderror" value="{{ $v('limit_stock_max') }}" required>
+                            <span class="input-group-text">unit</span>
+                        </div>
+                        @error('limit_stock_max')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        <div class="form-text small">Jumlah barang di Inventory, jumlah di Surat Jalan dan peminjaman. Rentang: {{ number_format(\App\Support\Limits::range('stock_max')[0], 0, ',', '.') }} sampai {{ number_format(\App\Support\Limits::range('stock_max')[1], 0, ',', '.') }}.</div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="limit_duration_max" class="form-label fw-semibold small text-secondary">Estimasi Durasi Project Maksimal</label>
+                        <div class="input-group">
+                            <input type="number" name="limit_duration_max" id="limit_duration_max" min="{{ \App\Support\Limits::range('duration_max')[0] }}" max="{{ \App\Support\Limits::range('duration_max')[1] }}"
+                                   class="form-control @error('limit_duration_max') is-invalid @enderror" value="{{ $v('limit_duration_max') }}" required>
+                            <span class="input-group-text">menit</span>
+                        </div>
+                        @error('limit_duration_max')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                        <div class="form-text small">Form Project. Rentang: {{ number_format(\App\Support\Limits::range('duration_max')[0], 0, ',', '.') }} sampai {{ number_format(\App\Support\Limits::range('duration_max')[1], 0, ',', '.') }}.</div>
+                    </div>
                 </div>
-                <div class="form-text small">Batas lain (hari, persen, radius, ukuran unggah) diatur di Aturan Operasional di atas. Mengubah batas di atas dilakukan lewat <code>config/limits.php</code>.</div>
             </div>
         </div>
 

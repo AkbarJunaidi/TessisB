@@ -47,7 +47,14 @@ class SettingUpdateRequest extends FormRequest
             ->unique()
             ->values();
 
-        $this->merge([
+        // Batas input dikirim berformat titik ribuan bila JavaScript mati; bersihkan jadi angka.
+        $limits = collect(\App\Support\Limits::KEYS)
+            ->map(fn ($key) => 'limit_' . $key)
+            ->filter(fn ($key) => $this->has($key))
+            ->mapWithKeys(fn ($key) => [$key => str_replace('.', '', (string) $this->input($key))])
+            ->all();
+
+        $this->merge($limits + [
             'project_categories'        => $categories,
             'inventory_statuses'        => $statuses,
             'finance_categories'        => $financeCategories,
@@ -79,6 +86,10 @@ class SettingUpdateRequest extends FormRequest
             'repair_gagal_percent'    => ['required', 'integer', 'between:10,100'],
             'location_default_radius' => ['required', 'integer', 'between:10,5000'],
             'upload_max_mb'           => ['required', 'integer', 'between:1,50'],
+            'limit_money_max'         => ['required', 'integer', 'between:' . implode(',', \App\Support\Limits::range('money_max'))],
+            'limit_qty_max'           => ['required', 'integer', 'between:' . implode(',', \App\Support\Limits::range('qty_max'))],
+            'limit_stock_max'         => ['required', 'integer', 'between:' . implode(',', \App\Support\Limits::range('stock_max'))],
+            'limit_duration_max'      => ['required', 'integer', 'between:' . implode(',', \App\Support\Limits::range('duration_max'))],
             'finance_lock_date'       => ['nullable', 'date_format:Y-m-d', 'before_or_equal:today'],
             'upload_allowed_extensions' => [
                 'required', 'string', 'max:300',
@@ -178,6 +189,13 @@ class SettingUpdateRequest extends FormRequest
         });
     }
 
+    private function limitMessage(string $key, string $label): string
+    {
+        [$min, $max] = \App\Support\Limits::range($key);
+
+        return "Batas {$label} harus antara " . number_format($min, 0, ',', '.') . ' dan ' . number_format($max, 0, ',', '.') . '.';
+    }
+
     public function messages(): array
     {
         return [
@@ -192,6 +210,10 @@ class SettingUpdateRequest extends FormRequest
             'repair_gagal_percent.between'    => 'Ambang sulit diperbaiki harus antara 10 dan 100 persen.',
             'location_default_radius.between' => 'Radius default harus antara 10 dan 5000 meter.',
             'upload_max_mb.between'           => 'Batas ukuran upload harus antara 1 dan 50 MB.',
+            'limit_money_max.between'         => $this->limitMessage('money_max', 'nominal uang'),
+            'limit_qty_max.between'           => $this->limitMessage('qty_max', 'jumlah per transaksi'),
+            'limit_stock_max.between'         => $this->limitMessage('stock_max', 'jumlah stok'),
+            'limit_duration_max.between'      => $this->limitMessage('duration_max', 'durasi project'),
             'finance_lock_date.date_format'   => 'Tanggal tutup buku tidak valid.',
             'finance_lock_date.before_or_equal' => 'Tanggal tutup buku tidak boleh melewati hari ini.',
             'upload_allowed_extensions.required' => 'Isi minimal satu ekstensi file yang diizinkan.',

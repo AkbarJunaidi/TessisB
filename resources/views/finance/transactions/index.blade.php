@@ -278,7 +278,7 @@
                     </div>
                     <div class="col-12 col-md-6">
                         <label for="tAmount" class="form-label small fw-semibold text-secondary">Nominal (Rp) <span class="text-danger">*</span></label>
-                        <input type="text" inputmode="numeric" min="1" max="{{ config('limits.money_max') }}" name="amount" id="tAmount" class="form-control" placeholder="0" autocomplete="off">
+                        <input type="text" inputmode="numeric" min="1" max="{{ \App\Support\Limits::money() }}" name="amount" id="tAmount" class="form-control" placeholder="0" autocomplete="off">
                     </div>
                     <div class="col-12 col-md-6">
                         <label for="tProject" class="form-label small fw-semibold text-secondary">Project</label>
