@@ -26,6 +26,28 @@
         </div>
     </div>
 
+    @php
+        $sjTotal = (int) $suratJalan->items->sum('qty_dipakai');
+        $sjBack = (int) $suratJalan->items->sum('qty_dikembalikan');
+        $sjDone = $suratJalan->status === 'Selesai';
+        $sjText = $sjDone
+            ? 'Semua barang sudah kembali.'
+            : ($sjTotal - $sjBack) . ' dari ' . $sjTotal . ' unit masih di lapangan. Saat barang kembali, tekan Kembalikan di daftar di bawah atau lewat Scan Barang.';
+    @endphp
+    @include('partials.flow-card', [
+        'flowTitle' => 'Tahapan Surat Jalan',
+        'tracks'    => [[
+            'steps' => \App\Support\Stepper::steps(
+                ['Dibuat', 'Barang di lapangan', 'Semua kembali'],
+                $sjDone ? 2 : 1,
+                $sjDone,
+                false,
+                [optional($suratJalan->created_at)->translatedFormat('d M Y'), $sjDone ? null : $sjBack . ' dari ' . $sjTotal . ' kembali', null]
+            ),
+            'text'  => $sjText,
+        ]],
+    ])
+
     <div class="card shadow-sm border-0 rounded-3">
         <div class="card-body p-4">
             <h6 class="fw-bold mb-1">Daftar Barang</h6>

@@ -62,6 +62,31 @@
         </div>
     </div>
 
+    @php
+        $statusKeys = array_keys(\App\Models\Project::STATUS_LABELS);
+        $statusAt = (int) array_search($project->status, $statusKeys, true);
+        $nextStatus = $project->nextStatus();
+        $flowAction = $nextStatus && auth()->user()->hasPermission('tracking_progress', 'edit_project')
+            ? [
+                'url'           => route('projects.update-status', $project),
+                'method'        => 'PATCH',
+                'fields'        => ['status' => $nextStatus],
+                'label'         => 'Lanjut ke ' . \App\Models\Project::STATUS_LABELS[$nextStatus],
+                'icon'          => 'bi-arrow-right',
+                'confirm'       => 'Ubah status project ke ' . \App\Models\Project::STATUS_LABELS[$nextStatus] . '?',
+                'confirm_label' => 'Ubah Status',
+            ]
+            : null;
+    @endphp
+    @include('partials.flow-card', [
+        'flowTitle' => 'Tahapan Project',
+        'tracks'    => [[
+            'steps'  => \App\Support\Stepper::steps(array_values(\App\Models\Project::STATUS_LABELS), $statusAt, $project->status === 'Done'),
+            'text'   => \App\Models\Project::STATUS_GUIDE[$project->status] ?? null,
+            'action' => $flowAction,
+        ]],
+    ])
+
     <div class="row g-3 mb-3">
         {{-- Informasi Kunci --}}
         <div class="col-lg-8">

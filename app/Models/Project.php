@@ -64,6 +64,16 @@ class Project extends Model
         'Done'         => 'Selesai',
     ];
 
+    /** Panduan singkat per status: apa yang perlu dilakukan sebelum lanjut ke tahap berikutnya. */
+    public const STATUS_GUIDE = [
+        'Draft'       => 'Lengkapi data client, tanggal, dan lokasi acara. Saat mulai bernegosiasi, lanjut ke Negosiasi.',
+        'Scheduled'   => 'Selesaikan penawaran dengan client. Bila sudah sepakat, lanjut ke Deal.',
+        'Confirmed'   => 'Siapkan alat (Booking Alat) dan kru. Saat acara dimulai, lanjut ke Berjalan.',
+        'In Progress' => 'Pastikan surat jalan dan kru sesuai. Setelah acara selesai, lanjut ke Review.',
+        'On Review'   => 'Cek alat sudah kembali, lalu catat pembayaran dan pengeluaran. Bila beres, lanjut ke Selesai.',
+        'Done'        => 'Project sudah selesai.',
+    ];
+
     protected $fillable = [
         'name',
         'description',
@@ -104,6 +114,15 @@ class Project extends Model
 
     /** Batas karakter nama project di tampilan selain halaman detail; sisanya diganti "...". */
     public const NAME_DISPLAY_LIMIT = 25;
+
+    /** Status berikutnya menurut urutan STATUS_LABELS, atau null bila sudah di tahap terakhir. */
+    public function nextStatus(): ?string
+    {
+        $keys = array_keys(self::STATUS_LABELS);
+        $at = array_search($this->status, $keys, true);
+
+        return $at === false ? null : ($keys[$at + 1] ?? null);
+    }
 
     public static function shorten(?string $name): string
     {

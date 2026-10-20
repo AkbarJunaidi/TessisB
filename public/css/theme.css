@@ -287,6 +287,29 @@ button:focus-visible,
     border-radius: 50%; font-size: 1.6rem;
 }
 
+/* --- Stepper alur (Pembelian, Project, Perbaikan, Surat Jalan): lingkaran bernomor + garis penghubung; di HP jadi daftar vertikal --- */
+.stepper { list-style: none; margin: 0; padding: 0; display: flex; }
+.stepper-step { position: relative; flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: .5rem; text-align: center; }
+.stepper-step:not(:last-child)::after { content: ''; position: absolute; top: 1rem; left: calc(50% + 1.25rem); width: calc(100% - 2.5rem); height: 2px; margin-top: -1px; background: var(--c-border); }
+.stepper-step.is-done:not(:last-child)::after { background: var(--bs-success); }
+.stepper-dot { position: relative; z-index: 1; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border: 2px solid var(--c-border); border-radius: 50%; background: var(--bg-white); color: var(--c-muted); font-size: .9rem; font-weight: 600; }
+.stepper-step.is-done .stepper-dot { border-color: var(--bs-success); background: var(--bs-success); color: #fff; }
+.stepper-step.is-current .stepper-dot { border-color: var(--c-primary); background: var(--c-primary); color: #fff; box-shadow: 0 0 0 .25rem rgba(var(--c-primary-rgb), .18); }
+.stepper-step.is-stop .stepper-dot { border-color: var(--bs-danger); background: var(--bs-danger); color: #fff; }
+.stepper-text { display: flex; flex-direction: column; gap: .1rem; min-width: 0; }
+.stepper-label { color: var(--c-navy); font-size: .9rem; font-weight: 500; overflow-wrap: anywhere; }
+.stepper-step.is-todo .stepper-label { color: var(--c-muted); font-weight: 400; }
+.stepper-step.is-current .stepper-label, .stepper-step.is-stop .stepper-label { font-weight: 700; }
+.stepper-step.is-current .stepper-label { color: var(--c-primary); }
+.stepper-hint { color: var(--c-muted); font-size: .78rem; }
+@media (max-width: 575.98px) {
+    .stepper { flex-direction: column; }
+    .stepper-step { flex-direction: row; align-items: flex-start; gap: .75rem; padding-bottom: 1.1rem; text-align: left; }
+    .stepper-step:last-child { padding-bottom: 0; }
+    .stepper-step:not(:last-child)::after { top: 2.25rem; bottom: .25rem; left: calc(1rem - 1px); width: 2px; height: auto; margin-top: 0; }
+    .stepper-text { padding-top: .3rem; }
+}
+
 /* --- Tabel modern (header lembut, hover halus) --- */
 .table-modern thead th {
     background: var(--bg-soft);

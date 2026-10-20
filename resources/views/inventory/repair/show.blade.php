@@ -55,6 +55,31 @@
         </div>
     @endif
 
+    @php
+        $repairAt = $repair->status === \App\Models\InventoryRepair::STATUS_DONE ? 2 : 1;
+        $repairStopped = $repair->status === \App\Models\InventoryRepair::STATUS_CANCELLED;
+        $repairText = match ($repair->status) {
+            \App\Models\InventoryRepair::STATUS_ACTIVE => 'Barang sedang diservis di ' . $repair->tempat_nama . '. Setelah barang diambil, tekan Selesaikan Perbaikan lalu isi biayanya.',
+            \App\Models\InventoryRepair::STATUS_DONE   => 'Perbaikan selesai dan barang kembali tersedia.',
+            default                                       => 'Catatan perbaikan ini dibatalkan.',
+        };
+    @endphp
+    @include('partials.flow-card', [
+        'flowTitle' => 'Tahapan Perbaikan',
+        'tracks'    => [[
+            'badge'  => $repairStopped ? 'Dibatalkan' : null,
+            'steps'  => \App\Support\Stepper::steps(
+                ['Dicatat', 'Diservis', 'Selesai'],
+                $repairAt,
+                $repair->status === \App\Models\InventoryRepair::STATUS_DONE,
+                $repairStopped,
+                [$fmtDate($repair->created_at), $repair->estimasi_selesai ? 'Estimasi ' . $fmtDate($repair->estimasi_selesai) : null, $fmtDate($repair->tanggal_selesai)]
+            ),
+            'text'   => $repairText,
+            'mine'   => $canManage && $repair->isActive(),
+        ]],
+    ])
+
     <div class="row g-3">
         <div class="col-12 col-lg-5">
             <div class="card shadow-sm border-0 rounded-3 h-100">
