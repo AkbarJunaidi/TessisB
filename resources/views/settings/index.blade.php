@@ -291,6 +291,48 @@
             </div>
         </div>
 
+        {{-- Batas Input: hanya tampilan, nilainya dari config/limits.php (dipakai backend dan frontend) --}}
+        <div class="card border-0 shadow-sm rounded-3 mb-4">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-1"><i class="bi bi-rulers me-2"></i>Batas Input</h6>
+                <p class="text-muted small mb-3">Batas untuk satu isian, bukan kapasitas sistem: jumlah data tidak dibatasi. Melebihi batas, isian dipotong di batas dan server menolak penyimpanan.</p>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-2">
+                        <thead>
+                            <tr class="small text-secondary">
+                                <th>Isian</th>
+                                <th class="text-nowrap">Batas maksimal</th>
+                                <th>Berlaku di</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="fw-semibold">Nominal uang</td>
+                                <td class="text-nowrap">Rp {{ number_format(config('limits.money_max'), 0, ',', '.') }}</td>
+                                <td class="small text-muted">Keuangan, Pembelian (harga, dana, pembayaran, refund), Project (pendapatan, anggaran, item keuangan), Kwitansi, Daftar Harga, biaya Perbaikan</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-semibold">Jumlah per transaksi</td>
+                                <td class="text-nowrap">{{ number_format(config('limits.qty_max'), 0, ',', '.') }}</td>
+                                <td class="small text-muted">Item Pembelian, penerimaan, retur, Booking Alat</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-semibold">Jumlah stok</td>
+                                <td class="text-nowrap">{{ number_format(config('limits.stock_max'), 0, ',', '.') }}</td>
+                                <td class="small text-muted">Jumlah barang di Inventory, jumlah di Surat Jalan dan peminjaman</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-semibold">Estimasi durasi project</td>
+                                <td class="text-nowrap">{{ number_format(config('limits.duration_max'), 0, ',', '.') }} menit</td>
+                                <td class="small text-muted">Form Project</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="form-text small">Batas lain (hari, persen, radius, ukuran unggah) diatur di Aturan Operasional di atas. Mengubah batas di atas dilakukan lewat <code>config/limits.php</code>.</div>
+            </div>
+        </div>
+
         {{-- Pengaturan yang sudah ada di halaman lain --}}
         <div class="card border-0 shadow-sm rounded-3 mb-4">
             <div class="card-body p-4">
