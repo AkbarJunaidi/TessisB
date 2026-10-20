@@ -62,26 +62,46 @@
             @endif
         </div>
 
-        {{-- Perlu perhatian: hitungan notifikasi otomatis per jenis (Super Admin dan Admin). --}}
+        {{-- Perlu perhatian (Super Admin dan Admin): bisa dilipat, terbuka otomatis hanya bila ada yang bernilai; semua 0 = tertutup. --}}
         @if(!empty($attention))
-            @if(collect($attention)->sum('count') > 0)
-                <div class="row g-2 mb-3">
-                    @foreach($attention as $card)
-                        <div class="col-6 col-lg-3">
-                            <a href="{{ route($card['route'], $card['params'] ?? []) }}" class="card border-0 shadow-sm rounded-3 text-decoration-none text-dark hover-lift h-100">
-                                <div class="card-body p-3 d-flex justify-content-between align-items-center gap-2">
+            @php
+                $attentionTotal = collect($attention)->sum('count');
+                $attentionOpen = $attentionTotal > 0;
+            @endphp
+            <div class="card border-0 shadow-sm rounded-3 mb-3">
+                <div class="card-body py-2 px-3">
+                    <button type="button" id="attentionToggle" class="btn w-100 d-flex justify-content-between align-items-center gap-3 text-start p-0 border-0 bg-transparent"
+                            data-bs-toggle="collapse" data-bs-target="#attentionCollapse" aria-expanded="{{ $attentionOpen ? 'true' : 'false' }}" aria-controls="attentionCollapse">
+                        <span class="fw-bold small"><i class="bi bi-exclamation-circle me-2"></i>Perlu perhatian</span>
+                        <span class="d-flex align-items-center gap-2 text-nowrap">
+                            <span id="attentionSummary" class="small {{ $attentionOpen ? 'd-none' : '' }}">
+                                @if($attentionTotal > 0)
+                                    <span class="fw-bold text-danger">{{ $attentionTotal }}</span> <span class="text-muted">perlu ditindak</span>
+                                @else
+                                    <span class="text-muted"><i class="bi bi-check-circle me-1"></i>Semua aman</span>
+                                @endif
+                            </span>
+                            <i class="bi {{ $attentionOpen ? 'bi-chevron-up' : 'bi-chevron-down' }} attention-toggle-icon" aria-hidden="true"></i>
+                        </span>
+                    </button>
+
+                    {{-- Satu baris: kartu menyusut sama rata (label boleh turun baris), di layar sempit digeser ke samping. --}}
+                    <div class="collapse mt-2 {{ $attentionOpen ? 'show' : '' }}" id="attentionCollapse">
+                        <div class="d-flex gap-2 overflow-auto pb-1">
+                            @foreach($attention as $card)
+                                <a href="{{ route($card['route'], $card['params'] ?? []) }}" class="flex-fill border rounded-3 py-2 px-3 d-flex justify-content-between align-items-center gap-2 text-decoration-none text-dark hover-lift">
                                     <span class="small"><i class="bi {{ $card['icon'] }} me-1 {{ $card['count'] > 0 ? 'text-danger' : 'text-muted' }}"></i>{{ $card['label'] }}</span>
                                     <span class="fs-5 fw-bold {{ $card['count'] > 0 ? 'text-danger' : 'text-muted' }}">{{ $card['text'] }}</span>
-                                </div>
-                            </a>
+                                </a>
+                            @endforeach
                         </div>
-                    @endforeach
+                    </div>
                 </div>
-            @else
-                <div class="card border-0 shadow-sm rounded-3 mb-3">
-                    <div class="card-body py-2 px-3 small text-muted"><i class="bi bi-check-circle text-success me-1"></i>Tidak ada yang perlu perhatian saat ini.</div>
-                </div>
-            @endif
+            </div>
+
+            @push('scripts')
+                <script src="{{ \App\Support\AppAsset::url('js/dashboard/attention.js') }}"></script>
+            @endpush
         @endif
 
         {{-- Keuangan satu kartu dengan pilihan periode, ditemani ringkasan angka penting. --}}
