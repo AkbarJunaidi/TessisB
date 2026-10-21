@@ -264,6 +264,19 @@
     .app-content { padding-bottom: calc(5.5rem + env(safe-area-inset-bottom)); }
 }
 
+/* HP dan tablet: halaman tidak boleh bisa digeser ke samping. Teks panjang tanpa spasi (nama, alamat, URL)
+   patah di batas wadah; tabel lebar tetap scroll di .table-responsive masing-masing. */
+@media (max-width: 991.98px) {
+    .app-main { overflow-x: hidden; }
+    .app-content { overflow-wrap: anywhere; }
+}
+
+/* Dropdown notifikasi dan saran pencarian navbar: daftar hanya scroll vertikal, teks panjang patah di dalam item. */
+#navbarNotifList,
+#navbarSearchSuggestions { overflow-x: hidden; }
+#navbarNotifList .dropdown-item { white-space: normal; overflow-wrap: anywhere; }
+#navbarNotifList .dropdown-item > div { min-width: 0; }
+
 @media (min-width: 992px) {
     html.sidebar-collapsed .app-sidebar { width: 88px; }
 

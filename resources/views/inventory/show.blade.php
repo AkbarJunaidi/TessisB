@@ -6,7 +6,7 @@
 <div class="container-fluid p-0">
 
     <!-- Header Page & Back Button (Hanya Tampil di Desktop) -->
-    <div class="d-none d-md-flex justify-content-between align-items-center mb-4">
+    <div class="d-none d-md-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <div>
             <a data-back href="{{ route('inventory.index') }}" class="page-back"><i class="bi bi-arrow-left"></i> Daftar Barang</a>
             <h3 class="fw-bold text-dark m-0 d-flex align-items-center gap-2">
