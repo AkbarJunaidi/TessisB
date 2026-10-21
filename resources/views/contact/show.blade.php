@@ -111,7 +111,7 @@
                     <div>
                         <div class="text-muted small mb-1">Total Pendapatan dari Kontak Ini</div>
                         <div class="fw-bold fs-4 text-success">
-                            {{ \App\Support\Money::formatRupiah($matchedProjects->sum(fn($p) => $p->total_income)) }}
+                            {{ \App\Support\Money::formatRupiah($matchedProjects->sum(fn($p) => $p->total_client_income)) }}
                         </div>
                     </div>
                     <i class="bi bi-cash-coin fs-1 text-success opacity-25"></i>
@@ -178,7 +178,7 @@
                                     </div>
                                 </div>
                                 <div class="fw-bold text-success">
-                                    {{ \App\Support\Money::formatRupiah($project->total_income) }}
+                                    {{ \App\Support\Money::formatRupiah($project->total_client_income) }}
                                 </div>
                             </div>
                         </a>

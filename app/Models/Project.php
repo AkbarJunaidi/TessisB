@@ -146,6 +146,19 @@ class Project extends Model
     }
 
     /**
+     * Pemasukan dari client saja (tanpa uang kembali pembelian); dasar Total Diterima dan Sisa.
+     */
+    protected function totalClientIncome(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::get(
+            fn () => (float) $this->financeItems
+                ->where('type', 'income')
+                ->filter(fn ($item) => $item->category !== \App\Support\FinanceCategory::PURCHASE_REFUND)
+                ->sum('amount')
+        );
+    }
+
+    /**
      * Total Pengeluaran (jumlah seluruh baris item bertipe expense).
      */
     protected function totalExpense(): \Illuminate\Database\Eloquent\Casts\Attribute
@@ -286,7 +299,7 @@ class Project extends Model
     protected function totalDiterima(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
         return \Illuminate\Database\Eloquent\Casts\Attribute::get(
-            fn () => self::combinePayments((float) $this->total_income, (float) $this->total_dibayar)
+            fn () => self::combinePayments((float) $this->total_client_income, (float) $this->total_dibayar)
         );
     }
 

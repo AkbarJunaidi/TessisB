@@ -70,6 +70,18 @@ class ProjectFinanceItem extends Model
         return $query->where(fn ($q) => $q->whereNull('project_id')->orWhereHas('project'));
     }
 
+    /** Pemasukan dari client: uang kembali pembelian (dari vendor) tidak ikut. */
+    public function scopeClientPayments(Builder $query): Builder
+    {
+        return $query->where('type', 'income')->where(self::notRefund());
+    }
+
+    /** Syarat "bukan uang kembali pembelian" untuk query builder; $column boleh memuat nama tabel. */
+    public static function notRefund(string $column = 'category'): \Closure
+    {
+        return fn ($q) => $q->whereNull($column)->orWhere($column, '!=', FinanceCategory::PURCHASE_REFUND);
+    }
+
     /** Baris otomatis dari modul lain: ubah/hapus lewat modul asalnya. */
     public function isAuto(): bool
     {

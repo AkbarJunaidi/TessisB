@@ -4,6 +4,7 @@ namespace App\Services\Contact;
 
 use App\Support\PerPage;
 use App\Models\Contact;
+use App\Models\ProjectFinanceItem;
 use App\Models\Purchase;
 use App\Services\ActivityLog\ActivityLogService;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -97,6 +98,8 @@ class ContactService
         $linkedTotals = DB::table('projects')
             ->join('project_finance_items', 'project_finance_items.project_id', '=', 'projects.id')
             ->where('project_finance_items.type', 'income')
+            ->where(ProjectFinanceItem::notRefund('project_finance_items.category'))
+            ->whereNull('projects.deleted_at')
             ->whereIn('projects.contact_id', $contactIds)
             ->select('projects.contact_id', DB::raw('SUM(project_finance_items.amount) as total'))
             ->groupBy('projects.contact_id')
@@ -105,6 +108,8 @@ class ContactService
         $nameMatchedTotals = DB::table('projects')
             ->join('project_finance_items', 'project_finance_items.project_id', '=', 'projects.id')
             ->where('project_finance_items.type', 'income')
+            ->where(ProjectFinanceItem::notRefund('project_finance_items.category'))
+            ->whereNull('projects.deleted_at')
             ->whereNull('projects.contact_id')
             ->whereIn(DB::raw('LOWER(TRIM(projects.client))'), $normalizedNames)
             ->select(
@@ -180,12 +185,16 @@ class ContactService
         $linkedRevenue = DB::table('projects')
             ->join('project_finance_items', 'project_finance_items.project_id', '=', 'projects.id')
             ->where('project_finance_items.type', 'income')
+            ->where(ProjectFinanceItem::notRefund('project_finance_items.category'))
+            ->whereNull('projects.deleted_at')
             ->whereNotNull('projects.contact_id')
             ->sum('project_finance_items.amount');
 
         $nameMatchedRevenue = $normalizedNames->isEmpty() ? 0 : DB::table('projects')
             ->join('project_finance_items', 'project_finance_items.project_id', '=', 'projects.id')
             ->where('project_finance_items.type', 'income')
+            ->where(ProjectFinanceItem::notRefund('project_finance_items.category'))
+            ->whereNull('projects.deleted_at')
             ->whereNull('projects.contact_id')
             ->whereIn(DB::raw('LOWER(TRIM(projects.client))'), $normalizedNames)
             ->sum('project_finance_items.amount');

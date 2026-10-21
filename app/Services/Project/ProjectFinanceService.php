@@ -29,11 +29,17 @@ class ProjectFinanceService
         DB::transaction(function () use ($project, $incomes, $expenses, $estimatedValue, $loadedIds, $budget) {
             $project->update(['estimated_value' => $estimatedValue, 'budget' => $budget]);
 
-            $existing = $project->financeItems()->get()->keyBy('id');
+            // Baris otomatis (Pembelian, Servis) hanya diubah lewat modul asalnya.
+            $existing = $project->financeItems()->whereNull('source_type')->get()->keyBy('id');
+            $autoIds = $project->financeItems()->whereNotNull('source_type')->pluck('id')->all();
             $kept = [];
 
             foreach (['income' => $incomes, 'expense' => $expenses] as $type => $rows) {
                 foreach ($rows as $row) {
+                    if (isset($row['id']) && in_array((int) $row['id'], $autoIds, true)) {
+                        continue;
+                    }
+
                     $item = isset($row['id']) ? $existing->get((int) $row['id']) : null;
 
                     if ($item && $item->type === $type) {
@@ -60,7 +66,7 @@ class ProjectFinanceService
                 }
             }
 
-            $removed = $project->financeItems()->whereIn('id', array_diff($loadedIds, $kept))->get();
+            $removed = $project->financeItems()->whereNull('source_type')->whereIn('id', array_diff($loadedIds, $kept))->get();
             $removed->each(fn ($item) => FinanceLock::assertOpen($item->tanggal));
             $project->financeItems()->whereIn('id', $removed->pluck('id'))->delete();
 

@@ -137,6 +137,6 @@ class Contact extends Model
      */
     public function getTotalIncomeAttribute(): float
     {
-        return (float) $this->matchedProjects()->sum(fn (Project $project) => $project->total_income);
+        return (float) $this->matchedProjects()->sum(fn (Project $project) => $project->total_client_income);
     }
 }

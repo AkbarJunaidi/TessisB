@@ -352,7 +352,7 @@
                             @method('PUT')
 
                             {{-- Id baris yang dimuat: hanya baris ini yang boleh terhapus saat simpan --}}
-                            <input type="hidden" name="loaded_ids" value="{{ $project->financeItems->pluck('id')->implode(',') }}">
+                            <input type="hidden" name="loaded_ids" value="{{ $project->financeItems->whereNull('source_type')->pluck('id')->implode(',') }}">
 
                             {{-- PENDAPATAN --}}
                             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -365,8 +365,15 @@
                                 <div class="col-md-4">Nominal (Rp)</div>
                                 <div class="col-md-7">Keterangan</div>
                             </div>
-                            <div id="incomeRows" data-change-list="Pendapatan" data-change-row=".finance-row">
-                                @foreach($project->financeItems->where('type', 'income')->values() as $i => $item)
+                            @php
+                                $autoIncome = $project->financeItems->where('type', 'income')->whereNotNull('source_type');
+                                $autoExpense = $project->financeItems->where('type', 'expense')->whereNotNull('source_type');
+                            @endphp
+                            @foreach($autoIncome as $item)
+                                @include('project.partials.finance-row-auto', ['item' => $item])
+                            @endforeach
+                            <div id="incomeRows" data-auto-total="{{ (float) $autoIncome->sum('amount') }}" data-change-list="Pendapatan" data-change-row=".finance-row">
+                                @foreach($project->financeItems->where('type', 'income')->whereNull('source_type')->values() as $i => $item)
                                     @include('project.partials.finance-row', ['group' => 'incomes', 'index' => $i, 'item' => $item])
                                 @endforeach
                             </div>
@@ -386,8 +393,11 @@
                                 <div class="col-md-4">Nominal (Rp)</div>
                                 <div class="col-md-7">Keterangan</div>
                             </div>
-                            <div id="expenseRows" data-change-list="Pengeluaran" data-change-row=".finance-row">
-                                @foreach($project->financeItems->where('type', 'expense')->values() as $i => $item)
+                            @foreach($autoExpense as $item)
+                                @include('project.partials.finance-row-auto', ['item' => $item])
+                            @endforeach
+                            <div id="expenseRows" data-auto-total="{{ (float) $autoExpense->sum('amount') }}" data-change-list="Pengeluaran" data-change-row=".finance-row">
+                                @foreach($project->financeItems->where('type', 'expense')->whereNull('source_type')->values() as $i => $item)
                                     @include('project.partials.finance-row', ['group' => 'expenses', 'index' => $i, 'item' => $item])
                                 @endforeach
                             </div>
@@ -580,8 +590,8 @@
 @if(auth()->user()->hasPermission('finance', 'manage'))
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    let incomeIndex = {{ $project->financeItems->where('type', 'income')->count() }};
-    let expenseIndex = {{ $project->financeItems->where('type', 'expense')->count() }};
+    let incomeIndex = {{ $project->financeItems->where('type', 'income')->whereNull('source_type')->count() }};
+    let expenseIndex = {{ $project->financeItems->where('type', 'expense')->whereNull('source_type')->count() }};
 
     const incomeRows = document.getElementById('incomeRows');
     const expenseRows = document.getElementById('expenseRows');
@@ -615,8 +625,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Hitung total pendapatan, pengeluaran, dan laba dari semua baris.
     function recalculate() {
+        // Baris otomatis (hanya baca) ikut total lewat data-auto-total.
         const sumRows = (container) => Array.from(container.querySelectorAll('.finance-amount-input'))
-            .reduce((sum, input) => sum + parseAmount(input.value), 0);
+            .reduce((sum, input) => sum + parseAmount(input.value), Number(container.dataset.autoTotal || 0));
 
         const totalIncome = sumRows(incomeRows);
         const totalExpense = sumRows(expenseRows);

@@ -198,6 +198,7 @@ class FinanceSummaryService
         $rows = ProjectFinanceItem::query()
             ->leftJoin('projects', 'projects.id', '=', 'project_finance_items.project_id')
             ->where('project_finance_items.type', 'income')
+            ->where(ProjectFinanceItem::notRefund('project_finance_items.category'))
             ->whereBetween('project_finance_items.tanggal', [$from->toDateString(), $to->toDateString()])
             ->where(fn ($q) => $q->whereNull('project_finance_items.project_id')->orWhereNull('projects.deleted_at'))
             ->selectRaw("{$clientExpr} as client_id, SUM(project_finance_items.amount) as total")
@@ -289,7 +290,7 @@ class FinanceSummaryService
         $rows = Project::query()
             ->where('estimated_value', '>', 0)
             ->withSum(['kwitansis as kwitansi_total' => fn ($q) => $q->where('status', 'Aktif')], 'jumlah')
-            ->withSum(['financeItems as income_total' => fn ($q) => $q->where('type', 'income')], 'amount')
+            ->withSum(['financeItems as income_total' => fn ($q) => $q->clientPayments()], 'amount')
             ->get(['id', 'name', 'client', 'estimated_value'])
             ->map(fn ($p) => [
                 'id'     => $p->id,

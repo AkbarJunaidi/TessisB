@@ -20,7 +20,7 @@
     <div class="col-md-4">
         <div class="p-3 rounded-3 bg-success-subtle">
             <div class="small text-muted">Pendapatan Tercatat (Data Keuangan)</div>
-            <div class="fw-bold fs-5 text-success">{{ \App\Support\Money::formatRupiah($project->total_income) }}</div>
+            <div class="fw-bold fs-5 text-success">{{ \App\Support\Money::formatRupiah($project->total_client_income) }}</div>
         </div>
     </div>
     <div class="col-md-4">

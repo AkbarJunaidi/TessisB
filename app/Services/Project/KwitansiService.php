@@ -160,7 +160,7 @@ class KwitansiService
         return Project::query()
             ->select(['id', 'name', 'client', 'company', 'estimated_value', 'event_date'])
             ->withSum(['kwitansis as kwitansi_total_dibayar' => fn ($q) => $q->where('status', 'Aktif')], 'jumlah')
-            ->withSum(['financeItems as pendapatan_tercatat' => fn ($q) => $q->where('type', 'income')], 'amount')
+            ->withSum(['financeItems as pendapatan_tercatat' => fn ($q) => $q->clientPayments()], 'amount')
             ->when($search, fn ($q) => $q->where(function ($q2) use ($search) {
                 $q2->where('name', 'like', "%{$search}%")
                     ->orWhere('client', 'like', "%{$search}%");
