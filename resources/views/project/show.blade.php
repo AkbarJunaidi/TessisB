@@ -5,76 +5,70 @@
 @section('content')
 <div class="container-fluid p-0">
 
-    {{-- Header --}}
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-        <div>
-            <a data-back href="{{ route('projects.index') }}" class="page-back"><i class="bi bi-arrow-left"></i> Daftar Project</a>
-            <div class="d-flex align-items-center gap-2 mb-1">
-                <h3 class="fw-bold text-dark m-0">{{ $project->name }}</h3>
-
-                @if(auth()->user()->hasPermission('tracking_progress', 'edit_project'))
-                    <form action="{{ route('projects.update-status', $project) }}" method="POST" class="d-inline" data-confirm="Ubah status project ini?" data-confirm-label="Ubah Status" data-confirm-revert>
-                        @csrf
-                        @method('PATCH')
-                        <select name="status" class="form-select form-select-sm border-0 bg-light fw-semibold u-w-auto" onchange="this.form.requestSubmit()">
-                            @foreach(\App\Models\Project::STATUS_LABELS as $s => $label)
-                                <option value="{{ $s }}" @selected($project->status === $s)>{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </form>
-                @else
-                    <span class="badge bg-success-subtle text-success">{{ \App\Models\Project::STATUS_LABELS[$project->status] ?? $project->status }}</span>
-                @endif
-            </div>
-            <p class="text-muted small m-0">Kelola informasi project, tim, barang, dan dokumen.</p>
-        </div>
-
-        <div class="d-flex gap-2">
-            @if($notifyUsers->isNotEmpty())
-                <button type="button" class="btn btn-outline-primary d-flex align-items-center gap-2 fw-medium" data-bs-toggle="modal" data-bs-target="#projectNotifyModal">
-                    <i class="bi bi-bell"></i> Kirim Notifikasi
-                </button>
-            @endif
-
-            @if(auth()->user()->hasPermission('surat_jalan', 'view'))
-                <div class="dropdown">
-                    <button class="btn btn-outline-primary d-flex align-items-center gap-2 fw-medium dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-file-earmark-text"></i> Surat Jalan
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        @if(auth()->user()->isSuperAdmin())
-                            <li><a class="dropdown-item" href="{{ route('surat-jalan.create', $project) }}"><i class="bi bi-plus-lg me-1"></i> Buat Surat Jalan</a></li>
-                        @endif
-                        <li>
-                            <a class="dropdown-item go-to-surat-jalan-tab" href="#tab-suratjalan">
-                                <i class="bi bi-eye me-1"></i> Lihat Surat Jalan
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            @endif
-
-            @if(auth()->user()->hasPermission('tracking_progress', 'delete_project'))
-                <div class="dropdown">
-                    <button type="button" class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center gap-2 fw-medium" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-three-dots"></i> Lainnya
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                        <li>
-                            <form action="{{ route('projects.archive', $project) }}" method="POST" data-confirm="Simpan arsip project ini (PDF) ke folder project di Integrasi Data?" data-confirm-label="Arsipkan">
-                                @csrf
-                                <button type="submit" class="dropdown-item"><i class="bi bi-archive me-2"></i>Arsipkan Project</button>
-                            </form>
-                        </li>
-                    </ul>
-                </div>
-            @endif
+    {{-- Header: judul di atas, keterangan di kiri dan tombol di kanan di bawahnya --}}
+    <div class="mb-4">
+        <a data-back href="{{ route('projects.index') }}" class="page-back"><i class="bi bi-arrow-left"></i> Daftar Project</a>
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+            <h3 class="project-title fw-bold text-dark m-0">{{ $project->name }}</h3>
 
             @if(auth()->user()->hasPermission('tracking_progress', 'edit_project'))
-                <a href="{{ route('projects.edit', $project) }}" class="btn btn-primary d-flex align-items-center gap-2 fw-medium">
-                    <i class="bi bi-pencil"></i> Edit Project
-                </a>
+                <form action="{{ route('projects.update-status', $project) }}" method="POST" class="d-inline" data-confirm="Ubah status project ini?" data-confirm-label="Ubah Status" data-confirm-revert>
+                    @csrf
+                    @method('PATCH')
+                    <select name="status" class="form-select form-select-sm border-0 bg-light fw-semibold u-w-auto" onchange="this.form.requestSubmit()">
+                        @foreach(\App\Models\Project::STATUS_LABELS as $s => $label)
+                            <option value="{{ $s }}" @selected($project->status === $s)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </form>
+            @else
+                <span class="badge bg-success-subtle text-success">{{ \App\Models\Project::STATUS_LABELS[$project->status] ?? $project->status }}</span>
             @endif
+        </div>
+
+        <div class="project-header-row">
+            <p class="text-muted small m-0">Kelola informasi project, tim, barang, dan dokumen.</p>
+
+            <div class="project-actions">
+                @if($notifyUsers->isNotEmpty())
+                    <button type="button" class="btn btn-outline-primary d-flex align-items-center justify-content-center gap-2 fw-medium" data-bs-toggle="modal" data-bs-target="#projectNotifyModal">
+                        <i class="bi bi-bell"></i> Notifikasi
+                    </button>
+                @endif
+
+                @if(auth()->user()->hasPermission('surat_jalan', 'view'))
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary d-flex align-items-center justify-content-center gap-2 fw-medium dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-file-earmark-text"></i> Surat Jalan
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            @if(auth()->user()->isSuperAdmin())
+                                <li><a class="dropdown-item" href="{{ route('surat-jalan.create', $project) }}"><i class="bi bi-plus-lg me-1"></i> Buat Surat Jalan</a></li>
+                            @endif
+                            <li>
+                                <a class="dropdown-item go-to-surat-jalan-tab" href="#tab-suratjalan">
+                                    <i class="bi bi-eye me-1"></i> Lihat Surat Jalan
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                @endif
+
+                @if(auth()->user()->hasPermission('tracking_progress', 'delete_project'))
+                    <form action="{{ route('projects.archive', $project) }}" method="POST" data-confirm="Simpan arsip project ini (PDF) ke folder project di Integrasi Data?" data-confirm-label="Arsipkan">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-primary d-flex align-items-center justify-content-center gap-2 fw-medium w-100">
+                            <i class="bi bi-archive"></i> Arsipkan
+                        </button>
+                    </form>
+                @endif
+
+                @if(auth()->user()->hasPermission('tracking_progress', 'edit_project'))
+                    <a href="{{ route('projects.edit', $project) }}" class="btn btn-primary d-flex align-items-center justify-content-center gap-2 fw-medium">
+                        <i class="bi bi-pencil"></i> Edit
+                    </a>
+                @endif
+            </div>
         </div>
     </div>
 
@@ -286,7 +280,7 @@
                             <span class="fw-bold">Data Keuangan</span>
                             <span class="d-flex align-items-center gap-2 text-nowrap">
                                 <span id="financeSummary" class="small {{ $financeOpen ? 'd-none' : '' }}">
-                                    <span class="text-muted">Laba Bersih</span>
+                                    <span class="text-muted d-none d-sm-inline">Laba Bersih</span>
                                     <span class="fw-bold {{ $project->profit >= 0 ? 'text-success' : 'text-danger' }}">{{ \App\Support\Money::formatRupiah($project->profit) }}</span>
                                 </span>
                                 <i class="bi {{ $financeOpen ? 'bi-chevron-up' : 'bi-chevron-down' }} finance-toggle-icon" aria-hidden="true"></i>

@@ -253,6 +253,20 @@ button:focus-visible,
 .page-back { display: inline-flex; align-items: center; gap: .35rem; margin-bottom: .35rem; font-size: .875rem; color: var(--c-muted); text-decoration: none; }
 .page-back:hover { color: var(--c-primary); }
 
+/* Header Detail Project: keterangan kiri, tombol kanan; wrap hanya bila lebar tidak cukup.
+   HP (<768px): tombol grid 2 kolom lebar penuh, tidak pernah melebihi layar. */
+.project-title { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 767.98px) { .project-title { font-size: 1.375rem; } }
+.project-header-row { display: flex; flex-direction: column; gap: .75rem; }
+.project-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; }
+.project-actions > * { min-width: 0; }
+.project-actions .btn { width: 100%; white-space: nowrap; }
+@media (min-width: 768px) {
+    .project-header-row { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+    .project-actions { display: flex; gap: .5rem; margin-left: auto; }
+    .project-actions .btn { width: auto; }
+}
+
 /* --- Panel/Card umum pengganti card polos --- */
 .app-panel {
     background: var(--bg-white);
