@@ -426,13 +426,26 @@ button:focus-visible,
     text-decoration: none;
 }
 
-/* Wadah logo+teks header mobile: boleh menyusut/truncate, tetapi selalu menyisakan ruang untuk tombol tutup (X). */
+/* Wadah logo+teks header mobile: mengisi seluruh sisa lebar di kiri tombol tutup (X).
+   container-type memungkinkan ukuran teks mengikuti lebar wadah (satuan cqw di bawah). */
 .sidebar-logo-wrap {
     display: flex;
     align-items: center;
     gap: .6rem;
-    min-width: 0; /* WAJIB agar text-truncate anaknya benar-benar bekerja di flex child */
-    max-width: calc(100% - 48px);
+    flex: 1 1 0%;
+    min-width: 0; /* WAJIB agar teks anaknya boleh menyusut */
+    container-type: inline-size;
+}
+
+/* Teks brand mobile: ukuran menyesuaikan lebar wadah dan jumlah huruf (--brand-chars dari blade), batas 12,5-21px.
+   74px = lebar logo + jarak; .66 = perkiraan lebar rata-rata huruf (em). Terlalu panjang: turun maks. 2 baris. */
+.sidebar-logo-wrap .sidebar-brand-text {
+    font-size: 1rem; /* cadangan bila cqw tidak didukung browser */
+    font-size: clamp(.78rem, calc((100cqw - 74px) / (var(--brand-chars, 22) * .66)), 1.3rem);
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 /* .sidebar-divider satu-satunya sumber margin garis ini; jangan digabung utility Bootstrap

@@ -3,7 +3,7 @@
 <div class="offcanvas-header d-lg-none px-3 pt-3 pb-2">
     <a href="{{ route('dashboard') }}" class="sidebar-logo-wrap text-decoration-none" id="appSidebarLabel">
         <img src="{{ asset('image/logo1.png') }}" alt="Logo {{ \App\Models\AppSetting::get('company_name') }}" class="sidebar-logo-mobile">
-        <span class="sidebar-brand-text">{{ \App\Models\AppSetting::get('company_name') }}</span>
+        <span class="sidebar-brand-text" style="--brand-chars: {{ max(1, mb_strlen((string) \App\Models\AppSetting::get('company_name'))) }}">{{ \App\Models\AppSetting::get('company_name') }}</span>
     </a>
     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#appSidebar" aria-label="Tutup menu"></button>
 </div>
