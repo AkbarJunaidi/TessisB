@@ -91,6 +91,10 @@ class FolderController extends Controller
         // Ambil seluruh berkas bersama yang diunggah ke dalam folder ini
         $files = File::with(['user', 'lockedBy'])
             ->where('folder_id', $folder->id)
+            ->when(
+                !Auth::user()->hasPermission('finance', 'view'),
+                fn ($q) => $q->where('file_path', 'not like', File::ARCHIVE_DIR . '/%')
+            )
             ->orderBy('file_name')
             ->get();
 

@@ -178,6 +178,11 @@ class FileService
             return false;
         }
 
+        // Arsip project memuat data keuangan: hanya untuk yang boleh melihat Data Keuangan.
+        if ($file->isFinancialArchive() && !$user->hasPermission('finance', 'view')) {
+            return false;
+        }
+
         return !$file->isPrivate() || (int) $file->user_id === (int) $user->id;
     }
 

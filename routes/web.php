@@ -232,6 +232,9 @@ Route::middleware('auth')->group(function () {
         Route::patch('projects/{project}/update-status', [ProjectController::class, 'updateStatus'])
             ->name('projects.update-status');
 
+        Route::post('projects/{project}/archive', [ProjectController::class, 'archive'])
+            ->name('projects.archive');
+
         Route::post('projects/{project}/lists', [ProjectController::class, 'storeList'])
             ->name('projects.lists.store');
 

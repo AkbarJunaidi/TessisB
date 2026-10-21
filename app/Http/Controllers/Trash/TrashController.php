@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Trash;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Trash\TrashFilterRequest;
+use App\Models\Project;
+use App\Services\Project\ProjectArchiveService;
 use App\Services\Trash\TrashService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -16,7 +18,8 @@ use RuntimeException;
 class TrashController extends Controller
 {
     public function __construct(
-        protected TrashService $trashService
+        protected TrashService $trashService,
+        protected ProjectArchiveService $archiveService
     ) {}
 
     /**
@@ -89,6 +92,17 @@ class TrashController extends Controller
         }
 
         try {
+            // Arsip dibuat lebih dulu; bila gagal (RuntimeException), project tidak dihapus.
+            if ($type === 'project' && $request->boolean('archive')) {
+                $project = Project::onlyTrashed()->findOrFail($id);
+
+                try {
+                    $this->archiveService->createArchive($project);
+                } catch (RuntimeException $e) {
+                    throw new RuntimeException($e->getMessage() . ' Project belum dihapus.', 0, $e);
+                }
+            }
+
             $result = $this->trashService->forceDelete($type, $id);
 
             $message = "Data \"{$result['name']}\" berhasil dihapus permanen.";

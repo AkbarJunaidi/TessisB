@@ -122,6 +122,14 @@ class File extends Model
             : 'generate';
     }
 
+    /** Folder penyimpanan arsip project (PDF berisi data keuangan; hanya untuk yang boleh melihat Data Keuangan). */
+    public const ARCHIVE_DIR = 'arsip-project';
+
+    public function isFinancialArchive(): bool
+    {
+        return Str::startsWith((string) $this->file_path, self::ARCHIVE_DIR . '/');
+    }
+
     /**
      * Label asal file untuk ditampilkan, mis. "Diunggah" / "Digenerate - Surat Jalan".
      */
@@ -136,6 +144,7 @@ class File extends Model
         return match ($dir) {
             'surat-jalan' => 'Digenerate - Surat Jalan',
             'kwitansi'    => 'Digenerate - Kwitansi',
+            self::ARCHIVE_DIR => 'Digenerate - Arsip Project',
             default       => 'Digenerate',
         };
     }

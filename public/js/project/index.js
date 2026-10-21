@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             document.getElementById('modal-project-name').textContent = name;
             document.getElementById('deleteProjectForm').action = `/projects/${id}`;
+            document.getElementById('archiveProjectCheck').checked = true;
 
             // Reset & cek status pengembalian barang setiap kali modal dibuka
             okEl.classList.add('d-none');

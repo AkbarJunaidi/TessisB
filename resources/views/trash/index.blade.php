@@ -201,6 +201,21 @@
                 <small class="text-danger d-block mt-3">
                     <i class="bi bi-info-circle me-1"></i>Data yang sudah dihapus permanen <strong>tidak dapat dipulihkan lagi</strong>.
                 </small>
+
+                {{-- Khusus tipe Project: peringatan dan opsi arsip (ditampilkan lewat trash/index.js). --}}
+                <div id="forceDeleteProjectBox" class="d-none mt-3">
+                    <div class="alert alert-warning small mb-2">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        Ikut terhapus permanen: <strong>transaksi keuangan, kwitansi, surat jalan, tugas, catatan, kru, dan booking alat</strong>.
+                        Pembelian terkait tetap ada, tetapi pembayarannya tidak lagi tercatat di buku kas. Dokumen di folder project tetap ada.
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="forceDeleteArchiveCheck" checked>
+                        <label class="form-check-label small" for="forceDeleteArchiveCheck">
+                            Simpan arsip project (PDF) ke folder project di Integrasi Data sebelum dihapus
+                        </label>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer bg-light border-top p-3">
                 <button type="button" class="btn btn-secondary px-3 fw-medium" data-bs-dismiss="modal">Batal</button>

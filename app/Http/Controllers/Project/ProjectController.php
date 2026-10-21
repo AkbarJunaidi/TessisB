@@ -9,6 +9,7 @@ use App\Http\Requests\Project\ProjectRequest;
 use App\Models\Project;
 use App\Services\Inventory\LocationService;
 use App\Services\Notification\NotificationService;
+use App\Services\Project\ProjectArchiveService;
 use App\Services\Project\ProjectCrewService;
 use App\Services\Project\ProjectFinanceService;
 use App\Services\Project\ProjectService;
@@ -177,7 +178,7 @@ class ProjectController extends Controller
         );
     }
 
-    public function destroy(Project $project): RedirectResponse
+    public function destroy(Request $request, Project $project, ProjectArchiveService $archiveService): RedirectResponse
     {
         abort_unless(
             Auth::user()?->hasPermission('tracking_progress', 'delete_project'),
@@ -185,11 +186,40 @@ class ProjectController extends Controller
             'Anda tidak memiliki hak akses untuk menghapus project.'
         );
 
+        // Arsip dibuat lebih dulu; bila gagal, project tidak dihapus.
+        if ($request->boolean('archive')) {
+            try {
+                $archiveService->createArchive($project);
+            } catch (\RuntimeException $e) {
+                return back()->with('error', $e->getMessage() . ' Project belum dihapus.');
+            }
+        }
+
         $this->projectService->deleteProject($project);
 
         return redirect()
             ->route('projects.index')
             ->with('success', 'Project berhasil dihapus.');
+    }
+
+    /**
+     * Membuat arsip PDF project di folder project (Integrasi Data) tanpa menghapus project.
+     */
+    public function archive(Project $project, ProjectArchiveService $archiveService): RedirectResponse
+    {
+        abort_unless(
+            Auth::user()?->hasPermission('tracking_progress', 'delete_project'),
+            403,
+            'Anda tidak memiliki hak akses untuk mengarsipkan project.'
+        );
+
+        try {
+            $archiveService->createArchive($project);
+        } catch (\RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', 'Arsip project tersimpan di folder project (Integrasi Data).');
     }
 
     /**

@@ -66,6 +66,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.getElementById('force-delete-item-name').textContent = button.getAttribute('data-name');
         document.getElementById('force-delete-item-type').textContent = button.getAttribute('data-type-label');
+
+        // Peringatan dan opsi arsip hanya untuk Project.
+        document.getElementById('forceDeleteProjectBox').classList.toggle('d-none', activeType !== 'project');
+        document.getElementById('forceDeleteArchiveCheck').checked = true;
     });
 
     // Kirim aksi pulihkan/hapus permanen lewat fetch lalu perbarui UI tanpa reload.
@@ -123,8 +127,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('forceDeleteTrashSubmit').addEventListener('click', function () {
         if (!activeType || !activeId) return;
+        const archive = activeType === 'project' && document.getElementById('forceDeleteArchiveCheck').checked ? '?archive=1' : '';
         submitAction(
-            `/trash/${activeType}/${activeId}`,
+            `/trash/${activeType}/${activeId}${archive}`,
             'DELETE',
             this,
             forceDeleteModal,

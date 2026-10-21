@@ -54,6 +54,22 @@
                 </div>
             @endif
 
+            @if(auth()->user()->hasPermission('tracking_progress', 'delete_project'))
+                <div class="dropdown">
+                    <button type="button" class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center gap-2 fw-medium" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-three-dots"></i> Lainnya
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                        <li>
+                            <form action="{{ route('projects.archive', $project) }}" method="POST" data-confirm="Simpan arsip project ini (PDF) ke folder project di Integrasi Data?" data-confirm-label="Arsipkan">
+                                @csrf
+                                <button type="submit" class="dropdown-item"><i class="bi bi-archive me-2"></i>Arsipkan Project</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            @endif
+
             @if(auth()->user()->hasPermission('tracking_progress', 'edit_project'))
                 <a href="{{ route('projects.edit', $project) }}" class="btn btn-primary d-flex align-items-center gap-2 fw-medium">
                     <i class="bi bi-pencil"></i> Edit Project

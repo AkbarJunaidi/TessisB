@@ -276,8 +276,15 @@
                     </div>
 
                     <small class="text-danger d-block mt-3">
-                        <i class="bi bi-info-circle me-1"></i>Data ini akan dipindahkan ke Sampah dan masih dapat dipulihkan kembali.
+                        <i class="bi bi-info-circle me-1"></i>Data ini akan dipindahkan ke Sampah dan masih dapat dipulihkan kembali. Selama di Sampah, data keuangan project ini tidak tampil di halaman Keuangan.
                     </small>
+
+                    <div class="form-check mt-3">
+                        <input class="form-check-input" type="checkbox" name="archive" value="1" id="archiveProjectCheck" checked>
+                        <label class="form-check-label small" for="archiveProjectCheck">
+                            Simpan arsip project (PDF) ke folder project di Integrasi Data
+                        </label>
+                    </div>
 
                     <div id="return-status-loading" class="text-muted small mt-3 d-none">
                         <span class="spinner-border spinner-border-sm me-1"></span> Memeriksa status pengembalian barang...
