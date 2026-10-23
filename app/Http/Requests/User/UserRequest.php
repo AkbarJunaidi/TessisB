@@ -29,7 +29,7 @@ class UserRequest extends FormRequest
             'name' => [
                 'required',
                 'string',
-                'max:255',
+                \App\Support\TextLimits::max(\App\Support\TextLimits::ENTITY_NAME, 'Nama', $user instanceof \App\Models\User ? $user->name : null),
             ],
 
             'email' => [

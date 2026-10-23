@@ -13,6 +13,7 @@
             id="name"
             class="form-control @error('name') is-invalid @enderror"
             value="{{ old('name', $user->name ?? '') }}"
+            maxlength="{{ \App\Support\TextLimits::ENTITY_NAME }}"
             required
         >
 

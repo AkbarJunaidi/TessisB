@@ -24,10 +24,10 @@ class ProjectRequest extends FormRequest
                     $fail('Nama project maksimal ' . \App\Models\Project::NAME_MAX_LENGTH . ' karakter.');
                 }
             }],
-            'client'      => ['required', 'string', 'max:255'],
+            'client'      => ['required', 'string', \App\Support\TextLimits::max(\App\Support\TextLimits::ENTITY_NAME, 'Nama client', $this->route('project')?->client)],
             'contact_id'  => ['nullable', 'integer', 'exists:contacts,id'],
-            'pic'         => ['required', 'string', 'max:255'],
-            'company'     => ['nullable', 'string', 'max:255'],
+            'pic'         => ['required', 'string', \App\Support\TextLimits::max(\App\Support\TextLimits::ENTITY_NAME, 'PIC', $this->route('project')?->pic)],
+            'company'     => ['nullable', 'string', \App\Support\TextLimits::max(\App\Support\TextLimits::ENTITY_NAME, 'Perusahaan', $this->route('project')?->company)],
             'email'       => ['nullable', 'email', 'max:255'],
             'phone'       => ['nullable', 'string', 'max:30'],
             'category'    => [

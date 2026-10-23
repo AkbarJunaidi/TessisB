@@ -26,12 +26,17 @@ class InventoryRequest extends FormRequest
         // Kondisi untuk membedakan validasi antara Create (POST) dan Update (PUT/PATCH)
         $inventoryId = $this->route('inventory') ? ($this->route('inventory')->id ?? $this->route('inventory')) : null;
 
+        // Nilai lama yang lebih panjang dari batas baru boleh tetap selama tidak diubah.
+        $current = $this->route('inventory') instanceof \App\Models\Inventory ? $this->route('inventory') : null;
+        $attrNames = $current ? $current->attributes()->pluck('attribute_name')->all() : [];
+        $attrValues = $current ? $current->attributes()->pluck('attribute_value')->all() : [];
+
         $rules = [
-            'name' => ['required', 'string', 'max:100'],
+            'name' => ['required', 'string', \App\Support\TextLimits::max(\App\Support\TextLimits::ITEM_NAME, 'Nama barang', $current?->name)],
             'serial_number' => [
                 'required',
                 'string',
-                'max:255',
+                \App\Support\TextLimits::max(\App\Support\TextLimits::SERIAL, 'Serial number', $current?->serial_number),
                 // Mengizinkan nomor seri yang sama diabaikan jika sedang melakukan proses edit data sendiri
                 'unique:inventories,serial_number,' . $inventoryId
             ],
@@ -42,7 +47,7 @@ class InventoryRequest extends FormRequest
                 // Membatasi status hanya pada pilihan yang telah ditentukan
                 Rule::in(InventoryStatus::all())
             ],
-            'brand' => ['nullable', 'string', 'max:100'],
+            'brand' => ['nullable', 'string', \App\Support\TextLimits::max(\App\Support\TextLimits::BRAND, 'Merek', $current?->brand)],
             'quantity_total' => [
                 'required',
                 'integer',
@@ -70,8 +75,8 @@ class InventoryRequest extends FormRequest
             // Dibatasi maksimal 8 baris agar tabel tetap muat 1 halaman saat dicetak ke laporan PDF
             'use_attributes' => ['nullable', 'in:1,0,true,false'],
             'attributes' => ['nullable', 'array', 'max:8'],
-            'attributes.*.name' => ['nullable', 'string', 'max:40'],
-            'attributes.*.value' => ['nullable', 'string', 'max:100'],
+            'attributes.*.name' => ['nullable', 'string', \App\Support\TextLimits::max(\App\Support\TextLimits::ATTR_NAME, 'Nama informasi', $attrNames)],
+            'attributes.*.value' => ['nullable', 'string', \App\Support\TextLimits::max(\App\Support\TextLimits::ATTR_VALUE, 'Nilai informasi', $attrValues)],
 
             // Jadwal servis (opsional): interval hari dan/atau interval pemakaian (per peminjaman)
             'use_servis' => ['nullable', 'in:1,0,true,false'],

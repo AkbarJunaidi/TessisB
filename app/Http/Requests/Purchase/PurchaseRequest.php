@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Purchase;
 
+use App\Models\Inventory;
 use App\Models\Purchase;
+use App\Support\TextLimits;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -41,6 +43,14 @@ class PurchaseRequest extends FormRequest
 
     public function rules(): array
     {
+        // Nama/merek lama (item pembelian ini, atau barang Inventory yang dipilih) boleh tetap walau lebih panjang dari batas baru.
+        $purchase = $this->route('purchase');
+        $stockIds = collect($this->input('items'))->pluck('inventory_id')->filter(fn ($id) => is_numeric($id));
+        $stock = Inventory::whereIn('id', $stockIds)->get(['name', 'brand']);
+        $saved = $purchase instanceof Purchase ? $purchase->items()->get(['name', 'brand']) : collect();
+        $legacyNames = $stock->pluck('name')->merge($saved->pluck('name'))->all();
+        $legacyBrands = $stock->pluck('brand')->merge($saved->pluck('brand'))->all();
+
         return [
             'vendor_id'         => ['required', Rule::exists('contacts', 'id')->where('is_vendor', true)],
             'project_id'        => ['nullable', Rule::exists('projects', 'id')->whereNull('deleted_at')],
@@ -53,7 +63,7 @@ class PurchaseRequest extends FormRequest
             'remove_attachment' => ['nullable', 'boolean'],
 
             'items'                => ['required', 'array', 'min:1', 'max:50'],
-            'items.*.name'         => ['required', 'string', 'max:150'],
+            'items.*.name'         => ['required', 'string', TextLimits::max(TextLimits::ITEM_NAME, 'Nama item', $legacyNames)],
             'items.*.qty'          => ['required', 'integer', 'min:1', 'max:' . \App\Support\Limits::qty()],
             'items.*.unit_price'   => ['required', 'numeric', 'min:0', 'max:' . \App\Support\Limits::money()],
             'items.*.stock_mode'   => ['required', Rule::in(['none', 'existing', 'new'])],
@@ -62,7 +72,7 @@ class PurchaseRequest extends FormRequest
                 'required_if:items.*.stock_mode,existing',
                 Rule::exists('inventories', 'id')->whereNull('deleted_at'),
             ],
-            'items.*.brand'        => ['nullable', 'string', 'max:100'],
+            'items.*.brand'        => ['nullable', 'string', TextLimits::max(TextLimits::BRAND, 'Merek', $legacyBrands)],
         ];
     }
 

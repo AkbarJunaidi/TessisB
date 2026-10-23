@@ -225,7 +225,7 @@
                         <div class="col-md-8 position-relative">
                             <label for="locName" class="form-label fw-medium text-secondary">Nama Lokasi</label>
                             <input type="text" class="form-control" id="locName" name="name" value="{{ old('name') }}"
-                                   required maxlength="150" autocomplete="off" placeholder="Mis. Kantor A, Gedung Serbaguna X">
+                                   required maxlength="{{ \App\Support\TextLimits::LOCATION_NAME }}" autocomplete="off" placeholder="Mis. Kantor A, Gedung Serbaguna X">
                             {{-- Saran lokasi yang sudah ada (pola sama dengan autocomplete Client) --}}
                             <div id="locSuggestions" class="list-group position-absolute w-100 shadow-sm d-none u-z-1056 u-maxh-240px u-oy-auto"></div>
                             <div class="form-text small d-none" id="locSuggestHint">Sudah ada lokasi serupa. Pilih salah satu untuk mengubahnya, atau lanjut mengetik untuk menambah lokasi baru.</div>

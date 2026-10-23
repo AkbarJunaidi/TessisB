@@ -23,7 +23,7 @@
 
                 <div class="mb-3">
                     <label for="title" class="form-label fw-semibold small text-secondary">Judul Task <span class="text-danger">*</span></label>
-                    <input type="text" name="title" id="title" class="form-control @error('title') is-invalid @enderror" placeholder="Contoh: Implementasi Form Validasi Input Gambar" value="{{ old('title') }}" required autofocus>
+                    <input type="text" name="title" id="title" class="form-control @error('title') is-invalid @enderror" placeholder="Contoh: Implementasi Form Validasi Input Gambar" value="{{ old('title') }}" maxlength="{{ \App\Support\TextLimits::ENTITY_NAME }}" required autofocus>
                     @error('title')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror

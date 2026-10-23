@@ -40,13 +40,14 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
 
+        // maxlength mengikuti App\Support\TextLimits (ATTR_NAME 30, ATTR_VALUE 60).
         const newRow = document.createElement('tr');
         newRow.innerHTML = `
             <td class="cell-block" data-label="Nama Informasi">
-                <input type="text" name="attributes[${rowIndex}][name]" class="form-control form-control-sm" maxlength="40" placeholder="Contoh: Processor / RAM / Panjang">
+                <input type="text" name="attributes[${rowIndex}][name]" class="form-control form-control-sm" maxlength="30" placeholder="Contoh: Processor / RAM / Panjang">
             </td>
             <td class="cell-block" data-label="Nilai">
-                <input type="text" name="attributes[${rowIndex}][value]" class="form-control form-control-sm" maxlength="100" placeholder="Contoh: Ryzen 7 / 16 GB / 5 Meter">
+                <input type="text" name="attributes[${rowIndex}][value]" class="form-control form-control-sm" maxlength="60" placeholder="Contoh: Ryzen 7 / 16 GB / 5 Meter">
             </td>
             <td class="text-center cell-block" data-label="Aksi">
                 <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row" title="Hapus Baris" aria-label="Hapus baris"><i class="bi bi-trash"></i><span class="d-md-none ms-1">Hapus</span></button>

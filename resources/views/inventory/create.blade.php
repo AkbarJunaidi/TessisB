@@ -48,7 +48,7 @@
                                placeholder="Contoh: Laptop ASUS ROG Strix"
                                value="{{ old('name') }}"
                                required
-                               maxlength="100"
+                               maxlength="{{ \App\Support\TextLimits::ITEM_NAME }}"
                                autofocus>
                         @error('name')
                             <div class="invalid-feedback">
@@ -63,6 +63,7 @@
                         <input type="text"
                                name="serial_number"
                                id="serial_number"
+                               maxlength="{{ \App\Support\TextLimits::SERIAL }}"
                                class="form-control font-monospace @error('serial_number') is-invalid @enderror"
                                placeholder="Contoh: SN-ROG-2026XYZ"
                                value="{{ old('serial_number') }}"
@@ -116,7 +117,7 @@
                                id="brand"
                                class="form-control @error('brand') is-invalid @enderror"
                                placeholder="Contoh: ASUS / Logitech / Generic"
-                               maxlength="100"
+                               maxlength="{{ \App\Support\TextLimits::BRAND }}"
                                value="{{ old('brand') }}">
                         @error('brand')
                             <div class="invalid-feedback">
@@ -259,7 +260,7 @@
                                                 <input type="text"
                                                        name="attributes[{{ $index }}][name]"
                                                        class="form-control form-control-sm"
-                                                       maxlength="40"
+                                                       maxlength="{{ \App\Support\TextLimits::ATTR_NAME }}"
                                                        value="{{ $attr['name'] ?? '' }}"
                                                        placeholder="Contoh: Processor / RAM / Panjang">
                                             </td>
@@ -267,7 +268,7 @@
                                                 <input type="text"
                                                        name="attributes[{{ $index }}][value]"
                                                        class="form-control form-control-sm"
-                                                       maxlength="100"
+                                                       maxlength="{{ \App\Support\TextLimits::ATTR_VALUE }}"
                                                        value="{{ $attr['value'] ?? '' }}"
                                                        placeholder="Contoh: Ryzen 7 / 16 GB / 5 Meter">
                                             </td>
@@ -280,10 +281,10 @@
                                     <!-- Default 1 Baris Kosong jika memilih Ya -->
                                     <tr>
                                         <td class="cell-block" data-label="Nama Informasi">
-                                            <input type="text" name="attributes[0][name]" class="form-control form-control-sm" maxlength="40" placeholder="Contoh: Processor / RAM / Panjang">
+                                            <input type="text" name="attributes[0][name]" class="form-control form-control-sm" maxlength="{{ \App\Support\TextLimits::ATTR_NAME }}" placeholder="Contoh: Processor / RAM / Panjang">
                                         </td>
                                         <td class="cell-block" data-label="Nilai">
-                                            <input type="text" name="attributes[0][value]" class="form-control form-control-sm" maxlength="100" placeholder="Contoh: Ryzen 7 / 16 GB / 5 Meter">
+                                            <input type="text" name="attributes[0][value]" class="form-control form-control-sm" maxlength="{{ \App\Support\TextLimits::ATTR_VALUE }}" placeholder="Contoh: Ryzen 7 / 16 GB / 5 Meter">
                                         </td>
                                         <td class="text-center cell-block" data-label="Aksi">
                                             <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row" title="Hapus Baris" aria-label="Hapus baris"><i class="bi bi-trash"></i><span class="d-md-none ms-1">Hapus</span></button>

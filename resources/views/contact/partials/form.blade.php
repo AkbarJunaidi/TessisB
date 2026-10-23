@@ -14,6 +14,7 @@
             class="form-control @error('name') is-invalid @enderror"
             value="{{ old('name', $contact->name ?? '') }}"
             placeholder="Contoh: Budi Santoso"
+            maxlength="{{ \App\Support\TextLimits::ENTITY_NAME }}"
             required
         >
 
@@ -36,6 +37,7 @@
             class="form-control @error('company') is-invalid @enderror"
             value="{{ old('company', $contact->company ?? '') }}"
             placeholder="Contoh: PT Matahari Indonesia Jaya Abadi"
+            maxlength="{{ \App\Support\TextLimits::ENTITY_NAME }}"
         >
 
         @error('company')

@@ -48,7 +48,7 @@
                                class="form-control @error('name') is-invalid @enderror"
                                value="{{ old('name', $inventory->name) }}"
                                required
-                               maxlength="100">
+                               maxlength="{{ \App\Support\TextLimits::ITEM_NAME }}">
                         @error('name')
                             <div class="invalid-feedback">
                                 <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ $message }}
@@ -62,6 +62,7 @@
                         <input type="text"
                                name="serial_number"
                                id="serial_number"
+                               maxlength="{{ \App\Support\TextLimits::SERIAL }}"
                                class="form-control font-monospace @error('serial_number') is-invalid @enderror"
                                value="{{ old('serial_number', $inventory->serial_number) }}"
                                required>
@@ -118,7 +119,7 @@
                                id="brand"
                                class="form-control @error('brand') is-invalid @enderror"
                                placeholder="Contoh: ASUS / Logitech / Generic"
-                               maxlength="100"
+                               maxlength="{{ \App\Support\TextLimits::BRAND }}"
                                value="{{ old('brand', $inventory->brand) }}">
                         @error('brand')
                             <div class="invalid-feedback">
@@ -365,7 +366,7 @@
                                                 <input type="text"
                                                        name="attributes[{{ $index }}][name]"
                                                        class="form-control form-control-sm"
-                                                       maxlength="40"
+                                                       maxlength="{{ \App\Support\TextLimits::ATTR_NAME }}"
                                                        value="{{ old("attributes.{$index}.name", $attr->attribute_name) }}"
                                                        placeholder="Contoh: Processor / RAM / Panjang">
                                             </td>
@@ -373,7 +374,7 @@
                                                 <input type="text"
                                                        name="attributes[{{ $index }}][value]"
                                                        class="form-control form-control-sm"
-                                                       maxlength="100"
+                                                       maxlength="{{ \App\Support\TextLimits::ATTR_VALUE }}"
                                                        value="{{ old("attributes.{$index}.value", $attr->attribute_value) }}"
                                                        placeholder="Contoh: Ryzen 7 / 16 GB / 5 Meter">
                                             </td>
@@ -386,10 +387,10 @@
                                     <!-- Default 1 Baris Kosong jika memilih Ya -->
                                     <tr>
                                         <td class="cell-block" data-label="Nama Informasi">
-                                            <input type="text" name="attributes[0][name]" class="form-control form-control-sm" maxlength="40" placeholder="Contoh: Processor / RAM / Panjang">
+                                            <input type="text" name="attributes[0][name]" class="form-control form-control-sm" maxlength="{{ \App\Support\TextLimits::ATTR_NAME }}" placeholder="Contoh: Processor / RAM / Panjang">
                                         </td>
                                         <td class="cell-block" data-label="Nilai">
-                                            <input type="text" name="attributes[0][value]" class="form-control form-control-sm" maxlength="100" placeholder="Contoh: Ryzen 7 / 16 GB / 5 Meter">
+                                            <input type="text" name="attributes[0][value]" class="form-control form-control-sm" maxlength="{{ \App\Support\TextLimits::ATTR_VALUE }}" placeholder="Contoh: Ryzen 7 / 16 GB / 5 Meter">
                                         </td>
                                         <td class="text-center cell-block" data-label="Aksi">
                                             <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row" title="Hapus Baris" aria-label="Hapus baris"><i class="bi bi-trash"></i><span class="d-md-none ms-1">Hapus</span></button>
@@ -467,10 +468,10 @@
             const newRow = document.createElement('tr');
             newRow.innerHTML = `
                 <td class="cell-block" data-label="Nama Informasi">
-                    <input type="text" name="attributes[${rowIndex}][name]" class="form-control form-control-sm" maxlength="40" placeholder="Contoh: Processor / RAM / Panjang">
+                    <input type="text" name="attributes[${rowIndex}][name]" class="form-control form-control-sm" maxlength="{{ \App\Support\TextLimits::ATTR_NAME }}" placeholder="Contoh: Processor / RAM / Panjang">
                 </td>
                 <td class="cell-block" data-label="Nilai">
-                    <input type="text" name="attributes[${rowIndex}][value]" class="form-control form-control-sm" maxlength="100" placeholder="Contoh: Ryzen 7 / 16 GB / 5 Meter">
+                    <input type="text" name="attributes[${rowIndex}][value]" class="form-control form-control-sm" maxlength="{{ \App\Support\TextLimits::ATTR_VALUE }}" placeholder="Contoh: Ryzen 7 / 16 GB / 5 Meter">
                 </td>
                 <td class="text-center cell-block" data-label="Aksi">
                     <button type="button" class="btn btn-sm btn-outline-danger btn-remove-row" title="Hapus Baris" aria-label="Hapus baris"><i class="bi bi-trash"></i><span class="d-md-none ms-1">Hapus</span></button>

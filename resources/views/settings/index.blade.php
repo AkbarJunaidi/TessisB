@@ -47,22 +47,22 @@
                 <h6 class="fw-bold mb-3"><i class="bi bi-building me-2"></i>Profil Perusahaan</h6>
                 <div class="row g-3">
                     @foreach([
-                        ['company_name', 'Nama Perusahaan', 'col-md-6', true],
-                        ['company_tagline', 'Tagline Nama', 'col-md-6', false],
-                        ['company_address', 'Alamat', 'col-12', true],
-                        ['company_phone', 'Telepon', 'col-md-6', false],
-                        ['company_whatsapp', 'WhatsApp', 'col-md-6', false],
-                        ['company_footer_tagline', 'Tagline Footer Dokumen', 'col-12', false],
-                        ['company_footer_contact', 'Kontak Footer Dokumen', 'col-12', false],
-                        ['company_website', 'Website', 'col-md-4', false],
-                        ['company_instagram', 'Instagram', 'col-md-4', false],
-                        ['company_tiktok', 'TikTok', 'col-md-4', false],
-                    ] as [$field, $label, $col, $required])
+                        ['company_name', 'Nama Perusahaan', 'col-md-6', true, \App\Support\TextLimits::COMPANY_NAME],
+                        ['company_tagline', 'Tagline Nama', 'col-md-6', false, 100],
+                        ['company_address', 'Alamat', 'col-12', true, 255],
+                        ['company_phone', 'Telepon', 'col-md-6', false, 50],
+                        ['company_whatsapp', 'WhatsApp', 'col-md-6', false, 50],
+                        ['company_footer_tagline', 'Tagline Footer Dokumen', 'col-12', false, 150],
+                        ['company_footer_contact', 'Kontak Footer Dokumen', 'col-12', false, 150],
+                        ['company_website', 'Website', 'col-md-4', false, 100],
+                        ['company_instagram', 'Instagram', 'col-md-4', false, 100],
+                        ['company_tiktok', 'TikTok', 'col-md-4', false, 100],
+                    ] as [$field, $label, $col, $required, $max])
                         <div class="{{ $col }}">
                             <label for="{{ $field }}" class="form-label fw-semibold small text-secondary">
                                 {{ $label }} @if($required)<span class="text-danger">*</span>@endif
                             </label>
-                            <input type="text" name="{{ $field }}" id="{{ $field }}" autocomplete="off"
+                            <input type="text" name="{{ $field }}" id="{{ $field }}" autocomplete="off" maxlength="{{ $max }}"
                                    class="form-control @error($field) is-invalid @enderror"
                                    value="{{ $v($field) }}" @if($required) required @endif>
                             @error($field)<div class="invalid-feedback">{{ $message }}</div>@enderror

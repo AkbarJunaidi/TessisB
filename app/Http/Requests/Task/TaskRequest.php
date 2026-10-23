@@ -29,7 +29,7 @@ class TaskRequest extends FormRequest
 
         return [
             'project_id'  => ['required', 'exists:projects,id'],
-            'title'       => ['required', 'string', 'max:255'],
+            'title'       => ['required', 'string', \App\Support\TextLimits::max(\App\Support\TextLimits::ENTITY_NAME, 'Judul task', $this->route('task') instanceof \App\Models\Task ? $this->route('task')->title : null)],
             'description' => ['nullable', 'string'],
             'status'      => [
                 'required',

@@ -420,7 +420,7 @@
                                         @if($needsSerial)
                                             <div class="col-12">
                                                 <label class="form-label small mb-1">Serial number <span class="text-muted">(opsional, bisa diisi nanti)</span></label>
-                                                <input type="text" name="lines[{{ $item->id }}][serial]" class="form-control form-control-sm" maxlength="255" value="{{ old("lines.{$item->id}.serial") }}">
+                                                <input type="text" name="lines[{{ $item->id }}][serial]" class="form-control form-control-sm" maxlength="{{ \App\Support\TextLimits::SERIAL }}" value="{{ old("lines.{$item->id}.serial") }}">
                                             </div>
                                         @endif
                                     </div>

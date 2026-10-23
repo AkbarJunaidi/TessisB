@@ -411,7 +411,7 @@ class InventoryController extends Controller
             'Anda tidak memiliki hak akses untuk mengubah data inventory.'
         );
 
-        $data = $request->validate(['serial_number' => ['required', 'string', 'max:255']], [
+        $data = $request->validate(['serial_number' => ['required', 'string', \App\Support\TextLimits::max(\App\Support\TextLimits::SERIAL, 'Serial number')]], [
             'serial_number.required' => 'Serial number wajib diisi.',
         ]);
 

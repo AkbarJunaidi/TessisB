@@ -45,11 +45,14 @@ class ContactRequest extends FormRequest
      */
     public function rules(): array
     {
+        $contact = $this->route('contact');
+        $contact = $contact instanceof \App\Models\Contact ? $contact : null;
+
         return [
 
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', \App\Support\TextLimits::max(\App\Support\TextLimits::ENTITY_NAME, 'Nama', $contact?->name)],
 
-            'company' => ['nullable', 'string', 'max:255'],
+            'company' => ['nullable', 'string', \App\Support\TextLimits::max(\App\Support\TextLimits::ENTITY_NAME, 'Perusahaan', $contact?->company)],
 
             'phone' => ['nullable', 'string', 'max:30'],
 

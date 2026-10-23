@@ -102,6 +102,7 @@
     .identity-value {
         font-weight: bold;
         color: #111111;
+        word-wrap: break-word;
     }
 
     /* BAGIAN 2: DESKRIPSI */
@@ -151,6 +152,7 @@
     .attr-table td {
         padding: 6px 8px;
         border: 1px solid #e0e0e0;
+        word-wrap: break-word;
     }
     .qr-cell {
         width: 34%;

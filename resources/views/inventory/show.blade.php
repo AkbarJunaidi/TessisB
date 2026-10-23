@@ -667,7 +667,7 @@
                 </div>
                 <div class="modal-body">
                     <label for="serialNumberInput" class="form-label small">Serial number <span class="text-danger">*</span></label>
-                    <input type="text" id="serialNumberInput" name="serial_number" class="form-control" maxlength="255" required>
+                    <input type="text" id="serialNumberInput" name="serial_number" class="form-control" maxlength="{{ \App\Support\TextLimits::SERIAL }}" required>
                     <div class="form-text">QR label dibuat ulang dari serial yang baru.</div>
                 </div>
                 <div class="modal-footer">

@@ -27,7 +27,7 @@ class LocationRequest extends FormRequest
             'name' => [
                 'required',
                 'string',
-                'max:150',
+                \App\Support\TextLimits::max(\App\Support\TextLimits::LOCATION_NAME, 'Nama lokasi', $location instanceof Location ? $location->name : null),
                 // Nama boleh sama selama jenisnya berbeda (mis. "Kantor A" kantor vs lokasi event).
                 Rule::unique('locations', 'name')
                     ->where('jenis', $this->input('jenis'))

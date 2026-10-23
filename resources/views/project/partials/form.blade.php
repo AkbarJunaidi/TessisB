@@ -46,7 +46,7 @@
 
     <div class="col-md-6 position-relative">
         <label for="client" class="form-label fw-semibold small text-secondary">Client <span class="text-danger">*</span></label>
-        <input type="text" name="client" id="client" autocomplete="off"
+        <input type="text" name="client" id="client" autocomplete="off" maxlength="{{ \App\Support\TextLimits::ENTITY_NAME }}"
                class="form-control @error('client') is-invalid @enderror"
                placeholder="Nama client / instansi"
                value="{{ $old('client') }}" required>
@@ -65,7 +65,7 @@
 
     <div class="col-md-6">
         <label for="pic" class="form-label fw-semibold small text-secondary">PIC <span class="text-danger">*</span></label>
-        <input type="text" name="pic" id="pic"
+        <input type="text" name="pic" id="pic" maxlength="{{ \App\Support\TextLimits::ENTITY_NAME }}"
                class="form-control @error('pic') is-invalid @enderror"
                placeholder="Penanggung jawab project"
                value="{{ $old('pic') }}" required>
@@ -74,7 +74,7 @@
 
     <div class="col-md-4">
         <label for="company" class="form-label fw-semibold small text-secondary">Nama Perusahaan</label>
-        <input type="text" name="company" id="company"
+        <input type="text" name="company" id="company" maxlength="{{ \App\Support\TextLimits::ENTITY_NAME }}"
                class="form-control @error('company') is-invalid @enderror"
                placeholder="Contoh: PT Matahari Indonesia Jaya Abadi"
                value="{{ $old('company') }}">

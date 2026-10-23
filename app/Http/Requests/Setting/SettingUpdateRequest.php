@@ -67,7 +67,7 @@ class SettingUpdateRequest extends FormRequest
         $image = ['nullable', 'image', 'mimes:png,jpg,jpeg', 'max:2048'];
 
         return [
-            'company_name'           => ['required', 'string', 'max:100'],
+            'company_name'           => ['required', 'string', \App\Support\TextLimits::max(\App\Support\TextLimits::COMPANY_NAME, 'Nama perusahaan', \App\Models\AppSetting::get('company_name'))],
             'company_tagline'        => ['nullable', 'string', 'max:100'],
             'company_address'        => ['required', 'string', 'max:255'],
             'company_phone'          => ['nullable', 'string', 'max:50'],

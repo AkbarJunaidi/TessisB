@@ -7,7 +7,7 @@
     <div class="row g-2 align-items-end">
         <div class="col-md-4">
             <label class="form-label small mb-1">Nama Item</label>
-            <input type="text" name="items[{{ $i }}][name]" class="form-control form-control-sm item-name" value="{{ $item['name'] ?? '' }}" maxlength="150" required>
+            <input type="text" name="items[{{ $i }}][name]" class="form-control form-control-sm item-name" value="{{ $item['name'] ?? '' }}" maxlength="{{ \App\Support\TextLimits::ITEM_NAME }}" required>
         </div>
         <div class="col-4 col-md-2">
             <label class="form-label small mb-1">Jumlah</label>
@@ -45,7 +45,7 @@
             </select>
         </div>
         <div class="col-md-7 item-new {{ $mode === 'new' ? '' : 'd-none' }}">
-            <input type="text" name="items[{{ $i }}][brand]" class="form-control form-control-sm" value="{{ $item['brand'] ?? '' }}" maxlength="100" placeholder="Brand (opsional). Serial number diisi saat barang diterima.">
+            <input type="text" name="items[{{ $i }}][brand]" class="form-control form-control-sm" value="{{ $item['brand'] ?? '' }}" maxlength="{{ \App\Support\TextLimits::BRAND }}" placeholder="Brand (opsional). Serial number diisi saat barang diterima.">
         </div>
     </div>
 
