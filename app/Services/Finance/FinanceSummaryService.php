@@ -289,14 +289,13 @@ class FinanceSummaryService
     {
         $rows = Project::query()
             ->where('estimated_value', '>', 0)
-            ->withSum(['kwitansis as kwitansi_total' => fn ($q) => $q->where('status', 'Aktif')], 'jumlah')
-            ->withSum(['financeItems as income_total' => fn ($q) => $q->clientPayments()], 'amount')
+            ->withPaymentTotals()
             ->get(['id', 'name', 'client', 'estimated_value'])
             ->map(fn ($p) => [
                 'id'     => $p->id,
                 'name'   => $p->name,
                 'client' => $p->client,
-                'sisa'   => max(0, (float) $p->estimated_value - Project::combinePayments((float) $p->income_total, (float) $p->kwitansi_total)),
+                'sisa'   => max(0, (float) $p->estimated_value - $p->paymentBreakdown()['received']),
             ])
             ->where('sisa', '>', 0);
 

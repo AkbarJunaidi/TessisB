@@ -22,5 +22,7 @@
         </div>
     </div>
 
+    @include('project.partials.kwitansi-confirm-modal')
+
 </div>
 @endsection

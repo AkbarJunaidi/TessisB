@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Buku kas: satu baris = satu transaksi masuk/keluar. project_id boleh kosong (gaji, operasional, dll).
- * source_type terisi bila baris dibuat otomatis oleh Pembelian atau Perbaikan Barang.
+ * source_type terisi bila baris dibuat otomatis oleh Pembelian, Perbaikan Barang, atau Kwitansi.
  */
 class ProjectFinanceItem extends Model
 {
@@ -18,6 +18,7 @@ class ProjectFinanceItem extends Model
 
     public const SOURCE_PURCHASE = 'purchase';
     public const SOURCE_REPAIR   = 'repair';
+    public const SOURCE_KWITANSI = 'kwitansi';
 
     protected $table = 'project_finance_items';
 
@@ -76,6 +77,19 @@ class ProjectFinanceItem extends Model
         return $query->where('type', 'income')->where(self::notRefund());
     }
 
+    /** Pemasukan client yang bersumber dari Kwitansi (baris otomatis atau pemasukan manual yang ditautkan). */
+    public function scopeKwitansiPayments(Builder $query): Builder
+    {
+        return $query->clientPayments()->where('source_type', self::SOURCE_KWITANSI);
+    }
+
+    /** Pemasukan client yang dicatat manual (bukan dari Kwitansi). */
+    public function scopeManualClientPayments(Builder $query): Builder
+    {
+        return $query->clientPayments()
+            ->where(fn ($q) => $q->whereNull('source_type')->orWhere('source_type', '!=', self::SOURCE_KWITANSI));
+    }
+
     /** Syarat "bukan uang kembali pembelian" untuk query builder; $column boleh memuat nama tabel. */
     public static function notRefund(string $column = 'category'): \Closure
     {
@@ -86,5 +100,16 @@ class ProjectFinanceItem extends Model
     public function isAuto(): bool
     {
         return $this->source_type !== null;
+    }
+
+    /** Nama modul asal baris otomatis; null untuk baris manual. */
+    public function sourceLabel(): ?string
+    {
+        return match ($this->source_type) {
+            self::SOURCE_PURCHASE => 'Pembelian',
+            self::SOURCE_REPAIR   => 'Servis',
+            self::SOURCE_KWITANSI => 'Kwitansi',
+            default               => null,
+        };
     }
 }

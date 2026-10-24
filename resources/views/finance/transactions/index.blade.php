@@ -196,6 +196,9 @@
                                         @if($t->source_type === \App\Models\ProjectFinanceItem::SOURCE_PURCHASE)
                                             <a href="{{ route('purchases.show', $t->source_id) }}" class="btn btn-sm btn-outline-secondary"
                                                title="Buka Pembelian" aria-label="Buka pembelian"><i class="bi bi-box-arrow-up-right"></i></a>
+                                        @elseif($t->source_type === \App\Models\ProjectFinanceItem::SOURCE_KWITANSI && $t->project_id)
+                                            <a href="{{ route('kwitansi.show-project', $t->project_id) }}" class="btn btn-sm btn-outline-secondary"
+                                               title="Buka Kwitansi" aria-label="Buka kwitansi"><i class="bi bi-receipt"></i></a>
                                         @elseif($t->source_type === \App\Models\ProjectFinanceItem::SOURCE_REPAIR)
                                             <a href="{{ route('inventory.repairs.show', $t->source_id) }}" class="btn btn-sm btn-outline-secondary"
                                                title="Buka Perbaikan" aria-label="Buka perbaikan"><i class="bi bi-box-arrow-up-right"></i></a>

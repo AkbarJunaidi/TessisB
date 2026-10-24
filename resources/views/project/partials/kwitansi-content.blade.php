@@ -6,52 +6,53 @@
     $canVoidKwitansi   = auth()->user()->hasPermission('finance', 'void_kwitansi');
     $incomeItems = $project->financeItems->where('type', 'income');
     $expenseItems = $project->financeItems->where('type', 'expense');
+    $manualIncomeItems = $incomeItems->filter(fn ($item) => $item->source_type === null && $item->category !== \App\Support\FinanceCategory::PURCHASE_REFUND);
+    $kwitansiNomors = $project->kwitansis->pluck('nomor', 'id');
     $userSignatures = auth()->user()->signatures;
+    $payment = $project->paymentBreakdown();
+    $maxDate = now()->format('Y-m-d');
+    $minDate = \App\Support\FinanceLock::date()?->copy()->addDay()->format('Y-m-d');
 @endphp
 
-{{-- ===== RINGKASAN ===== --}}
-<div class="row g-2 mb-3">
-    <div class="col-md-4">
-        <div class="p-3 rounded-3 bg-info-subtle">
+{{-- ===== RINGKASAN: Total Diterima dihitung dari buku kas (rumus di Project::combinePayments) ===== --}}
+<div class="row g-2 mb-2">
+    <div class="col-6 col-md-3">
+        <div class="p-3 rounded-3 bg-info-subtle h-100">
             <div class="small text-muted">Estimasi Pendapatan</div>
             <div class="fw-bold fs-5 text-info">{{ \App\Support\Money::formatRupiah($project->estimated_value) }}</div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="p-3 rounded-3 bg-success-subtle">
-            <div class="small text-muted">Pendapatan Tercatat (Data Keuangan)</div>
-            <div class="fw-bold fs-5 text-success">{{ \App\Support\Money::formatRupiah($project->total_client_income) }}</div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="p-3 rounded-3 bg-success-subtle">
-            <div class="small text-muted">Kwitansi Diterima</div>
-            <div class="fw-bold fs-5 text-success">{{ \App\Support\Money::formatRupiah($project->total_dibayar) }}</div>
-        </div>
-    </div>
-</div>
-<div class="row g-2 mb-4">
-    <div class="col-md-4">
-        <div class="p-3 rounded-3 bg-primary-subtle">
+    <div class="col-6 col-md-3">
+        <div class="p-3 rounded-3 bg-primary-subtle h-100">
             <div class="small text-muted">Total Diterima</div>
-            <div class="fw-bold fs-5 text-primary">{{ \App\Support\Money::formatRupiah($project->total_diterima) }}</div>
+            <div class="fw-bold fs-5 text-primary">{{ \App\Support\Money::formatRupiah($payment['received']) }}</div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="p-3 rounded-3 bg-warning-subtle">
+    <div class="col-6 col-md-3">
+        <div class="p-3 rounded-3 bg-warning-subtle h-100">
             <div class="small text-muted">Sisa</div>
             <div class="fw-bold fs-5 text-warning-emphasis">{{ \App\Support\Money::formatRupiah($project->sisa_pembayaran) }}</div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="p-3 rounded-3 {{ $project->status_pembayaran === 'Lunas' ? 'bg-success-subtle' : 'bg-warning-subtle' }}">
+    <div class="col-6 col-md-3">
+        <div class="p-3 rounded-3 h-100 {{ $project->status_pembayaran === 'Lunas' ? 'bg-success-subtle' : 'bg-warning-subtle' }}">
             <div class="small text-muted">Status Pembayaran</div>
             <div class="fw-bold fs-5">{{ $project->status_pembayaran }}</div>
         </div>
     </div>
 </div>
+<div class="small text-muted mb-4">
+    Rincian diterima: dari Kwitansi <strong>{{ \App\Support\Money::formatRupiah($payment['kwitansi']) }}</strong>,
+    pencatatan manual <strong>{{ \App\Support\Money::formatRupiah($payment['manual']) }}</strong>
+    @if($payment['legacy'] > 0)
+        , kwitansi lama belum tertaut <strong>{{ \App\Support\Money::formatRupiah($payment['legacy']) }}</strong>.
+        Karena ada kwitansi lama, yang dipakai adalah nilai terbesar antara pencatatan manual dan kwitansi lama.
+    @else
+        .
+    @endif
+</div>
 
-{{-- Pendapatan tercatat (Data Keuangan): tiap baris bisa langsung Cetak Kwitansi; hanya referensi, tidak mengubah baris (lihat KwitansiService). --}}
+{{-- Pendapatan tercatat (buku kas): pemasukan manual bisa langsung Cetak Kwitansi (kwitansi ditautkan ke baris itu); baris Kwitansi terkunci. --}}
 <h6 class="fw-bold mb-2">Pendapatan Tercatat (Data Keuangan)</h6>
 <div class="table-responsive mb-4">
     <table class="table table-sm align-middle mb-0">
@@ -61,7 +62,11 @@
                     <td class="fw-semibold text-success u-w-30pct">{{ \App\Support\Money::formatRupiah($item->amount) }}</td>
                     <td class="text-muted">{{ $item->description ?: '-' }}</td>
                     <td class="text-end u-w-160px">
-                        @if($canCreateKwitansi)
+                        @if($item->source_type === \App\Models\ProjectFinanceItem::SOURCE_KWITANSI)
+                            <span class="badge bg-light text-dark border" title="Otomatis dari kwitansi, tidak bisa diubah di sini">
+                                <i class="bi bi-lock"></i> {{ $kwitansiNomors[$item->source_id] ?? 'Kwitansi' }}
+                            </span>
+                        @elseif($canCreateKwitansi && $manualIncomeItems->contains('id', $item->id))
                             <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#cetakDariPendapatan{{ $item->id }}">
                                 <i class="bi bi-printer"></i> Cetak Kwitansi
                             </button>
@@ -108,7 +113,7 @@
             @csrf
             <div class="col-md-3">
                 <label class="form-label small">Tanggal</label>
-                <input type="date" name="tanggal" class="form-control form-control-sm" value="{{ old('tanggal', now()->format('Y-m-d')) }}" required>
+                <input type="date" name="tanggal" class="form-control form-control-sm" value="{{ old('tanggal', $maxDate) }}" max="{{ $maxDate }}" @if($minDate) min="{{ $minDate }}" @endif required>
             </div>
             <div class="col-md-3">
                 <label class="form-label small">Jumlah (Rp)</label>
@@ -123,6 +128,7 @@
                 <input type="text" name="keterangan" class="form-control form-control-sm" placeholder="DP 50%, Pelunasan, dst" value="{{ old('keterangan') }}">
             </div>
             @include('project.partials.kwitansi-form-fields', ['userSignatures' => $userSignatures, 'uniqueId' => 'add' . $project->id])
+            <div class="col-12 form-text">Pembayaran ini otomatis dicatat sebagai pemasukan di buku kas. Jangan dicatat lagi secara manual.</div>
             <div class="col-12 text-end">
                 <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-save"></i> Simpan Kwitansi</button>
             </div>
@@ -199,16 +205,17 @@
     </table>
 </div>
 
-{{-- Modal Cetak Kwitansi dari baris Pendapatan: nominal dan keterangan terisi dari baris itu, tanggal default hari ini;
+{{-- Modal Cetak Kwitansi dari baris pemasukan manual: nominal dan keterangan terisi dari baris itu, tanggal default hari ini;
      submit langsung ke preview PDF (print_after=1). --}}
 @if($canCreateKwitansi)
-    @foreach($incomeItems as $item)
+    @foreach($manualIncomeItems as $item)
         <div class="modal fade" id="cetakDariPendapatan{{ $item->id }}" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <form action="{{ route('kwitansi.store', $project) }}" method="POST">
                         @csrf
                         <input type="hidden" name="print_after" value="1">
+                        <input type="hidden" name="link_item_id" value="{{ $item->id }}">
                         <div class="modal-header">
                             <h6 class="modal-title">Cetak Kwitansi dari Pendapatan</h6>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -216,7 +223,7 @@
                         <div class="modal-body row g-2">
                             <div class="col-md-6">
                                 <label class="form-label small">Tanggal</label>
-                                <input type="date" name="tanggal" class="form-control" value="{{ now()->format('Y-m-d') }}" required>
+                                <input type="date" name="tanggal" class="form-control" value="{{ $maxDate }}" max="{{ $maxDate }}" @if($minDate) min="{{ $minDate }}" @endif required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label small">Jumlah (Rp)</label>
@@ -231,6 +238,7 @@
                                 <input type="text" name="keterangan" class="form-control" value="{{ $item->description }}">
                             </div>
                             @include('project.partials.kwitansi-form-fields', ['userSignatures' => $userSignatures, 'uniqueId' => 'inc' . $item->id])
+                            <div class="col-12 form-text">Selama jumlah tidak diubah, kwitansi ditautkan ke pemasukan ini dan tidak mencatat pemasukan baru.</div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>

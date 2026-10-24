@@ -119,7 +119,7 @@ class FinanceTransactionService
     private function ensureEditable(ProjectFinanceItem $item): void
     {
         if ($item->isAuto()) {
-            throw new Exception('Transaksi otomatis diubah lewat modul asalnya (Pembelian atau Perbaikan Barang).');
+            throw new Exception('Transaksi otomatis diubah lewat modul asalnya (' . $item->sourceLabel() . ').');
         }
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -276,8 +278,8 @@ class Project extends Model
     }
 
     /**
-     * Total Kwitansi berstatus Aktif saja (BEDA dari totalDiterima di
-     * bawah, yang juga menghitung Pendapatan dari tab Data Keuangan).
+     * Total semua Kwitansi berstatus Aktif (BEDA dari totalDiterima di bawah,
+     * yang dihitung dari buku kas).
      */
     protected function totalDibayar(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
@@ -287,19 +289,75 @@ class Project extends Model
     }
 
     /**
-     * Uang yang sudah diterima: pendapatan di Data Keuangan atau Kwitansi Aktif,
-     * mana yang lebih besar (pembayaran yang sama bisa tercatat di keduanya).
-     * Satu-satunya rumus; dipakai juga oleh Ringkasan Keuangan dan halaman Kwitansi.
+     * Uang yang sudah diterima = baris buku kas dari Kwitansi + yang terbesar antara pemasukan manual dan
+     * Kwitansi lama (belum punya baris; pembayaran yang sama bisa tercatat di keduanya). Satu-satunya rumus.
      */
-    public static function combinePayments(float $income, float $kwitansi): float
+    public static function combinePayments(float $fromKwitansi, float $manual, float $legacyKwitansi): float
     {
-        return max($income, $kwitansi);
+        return $fromKwitansi + max($manual, $legacyKwitansi);
+    }
+
+    /**
+     * Rincian total diterima dari data yang sudah dimuat (dipakai juga oleh PDF arsip).
+     *
+     * @param  Collection<int, ProjectFinanceItem>  $financeItems
+     * @param  Collection<int, Kwitansi>  $kwitansis
+     * @return array{kwitansi: float, manual: float, legacy: float, received: float}
+     */
+    public static function breakdownFrom(Collection $financeItems, Collection $kwitansis): array
+    {
+        $clientIncome = $financeItems->where('type', 'income')
+            ->filter(fn ($item) => $item->category !== \App\Support\FinanceCategory::PURCHASE_REFUND);
+        $isKwitansi = fn ($item) => $item->source_type === ProjectFinanceItem::SOURCE_KWITANSI;
+        $linkedIds = $financeItems->filter($isKwitansi)->pluck('source_id')->all();
+
+        $fromKwitansi = (float) $clientIncome->filter($isKwitansi)->sum('amount');
+        $manual = (float) $clientIncome->reject($isKwitansi)->sum('amount');
+        $legacy = (float) $kwitansis->where('status', 'Aktif')->whereNotIn('id', $linkedIds)->sum('jumlah');
+
+        return [
+            'kwitansi' => $fromKwitansi,
+            'manual'   => $manual,
+            'legacy'   => $legacy,
+            'received' => self::combinePayments($fromKwitansi, $manual, $legacy),
+        ];
+    }
+
+    /**
+     * Menambah kolom pay_kwitansi, pay_manual, pay_legacy sebagai agregat database (tanpa N+1);
+     * dibaca lewat paymentBreakdown().
+     */
+    public function scopeWithPaymentTotals(Builder $query): Builder
+    {
+        return $query
+            ->withSum(['financeItems as pay_kwitansi' => fn ($q) => $q->kwitansiPayments()], 'amount')
+            ->withSum(['financeItems as pay_manual' => fn ($q) => $q->manualClientPayments()], 'amount')
+            ->withSum(['kwitansis as pay_legacy' => fn ($q) => $q->where('status', 'Aktif')->whereDoesntHave('financeItem')], 'jumlah');
+    }
+
+    /** @return array{kwitansi: float, manual: float, legacy: float, received: float} */
+    public function paymentBreakdown(): array
+    {
+        if (array_key_exists('pay_kwitansi', $this->attributes)) {
+            $fromKwitansi = (float) $this->attributes['pay_kwitansi'];
+            $manual = (float) ($this->attributes['pay_manual'] ?? 0);
+            $legacy = (float) ($this->attributes['pay_legacy'] ?? 0);
+
+            return [
+                'kwitansi' => $fromKwitansi,
+                'manual'   => $manual,
+                'legacy'   => $legacy,
+                'received' => self::combinePayments($fromKwitansi, $manual, $legacy),
+            ];
+        }
+
+        return self::breakdownFrom($this->financeItems, $this->kwitansis);
     }
 
     protected function totalDiterima(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
         return \Illuminate\Database\Eloquent\Casts\Attribute::get(
-            fn () => self::combinePayments((float) $this->total_client_income, (float) $this->total_dibayar)
+            fn () => $this->paymentBreakdown()['received']
         );
     }
 

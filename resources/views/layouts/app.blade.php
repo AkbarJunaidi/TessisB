@@ -62,6 +62,16 @@
             </div>
         @endif
 
+        @if(session('warning'))
+            <div class="toast app-toast app-toast--warning" role="alert" data-bs-autohide="true" data-bs-delay="9000" id="globalToastWarning">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-exclamation-circle-fill app-toast-icon"></i>
+                    <div class="toast-body">{{ session('warning') }}</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Tutup"></button>
+                </div>
+            </div>
+        @endif
+
         @if(session('error'))
             <div class="toast app-toast app-toast--danger" role="alert" data-bs-autohide="true" data-bs-delay="6000" id="globalToastError">
                 <div class="d-flex align-items-start">

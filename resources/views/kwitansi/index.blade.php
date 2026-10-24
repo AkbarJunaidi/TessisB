@@ -7,7 +7,7 @@
 
     <div class="mb-4">
         <h3 class="fw-bold mb-1">Keuangan</h3>
-        <p class="d-none d-md-block text-muted mb-0">Ringkasan tagihan & pembayaran seluruh project - gabungan Pendapatan (Data Keuangan) + Kwitansi.</p>
+        <p class="d-none d-md-block text-muted mb-0">Ringkasan tagihan dan pembayaran seluruh project, dihitung dari buku kas (pembayaran dengan Kwitansi tercatat otomatis).</p>
     </div>
 
     @include('finance.partials.tabs', ['active' => 'projects'])
@@ -38,22 +38,19 @@
             <table class="table table-hover table-modern align-middle mb-0">
                 <thead>
                     <tr>
-                        <th class="ps-4 u-w-20pct">Project</th>
-                        <th class="text-end u-w-12pct">Estimasi</th>
-                        <th class="text-end u-w-13pct">Pendapatan Tercatat</th>
-                        <th class="text-end u-w-12pct">Kwitansi</th>
-                        <th class="text-end u-w-13pct">Total Diterima</th>
-                        <th class="text-end u-w-12pct">Sisa</th>
-                        <th class="u-w-10pct">Status</th>
-                        <th class="pe-4 text-center u-w-8pct">Aksi</th>
+                        <th class="ps-4 u-w-28pct">Project</th>
+                        <th class="text-end u-w-14pct">Estimasi</th>
+                        <th class="text-end u-w-18pct">Total Diterima</th>
+                        <th class="text-end u-w-14pct">Sisa</th>
+                        <th class="u-w-14pct">Status</th>
+                        <th class="pe-4 text-center u-w-12pct">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="small">
                     @forelse($projects as $project)
                         @php
-                            $pendapatanTercatat = (float) ($project->pendapatan_tercatat ?? 0);
-                            $kwitansiDibayar = (float) ($project->kwitansi_total_dibayar ?? 0);
-                            $totalDiterima = \App\Models\Project::combinePayments($pendapatanTercatat, $kwitansiDibayar);
+                            $payment = $project->paymentBreakdown();
+                            $totalDiterima = $payment['received'];
                             $estimasi = (float) ($project->estimated_value ?? 0);
                             $sisa = max(0, $estimasi - $totalDiterima);
                             $statusPembayaran = $estimasi <= 0
@@ -71,9 +68,12 @@
                                 <div class="text-muted small">{{ $project->client ?: $project->company ?: '-' }}</div>
                             </td>
                             <td class="text-end text-nowrap">{{ \App\Support\Money::formatRupiah($estimasi) }}</td>
-                            <td class="text-success text-end text-nowrap">{{ \App\Support\Money::formatRupiah($pendapatanTercatat) }}</td>
-                            <td class="text-success text-end text-nowrap">{{ \App\Support\Money::formatRupiah($kwitansiDibayar) }}</td>
-                            <td class="text-success fw-semibold text-end text-nowrap">{{ \App\Support\Money::formatRupiah($totalDiterima) }}</td>
+                            <td class="text-end text-nowrap">
+                                <div class="text-success fw-semibold">{{ \App\Support\Money::formatRupiah($totalDiterima) }}</div>
+                                @if($payment['legacy'] > 0)
+                                    <div class="text-muted small" title="Kwitansi lama yang belum punya baris di buku kas">Kwitansi lama {{ \App\Support\Money::formatRupiah($payment['legacy']) }}</div>
+                                @endif
+                            </td>
                             <td class="{{ $sisa > 0 ? 'text-danger' : 'text-muted' }} text-end text-nowrap">{{ \App\Support\Money::formatRupiah($sisa) }}</td>
                             <td class=""><span class="badge {{ $badgeClass }}">{{ $statusPembayaran }}</span></td>
                             <td class="pe-4 text-center">
@@ -92,7 +92,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="8" class="text-center text-muted py-4">Belum ada project.</td></tr>
+                        <tr><td colspan="6" class="text-center text-muted py-4">Belum ada project.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -106,7 +106,11 @@
     {{-- Modal "Tambah Kwitansi" per project - entry point ke-2 (selain tab
          Kwitansi di Project Detail), mirip pola Barang Pinjaman. --}}
     @if($canCreate)
-        @php $userSignatures = auth()->user()->signatures; @endphp
+        @php
+            $userSignatures = auth()->user()->signatures;
+            $maxDate = now()->format('Y-m-d');
+            $minDate = \App\Support\FinanceLock::date()?->copy()->addDay()->format('Y-m-d');
+        @endphp
         @foreach($projects as $project)
             <div class="modal fade" id="kwitansiModal{{ $project->id }}" tabindex="-1">
                 <div class="modal-dialog">
@@ -120,7 +124,7 @@
                             <div class="modal-body row g-2">
                                 <div class="col-md-6">
                                     <label class="form-label small">Tanggal</label>
-                                    <input type="date" name="tanggal" class="form-control" value="{{ now()->format('Y-m-d') }}" required>
+                                    <input type="date" name="tanggal" class="form-control" value="{{ $maxDate }}" max="{{ $maxDate }}" @if($minDate) min="{{ $minDate }}" @endif required>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small">Jumlah (Rp)</label>
@@ -135,6 +139,7 @@
                                     <input type="text" name="keterangan" class="form-control" placeholder="DP 50%, dst">
                                 </div>
                                 @include('project.partials.kwitansi-form-fields', ['userSignatures' => $userSignatures, 'uniqueId' => 'keu' . $project->id])
+                                <div class="col-12 form-text">Pembayaran ini otomatis dicatat sebagai pemasukan di buku kas. Jangan dicatat lagi secara manual.</div>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
@@ -146,6 +151,8 @@
             </div>
         @endforeach
     @endif
+
+    @include('project.partials.kwitansi-confirm-modal')
 
 </div>
 @endsection

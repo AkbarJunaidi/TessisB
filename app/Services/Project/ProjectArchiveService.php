@@ -8,7 +8,6 @@ use App\Models\Purchase;
 use App\Services\ActivityLog\ActivityLogService;
 use App\Services\DataIntegration\FileService;
 use App\Services\DataIntegration\FolderService;
-use App\Support\FinanceCategory;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -89,11 +88,8 @@ class ProjectArchiveService
 
         $income = (float) $items->where('type', 'income')->sum('amount');
         $expense = (float) $items->where('type', 'expense')->sum('amount');
-        $clientIncome = (float) $items->where('type', 'income')
-            ->filter(fn ($item) => $item->category !== FinanceCategory::PURCHASE_REFUND)
-            ->sum('amount');
         $kwitansiActive = (float) $kwitansis->where('status', 'Aktif')->sum('jumlah');
-        $received = Project::combinePayments($clientIncome, $kwitansiActive);
+        $received = Project::breakdownFrom($items, $kwitansis)['received'];
 
         return [
             'project'      => $project,

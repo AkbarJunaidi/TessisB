@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Kwitansi extends Model
 {
@@ -33,6 +34,13 @@ class Kwitansi extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    /** Baris pemasukan di buku kas yang tertaut ke kwitansi ini (kosong untuk kwitansi lama). */
+    public function financeItem(): HasOne
+    {
+        return $this->hasOne(ProjectFinanceItem::class, 'source_id')
+            ->where('source_type', ProjectFinanceItem::SOURCE_KWITANSI);
     }
 
     public function creator(): BelongsTo

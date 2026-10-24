@@ -9,6 +9,7 @@ use App\Http\Requests\Project\ProjectRequest;
 use App\Models\Project;
 use App\Services\Inventory\LocationService;
 use App\Services\Notification\NotificationService;
+use App\Services\Project\KwitansiService;
 use App\Services\Project\ProjectArchiveService;
 use App\Services\Project\ProjectCrewService;
 use App\Services\Project\ProjectFinanceService;
@@ -31,7 +32,8 @@ class ProjectController extends Controller
         protected ProjectFinanceService $projectFinanceService,
         protected TaskService $taskService,
         protected LocationService $locationService,
-        protected NotificationService $notificationService
+        protected NotificationService $notificationService,
+        protected KwitansiService $kwitansiService
     ) {}
 
     /**
@@ -281,9 +283,13 @@ class ProjectController extends Controller
             return redirect()->route('projects.show', $project)->with('error', $e->getMessage());
         }
 
+        $newIncomes = array_filter($request->validated()['incomes'] ?? [], fn ($row) => ! isset($row['id']));
+        $warning = $this->kwitansiService->manualIncomeWarning($project->id, array_column($newIncomes, 'amount'));
+
         return redirect()
             ->route('projects.show', $project)
-            ->with('success', 'Data keuangan project berhasil disimpan.');
+            ->with('success', 'Data keuangan project berhasil disimpan.')
+            ->with('warning', $warning);
     }
 
     /**

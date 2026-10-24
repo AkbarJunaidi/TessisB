@@ -8,6 +8,7 @@ use App\Models\Contact;
 use App\Models\Project;
 use App\Models\ProjectFinanceItem;
 use App\Services\Finance\FinanceTransactionService;
+use App\Services\Project\KwitansiService;
 use App\Support\FinanceCategory;
 use App\Support\FinanceLock;
 use Illuminate\Http\RedirectResponse;
@@ -24,7 +25,8 @@ class FinanceTransactionController extends Controller
     private const FILTER_KEYS = ['from', 'to', 'type', 'category', 'project_id', 'contact_id', 'search'];
 
     public function __construct(
-        protected FinanceTransactionService $transactionService
+        protected FinanceTransactionService $transactionService,
+        protected KwitansiService $kwitansiService
     ) {}
 
     public function index(Request $request): View
@@ -61,13 +63,18 @@ class FinanceTransactionController extends Controller
 
     public function store(FinanceTransactionRequest $request): RedirectResponse
     {
+        $payload = $this->payload($request);
+
         try {
-            $this->transactionService->create($this->payload($request));
+            $this->transactionService->create($payload);
         } catch (\Exception $e) {
             return back()->withInput()->with('error', $e->getMessage());
         }
 
-        return back()->with('success', 'Transaksi berhasil dicatat.');
+        $isClientIncome = $payload['type'] === 'income' && ($payload['category'] ?? null) !== FinanceCategory::PURCHASE_REFUND;
+        $warning = $isClientIncome ? $this->kwitansiService->manualIncomeWarning($payload['project_id'] ?? null, [$payload['amount']]) : null;
+
+        return back()->with('success', 'Transaksi berhasil dicatat.')->with('warning', $warning);
     }
 
     public function update(FinanceTransactionRequest $request, ProjectFinanceItem $transaction): RedirectResponse

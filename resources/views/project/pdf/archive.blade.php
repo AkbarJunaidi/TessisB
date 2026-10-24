@@ -2,11 +2,7 @@
 @php
     $rp = fn ($value) => \App\Support\Money::formatRupiah($value);
     $date = fn ($value) => $value ? \Illuminate\Support\Carbon::parse($value)->format('d/m/Y') : '-';
-    $source = fn ($item) => match ($item->source_type) {
-        'purchase' => 'Pembelian',
-        'repair'   => 'Servis',
-        default    => 'Manual',
-    };
+    $source = fn ($item) => $item->sourceLabel() ?? 'Manual';
 @endphp
 <!DOCTYPE html>
 <html lang="id">

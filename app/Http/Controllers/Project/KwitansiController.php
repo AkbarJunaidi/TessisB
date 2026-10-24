@@ -10,6 +10,7 @@ use App\Models\Project;
 use App\Services\Project\KwitansiService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Exception;
@@ -61,12 +62,39 @@ class KwitansiController extends Controller
     }
 
     /**
-     * print_after=1 (dicentang lewat modal "Cetak Kwitansi" di baris
-     * Pendapatan) -> langsung ke preview PDF, bukan balik ke halaman asal.
+     * print_after=1 (modal "Cetak Kwitansi" di baris Pendapatan) -> langsung ke preview PDF.
+     * Bila ada kelebihan bayar atau pemasukan manual yang mungkin sama, kembali ke halaman asal membawa
+     * popup konfirmasi (flash kwitansi_confirm); konfirmasi mengirim ulang form dengan confirmed=1.
      */
     public function store(KwitansiRequest $request, Project $project): RedirectResponse
     {
-        $kwitansi = $this->kwitansiService->create($project, $request->validated());
+        $data = $request->validated();
+
+        try {
+            if (! $request->boolean('confirmed')) {
+                $check = $this->kwitansiService->precheck($project, $data);
+
+                if ($check['overpay'] || $check['candidates']->isNotEmpty()) {
+                    return redirect()->back()->with('kwitansi_confirm', [
+                        'action'     => route('kwitansi.store', $project),
+                        'amount'     => (float) $data['jumlah'],
+                        'overpay'    => $check['overpay'],
+                        'candidates' => $check['candidates']->map(fn ($item) => [
+                            'id'          => $item->id,
+                            'tanggal'     => $item->tanggal?->format('d/m/Y'),
+                            'description' => $item->description,
+                        ])->all(),
+                        'input'      => Arr::only($request->all(), [
+                            'tanggal', 'jumlah', 'metode_pembayaran', 'keterangan', 'kategori_pembayaran', 'signature_id', 'print_after',
+                        ]),
+                    ]);
+                }
+            }
+
+            $kwitansi = $this->kwitansiService->create($project, $data);
+        } catch (Exception $e) {
+            return redirect()->back()->withInput()->with('error', $e->getMessage());
+        }
 
         if ($request->boolean('print_after')) {
             return redirect()->route('kwitansi.preview', $kwitansi);
@@ -74,7 +102,7 @@ class KwitansiController extends Controller
 
         return redirect()
             ->back()
-            ->with('success', 'Kwitansi berhasil dibuat.');
+            ->with('success', 'Kwitansi berhasil dibuat dan tercatat di buku kas.');
     }
 
     public function preview(Kwitansi $kwitansi)

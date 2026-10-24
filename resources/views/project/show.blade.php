@@ -72,6 +72,8 @@
         </div>
     </div>
 
+    @include('project.partials.kwitansi-confirm-modal')
+
     @php
         $statusKeys = array_keys(\App\Models\Project::STATUS_LABELS);
         $statusAt = (int) array_search($project->status, $statusKeys, true);

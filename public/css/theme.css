@@ -855,6 +855,7 @@ html.is-loading body::after { opacity: 1; pointer-events: auto; }
 .app-toast .btn-close { margin: .85rem .8rem 0 .25rem; font-size: .6rem; }
 .app-toast--success { --toast-accent: #198754; }
 .app-toast--danger { --toast-accent: #dc3545; }
+.app-toast--warning { --toast-accent: #f59f00; }
 .app-toast--primary { --toast-accent: var(--c-primary); }
 
 /* Elemen yang dihapus lewat form AJAX memudar dulu sebelum dilepas dari halaman. */
