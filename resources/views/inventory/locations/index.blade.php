@@ -54,7 +54,7 @@
         <div class="col-12 col-md-4">
             <div class="card border-0 shadow-sm rounded-3 h-100">
                 <div class="card-body">
-                    <div class="text-muted small">Belum di Lokasi Utama</div>
+                    <div class="text-muted small">Belum Kembali</div>
                     <div class="fs-4 fw-bold">{{ $totalPerluKembali }}</div>
                     <div class="text-muted small">unit yang perlu dikembalikan ke lokasi utamanya</div>
                 </div>
@@ -106,10 +106,10 @@
                         <th class="u-w-14pct">Koordinat</th>
                         <th class="text-end u-w-7pct">Radius</th>
                         <th class="text-end u-w-8pct">Unit di Lokasi</th>
-                        <th class="text-end u-w-8pct">Belum di Lokasi Utama</th>
+                        <th class="text-end u-w-8pct">Belum Kembali</th>
                         <th class="u-w-8pct">Status</th>
                         @if($canManage)
-                            <th class="pe-4 text-center u-w-10pct">Aksi</th>
+                            <th class="pe-4 u-w-10pct">Aksi</th>
                         @endif
                     </tr>
                 </thead>
@@ -148,7 +148,7 @@
                                     <span class="text-muted">-</span>
                                 @endif
                             </td>
-                            <td class="text-end text-nowrap" data-label="Belum di Lokasi Utama">
+                            <td class="text-end text-nowrap" data-label="Belum Kembali">
                                 @if($loc->can_store_units && $st['perlu_kembali'] > 0)
                                     <span class="badge bg-warning bg-opacity-10 text-warning border border-warning-subtle px-2 py-2">{{ $st['perlu_kembali'] }} unit</span>
                                 @else
@@ -166,8 +166,8 @@
                                 @endif
                             </td>
                             @if($canManage)
-                                <td class="pe-4 cell-block text-center" data-label="Aksi">
-                                    <div class="d-flex justify-content-center gap-2">
+                                <td class="pe-4 cell-block" data-label="Aksi">
+                                    <div class="d-flex justify-content-start gap-2">
                                         <button type="button" class="btn btn-sm btn-outline-secondary btn-edit-location"
                                                 data-location="{{ json_encode($loc->toFormArray()) }}"
                                                 title="Ubah" aria-label="Ubah lokasi">

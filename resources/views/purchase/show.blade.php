@@ -52,7 +52,7 @@
         <div>
             <a data-back href="{{ route('purchases.index') }}" class="page-back"><i class="bi bi-arrow-left"></i> Pembelian</a>
             <h3 class="fw-bold mb-1">{{ $purchase->code }}</h3>
-            <span class="badge {{ \App\Models\Purchase::STATUS_BADGES[$purchase->status] ?? 'bg-secondary' }}">{{ $purchase->status }}</span>
+            <span class="badge {{ \App\Models\Purchase::STATUS_BADGES[$purchase->status] ?? 'badge-soft-secondary' }}">{{ $purchase->status }}</span>
             @if($isCommitted)
                 <span class="badge {{ $purchase->money_badge }}">{{ $purchase->money_stage }}</span>
             @endif
@@ -60,12 +60,12 @@
                 $due = $purchase->dueState();
             @endphp
             @if($due && $due['soon'])
-                <span class="badge {{ $due['overdue'] ? 'bg-danger' : 'bg-warning text-dark' }}">
+                <span class="badge {{ $due['overdue'] ? 'badge-soft-danger' : 'badge-soft-warning' }}">
                     {{ $due['overdue'] ? 'Terlambat ' . abs($due['days']) . ' hari' : ($due['days'] === 0 ? 'Jatuh tempo hari ini' : 'Jatuh tempo ' . $due['days'] . ' hari lagi') }}
                 </span>
             @endif
             @if($purchase->resubmit_count > 0)
-                <span class="badge bg-light text-dark border">Diajukan ulang ke-{{ $purchase->resubmit_count + 1 }}</span>
+                <span class="badge badge-soft-secondary">Diajukan ulang ke-{{ $purchase->resubmit_count + 1 }}</span>
             @endif
         </div>
 
@@ -327,7 +327,7 @@
                                             @endif
                                             <div class="text-muted">{{ $item->stock_mode === \App\Models\PurchaseItem::STOCK_NEW ? 'Barang baru' : 'Tambah stok' }}</div>
                                             @if($item->inventory->serial_pending)
-                                                <span class="badge bg-warning text-dark">Serial belum diisi</span>
+                                                <span class="badge badge-soft-warning">Serial belum diisi</span>
                                             @endif
                                         @elseif($item->stock_mode === \App\Models\PurchaseItem::STOCK_NONE)
                                             <span class="text-muted">Bukan stok</span>

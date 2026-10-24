@@ -129,7 +129,7 @@
                             <td>{{ $purchase->vendor_name }}</td>
                             <td title="{{ $purchase->project?->name }}">{{ $purchase->project?->short_name ?? '-' }}</td>
                             <td class="text-end text-nowrap">{{ \App\Support\Money::formatRupiah($purchase->total) }}</td>
-                            <td class=""><span class="badge {{ \App\Models\Purchase::STATUS_BADGES[$purchase->status] ?? 'bg-secondary' }}">{{ $purchase->status }}</span></td>
+                            <td class=""><span class="badge {{ \App\Models\Purchase::STATUS_BADGES[$purchase->status] ?? 'badge-soft-secondary' }}">{{ $purchase->status }}</span></td>
                             <td class="">
                                 @if(in_array($purchase->status, \App\Models\Purchase::COMMITTED, true))
                                     <span class="badge {{ $purchase->money_badge }}">{{ $purchase->money_stage }}</span>

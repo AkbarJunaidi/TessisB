@@ -135,7 +135,7 @@
                                     <div>
                                         <div class="fw-semibold">{{ $purchase->code }}</div>
                                         <div class="text-muted small">
-                                            <span class="badge {{ \App\Models\Purchase::STATUS_BADGES[$purchase->status] ?? 'bg-secondary' }}">{{ $purchase->status }}</span>
+                                            <span class="badge {{ \App\Models\Purchase::STATUS_BADGES[$purchase->status] ?? 'badge-soft-secondary' }}">{{ $purchase->status }}</span>
                                             <i class="bi bi-calendar-event ms-2 me-1"></i>{{ $purchase->purchase_date->format('d/m/Y') }}
                                         </div>
                                     </div>

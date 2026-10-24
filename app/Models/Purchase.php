@@ -63,14 +63,14 @@ class Purchase extends Model
     public const PAYMENT_METHODS = ['Transfer', 'Tunai', 'Lainnya'];
 
     public const STATUS_BADGES = [
-        self::STATUS_DRAFT     => 'bg-secondary',
-        self::STATUS_SUBMITTED => 'bg-warning text-dark',
-        self::STATUS_APPROVED  => 'bg-info text-dark',
-        self::STATUS_REJECTED  => 'bg-danger',
-        self::STATUS_ORDERED   => 'bg-primary',
-        self::STATUS_PARTIAL   => 'bg-info text-dark',
-        self::STATUS_RECEIVED  => 'bg-success',
-        self::STATUS_CANCELLED => 'bg-dark',
+        self::STATUS_DRAFT     => 'badge-soft-secondary',
+        self::STATUS_SUBMITTED => 'badge-soft-warning',
+        self::STATUS_APPROVED  => 'badge-soft-secondary',
+        self::STATUS_REJECTED  => 'badge-soft-danger',
+        self::STATUS_ORDERED   => 'badge-soft-primary',
+        self::STATUS_PARTIAL   => 'badge-soft-warning',
+        self::STATUS_RECEIVED  => 'badge-soft-success',
+        self::STATUS_CANCELLED => 'badge-soft-secondary',
     ];
 
     protected $fillable = [
@@ -331,9 +331,9 @@ class Purchase extends Model
     public function getMoneyBadgeAttribute(): string
     {
         return match ($this->money_stage) {
-            self::PAYMENT_PAID => 'bg-success',
-            'Dana di finance'  => 'bg-info text-dark',
-            default            => 'bg-warning text-dark',
+            self::PAYMENT_PAID => 'badge-soft-success',
+            'Dana di finance'  => 'badge-soft-primary',
+            default            => 'badge-soft-warning',
         };
     }
 
