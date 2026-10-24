@@ -7,7 +7,6 @@
 
     <div class="mb-4">
         <h3 class="fw-bold mb-1">Keuangan</h3>
-        <p class="d-none d-md-block text-muted mb-0">Ringkasan tagihan dan pembayaran seluruh project, dihitung dari buku kas (pembayaran dengan Kwitansi tercatat otomatis).</p>
     </div>
 
     @include('finance.partials.tabs', ['active' => 'projects'])

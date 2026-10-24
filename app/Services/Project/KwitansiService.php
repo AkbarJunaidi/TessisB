@@ -166,13 +166,19 @@ class KwitansiService
     {
         $row = $this->linkableRow($project, $linkItemId, (float) $kwitansi->jumlah);
 
+        $label = self::CATEGORY_LABELS[$kwitansi->kategori_pembayaran] ?? null;
+        // Keterangan baris buku kas ikut Kwitansi; bila kosong, pakai teks manual lalu format otomatis.
+        $note = trim((string) $kwitansi->keterangan);
+
         if ($row) {
-            $row->update(['source_type' => ProjectFinanceItem::SOURCE_KWITANSI, 'source_id' => $kwitansi->id]);
+            $row->update([
+                'source_type' => ProjectFinanceItem::SOURCE_KWITANSI,
+                'source_id'   => $kwitansi->id,
+                'description' => $note !== '' ? $note : ($row->description ?: $this->autoDescription($kwitansi, $label)),
+            ]);
 
             return true;
         }
-
-        $label = self::CATEGORY_LABELS[$kwitansi->kategori_pembayaran] ?? null;
 
         ProjectFinanceItem::create([
             'project_id'     => $project->id,
@@ -185,10 +191,15 @@ class KwitansiService
             'source_type'    => ProjectFinanceItem::SOURCE_KWITANSI,
             'source_id'      => $kwitansi->id,
             'created_by'     => Auth::id(),
-            'description'    => "Kwitansi {$kwitansi->nomor}" . ($label ? " ({$label})" : ''),
+            'description'    => $note !== '' ? $note : $this->autoDescription($kwitansi, $label),
         ]);
 
         return false;
+    }
+
+    private function autoDescription(Kwitansi $kwitansi, ?string $label): string
+    {
+        return "Kwitansi {$kwitansi->nomor}" . ($label ? " ({$label})" : '');
     }
 
     /**

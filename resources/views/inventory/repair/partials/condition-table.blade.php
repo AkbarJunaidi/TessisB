@@ -28,12 +28,7 @@
                         <div class="text-muted small">{{ $inventory->brand ?: '' }} SN {{ $inventory->serial_number }}</div>
                     </td>
                     <td class="text-end text-nowrap" data-label="Unit">{{ $row->units }}</td>
-                    <td class="text-end text-nowrap" data-label="Diservis">
-                        {{ $row->diservis }}
-                        @if($row->aktif > 0)
-                            <div class="text-muted small">+{{ $row->aktif }} sedang diservis</div>
-                        @endif
-                    </td>
+                    <td class="text-end text-nowrap" data-label="Diservis">{{ $row->diservis }}</td>
                     <td class="text-end text-nowrap" data-label="Berhasil">{{ $row->berhasil }}</td>
                     <td class="{{ $row->gagal > 0 ? 'text-danger fw-semibold' : '' }} text-end text-nowrap" data-label="Gagal">{{ $row->gagal }}</td>
                     <td class="text-end text-nowrap" data-label="% Berhasil">{{ $row->persen_berhasil !== null ? $row->persen_berhasil . '%' : '-' }}</td>

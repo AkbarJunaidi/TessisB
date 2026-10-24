@@ -32,7 +32,6 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
         <div>
             <h3 class="fw-bold mb-1">Keuangan</h3>
-            <p class="d-none d-md-block text-muted mb-0">Semua pemasukan dan pengeluaran perusahaan.</p>
         </div>
         @if($canManage)
             <button type="button" class="btn btn-primary d-flex align-items-center gap-2 fw-medium" id="btnAddTransaction">
